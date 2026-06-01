@@ -64,7 +64,6 @@ html[data-font="geist"]{ --font-ui:var(--font-geist); }
 *{ box-sizing:border-box; margin:0; padding:0; }
 html{
   height:100%; overflow:hidden;
-  /* Empêche le bounce/zoom natif iOS */
   touch-action:manipulation;
   -webkit-text-size-adjust:100%;
 }
@@ -74,11 +73,59 @@ body{
   -webkit-font-smoothing:antialiased;
   transition:background .4s ease, color .4s ease;
   height:100%; overflow:hidden;
-  /* Bloque le rubber-band scroll iOS sur le body lui-même */
   overscroll-behavior:none;
   -webkit-overflow-scrolling:auto;
   position:fixed; width:100%;
 }
+
+/* ── TOUCH UX — règles globales expert ──────────────────── */
+/* Supprimer le highlight bleu iOS sur TOUS les éléments interactifs */
+a, button, [onclick], [role="button"],
+.art-card, .feed-item, .folder-head, .sb-item,
+.dc-theme-tile, .dc-feed-row, .vp-item,
+.seq-item, .list-item, .essentiel-card,
+.browse-hero-card, .grid2-card, .fav-item,
+.nav-item, .nav-capsule-left, .nav-capsule-right,
+.ob-btn, .ob-btn-ghost {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+/* Désactiver la sélection de texte sur les éléments interactifs */
+button, [onclick], .art-card, .feed-item,
+.seq-item, .list-item, .essentiel-card,
+.browse-hero-card, .grid2-card, .dc-theme-tile {
+  -webkit-user-select: none;
+  user-select: none;
+}
+/* Touch-action sur les scrollables — permet le scroll vertical seulement */
+.row, .feed-page-scroll, .folder-page-scroll,
+.sb-scroll, .dc-catalog-panel, .dc-detail-panel,
+.artModalBody, .ob-wrap {
+  touch-action: pan-y;
+}
+/* Cibles tactiles minimum 44px (Apple HIG) */
+button, .ob-btn, .ob-btn-ghost,
+.art-toolbar-btn, .feed-props-btn,
+.folder-page-back, .feed-page-back,
+.menu-btn, .sb-close, .qpill-btn,
+.qpill-trigger, .chev-btn {
+  min-width: 44px; min-height: 44px;
+}
+/* Feedback tactile immédiat — scale au :active */
+.art-card:active          { opacity:.82; transform:scale(.988); transition:opacity .1s, transform .1s; }
+.grid2-card:active        { opacity:.82; transform:scale(.96);  transition:opacity .1s, transform .1s; }
+.seq-item:active          { opacity:.7;  transition:opacity .1s; }
+.list-item:active         { opacity:.7;  transition:opacity .1s; }
+.essentiel-card:active    { opacity:.75; transition:opacity .1s; }
+.browse-hero-card:active  { opacity:.85; transform:scale(.98);  transition:opacity .1s, transform .1s; }
+.dc-theme-tile:active     { transform:scale(.96); transition:transform .12s; }
+.feed-item:active         { background:rgba(255,255,255,.06); transition:background .08s; }
+.sb-item:active           { background:rgba(255,255,255,.08); transition:background .08s; }
+.vp-item:active           { background:rgba(255,255,255,.06); transition:background .08s; }
+[data-theme="light"] .feed-item:active { background:rgba(0,0,0,.05); }
+[data-theme="light"] .sb-item:active   { background:rgba(0,0,0,.06); }
+/* Éviter le délai 300ms sur tous les boutons */
+button, a, [onclick] { touch-action: manipulation; }
 
 /* Mode clair — overrides ciblés pour les surfaces sombres */
 [data-theme="light"] .sidebar{
@@ -1714,6 +1761,20 @@ body{
 .feed-page-title{ font-family:var(--font-inter); font-size:24px; font-weight:800; letter-spacing:-.03em; color:var(--text); text-align:center; }
 .feed-page-desc{ font-family:var(--font-inter); font-size:14px; font-weight:500; color:var(--text-muted); margin-top:8px; line-height:1.55; text-align:center; max-width:280px; }
 .feed-page-sep{ width:40px; height:2px; background:var(--accent); border-radius:2px; margin:16px auto 0; opacity:.7; }
+/* Actions flux dans le header */
+.feed-page-actions{ display:flex; gap:10px; margin-top:20px; justify-content:center; }
+.feed-page-action-btn{
+  display:flex; align-items:center; gap:6px;
+  height:36px; padding:0 16px; border-radius:999px;
+  border:1px solid rgba(255,255,255,.12); background:transparent;
+  font-family:var(--font-inter); font-size:12px; font-weight:600;
+  color:var(--text-muted); cursor:pointer; white-space:nowrap;
+  -webkit-tap-highlight-color:transparent; transition:background .15s;
+}
+.feed-page-action-btn:active{ background:rgba(255,255,255,.08); transform:scale(.95); }
+.feed-page-action-unsub{ border-color:rgba(255,60,50,.3); color:#ff3c32; }
+.feed-page-action-unsub:active{ background:rgba(255,60,50,.08); }
+[data-theme="light"] .feed-page-action-btn{ border-color:rgba(0,0,0,.12); }
 .feed-page-scroll{ flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
 .feed-page-scroll::-webkit-scrollbar{ display:none; }
 .feed-page-inner{ padding:12px 18px 120px; }
@@ -1990,6 +2051,41 @@ body.focus-mode .focus-exit{ display:flex; }
 @keyframes obSlideUp{
   0%  { opacity:0; transform:translateY(24px); }
   100%{ opacity:1; transform:translateY(0); }
+}
+
+
+/* ── SKELETON IMAGE — élimine le vide blanc au scroll ───── */
+@keyframes imgShimmer{
+  0%  { background-position:200% 0; }
+  100%{ background-position:-200% 0; }
+}
+.art-img-wrap,
+.grid2-img,
+.list-thumb,
+.list-thumb-empty,
+.seq-thumb,
+.essentiel-thumb,
+.browse-hero-img,
+.browse-folder-grid .grid2-img{
+  background-color:#1a1a1a;
+  background-image:linear-gradient(90deg,#1a1a1a 25%,#242424 50%,#1a1a1a 75%);
+  background-size:400% 100%;
+  animation:imgShimmer 1.6s ease-in-out infinite;
+}
+/* Stopper le shimmer dès que l'image est chargée */
+.img-loaded .art-img-wrap,
+.img-loaded.grid2-img,
+.img-loaded.seq-thumb,
+.img-loaded.list-thumb{
+  background-image:none; animation:none;
+}
+[data-theme="light"] .art-img-wrap,
+[data-theme="light"] .grid2-img,
+[data-theme="light"] .list-thumb,
+[data-theme="light"] .seq-thumb,
+[data-theme="light"] .essentiel-thumb{
+  background-color:#e8e8ec;
+  background-image:linear-gradient(90deg,#e8e8ec 25%,#f0f0f4 50%,#e8e8ec 75%);
 }
 
 </style>
@@ -4894,6 +4990,8 @@ body.focus-mode .focus-exit{ display:flex; }
           setTimeout(()=>{ grid.style.transition = ''; }, 300);
         });
       }
+      // Activer le preload des images nouvellement rendues
+      if(typeof window._obsImage === 'function') setTimeout(window._obsImage, 50);
     });
   }
 
@@ -5808,6 +5906,13 @@ body.focus-mode .focus-exit{ display:flex; }
   window._folderArtOpen = function(i){ const a=_folderPageArts[i]; if(a) _showArtModal(a); };
   window._feedPageArtOpen = function(i){ const a=_feedPageArts[i]; if(a) _showArtModal(a); };
 
+  window._feedPageUnsub = function(){
+    const url = _feedPropsCtx.feedUrl;
+    if(!url || !confirm('Se désabonner de ce flux ?')) return;
+    folders.forEach(f=>{ const i=f.feeds.indexOf(url); if(i>-1) f.feeds.splice(i,1); });
+    persist(); render(); closeFeedPage();
+  };
+
 
   // ── PROPRIÉTÉS DU FLUX — contexte global ─────────────────────
   // Déclaré ici pour être accessible dès le premier clic du bouton ⚙
@@ -5963,9 +6068,7 @@ body.focus-mode .focus-exit{ display:flex; }
     page.style.display = 'flex';
     requestAnimationFrame(()=> page.classList.add('open'));
     document.body.style.overflow = 'hidden';
-    // Masquer la qpill pour libérer la zone du bouton ⚙
-    const qp = document.getElementById('qpill');
-    if(qp) qp.style.display = 'none';
+    // qpill reste visible sur la page flux
   };
 
   window._feedPageArtOpen = function(i){ const a=_feedPageArts[i]; if(a) _showArtModal(a); };
@@ -5977,8 +6080,6 @@ body.focus-mode .focus-exit{ display:flex; }
     setTimeout(()=>{
       page.style.display='none';
       document.body.style.overflow='';
-      const qp = document.getElementById('qpill');
-      if(qp) qp.style.display = '';
     }, 400);
   };
 
@@ -6295,6 +6396,38 @@ body.focus-mode .focus-exit{ display:flex; }
     }, 2000);
   })();
 
+
+  // ── PRELOAD IMAGES — IntersectionObserver (élimine le vide blanc) ───────
+  (function _initImagePreload(){
+    if(!('IntersectionObserver' in window)) return;
+    const obs = new IntersectionObserver(entries=>{
+      entries.forEach(entry=>{
+        if(!entry.isIntersecting) return;
+        const el = entry.target;
+        // Images dans art-img-wrap, grid2-img, seq-thumb, list-thumb
+        const imgs = el.querySelectorAll('img[data-src]');
+        imgs.forEach(img=>{
+          img.src = img.dataset.src;
+          delete img.dataset.src;
+          img.onload = ()=>{ el.classList.add('img-loaded'); img.style.opacity='1'; };
+        });
+        obs.unobserve(el);
+      });
+    }, {
+      rootMargin: '200px 0px',  // précharger 200px avant d'entrer dans le viewport
+      threshold: 0
+    });
+
+    // Observer tous les conteneurs d'images
+    window._obsImage = function(container){
+      container = container || document;
+      container.querySelectorAll('.art-img-wrap, .grid2-img, .seq-thumb, .list-thumb, .essentiel-thumb')
+        .forEach(el=>obs.observe(el));
+    };
+    // Lancer sur le contenu actuel puis après chaque render
+    window._obsImage();
+  })();
+
   // ── Service Worker ────────────────────────────────────────────
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -6470,9 +6603,6 @@ body.focus-mode .focus-exit{ display:flex; }
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
       <div style="flex:1"></div>
-      <button class="feed-props-btn" onclick="openFeedProps()" aria-label="Propriétés du flux">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-      </button>
     </div>
     <div class="feed-page-scroll">
       <div class="feed-page-header">
@@ -6482,6 +6612,17 @@ body.focus-mode .focus-exit{ display:flex; }
         <div class="feed-page-title" id="feedPageTitle"></div>
         <div class="feed-page-desc" id="feedPageDesc"></div>
         <div class="feed-page-sep"></div>
+        <!-- Actions flux -->
+        <div class="feed-page-actions">
+          <button class="feed-page-action-btn" onclick="openFeedProps()" aria-label="Propriétés">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            Propriétés
+          </button>
+          <button class="feed-page-action-btn feed-page-action-unsub" onclick="_feedPageUnsub()" aria-label="Se désabonner">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            Se désabonner
+          </button>
+        </div>
       </div>
       <div class="feed-page-inner" id="feedPageContent"></div>
     </div>
