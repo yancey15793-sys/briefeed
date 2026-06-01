@@ -1465,10 +1465,30 @@ body{
 #editionsHero .art-card .art-title{ font-size:22px; line-height:1.2; -webkit-line-clamp:4; }
 #editionsHero .art-card .art-source-row{ margin-top:14px; }
 /* Indicateur de refresh */
-#refreshBadge{ position:fixed; top:14px; left:50%; transform:translateX(-50%); z-index:9999; background:#1c1c1e; color:#fff; font-family:var(--font-inter); font-size:12px; font-weight:600; padding:6px 16px; border-radius:999px; opacity:0; pointer-events:none; transition:opacity .3s; box-shadow:0 4px 16px rgba(0,0,0,.4); }
+/* Indicateur de synchro — ligne fine en haut, discrète */
+#refreshBadge{
+  position:fixed; top:0; left:0; right:0; z-index:9999;
+  height:2px; background:transparent;
+  pointer-events:none; opacity:0;
+  transition:opacity .4s ease;
+}
+#refreshBadge::after{
+  content:''; position:absolute; top:0; left:-100%; width:60%;
+  height:100%;
+  background:linear-gradient(90deg, transparent, #ff3c32, transparent);
+  animation:none;
+}
+@keyframes syncSlide{
+  0%  { left:-60%; }
+  100%{ left:110%; }
+}
 #refreshBadge.vis{ opacity:1; }
-#refreshBadge.ok{ background:#1a7a1a; }
-[data-theme="light"] #refreshBadge{ background:#1c1c1e; }
+#refreshBadge.vis::after{ animation:syncSlide 1.4s ease-in-out infinite; }
+#refreshBadge.ok{
+  height:3px; opacity:1;
+  background:linear-gradient(90deg, transparent 0%, #34c759 40%, transparent 100%);
+}
+#refreshBadge.ok::after{ animation:none; }
 /* ── VUE FAVORIS ─────────────────────────────────────────── */
 .fav-header{ display:flex; align-items:baseline; justify-content:space-between; padding:20px 18px 12px; }
 .fav-header-title{ font-family:var(--font-inter); font-size:26px; font-weight:800; letter-spacing:-.03em; color:var(--text); }
@@ -1818,6 +1838,50 @@ body.focus-mode .focus-exit{ display:flex; }
   color:rgba(255,255,255,.4); pointer-events:none;
   transition:opacity .4s;
 }
+
+/* ── PROPRIÉTÉS DU FLUX ─────────────────────────────────── */
+.feed-props-btn{
+  width:32px; height:32px; flex-shrink:0;
+  border:none; background:rgba(255,255,255,.07); border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  color:var(--text-muted); cursor:pointer;
+  -webkit-tap-highlight-color:transparent; transition:background .15s;
+}
+[data-theme="light"] .feed-props-btn{ background:rgba(0,0,0,.06); }
+.feed-props-btn:active{ transform:scale(.88); }
+.feed-props-overlay{
+  position:fixed; inset:0; z-index:7500;
+  background:rgba(0,0,0,.55); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+  display:none; align-items:flex-end; justify-content:center;
+}
+.feed-props-overlay.open{ display:flex; }
+.feed-props-sheet{
+  width:100%; max-width:520px;
+  background:#111; border-radius:22px 22px 0 0;
+  padding-bottom:max(env(safe-area-inset-bottom,0px),20px);
+  max-height:80vh; display:flex; flex-direction:column;
+  animation:slideUp .35s cubic-bezier(.32,.72,0,1);
+}
+[data-theme="light"] .feed-props-sheet{ background:#fff; }
+@keyframes slideUp{ from{ transform:translateY(100%); } to{ transform:none; } }
+.feed-props-handle{ width:36px; height:4px; border-radius:2px; background:rgba(255,255,255,.2); margin:10px auto 0; flex-shrink:0; }
+[data-theme="light"] .feed-props-handle{ background:rgba(0,0,0,.15); }
+.feed-props-title{ font-family:var(--font-inter); font-size:15px; font-weight:800; color:var(--text); padding:14px 20px 10px; flex-shrink:0; letter-spacing:-.01em; }
+.feed-props-scroll{ overflow-y:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; padding:0 20px 24px; }
+.feed-props-scroll::-webkit-scrollbar{ display:none; }
+.feed-props-row{ padding:14px 0; border-bottom:1px solid rgba(255,255,255,.06); display:flex; flex-direction:column; gap:4px; }
+[data-theme="light"] .feed-props-row{ border-color:rgba(0,0,0,.07); }
+.feed-props-row:last-child{ border-bottom:none; }
+.feed-props-label{ font-family:var(--font-inter); font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.06em; }
+.feed-props-value{ font-family:var(--font-inter); font-size:14px; font-weight:500; color:var(--text); line-height:1.4; word-break:break-all; }
+.feed-props-value.url{ color:#4a9eff; font-size:13px; }
+.feed-props-status{ display:inline-flex; align-items:center; gap:6px; font-family:var(--font-inter); font-size:13px; font-weight:600; color:#34c759; }
+.feed-props-status.error{ color:#ff3c32; }
+.feed-props-status-dot{ width:7px; height:7px; border-radius:50%; background:currentColor; flex-shrink:0; }
+.feed-props-action{ display:flex; gap:10px; padding-top:8px; }
+.feed-props-btn-unsub{ flex:1; height:44px; border:1.5px solid rgba(255,60,50,.4); border-radius:12px; background:transparent; color:#ff3c32; font-family:var(--font-inter); font-size:14px; font-weight:700; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+.feed-props-btn-close{ flex:1; height:44px; border:none; border-radius:12px; background:#ff3c32; color:#fff; font-family:var(--font-inter); font-size:14px; font-weight:700; cursor:pointer; }
+
 </style>
 </head>
 <body>
@@ -3662,6 +3726,7 @@ body.focus-mode .focus-exit{ display:flex; }
             <div class="pp-feed-folder">${A_FOLDER}${escapeHtml(r.folder)}</div>
           </div>
           <div class="pp-feed-actions">
+            <button aria-label="Propriétés" onclick="openFeedProps('${escapeHtml(r.url)}','${escapeHtml(r.name)}')" style="color:var(--text-muted)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
             <button aria-label="Supprimer" onclick="_prefsDeleteFeed(${r.fi},${r.fdi})" style="color:#ff3c32">${A_DEL}</button>
           </div>
         </div>`;
@@ -4171,8 +4236,9 @@ body.focus-mode .focus-exit{ display:flex; }
   function getFavicon(url){ return 'https://www.google.com/s2/favicons?domain='+getFaviconDomain(url)+'&sz=64'; }
   function showBadge(msg, ok=false){
     const b = document.getElementById('refreshBadge'); if(!b) return;
-    b.textContent = msg; b.className = 'vis' + (ok?' ok':'');
-    clearTimeout(b._t); b._t = setTimeout(()=>b.className='', ok?3000:60000);
+    b.className = ok ? 'ok' : 'vis';
+    clearTimeout(b._t);
+    if(ok) b._t = setTimeout(()=>{ b.className=''; }, 1800);
   }
   function hideBadge(){ const b=document.getElementById('refreshBadge'); if(b) b.className=''; }
 
@@ -4636,15 +4702,40 @@ body.focus-mode .focus-exit{ display:flex; }
       return;
     }
     if(empty) empty.style.display='none';
-    // Scoring : classer les articles par score décroissant
+
     const deduped = _dedup([..._allArticles].sort((a,b)=>b.pubDate-a.pubDate));
     const ranked  = _SE.rank(deduped);
     const best    = ranked.find(a=>a.imageUrl) || ranked[0];
     const rest    = ranked.filter(a=>a.link!==best?.link).slice(0,60);
     _editionArts  = best ? [best,...rest] : rest;
-    // Le scoring affecte l'ORDRE uniquement — taille des cartes identique pour toutes
-    if(best) hero.innerHTML = _artCardHtml(best, 0, true, 'hero');
-    grid.innerHTML = rest.map((a,i)=>_artCardHtml(a, i+1, false, 'standard')).join('');
+
+    const heroHtml = best ? _artCardHtml(best, 0, true, 'hero') : '';
+    const gridHtml = rest.map((a,i)=>_artCardHtml(a, i+1, false, 'standard')).join('');
+
+    // Jitter fix : ne re-rendre que si le contenu a changé
+    const heroKey = best?.link || '';
+    const gridKey = rest.slice(0,5).map(a=>a.link).join('|');
+
+    if(hero.dataset.key === heroKey && grid.dataset.key === gridKey) return; // rien n'a changé
+
+    // Si première fois → direct, sinon fade discret
+    const isFirst = !hero.dataset.key;
+    if(!isFirst){
+      grid.style.transition = 'opacity .25s ease';
+      grid.style.opacity = '0.4';
+    }
+    requestAnimationFrame(()=>{
+      if(heroHtml) hero.innerHTML = heroHtml;
+      grid.innerHTML = gridHtml;
+      hero.dataset.key = heroKey;
+      grid.dataset.key = gridKey;
+      if(!isFirst){
+        requestAnimationFrame(()=>{
+          grid.style.opacity = '1';
+          setTimeout(()=>{ grid.style.transition = ''; }, 300);
+        });
+      }
+    });
   }
 
   function _artCardHtml(a, idx, isHero, tier){
@@ -5475,8 +5566,85 @@ body.focus-mode .focus-exit{ display:flex; }
   window._feedPageArtOpen = function(i){ const a=_feedPageArts[i]; if(a) _showArtModal(a); };
 
 
+  // ── PROPRIÉTÉS DU FLUX ───────────────────────────────────────
+  let _feedPropsCtx = {};
+
+  window.openFeedProps = function(feedUrl, feedName){
+    const url  = feedUrl  || _feedPropsCtx.feedUrl  || '';
+    const name = feedName || _feedPropsCtx.feedName || url;
+    if(!url) return;
+    const overlay = document.getElementById('feedPropsOverlay');
+    const content = document.getElementById('feedPropsContent');
+    const title   = document.getElementById('feedPropsTitle');
+    if(!overlay||!content) return;
+
+    const db   = (typeof _FEED_DB !== 'undefined') ? (_FEED_DB[url]||{}) : {};
+    let   meta = {};
+    try{ const m=JSON.parse(localStorage.getItem('reader.feedMeta')||'{}'); meta=m[url]||{}; }catch(e){}
+
+    const arts     = (typeof _allArticles !== 'undefined') ? _allArticles.filter(a=>a.feedUrl===url) : [];
+    const lastArt  = arts.length ? arts.sort((a,b)=>new Date(b.pubDate)-new Date(a.pubDate))[0] : null;
+
+    let domain='';
+    try{ domain=new URL(url).hostname.replace(/^www\./,''); }catch(e){}
+
+    // Affinité scoring depuis cache _SE
+    let affLine = 'Pas encore calculé';
+    if(typeof _SE !== 'undefined'){
+      const sc = Object.prototype.hasOwnProperty.call(_SE,'_affCache_') ? null : null;
+      // Via l'API publique
+      const fakeArt = {feedUrl:url, title:'', pubDate:new Date()};
+      const raw = _SE.score(fakeArt);
+      // score() intègre toutes les composantes, on extrait juste l'affinité source
+      try{
+        const a = JSON.parse(localStorage.getItem('bf_aff_'+url)||'null');
+        if(a) affLine = Math.round((a.score||0.5)*100)+'/100 (⬆'+a.opens+' ouvertures, ★'+a.saves+' enregistrements)';
+      }catch(e){}
+    }
+
+    if(title) title.textContent = name || domain;
+    const descVal = db.desc || meta.desc || '—';
+    const since   = meta.since ? new Date(meta.since).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}) : "Aujourd’hui";
+
+    const rows = [
+      {label:"Titre original",       val: name||'—' },
+      {label:"Site Web",             val: domain ? '<a href="https://'+domain+'" target="_blank" style="color:#4a9eff">https://'+domain+'</a>' : '—' },
+      {label:"Adresse RSS",          val: '<a href="'+url+'" target="_blank" style="color:#4a9eff;word-break:break-all">'+url+'</a>' },
+      {label:"Description",          val: escHtml(descVal) },
+      {label:"Date de suivi",        val: since },
+      {label:"Articles en mémoire", val: arts.length ? arts.length+' article'+(arts.length>1?'s':'') : '—' },
+      {label:"Dernier article",      val: lastArt ? relTime(lastArt.pubDate) : '—' },
+      {label:"Pertinence (scoring)", val: affLine },
+      {label:"Statut",               val: '<span class="feed-props-status"><span class="feed-props-status-dot"></span>Actif</span>' },
+    ];
+
+    content.innerHTML = rows.map(r=>'<div class="feed-props-row"><div class="feed-props-label">'+r.label+'</div><div class="feed-props-value">'+r.val+'</div></div>').join('')
+      + '<div class="feed-props-row"><div class="feed-props-action">'
+      + '<button class="feed-props-btn-unsub" onclick="_feedPropsUnsub()">Se désabonner</button>'
+      + '<button class="feed-props-btn-close" onclick="closeFeedProps()">Fermer</button>'
+      + '</div></div>';
+
+    overlay.style.display='flex';
+    document.body.style.overflow='hidden';
+  };
+
+  window.closeFeedProps = function(){
+    const ov=document.getElementById('feedPropsOverlay');
+    if(ov){ ov.style.display='none'; document.body.style.overflow=''; }
+  };
+
+  window._feedPropsUnsub = function(){
+    const url=_feedPropsCtx.feedUrl;
+    if(!url||!confirm('Se désabonner de ce flux ?')) return;
+    folders.forEach(f=>{ const i=f.feeds.indexOf(url); if(i>-1) f.feeds.splice(i,1); });
+    persist(); render(); closeFeedProps(); closeFeedPage();
+  };
+
   window.openFeedPage = function(feedUrl, feedName){
     // Remplir en-tête
+    // Contexte pour le bouton propriétés
+    _feedPropsCtx = { feedUrl, feedName };
+
     const title  = document.getElementById('feedPageTitle');
     const favLet = document.getElementById('feedPageFavLetter');
     if(title) title.textContent = feedName || feedUrl;
@@ -6049,6 +6217,10 @@ body.focus-mode .focus-exit{ display:flex; }
       <button class="feed-page-back" onclick="closeFeedPage()" aria-label="Retour">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
+      <div style="flex:1"></div>
+      <button class="feed-props-btn" onclick="openFeedProps()" aria-label="Propriétés du flux">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
     </div>
     <div class="feed-page-scroll">
       <div class="feed-page-header">
@@ -6129,6 +6301,15 @@ body.focus-mode .focus-exit{ display:flex; }
 
     </div>
   </div>
+  <!-- ═══════════════ PROPRIÉTÉS DU FLUX ═══════════════ -->
+  <div class="feed-props-overlay" id="feedPropsOverlay" onclick="if(event.target===this)closeFeedProps()">
+    <div class="feed-props-sheet" id="feedPropsSheet">
+      <div class="feed-props-handle"></div>
+      <div class="feed-props-title" id="feedPropsTitle">Propriétés du flux</div>
+      <div class="feed-props-scroll" id="feedPropsContent"></div>
+    </div>
+  </div>
+
   <!-- Bouton sortir Focus -->
   <button class="focus-exit" onclick="toggleFocusMode(false)" aria-label="Quitter le mode Focus">
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
