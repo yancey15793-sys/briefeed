@@ -4658,18 +4658,53 @@ body.focus-mode .focus-exit{ display:flex; }
     // ── Stopwords FR+EN (titres) ──────────────────────────────────
     const STOP = new Set(['le','la','les','un','une','des','de','du','et','en','au','aux','sur','par','pour','dans','avec','qui','que','ou','si','ne','pas','plus','est','son','sa','ses','je','il','elle','ils','elles','nous','vous','leur','leurs','ce','cet','cette','ces','the','a','an','in','of','to','is','are','was','were','has','have','had','be','been','being','it','its','by','on','at','for','with','as','from','this','that','not','no','but','or','and','so','yet','via','after','before','how','why','what','who','where','when']);
 
+    // ── Cache de mots-clés (memoize — évite le regex Unicode répété) ──
+    const _kwCache = {};
     function _keywords(title){
-      return (title||'').toLowerCase()
-        .replace(/[^\p{L}\p{N}\s]/gu,' ')
+      if(_kwCache[title]) return _kwCache[title];
+      const res = (title||'').toLowerCase()
+        .replace(/[^\w\s]/g,' ')           // regex simple, pas Unicode
         .split(/\s+/)
         .filter(w => w.length>3 && !STOP.has(w))
         .slice(0,6);
+      _kwCache[title] = res;
+      if(Object.keys(_kwCache).length > 500) {  // limiter la mémoire
+        const k = Object.keys(_kwCache)[0]; delete _kwCache[k];
+      }
+      return res;
     }
 
     // ── Décroissance temporelle (demi-vie 20h) ────────────────────
-    function _timeScore(pubDate){
-      const h = (Date.now() - new Date(pubDate||0).getTime()) / 3600000;
+    const _tNow = ()=> Date.now();  // une seule lecture par appel rank()
+    function _timeScore(pubDate, now){
+      const h = (now - new Date(pubDate||0).getTime()) / 3600000;
       return Math.max(0, Math.exp(-0.035 * h));
+    }
+
+    // ── Niveau visuel ─────────────────────────────────────────────
+    function tier(sc){
+      if(sc >= 0.72) return 'hero';
+      if(sc >= 0.50) return 'standard';
+      if(sc >= 0.32) return 'compact';
+      return 'minimal';
+    }
+    const _scoreCache = new Map();
+    const _SCORE_TTL  = 5 * 60000;
+
+    function _scoreArticle(a, now){
+      const key = a.link || a.title || '';
+      const cached = _scoreCache.get(key);
+      if(cached && (now - cached.ts) < _SCORE_TTL) return cached.v;
+
+      const aff    = (_affCache[a.feedUrl]?.score) ?? 0.5;
+      const words  = _keywords(a.title || '');
+      const topic  = Math.min(1, words.reduce((acc,w) => acc + ((_topicCache[w]||0)*0.04), 0));
+      const rec    = _timeScore(a.pubDate, now);
+      const boost  = (_boostCache[a.feedUrl] || 0) * 0.15;
+      const v      = Math.min(1, aff*0.40 + topic*0.25 + rec*0.20 + 0.50*0.15 + boost);
+
+      _scoreCache.set(key, {v, ts:now});
+      return v;
     }
 
     // ── Cache mémoire (rechargé au démarrage) ─────────────────────
@@ -4701,13 +4736,16 @@ body.focus-mode .focus-exit{ display:flex; }
       const next = {...prev, opens: prev.opens+1, lastTouch: Date.now()};
       next.score = Math.min(1, next.score + 0.04);
       _affCache[url] = next;
+      // Invalider le cache de scores pour cette source
+      _scoreCache.forEach((_,k) => { if(k.includes(url)) _scoreCache.delete(k); });
       _put('sourceAffinity', next);
-      // Mots-clés
+      // Mots-clés — IDB en batch avec debounce
       const words = _keywords(article.title);
-      words.forEach(w => {
-        _topicCache[w] = (_topicCache[w]||0) + 1;
-        _put('topicWeights', {word:w, count:_topicCache[w], lastSeen:Date.now()});
-      });
+      words.forEach(w => { _topicCache[w] = (_topicCache[w]||0) + 1; });
+      clearTimeout(trackOpen._t);
+      trackOpen._t = setTimeout(()=>{
+        words.forEach(w => _put('topicWeights', {word:w, count:_topicCache[w], lastSeen:Date.now()}));
+      }, 1500);
     }
 
     // ── Signal : sauvegarde en favori ─────────────────────────────
@@ -4730,26 +4768,16 @@ body.focus-mode .focus-exit{ display:flex; }
 
     // ── Score final d'un article ──────────────────────────────────
     function score(article){
-      if(!_scoring_on) return 0.5; // tri chrono pur si désactivé
-      const aff     = (_affCache[article.feedUrl]?.score) ?? 0.5;
-      const topic   = Math.min(1, _keywords(article.title)
-                        .reduce((acc,w) => acc + (_topicCache[w]||0)*0.04, 0));
-      const recency = _timeScore(article.pubDate);
-      const boost   = getBoost(article.feedUrl) * 0.15;
-      return Math.min(1, aff*0.40 + topic*0.25 + recency*0.20 + 0.50*0.15 + boost);
+      if(!_scoring_on) return 0.5;
+      return _scoreArticle(article, _tNow());
     }
 
-    // ── Niveau visuel (4 tiers, jamais de masquage) ──────────────
-    function tier(sc){ // 'hero'|'standard'|'compact'|'minimal'
-      if(sc >= 0.72) return 'hero';
-      if(sc >= 0.50) return 'standard';
-      if(sc >= 0.32) return 'compact';
-      return 'minimal';
-    }
-
-    // ── Trier + annoter un tableau d'articles ────────────────────
+    // ── Trier + annoter — une seule passe de Date.now() ──────────
     function rank(articles){
-      return articles.map(a => ({...a, _sc: score(a), _tier: tier(score(a))}))
+      if(!_scoring_on) return articles.map(a=>({...a,_sc:0.5,_tier:'standard'}));
+      const now = _tNow();
+      return articles
+        .map(a => { const sc=_scoreArticle(a,now); return {...a,_sc:sc,_tier:tier(sc)}; })
         .sort((a,b) => b._sc - a._sc);
     }
 
@@ -4952,12 +4980,24 @@ body.focus-mode .focus-exit{ display:flex; }
     }
     if(_isLoading){ _isLoading=false; } // forcer reset si force=true
     _isLoading = true; _lastLoad = Date.now();
-    showBadge('Actualisation\u2026');
+    showBadge('', false);
     await new Promise(r=>setTimeout(r,80));
 
     const existingLinks = new Set(_allArticles.map(a=>a.link));
     let newCount=0, completed=0;
     const newArts = [];
+
+    // Debounce du rendu — une seule fois 300ms après le dernier flux
+    let _renderTimer = null;
+    const _scheduleRender = () => {
+      clearTimeout(_renderTimer);
+      _renderTimer = setTimeout(()=>{
+        if(newArts.length){
+          _allArticles = _dedup([..._allArticles,...newArts.splice(0)].sort((a,b)=>new Date(b.pubDate)-new Date(a.pubDate)));
+        }
+        _renderEditions();
+      }, 300);
+    };
 
     await Promise.allSettled(_rssFeeds.map(feed=>
       _loadSingleFeed(feed).then(arts=>{
@@ -4965,10 +5005,7 @@ body.focus-mode .focus-exit{ display:flex; }
         _setCached(feed.slug, arts);
         arts.forEach(a=>{ if(!existingLinks.has(a.link)){ existingLinks.add(a.link); newArts.push(a); newCount++; } });
         completed++;
-        if(completed%2===0||completed===_rssFeeds.length){
-          _allArticles = [..._allArticles,...newArts.splice(0)].sort((a,b)=>new Date(b.pubDate)-new Date(a.pubDate));
-          _renderEditions();
-        }
+        _scheduleRender(); // debounced — ne rend qu'une fois 300ms après le dernier flux
       }).catch(()=>{})
     ));
 
