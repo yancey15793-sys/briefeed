@@ -1751,7 +1751,73 @@ body{
 .art-toolbar-btn:active{ transform:scale(.88); }
 .art-toolbar-btn:hover{ background:rgba(255,255,255,.1); color:var(--text); }
 .art-toolbar-btn.active{ color:#ff3c32; }
-[data-theme="light"] .art-toolbar-btn:hover{ background:rgba(0,0,0,.07); }
+[data-theme="light"] .art-toolbar-btn:hover{ background:rgba(0,0,0,.07); }/* ── VUE ESSENTIEL ───────────────────────────────────────── */
+.essentiel-wrap{ display:flex; flex-direction:column; gap:0; padding-bottom:100px; }
+.essentiel-header{ font-family:var(--font-inter); font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.1em; padding:20px 0 16px; display:flex; align-items:center; gap:10px; }
+.essentiel-header::after{ content:''; flex:1; height:1px; background:var(--border); }
+[data-theme="light"] .essentiel-header::after{ background:rgba(0,0,0,.08); }
+.essentiel-count{ display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; border-radius:50%; background:#ff3c32; color:#fff; font-size:10px; font-weight:800; flex-shrink:0; }
+.essentiel-card{ display:flex; gap:16px; align-items:flex-start; padding:24px 0; border-bottom:1px solid var(--border); cursor:pointer; -webkit-tap-highlight-color:transparent; position:relative; }
+[data-theme="light"] .essentiel-card{ border-color:rgba(0,0,0,.08); }
+.essentiel-card:last-child{ border-bottom:none; }
+.essentiel-card:active{ opacity:.75; }
+.essentiel-rank{ font-family:var(--font-inter); font-size:32px; font-weight:900; color:rgba(255,255,255,.08); min-width:28px; text-align:center; line-height:1; flex-shrink:0; letter-spacing:-.04em; padding-top:4px; }
+[data-theme="light"] .essentiel-rank{ color:rgba(0,0,0,.07); }
+.essentiel-body{ flex:1; min-width:0; }
+.essentiel-source{ font-family:var(--font-inter); font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.06em; display:flex; align-items:center; gap:5px; margin-bottom:6px; }
+.essentiel-source img{ width:13px; height:13px; border-radius:50%; }
+.essentiel-title{ font-family:var(--font-dm); font-size:19px; font-weight:700; line-height:1.28; letter-spacing:-.012em; color:var(--text); margin-bottom:8px; }
+.essentiel-desc{ font-family:var(--font-inter); font-size:13.5px; line-height:1.6; color:var(--text-muted); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.essentiel-thumb{ width:82px; height:82px; flex-shrink:0; border-radius:12px; overflow:hidden; background:#111; align-self:center; }
+.essentiel-thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+.essentiel-score{ position:absolute; top:24px; right:0; font-family:var(--font-inter); font-size:9px; font-weight:700; color:rgba(255,255,255,.25); letter-spacing:.04em; }
+[data-theme="light"] .essentiel-score{ color:rgba(0,0,0,.2); }
+.essentiel-empty{ padding:60px 0; text-align:center; color:var(--text-muted); font-family:var(--font-inter); font-size:14px; line-height:1.6; }
+
+/* ── MODE FOCUS ──────────────────────────────────────────── */
+body.focus-mode .sidebar,
+body.focus-mode .sidebar-overlay,
+body.focus-mode .smart-nav,
+body.focus-mode .welcome,
+body.focus-mode .qpill,
+body.focus-mode .view-picker-overlay{ display:none !important; }
+body.focus-mode .column{ padding-top:24px !important; width:min(100%,660px) !important; margin:0 auto; }
+body.focus-mode .row{ padding:0 24px; }
+body.focus-mode .art-title{ font-size:19px !important; line-height:1.4 !important; }
+/* Bouton sortir Focus */
+.focus-exit{
+  position:fixed; top:env(safe-area-inset-top,16px); right:16px; z-index:9000;
+  display:none; align-items:center; gap:6px;
+  background:rgba(255,255,255,.1); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+  border:none; border-radius:999px; padding:8px 16px;
+  font-family:var(--font-inter); font-size:12px; font-weight:700; color:var(--text);
+  cursor:pointer; -webkit-tap-highlight-color:transparent;
+}
+body.focus-mode .focus-exit{ display:flex; }
+/* Bouton Focus dans le modal article */
+.art-toolbar-btn.focus-active{ background:rgba(255,60,50,.2); color:#ff3c32; }
+
+/* ── INDICATEUR HORS-LIGNE ───────────────────────────────── */
+.offline-badge{
+  position:fixed; bottom:calc(env(safe-area-inset-bottom,0px) + 80px); left:50%;
+  transform:translateX(-50%) translateY(20px); opacity:0;
+  z-index:5500; pointer-events:none;
+  background:rgba(20,20,22,.92); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+  border-radius:999px; padding:8px 18px;
+  font-family:var(--font-inter); font-size:12px; font-weight:600; color:rgba(255,255,255,.8);
+  display:flex; align-items:center; gap:7px;
+  transition:opacity .3s, transform .3s;
+}
+.offline-badge.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+.offline-dot{ width:7px; height:7px; border-radius:50%; background:#ff9f0a; flex-shrink:0; }
+.offline-dot.online{ background:#34c759; }
+/* Nb articles pré-chargés dans le tooltip */
+.prefetch-indicator{
+  position:fixed; bottom:calc(env(safe-area-inset-bottom,0px) + 80px); right:16px;
+  z-index:5400; font-family:var(--font-inter); font-size:10px; font-weight:700;
+  color:rgba(255,255,255,.4); pointer-events:none;
+  transition:opacity .4s;
+}
 </style>
 </head>
 <body>
@@ -1821,6 +1887,18 @@ body{
         </svg>
       </div>
       <span class="vp-label">Éditions</span>
+      <span class="vp-check"><svg viewBox="0 0 24 24" fill="none" stroke="#ff3c32" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+    </div>
+
+    <div class="vp-divider"></div>
+
+    <div class="vp-item" data-vpview="essentiel" onclick="vpSelect('essentiel')">
+      <div class="vp-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+      </div>
+      <span class="vp-label">Essentiel</span>
       <span class="vp-check"><svg viewBox="0 0 24 24" fill="none" stroke="#ff3c32" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></span>
     </div>
 
@@ -2488,6 +2566,11 @@ body{
 
       </div><!-- /vue éditions -->
 
+      <!-- ========== VUE ESSENTIEL ========== -->
+      <div class="view" data-view="essentiel" hidden>
+        <div class="essentiel-wrap" id="essentielList"></div>
+      </div><!-- /vue essentiel -->
+
       <!-- ========== VUE LISTE ========== -->
       <div class="view" data-view="liste" hidden>
         <div class="list-view" id="listeList"></div>
@@ -2694,7 +2777,7 @@ body{
 
   // ---- Bouton œil : cycle éditions → grille → séquentiel → parcourir ----
   const views = document.querySelectorAll('.view');
-  const order = ['editions', 'liste', 'grille', 'sequential', 'browse'];
+  const order = ['editions', 'essentiel', 'liste', 'grille', 'sequential', 'browse'];
   let _currentView = 'editions';
   // Déclarés tôt pour éviter reference-before-declaration dans _switchView
   let _feedPageArts = [];
@@ -2722,6 +2805,7 @@ body{
       if(target === 'grille')    _renderGrille();
       if(target === 'sequential')_renderSequential();
       if(target === 'liste')     _renderListe();
+      if(target === 'essentiel') _renderEssentiel();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -4558,8 +4642,9 @@ body{
     const best    = ranked.find(a=>a.imageUrl) || ranked[0];
     const rest    = ranked.filter(a=>a.link!==best?.link).slice(0,60);
     _editionArts  = best ? [best,...rest] : rest;
-    if(best) hero.innerHTML = _artCardHtml(best, 0, true, best._tier||'hero');
-    grid.innerHTML = rest.map((a,i)=>_artCardHtml(a, i+1, false, a._tier||'standard')).join('');
+    // Le scoring affecte l'ORDRE uniquement — taille des cartes identique pour toutes
+    if(best) hero.innerHTML = _artCardHtml(best, 0, true, 'hero');
+    grid.innerHTML = rest.map((a,i)=>_artCardHtml(a, i+1, false, 'standard')).join('');
   }
 
   function _artCardHtml(a, idx, isHero, tier){
@@ -5139,13 +5224,170 @@ body{
   }
   window._listeOpen = function(i){ const a=_listeArts[i]; if(a) _showArtModal(a); };
 
-  // Rafraîchir grille/séquentiel/liste après loadAllFeeds
+  // ════════════════════════════════════════════════════════════════
+  //  1. VUE ESSENTIEL — top 5 articles du jour par score
+  // ════════════════════════════════════════════════════════════════
+  let _essentielArts = [];
+
+  function _renderEssentiel(){
+    const wrap = document.getElementById('essentielList');
+    if(!wrap) return;
+
+    const arts = typeof _allArticles !== 'undefined' ? _allArticles : [];
+    if(!arts.length){
+      wrap.innerHTML = '<div class="essentiel-empty">Aucun article disponible.<br>Actualisez vos flux pour commencer.</div>';
+      return;
+    }
+
+    // Fenêtre : 36h pour ne pas rater les articles récents tardifs
+    const cutoff  = Date.now() - 36*3600000;
+    const recent  = arts.filter(a => new Date(a.pubDate||0).getTime() > cutoff);
+    const pool    = recent.length >= 3 ? recent : arts; // fallback si peu d'actus récentes
+
+    // Scorer + trier + garder top 5
+    const ranked = _SE.rank(_dedup([...pool].sort((a,b)=>b.pubDate-a.pubDate)));
+    const top    = ranked.slice(0,5);
+    _essentielArts = top;
+
+    if(!top.length){
+      wrap.innerHTML = '<div class="essentiel-empty">Pas encore assez d\'articles pour cette vue.<br>Revenez après le prochain chargement.</div>';
+      return;
+    }
+
+    const header = `<div class="essentiel-header">
+      <span class="essentiel-count">${top.length}</span>
+      L'essentiel du moment
+    </div>`;
+
+    const items = top.map((a,i)=>{
+      const fav   = getFavicon(a.feedUrl||a.link||'');
+      const sc    = Math.round((a._sc||0)*100);
+      const thumb = a.imageUrl
+        ? `<div class="essentiel-thumb"><img src="${escAttr(a.imageUrl)}" alt="" decoding="async" onerror="this.parentNode.style.display='none'"></div>`
+        : '';
+      const desc  = a.description ? `<div class="essentiel-desc">${escHtml(a.description)}</div>` : '';
+      return `<div class="essentiel-card" onclick="_essentielOpen(${i})">
+        <span class="essentiel-rank">${String(i+1).padStart(2,'0')}</span>
+        <div class="essentiel-body">
+          <div class="essentiel-source">
+            <img src="${escAttr(fav)}" alt="" onerror="this.style.opacity='.3'">
+            ${escHtml(a.source)} · ${relTime(a.pubDate)}
+          </div>
+          <div class="essentiel-title">${escHtml(a.title)}</div>
+          ${desc}
+        </div>
+        ${thumb}
+        <span class="essentiel-score">${sc}pts</span>
+      </div>`;
+    }).join('');
+
+    wrap.innerHTML = header + items;
+  }
+
+  window._essentielOpen = function(i){
+    const a = _essentielArts[i];
+    if(a) _showArtModal(a);
+  };
+
+  // ════════════════════════════════════════════════════════════════
+  //  2. MODE FOCUS — lecture immersive sans distractions
+  // ════════════════════════════════════════════════════════════════
+  let _focusActive = false;
+
+  window.toggleFocusMode = function(force){
+    _focusActive = (force !== undefined) ? force : !_focusActive;
+    document.body.classList.toggle('focus-mode', _focusActive);
+    // Sync bouton toolbar
+    const btn = document.getElementById('artBtnFocus');
+    if(btn) btn.classList.toggle('focus-active', _focusActive);
+    // Sauver préférence
+    try{ localStorage.setItem('bf_focus', _focusActive?'1':'0'); }catch(e){}
+  };
+
+  // Restaurer Focus au chargement
+  try{ if(localStorage.getItem('bf_focus')==='1'){ _focusActive=true; document.body.classList.add('focus-mode'); } }catch(e){}
+
+  // ════════════════════════════════════════════════════════════════
+  //  3. GESTION HORS-LIGNE — pré-chargement en arrière-plan
+  // ════════════════════════════════════════════════════════════════
+  const _PREFETCH_KEY = 'bf_prefetched_at';
+  const _PREFETCH_TTL = 3600000; // 1h entre deux passes
+  const _PREFETCH_N   = 8;       // nb articles pré-chargés
+
+  // Indicateur de connectivité
+  (function _initOfflineDetector(){
+    const badge  = document.getElementById('offlineBadge');
+    const dot    = document.getElementById('offlineDot');
+    const text   = document.getElementById('offlineText');
+    let   _shown = false;
+    let   _timer = null;
+
+    function show(online){
+      if(!badge) return;
+      dot.className  = 'offline-dot' + (online ? ' online' : '');
+      text.textContent = online ? 'Connexion rétablie' : 'Mode hors-ligne';
+      badge.classList.add('show');
+      _shown = true;
+      clearTimeout(_timer);
+      _timer = setTimeout(()=>{ badge.classList.remove('show'); _shown=false; }, online?2200:4000);
+    }
+
+    window.addEventListener('offline', ()=> show(false));
+    window.addEventListener('online',  ()=> show(true));
+
+    // Vérification initiale silencieuse
+    if(!navigator.onLine) show(false);
+  })();
+
+  // Pré-chargement des articles top en arrière-plan
+  async function _prefetchTopArticles(){
+    if(!navigator.onLine) return;
+    const arts = typeof _allArticles !== 'undefined' ? _allArticles : [];
+    if(!arts.length) return;
+
+    // Cooldown : ne pas pré-charger trop souvent
+    try{
+      const last = +localStorage.getItem(_PREFETCH_KEY)||0;
+      if(Date.now()-last < _PREFETCH_TTL) return;
+    }catch(e){}
+
+    // Sélectionner les top N non encore en cache
+    const ranked   = _SE.rank(_dedup([...arts])).slice(0, _PREFETCH_N * 3);
+    const toFetch  = ranked.filter(a => !_getReaderCache(a.link)).slice(0, _PREFETCH_N);
+    if(!toFetch.length) return;
+
+    // Afficher indicateur
+    const ind = document.getElementById('prefetchIndicator');
+    if(ind) ind.textContent = `⬇ ${toFetch.length} articles en cache…`;
+
+    let done = 0;
+    for(const a of toFetch){
+      if(!navigator.onLine) break;
+      try{
+        const content = await _artFetchViaProxies(a.link, null);
+        if(content){ _setReaderCache(a.link, content); done++; }
+      }catch(e){}
+      // Petite pause pour ne pas saturer la connexion
+      await new Promise(r=>setTimeout(r,1200));
+    }
+
+    try{ localStorage.setItem(_PREFETCH_KEY, Date.now()); }catch(e){}
+    if(ind){
+      ind.textContent = done ? `${done} articles disponibles hors-ligne` : '';
+      setTimeout(()=>{ ind.textContent=''; }, 4000);
+    }
+  }
+
+  // ── Rafraîchir grille/séquentiel/liste après loadAllFeeds
   const _origRenderEditions = _renderEditions;
   _renderEditions = function(){
     _origRenderEditions();
     if(_currentView==='grille') _renderGrille();
     if(_currentView==='sequential') _renderSequential();
     if(_currentView==='liste') _renderListe();
+    if(_currentView==='essentiel') _renderEssentiel();
+    // Pré-chargement hors-ligne en arrière-plan (fire & forget)
+    setTimeout(_prefetchTopArticles, 4000);
   };
 
   // ── Vues sous-pages : partagent _currentView du système global ──
@@ -5789,6 +6031,9 @@ body{
           <button class="art-toolbar-btn active" id="artBtnReader" title="Lecteur" onclick="artSwitchView('reader')">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
           </button>
+          <button class="art-toolbar-btn" id="artBtnFocus" title="Mode Focus" onclick="toggleFocusMode()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+          </button>
           <button class="art-toolbar-btn" id="artBtnWeb" title="Ouvrir dans le navigateur" onclick="artModalOpenExternal()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
           </button>
@@ -5884,6 +6129,18 @@ body{
 
     </div>
   </div>
+  <!-- Bouton sortir Focus -->
+  <button class="focus-exit" onclick="toggleFocusMode(false)" aria-label="Quitter le mode Focus">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    Quitter Focus
+  </button>
+
+  <!-- Badge hors-ligne -->
+  <div class="offline-badge" id="offlineBadge">
+    <div class="offline-dot" id="offlineDot"></div>
+    <span id="offlineText">Hors-ligne</span>
+  </div>
+  <div class="prefetch-indicator" id="prefetchIndicator"></div>
 
 </body>
 </html>
