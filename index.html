@@ -2,7 +2,7 @@
 <html lang="fr" data-font="inter">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Briefeed</title>
 
 <!-- PWA -->
@@ -62,11 +62,22 @@ html[data-font="geist"]{ --font-ui:var(--font-geist); }
 }
 
 *{ box-sizing:border-box; margin:0; padding:0; }
+html{
+  height:100%; overflow:hidden;
+  /* Empêche le bounce/zoom natif iOS */
+  touch-action:manipulation;
+  -webkit-text-size-adjust:100%;
+}
 body{
   background:var(--bg);
   font-family:var(--font-ui);
   -webkit-font-smoothing:antialiased;
   transition:background .4s ease, color .4s ease;
+  height:100%; overflow:hidden;
+  /* Bloque le rubber-band scroll iOS sur le body lui-même */
+  overscroll-behavior:none;
+  -webkit-overflow-scrolling:auto;
+  position:fixed; width:100%;
 }
 
 /* Mode clair — overrides ciblés pour les surfaces sombres */
@@ -92,7 +103,13 @@ body{
   display:flex; flex-direction:row; flex-wrap:wrap;
   justify-content:center; align-items:flex-start;
   padding:48px 24px;
+  /* Conteneur principal scrollable — body est fixed */
+  height:100vh; overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:none;
+  scrollbar-width:none;
 }
+.row::-webkit-scrollbar{ display:none; }
 /* div.column */
 .column{
   display:flex; flex-direction:column; align-items:flex-start;
@@ -305,7 +322,7 @@ body{
   display:flex; align-items:center; justify-content:space-between;
   padding:20px 18px 14px;
 }
-.sb-logo{ font-family:var(--font-inter); font-size:19px; font-weight:700; letter-spacing:.35em; text-transform:uppercase; color:var(--text); }
+.sb-logo{ font-family:var(--font-inter); font-size:13px; font-weight:700; letter-spacing:.35em; text-transform:uppercase; color:var(--text); }
 .sb-close{
   width:32px; height:32px; display:inline-flex; align-items:center; justify-content:center;
   border:0; background:transparent; color:var(--text-muted); cursor:pointer; border-radius:10px;
@@ -1892,7 +1909,7 @@ body.focus-mode .focus-exit{ display:flex; }
   animation:obSplashOut 1s cubic-bezier(.16,1,.3,1) 1.8s forwards;
 }
 #ob-splash .ob-brand-logo{
-  color:#fff; font-size:42px; font-weight:800;
+  color:#fff; font-size:35px; font-weight:800;
   animation:obSplashScale 1.8s cubic-bezier(.16,1,.3,1) forwards;
 }
 /* Onboarding container */
@@ -5909,6 +5926,9 @@ body.focus-mode .focus-exit{ display:flex; }
     page.style.display = 'flex';
     requestAnimationFrame(()=> page.classList.add('open'));
     document.body.style.overflow = 'hidden';
+    // Masquer la qpill pour libérer la zone du bouton ⚙
+    const qp = document.getElementById('qpill');
+    if(qp) qp.style.display = 'none';
   };
 
   window._feedPageArtOpen = function(i){ const a=_feedPageArts[i]; if(a) _showArtModal(a); };
@@ -5917,7 +5937,12 @@ body.focus-mode .focus-exit{ display:flex; }
     const page = document.getElementById('feedPage');
     if(!page) return;
     page.classList.remove('open');
-    setTimeout(()=>{ page.style.display='none'; document.body.style.overflow=''; }, 400);
+    setTimeout(()=>{
+      page.style.display='none';
+      document.body.style.overflow='';
+      const qp = document.getElementById('qpill');
+      if(qp) qp.style.display = '';
+    }, 400);
   };
 
   // Escape ferme feed-page
