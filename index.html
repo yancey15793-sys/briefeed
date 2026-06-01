@@ -1885,16 +1885,59 @@ body.focus-mode .focus-exit{ display:flex; }
    ONBOARDING — Splash + écran de bienvenue
    ════════════════════════════════════════════════════════ */
 
-/* Splash */
+/* Splash — permanent, motion accentué */
 #ob-splash{
   position:fixed; inset:0; z-index:99000;
   background:#000; display:flex; align-items:center; justify-content:center;
-  animation:ob-fadeOutSplash 1s cubic-bezier(.16,1,.3,1) 2s forwards;
+  flex-direction:column; gap:0;
+  animation:ob-fadeOutSplash .7s cubic-bezier(.4,0,.2,1) 2.6s forwards;
+}
+/* Halo animé derrière le logo */
+#ob-splash::before{
+  content:''; position:absolute;
+  width:280px; height:280px; border-radius:50%;
+  background:radial-gradient(circle, rgba(255,60,50,.22) 0%, transparent 70%);
+  animation:ob-halo 2.2s ease-in-out forwards;
 }
 #ob-splash-logo{
-  font-family:var(--font-inter); font-size:28px; font-weight:800;
-  letter-spacing:-.03em; color:#fff;
-  animation:ob-scaleUp 2s cubic-bezier(.16,1,.3,1) forwards;
+  position:relative; z-index:1;
+  font-family:var(--font-inter); font-size:46px; font-weight:900;
+  letter-spacing:-.04em; color:#fff;
+  animation:ob-logoReveal 1.8s cubic-bezier(.16,1,.3,1) forwards;
+}
+/* Ligne rouge sous le logo */
+#ob-splash-line{
+  position:relative; z-index:1;
+  width:0; height:2px; background:#ff3c32; border-radius:1px;
+  animation:ob-lineGrow .6s cubic-bezier(.16,1,.3,1) .9s forwards;
+}
+/* Tagline */
+#ob-splash-sub{
+  position:relative; z-index:1;
+  font-family:var(--font-inter); font-size:13px; font-weight:500;
+  letter-spacing:.18em; text-transform:uppercase;
+  color:rgba(255,255,255,.4);
+  margin-top:10px;
+  opacity:0; animation:ob-subReveal .8s ease 1.2s forwards;
+}
+@keyframes ob-halo{
+  0%  { transform:scale(.4); opacity:0; }
+  50% { transform:scale(1.2); opacity:1; }
+  100%{ transform:scale(1);   opacity:.7; }
+}
+@keyframes ob-logoReveal{
+  0%  { opacity:0; transform:scale(.82) translateY(8px); filter:blur(12px); }
+  40% { opacity:1; transform:scale(1.04) translateY(0);  filter:blur(0); }
+  70% { transform:scale(.98); }
+  100%{ transform:scale(1); }
+}
+@keyframes ob-lineGrow{
+  0%  { width:0; }
+  100%{ width:64px; }
+}
+@keyframes ob-subReveal{
+  0%  { opacity:0; transform:translateY(6px); }
+  100%{ opacity:1; transform:translateY(0); }
 }
 /* Onboarding view */
 #ob-view{
@@ -2015,6 +2058,8 @@ body.focus-mode .focus-exit{ display:flex; }
   <!-- ═══════════════ SPLASH ═══════════════ -->
   <div id="ob-splash">
     <div id="ob-splash-logo">Briefeed</div>
+    <div id="ob-splash-line"></div>
+    <div id="ob-splash-sub">Votre veille, repensée</div>
   </div>
 
   <!-- ═══════════════ ONBOARDING ═══════════════ -->
@@ -5044,14 +5089,15 @@ body.focus-mode .focus-exit{ display:flex; }
     const view    = document.getElementById('ob-view');
     if(!splash||!view) return;
 
-    // Déjà vu → cacher immédiatement et laisser l'app démarrer
+    // Splash TOUJOURS affiché (comme Feedly/Inoreader) — déjà animé via CSS
+    // L'onboarding (view) ne s'affiche qu'au premier lancement
     try{
       if(localStorage.getItem(OB_KEY)){
-        splash.style.display = 'none';
-        view.style.display   = 'none';
-        return;
+        // Déjà vu → cacher l'onboarding view, garder uniquement le splash
+        view.style.display = 'none';
+        return; // splash disparaît seul via CSS animation
       }
-    }catch(e){ return; }
+    }catch(e){ view.style.display='none'; return; }
 
     // Bloquer le démarrage de l'app pendant l'onboarding
     document.body.style.overflow = 'hidden';
@@ -5841,7 +5887,8 @@ body.focus-mode .focus-exit{ display:flex; }
   window._feedPageArtOpen = function(i){ const a=_feedPageArts[i]; if(a) _showArtModal(a); };
 
 
-  // ── PROPRIÉTÉS DU FLUX ───────────────────────────────────────
+  // ── PROPRIÉTÉS DU FLUX — contexte global ─────────────────────
+  // Déclaré ici pour être accessible dès le premier clic du bouton ⚙
   let _feedPropsCtx = {};
 
   window.openFeedProps = function(feedUrl, feedName){
