@@ -4335,6 +4335,211 @@ body{
   // ── Tableau global — articles indexés (pas de JSON dans onclick) ──
   let _editionArts = [];
 
+
+  // ════════════════════════════════════════════════════════════════
+  //  BRIEFEED SCORING ENGINE — v1.0
+  //  Client-side uniquement · Feedback explicite · Jamais de masquage
+  //  Stockage : IndexedDB (scoring_db) séparé du cache articles
+  // ════════════════════════════════════════════════════════════════
+
+  const _SE = (function(){
+
+    // ── Base IDB dédiée au scoring ────────────────────────────────
+    const DB  = 'bf_scoring_v1';
+    const VER = 1;
+    let   _db = null;
+
+    function _open(){
+      if(_db) return Promise.resolve(_db);
+      return new Promise((res,rej)=>{
+        const r = indexedDB.open(DB, VER);
+        r.onupgradeneeded = e => {
+          const db = e.target.result;
+          // Affinité par source
+          if(!db.objectStoreNames.contains('sourceAffinity'))
+            db.createObjectStore('sourceAffinity', {keyPath:'feedUrl'});
+          // Poids thématiques (mots)
+          if(!db.objectStoreNames.contains('topicWeights'))
+            db.createObjectStore('topicWeights', {keyPath:'word'});
+          // Boosts manuels
+          if(!db.objectStoreNames.contains('manualBoosts'))
+            db.createObjectStore('manualBoosts', {keyPath:'feedUrl'});
+        };
+        r.onsuccess = e => { _db=e.target.result; res(_db); };
+        r.onerror   = e => rej(e);
+      });
+    }
+
+    function _get(store, key){ return _open().then(db=>new Promise((res,rej)=>{ const r=db.transaction(store,'readonly').objectStore(store).get(key); r.onsuccess=e=>res(e.target.result); r.onerror=rej; })); }
+    function _put(store, val){ return _open().then(db=>new Promise((res,rej)=>{ const r=db.transaction(store,'readwrite').objectStore(store).put(val); r.onsuccess=()=>res(); r.onerror=rej; })); }
+    function _getAll(store){ return _open().then(db=>new Promise((res,rej)=>{ const r=db.transaction(store,'readonly').objectStore(store).getAll(); r.onsuccess=e=>res(e.target.result); r.onerror=rej; })); }
+
+    // ── Stopwords FR+EN (titres) ──────────────────────────────────
+    const STOP = new Set(['le','la','les','un','une','des','de','du','et','en','au','aux','sur','par','pour','dans','avec','qui','que','ou','si','ne','pas','plus','est','son','sa','ses','je','il','elle','ils','elles','nous','vous','leur','leurs','ce','cet','cette','ces','the','a','an','in','of','to','is','are','was','were','has','have','had','be','been','being','it','its','by','on','at','for','with','as','from','this','that','not','no','but','or','and','so','yet','via','after','before','how','why','what','who','where','when']);
+
+    function _keywords(title){
+      return (title||'').toLowerCase()
+        .replace(/[^\p{L}\p{N}\s]/gu,' ')
+        .split(/\s+/)
+        .filter(w => w.length>3 && !STOP.has(w))
+        .slice(0,6);
+    }
+
+    // ── Décroissance temporelle (demi-vie 20h) ────────────────────
+    function _timeScore(pubDate){
+      const h = (Date.now() - new Date(pubDate||0).getTime()) / 3600000;
+      return Math.max(0, Math.exp(-0.035 * h));
+    }
+
+    // ── Cache mémoire (rechargé au démarrage) ─────────────────────
+    let _affCache  = {}; // feedUrl → {opens,saves,score}
+    let _topicCache= {}; // word   → count
+    let _boostCache= {}; // feedUrl → boost value (-1..+1)
+    let _ready     = false;
+    let _scoring_on = true; // toggle global
+
+    async function _loadCaches(){
+      try{
+        const [aff, topics, boosts] = await Promise.all([
+          _getAll('sourceAffinity'),
+          _getAll('topicWeights'),
+          _getAll('manualBoosts'),
+        ]);
+        aff.forEach(r    => _affCache[r.feedUrl]   = r);
+        topics.forEach(r => _topicCache[r.word]    = r.count);
+        boosts.forEach(r => _boostCache[r.feedUrl] = r.boost);
+        _ready = true;
+      }catch(e){ _ready = true; /* fail silently, scoring will be neutral */ }
+    }
+
+    // ── Signal : ouverture d'un article ──────────────────────────
+    async function trackOpen(article){
+      if(!article?.feedUrl) return;
+      const url  = article.feedUrl;
+      const prev = _affCache[url] || {feedUrl:url, opens:0, saves:0, lastTouch:0, score:0.5};
+      const next = {...prev, opens: prev.opens+1, lastTouch: Date.now()};
+      next.score = Math.min(1, next.score + 0.04);
+      _affCache[url] = next;
+      _put('sourceAffinity', next);
+      // Mots-clés
+      const words = _keywords(article.title);
+      words.forEach(w => {
+        _topicCache[w] = (_topicCache[w]||0) + 1;
+        _put('topicWeights', {word:w, count:_topicCache[w], lastSeen:Date.now()});
+      });
+    }
+
+    // ── Signal : sauvegarde en favori ─────────────────────────────
+    async function trackSave(article){
+      if(!article?.feedUrl) return;
+      const url  = article.feedUrl;
+      const prev = _affCache[url] || {feedUrl:url, opens:0, saves:0, lastTouch:0, score:0.5};
+      const next = {...prev, saves: prev.saves+1, lastTouch: Date.now()};
+      next.score = Math.min(1, next.score + 0.08);
+      _affCache[url] = next;
+      _put('sourceAffinity', next);
+    }
+
+    // ── Boost manuel ──────────────────────────────────────────────
+    function setBoost(feedUrl, value){ // value : +1 épinglé, -1 muet, 0 neutre
+      _boostCache[feedUrl] = value;
+      _put('manualBoosts', {feedUrl, boost:value, updatedAt:Date.now()});
+    }
+    function getBoost(feedUrl){ return _boostCache[feedUrl] || 0; }
+
+    // ── Score final d'un article ──────────────────────────────────
+    function score(article){
+      if(!_scoring_on) return 0.5; // tri chrono pur si désactivé
+      const aff     = (_affCache[article.feedUrl]?.score) ?? 0.5;
+      const topic   = Math.min(1, _keywords(article.title)
+                        .reduce((acc,w) => acc + (_topicCache[w]||0)*0.04, 0));
+      const recency = _timeScore(article.pubDate);
+      const boost   = getBoost(article.feedUrl) * 0.15;
+      return Math.min(1, aff*0.40 + topic*0.25 + recency*0.20 + 0.50*0.15 + boost);
+    }
+
+    // ── Niveau visuel (4 tiers, jamais de masquage) ──────────────
+    function tier(sc){ // 'hero'|'standard'|'compact'|'minimal'
+      if(sc >= 0.72) return 'hero';
+      if(sc >= 0.50) return 'standard';
+      if(sc >= 0.32) return 'compact';
+      return 'minimal';
+    }
+
+    // ── Trier + annoter un tableau d'articles ────────────────────
+    function rank(articles){
+      return articles.map(a => ({...a, _sc: score(a), _tier: tier(score(a))}))
+        .sort((a,b) => b._sc - a._sc);
+    }
+
+    // ── Stats lisibles pour les Préférences ──────────────────────
+    async function getStats(){
+      const aff    = Object.values(_affCache).sort((a,b)=>b.score-a.score).slice(0,5);
+      const words  = Object.entries(_topicCache).sort((a,b)=>b[1]-a[1]).slice(0,10);
+      const boosts = Object.entries(_boostCache).filter(([,v])=>v!==0);
+      return { topSources:aff, topWords:words, boosts, active:_scoring_on };
+    }
+
+    // ── Réinitialisation ─────────────────────────────────────────
+    async function reset(what='all'){
+      if(what==='all'||what==='sources'){
+        _affCache={};
+        const db=await _open(); const tx=db.transaction('sourceAffinity','readwrite'); tx.objectStore('sourceAffinity').clear();
+      }
+      if(what==='all'||what==='topics'){
+        _topicCache={};
+        const db=await _open(); const tx=db.transaction('topicWeights','readwrite'); tx.objectStore('topicWeights').clear();
+      }
+      if(what==='all'||what==='boosts'){
+        _boostCache={};
+        const db=await _open(); const tx=db.transaction('manualBoosts','readwrite'); tx.objectStore('manualBoosts').clear();
+      }
+    }
+
+    function toggle(val){ _scoring_on = val ?? !_scoring_on; }
+    function isActive(){ return _scoring_on; }
+
+    // ── Init async ────────────────────────────────────────────────
+    _loadCaches();
+
+    return { trackOpen, trackSave, setBoost, getBoost, score, tier, rank, getStats, reset, toggle, isActive };
+  })();
+
+  window._SE = _SE; // accessible depuis les Préférences
+
+  // ════════════════════════════════════════════════════════════════
+  //  CSS DES 4 TIERS VISUELS
+  // ════════════════════════════════════════════════════════════════
+  (function _injectScoringCSS(){
+    const s = document.createElement('style');
+    s.textContent = `
+      /* Tier hero — déjà géré par _artCardHtml isHero=true */
+      .art-tier-hero   { }
+      /* Tier standard — comportement actuel */
+      .art-tier-standard{ }
+      /* Tier compact — image réduite, titre plus petit */
+      .art-tier-compact .art-img-wrap{ aspect-ratio:21/9 !important; opacity:.85; }
+      .art-tier-compact .art-title  { font-size:15px !important; -webkit-line-clamp:2; }
+      .art-tier-compact .art-source-name{ font-size:10px !important; }
+      /* Tier minimal — pas d'image, typographie resserrée */
+      .art-tier-minimal .art-img-wrap{ display:none !important; }
+      .art-tier-minimal .art-title  { font-size:13px !important; color:var(--text-muted); -webkit-line-clamp:2; }
+      .art-tier-minimal              { padding:8px 0; border-top:1px solid var(--border); }
+      [data-theme="light"] .art-tier-minimal{ border-color:rgba(0,0,0,.07); }
+      /* Indicateur de score (visible au press long) */
+      .art-score-badge{
+        display:none; position:absolute; top:8px; left:8px; z-index:10;
+        background:rgba(0,0,0,.75); color:#fff; font-size:10px; font-weight:700;
+        padding:3px 7px; border-radius:999px; font-family:var(--font-inter);
+        letter-spacing:.03em; pointer-events:none;
+      }
+      .art-card:active .art-score-badge,
+      .art-card.score-visible .art-score-badge{ display:block; }
+    `;
+    document.head.appendChild(s);
+  })();
+
+
   function _renderEditions(){
     const hero  = document.getElementById('editionsHero');
     const grid  = document.getElementById('editionsGrid');
@@ -4347,23 +4552,31 @@ body{
       return;
     }
     if(empty) empty.style.display='none';
-    const sorted = _dedup([..._allArticles].sort((a,b)=>b.pubDate-a.pubDate));
-    const best   = sorted.find(a=>a.imageUrl) || sorted[0];
-    const rest   = sorted.filter(a=>a.link!==best?.link).slice(0,40);
-    _editionArts = best ? [best,...rest] : rest;
-    if(best) hero.innerHTML   = _artCardHtml(best, 0, true);
-    grid.innerHTML = rest.map((a,i)=>_artCardHtml(a, i+1, false)).join('');
+    // Scoring : classer les articles par score décroissant
+    const deduped = _dedup([..._allArticles].sort((a,b)=>b.pubDate-a.pubDate));
+    const ranked  = _SE.rank(deduped);
+    const best    = ranked.find(a=>a.imageUrl) || ranked[0];
+    const rest    = ranked.filter(a=>a.link!==best?.link).slice(0,60);
+    _editionArts  = best ? [best,...rest] : rest;
+    if(best) hero.innerHTML = _artCardHtml(best, 0, true, best._tier||'hero');
+    grid.innerHTML = rest.map((a,i)=>_artCardHtml(a, i+1, false, a._tier||'standard')).join('');
   }
 
-  function _artCardHtml(a, idx, isHero){
+  function _artCardHtml(a, idx, isHero, tier){
+    const t    = tier || (isHero ? 'hero' : 'standard');
     const fav  = getFavicon(a.feedUrl||a.link||'');
     const time = relTime(a.pubDate);
-    const r    = isHero?'18px':'14px';
-    const mb   = isHero?'14':'10';
-    const imgH = a.imageUrl
-      ? `<div class="art-img-wrap" style="border-radius:${r};overflow:hidden;aspect-ratio:16/9;background:#111;margin-bottom:${mb}px"><img src="${escAttr(a.imageUrl)}" alt="" decoding="async" onerror="this.parentNode.style.display='none'" style="width:100%;height:100%;object-fit:cover"></div>`
-      : `<div class="art-img-wrap" style="border-radius:${r};aspect-ratio:16/9;background:linear-gradient(135deg,rgba(255,60,50,.12),rgba(0,0,0,.4));margin-bottom:${mb}px"></div>`;
-    return `<div class="art-card" onclick="_openEditionArt(${idx})" style="margin-bottom:${isHero?'48':'0'}px">
+    const r    = (isHero||t==='hero') ? '18px' : '14px';
+    const mb   = (isHero||t==='hero') ? '14' : '10';
+    const sc   = a._sc != null ? Math.round(a._sc*100) : null;
+    const showImg = t !== 'minimal';
+    const imgH = showImg
+      ? (a.imageUrl
+          ? `<div class="art-img-wrap" style="border-radius:${r};overflow:hidden;aspect-ratio:16/9;background:#111;margin-bottom:${mb}px"><img src="${escAttr(a.imageUrl)}" alt="" decoding="async" onerror="this.parentNode.style.display='none'" style="width:100%;height:100%;object-fit:cover"></div>`
+          : `<div class="art-img-wrap" style="border-radius:${r};aspect-ratio:16/9;background:linear-gradient(135deg,rgba(255,60,50,.12),rgba(0,0,0,.4));margin-bottom:${mb}px"></div>`)
+      : '';
+    return `<div class="art-card art-tier-${t}" onclick="_openEditionArt(${idx})" style="margin-bottom:${(isHero||t==='hero')?'48':'0'}px;position:relative">
+      ${sc!=null?`<span class="art-score-badge">${sc}</span>`:''}
       ${imgH}
       <div class="art-source-row">
         <div class="art-fav"><img src="${escAttr(fav)}" alt="" onerror="this.style.opacity='.3'"></div>
@@ -4378,6 +4591,7 @@ body{
     const a = _editionArts[idx];
     if(a) _showArtModal(a);
   };
+
 
   // ── 14. loadAllFeeds — moteur principal ──────────────────────
   async function loadAllFeeds(force=false){
@@ -4640,6 +4854,9 @@ body{
     const modal = document.getElementById('artModal');
     if(!modal) return;
 
+    // Signal scoring — ouverture explicite
+    _SE.trackOpen(a);
+
     // Image hero
     const heroWrap = document.getElementById('artModalHeroWrap');
     const heroImg  = document.getElementById('artModalHeroImg');
@@ -4708,6 +4925,8 @@ body{
   window.artModalToggleSave = function(){
     if(!_artCurrent) return;
     _toggleReadLater(_artCurrent);
+    // Signal scoring — sauvegarde explicite
+    if(_isReadLater(_artCurrent.link)) _SE.trackSave(_artCurrent);
     const btn = document.getElementById('artModalSaveBtn');
     if(btn) _updateSaveBtn(btn, _artCurrent.link);
     _updateFavBadge(_getReadLater().length);
