@@ -4544,6 +4544,20 @@ body.focus-mode .focus-exit{ display:flex; }
   const _proxyWins = {};
   function _saveProxyWin(slug,idx){ _proxyWins[slug]=idx; try{localStorage.setItem('bf_pw',JSON.stringify(_proxyWins));}catch(e){} }
   try{ Object.assign(_proxyWins, JSON.parse(localStorage.getItem('bf_pw')||'{}')); }catch(e){}
+  // Santé partagée des proxies (cooldown). Un proxy rate-limité (429) ou planté
+  // échoue en rafale sur tous les flux du pool ; après _PROXY_STRIKES échecs
+  // consécutifs il est mis au repos _PROXY_COOLDOWN ms — TOUS les flux cessent
+  // alors de le frapper. Un succès remet son compteur à zéro.
+  const _proxyHealth = {};            // idx -> { fails, until }
+  const _PROXY_STRIKES = 3;
+  const _PROXY_COOLDOWN = 3*60*1000;
+  function _proxyDown(idx){ const h=_proxyHealth[idx]; return h && h.until>Date.now(); }
+  function _proxyOk(idx){ _proxyHealth[idx]={fails:0,until:0}; }
+  function _proxyFail(idx){
+    const h = _proxyHealth[idx] || (_proxyHealth[idx]={fails:0,until:0});
+    h.fails++;
+    if(h.fails>=_PROXY_STRIKES){ h.until=Date.now()+_PROXY_COOLDOWN; h.fails=0; }
+  }
 
   // ── 5. Sécurité : détecter les pages HTML (captcha, auth) ────
   function _isBlock(txt){ return /(<html|<!DOCTYPE|<head[\s>]|login|captcha|cloudflare|access denied)/i.test(txt.slice(0,800)); }
@@ -4624,34 +4638,47 @@ body.focus-mode .focus-exit{ display:flex; }
     // Fetch direct (hors GitHub Pages — souvent bloqué par CORS, tentative quand même)
     try{ const r=await fetch(feed.url,{signal:AbortSignal.timeout(3000)}); if(r.ok){const res=parseRaw(await r.text());if(res?.length)return res;} }catch(e){}
 
+    // Liste DÉDUPLIQUÉE — un seul endpoint par service distinct.
+    // (allorigins et corsproxy étaient présents 3× chacun : en séquentiel
+    //  c'est inutile, on frappait le même hôte rate-limité plusieurs fois.)
     const proxyFns = [
       async()=>{ const r=await fetch(`https://api.allorigins.win/get?url=${U}`,{signal:AbortSignal.timeout(T)}); const d=await r.json(); return d.contents?parseRaw(d.contents):null; },
       async()=>{ const r=await fetch(`https://corsproxy.io/?${U}`,{signal:AbortSignal.timeout(T)}); if(!r.ok)return null; return parseRaw(await r.text()); },
       async()=>{ const r=await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${U}&count=${MAX}`,{signal:AbortSignal.timeout(T)}); return parseJson(await r.json()); },
-      async()=>{ const r=await fetch(`https://api.allorigins.win/raw?url=${U}`,{signal:AbortSignal.timeout(T)}); if(!r.ok)return null; return parseRaw(await r.text()); },
       async()=>{ const r=await fetch(`https://api.codetabs.com/v1/proxy?quest=${U}`,{signal:AbortSignal.timeout(T)}); if(!r.ok)return null; return parseRaw(await r.text()); },
       async()=>{ const r=await fetch(`https://corsproxy.org/?${U}`,{signal:AbortSignal.timeout(T)}); if(!r.ok)return null; return parseRaw(await r.text()); },
       async()=>{ const r=await fetch(`https://rss-to-json-serverless-api.vercel.app/api?feedURL=${U}`,{signal:AbortSignal.timeout(T)}); return parseJson(await r.json()); },
       async()=>{ const r=await fetch(`https://thingproxy.freeboard.io/fetch/${encodeURIComponent(feed.url)}`,{signal:AbortSignal.timeout(T)}); if(!r.ok)return null; return parseRaw(await r.text()); },
       async()=>{ const r=await fetch(`https://api.cors.lol/?url=${U}`,{signal:AbortSignal.timeout(T)}); if(!r.ok)return null; return parseRaw(await r.text()); },
       async()=>{ const r=await fetch(`https://cors.deno.dev/${decodeURIComponent(U)}`,{signal:AbortSignal.timeout(T)}); if(!r.ok)return null; return parseRaw(await r.text()); },
-      async()=>{ const r=await fetch(`https://api.allorigins.win/get?url=${U}&charset=utf-8`,{signal:AbortSignal.timeout(T)}); const d=await r.json(); return d.contents?parseRaw(d.contents):null; },
-      async()=>{ const r=await fetch(`https://corsproxy.io/?${encodeURIComponent(decodeURIComponent(U))}`,{signal:AbortSignal.timeout(T)}); if(!r.ok)return null; return parseRaw(await r.text()); },
     ];
-    // Proxy favori d'abord
-    const fav = _proxyWins[feed.slug];
-    if(fav != null && fav < proxyFns.length){ try{ const res=await proxyFns[fav](); if(res?.length)return res; }catch(e){} }
-    // Course parallèle
-    const winner = await new Promise(resolve=>{
-      let done=false, pending=proxyFns.length;
-      proxyFns.forEach((fn,idx)=>{
-        if(idx===fav){pending--;if(pending===0&&!done)resolve(null);return;}
-        fn().then(res=>{ if(res?.length&&!done){done=true;_saveProxyWin(feed.slug,idx);resolve(res);} })
-            .catch(()=>{}).finally(()=>{ pending--; if(pending===0&&!done)resolve(null); });
-      });
-      if(!proxyFns.length) resolve(null);
-    });
-    return winner || [];
+    // Ordre d'essai : proxy gagnant mémorisé d'abord, puis les autres.
+    const order = []; const fav = _proxyWins[feed.slug];
+    if(fav != null && fav < proxyFns.length) order.push(fav);
+    proxyFns.forEach((_,idx)=>{ if(idx !== fav) order.push(idx); });
+    // Essai SÉQUENTIEL — une seule requête à la fois, on s'arrête au 1er succès.
+    // Plus de course parallèle : 1 flux = ~1 requête (le proxy gagnant), pas 12.
+    // On saute les proxies en cooldown ; un échec/null (429 inclus) compte
+    // comme un strike partagé, un résultat valide remet le compteur à zéro.
+    const benched = [];
+    for(const idx of order){
+      if(_proxyDown(idx)){ benched.push(idx); continue; }
+      try{
+        const res = await proxyFns[idx]();
+        if(res?.length){ _proxyOk(idx); _saveProxyWin(feed.slug, idx); return res; }
+        _proxyFail(idx);
+      }catch(e){ _proxyFail(idx); }
+    }
+    // Filet de sécurité : si tout le monde était au repos/en échec, on retente
+    // quand même les proxies benchés (sans toucher leur compteur) plutôt que
+    // d'abandonner le flux.
+    for(const idx of benched){
+      try{
+        const res = await proxyFns[idx]();
+        if(res?.length){ _proxyOk(idx); _saveProxyWin(feed.slug, idx); return res; }
+      }catch(e){}
+    }
+    return [];
   }
 
   // ── 10. Enrichissement images manquantes ──────────────────────
@@ -4692,19 +4719,37 @@ body.focus-mode .focus-exit{ display:flex; }
   function _tokens(t){ return new Set((t||'').toLowerCase().split(/\W+/).filter(w=>w.length>3)); }
   function _sim(a,b){ const sa=_tokens(a.title),sb=_tokens(b.title); let inter=0; sa.forEach(w=>{if(sb.has(w))inter++;}); return inter/(sa.size+sb.size-inter||1); }
   function _dedup(arts){
-    const res=[],used=new Set();
-    for(const a of arts){
-      if(used.has(a.link))continue;
-      const dups=arts.filter(b=>b!==a&&!used.has(b.link)&&_sim(a,b)>=.55);
-      dups.forEach(d=>used.add(d.link));
-      used.add(a.link); res.push(a);
+    // 1) Dédup exact par lien — O(n)
+    const byLink = new Set(); const stage = [];
+    for(const a of arts){ if(a.link && byLink.has(a.link)) continue; if(a.link) byLink.add(a.link); stage.push(a); }
+    // 2) Quasi-doublons par titre via index inversé de tokens — quasi-linéaire.
+    //    On ne compare qu'aux articles DÉJÀ gardés partageant ≥1 token signifiant,
+    //    et les tokens de chaque titre sont calculés UNE seule fois (plus de O(n²)
+    //    qui reconstruisait deux Set à chaque paire). Sémantique conservée :
+    //    on garde la 1re occurrence et on jette les suivantes similaires (≥.55).
+    const res = []; const index = new Map(); // token -> [indices dans res]
+    for(const a of stage){
+      const toks = _tokens(a.title);
+      const cand = new Set();
+      toks.forEach(t=>{ const arr = index.get(t); if(arr) arr.forEach(i=>cand.add(i)); });
+      let dup = false;
+      for(const i of cand){
+        const b = res[i]; let inter = 0;
+        toks.forEach(w=>{ if(b._toks.has(w)) inter++; });
+        if(inter/(toks.size + b._toks.size - inter || 1) >= 0.55){ dup = true; break; }
+      }
+      if(dup) continue;
+      a._toks = toks; const idx = res.length; res.push(a);
+      toks.forEach(t=>{ let arr = index.get(t); if(!arr){ arr=[]; index.set(t,arr); } arr.push(idx); });
     }
+    res.forEach(a=>{ delete a._toks; }); // champ temporaire nettoyé
     return res;
   }
 
   // ── 12. État global articles ──────────────────────────────────
   let _allArticles = [];
   let _isLoading = false;
+  let _rerunRequested = false; // un passage demandé pendant qu'un autre tourne
   let _lastLoad = 0;
   const _COOLDOWN = 5*60*1000;
 
@@ -5070,12 +5115,15 @@ body.focus-mode .focus-exit{ display:flex; }
       }
     }catch(e){ if(skel) skel.style.display='block'; }
 
-    // Blocage réseau — force=true contourne le cooldown ET _isLoading
-    if(!force){
-      if(_isLoading) return;
-      if(_allArticles.length && (Date.now()-_lastLoad)<_COOLDOWN){ if(skel) skel.style.display='none'; return; }
+    // Verrou anti-réentrance : UN SEUL chargement réseau à la fois.
+    // Avant, force=true remettait juste _isLoading à false puis relançait un
+    // 2e pool en parallèle (ex. ajout d'un flux pendant un refresh) → deux
+    // chargements concurrents mutant le même état. Désormais, si un load tourne
+    // déjà, on note la demande et on relancera UNE fois à la fin.
+    if(_isLoading){ if(force) _rerunRequested = true; return; }
+    if(!force && _allArticles.length && (Date.now()-_lastLoad)<_COOLDOWN){
+      if(skel) skel.style.display='none'; return;
     }
-    if(_isLoading){ _isLoading=false; } // forcer reset si force=true
     _isLoading = true; _lastLoad = Date.now();
     showBadge('', false);
     await new Promise(r=>setTimeout(r,80));
@@ -5096,15 +5144,26 @@ body.focus-mode .focus-exit{ display:flex; }
       }, 300);
     };
 
-    await Promise.allSettled(_rssFeeds.map(feed=>
-      _loadSingleFeed(feed).then(arts=>{
-        if(!arts||!arts.length) return;
-        _setCached(feed.slug, arts);
-        arts.forEach(a=>{ if(!existingLinks.has(a.link)){ existingLinks.add(a.link); newArts.push(a); newCount++; } });
-        completed++;
-        _scheduleRender(); // debounced — ne rend qu'une fois 300ms après le dernier flux
-      }).catch(()=>{})
-    ));
+    // POOL DE CONCURRENCE BORNÉ — au plus POOL flux chargés en même temps,
+    // quel que soit le nombre total de flux. La charge réseau devient O(POOL),
+    // plus O(nombre de flux) : c'est ce qui rend le parc de flux « illimité »
+    // indolore. Les flux sont drainés d'une file partagée par les workers.
+    const POOL = 5;
+    let _qi = 0;
+    const _worker = async () => {
+      while(_qi < _rssFeeds.length){
+        const feed = _rssFeeds[_qi++];
+        let arts = null;
+        try{ arts = await _loadSingleFeed(feed); }catch(e){}
+        if(arts && arts.length){
+          _setCached(feed.slug, arts);
+          arts.forEach(a=>{ if(!existingLinks.has(a.link)){ existingLinks.add(a.link); newArts.push(a); newCount++; } });
+          completed++;
+          _scheduleRender(); // debounced — ne rend qu'une fois 300ms après le dernier flux
+        }
+      }
+    };
+    await Promise.all(Array.from({length: Math.min(POOL, _rssFeeds.length)}, _worker));
 
     if(newArts.length){ _allArticles=[..._allArticles,...newArts].sort((a,b)=>new Date(b.pubDate)-new Date(a.pubDate)); }
     _allArticles = _dedup(_allArticles);
@@ -5120,6 +5179,9 @@ body.focus-mode .focus-exit{ display:flex; }
     if(browseView&&!browseView.hidden) renderBrowseTimeline();
     // Enrichir images en arrière-plan
     setTimeout(()=>_enrichImages(_allArticles),1500);
+    // Un passage forcé a-t-il été demandé pendant ce chargement ? On le rejoue
+    // UNE fois (ex. flux ajouté en cours de route), sans concurrence.
+    if(_rerunRequested){ _rerunRequested = false; loadAllFeeds(true); }
   }
 
   // ── 16. Modal article ─────────────────────────────────────────
