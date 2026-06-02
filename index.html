@@ -4959,9 +4959,8 @@ body.focus-mode .focus-exit{ display:flex; }
     if(empty) empty.style.display='none';
 
     const deduped = _dedup([..._allArticles].sort((a,b)=>b.pubDate-a.pubDate));
-    const ranked  = _SE.rank(deduped);
-    const best    = ranked.find(a=>a.imageUrl) || ranked[0];
-    const rest    = ranked.filter(a=>a.link!==best?.link).slice(0,60);
+    const best    = deduped.find(a=>a.imageUrl) || deduped[0];
+    const rest    = deduped.filter(a=>a.link!==best?.link).slice(0,60);
     _editionArts  = best ? [best,...rest] : rest;
 
     const heroHtml = best ? _artCardHtml(best, 0, true, 'hero') : '';
