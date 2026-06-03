@@ -1185,6 +1185,35 @@ button, a, [onclick] { touch-action: manipulation; }
 .dc-sub-btn:hover:not(.subbed){ background:rgba(255,60,50,.1); }
 .dc-sub-btn.subbed{ background:#ff3c32; color:#fff; border-color:#ff3c32; }
 /* ══════════════════════════════════════════════════════════════
+   PAGE PODCASTS — onglets Abonné / Découvrir, galerie de thèmes
+   (réutilise l'habillage des cartes .dc-theme-tile / .dc-theme-grid)
+   ══════════════════════════════════════════════════════════════ */
+.pc-page{ position:fixed; inset:0; z-index:300; background:var(--bg); display:flex; flex-direction:column; opacity:0; visibility:hidden; transform:translateY(16px) scale(.992); transition:opacity .4s ease, transform .55s cubic-bezier(.16,1,.3,1), visibility .4s ease; }
+.pc-page.open{ opacity:1; visibility:visible; transform:none; }
+.pc-topbar{ flex:none; display:flex; align-items:center; gap:12px; padding:14px 18px 4px; }
+.pc-back{ width:36px;height:36px;flex:none;border:0;cursor:pointer;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,.06);color:var(--text);transition:background .2s,transform .15s; }
+.pc-back:hover{ background:rgba(255,255,255,.12); }
+.pc-back:active{ transform:scale(.9); }
+[data-theme="light"] .pc-back{ background:rgba(0,0,0,.05); }
+.pc-back svg{ width:18px; height:18px; }
+/* Onglets façon capture : deux onglets larges, actif souligné */
+.pc-tabs{ flex:none; display:flex; padding:2px 18px 0; border-bottom:1px solid var(--border); }
+[data-theme="light"] .pc-tabs{ border-bottom-color:rgba(0,0,0,.08); }
+.pc-tab{ flex:1; background:none; border:0; padding:10px 0 16px; cursor:pointer; position:relative; font-family:var(--font-inter); font-size:20px; font-weight:800; letter-spacing:-.025em; color:var(--text-muted); -webkit-tap-highlight-color:transparent; transition:color .25s; }
+.pc-tab.active{ color:var(--text); }
+.pc-tab::after{ content:""; position:absolute; left:50%; bottom:-1px; width:0; height:2.5px; border-radius:2px; background:var(--text); transform:translateX(-50%); transition:width .3s cubic-bezier(.32,.72,0,1); }
+.pc-tab.active::after{ width:60%; }
+/* Corps scrollable + panneaux */
+.pc-body{ flex:1; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+.pc-body::-webkit-scrollbar{ display:none; }
+.pc-pane[hidden]{ display:none; }
+.pc-section-title{ font-family:var(--font-dm); font-size:25px; font-weight:400; letter-spacing:-.01em; color:var(--text); padding:20px 18px 2px; }
+/* État vide Abonné */
+.pc-empty{ display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:90px 32px; color:var(--text-muted); gap:13px; }
+.pc-empty svg{ width:44px; height:44px; opacity:.45; }
+.pc-empty-title{ font-family:var(--font-inter); font-size:17px; font-weight:800; color:var(--text); letter-spacing:-.02em; }
+.pc-empty-sub{ font-family:var(--font-inter); font-size:13.5px; font-weight:500; line-height:1.5; max-width:270px; }
+/* ══════════════════════════════════════════════════════════════
    ADD FEED MODAL — bottom sheet RSS auto-détection
    ══════════════════════════════════════════════════════════════ */
 .af-overlay{
@@ -1396,6 +1425,31 @@ button, a, [onclick] { touch-action: manipulation; }
 .seq-title{ font-family:var(--font-dm); font-size:17px; font-weight:700; line-height:1.28; color:var(--text); letter-spacing:-.01em; }
 .seq-thumb{ width:114px; height:76px; flex-shrink:0; border-radius:10px; overflow:hidden; background:#111; align-self:center; }
 .seq-thumb img{ width:100%; height:100%; object-fit:cover; }
+
+/* ── Séquentiel : mémoire de lecture (additif) ───────────── */
+.seq-item.is-read{ opacity:.4; }
+.seq-item.is-read .seq-title{ font-weight:600; color:var(--text-muted); }
+.seq-item.is-read .seq-num{ color:rgba(255,255,255,.16); }
+[data-theme="light"] .seq-item.is-read .seq-num{ color:rgba(0,0,0,.16); }
+.seq-item.is-read .seq-thumb{ filter:grayscale(1); }
+
+/* ── Séquentiel : en-tête de progression / reprise ───────── */
+.seq-progress{ display:none; align-items:center; justify-content:space-between; gap:14px; padding:18px 0 16px; margin-bottom:2px; border-bottom:1px solid var(--border); }
+.seq-progress.show{ display:flex; }
+[data-theme="light"] .seq-progress{ border-color:rgba(0,0,0,.08); }
+.seq-progress-info{ flex:1; min-width:0; display:flex; flex-direction:column; gap:8px; }
+.seq-progress-label{ font-family:var(--font-inter); font-size:13.5px; font-weight:700; color:var(--text); letter-spacing:-.01em; display:flex; align-items:center; gap:6px; }
+.seq-progress-time{ font-family:var(--font-inter); font-size:11px; font-weight:600; color:var(--text-muted); letter-spacing:.01em; }
+.seq-progress-bar{ width:100%; height:4px; border-radius:99px; background:rgba(255,255,255,.08); overflow:hidden; }
+[data-theme="light"] .seq-progress-bar{ background:rgba(0,0,0,.08); }
+.seq-progress-fill{ height:100%; border-radius:99px; background:#ff3c32; width:0; transition:width .5s cubic-bezier(.32,.72,0,1); }
+.seq-progress.is-done .seq-progress-fill{ background:#34c759; }
+.seq-progress.is-done .seq-progress-label{ color:#34c759; }
+.seq-progress-actions{ display:flex; align-items:center; gap:8px; flex-shrink:0; }
+.seq-progress-action{ font-family:var(--font-inter); font-size:12.5px; font-weight:700; color:#ff3c32; background:rgba(255,60,50,.1); border:none; border-radius:99px; padding:9px 15px; cursor:pointer; -webkit-tap-highlight-color:transparent; white-space:nowrap; letter-spacing:-.01em; transition:transform .1s; }
+.seq-progress-action:active{ transform:scale(.95); }
+.seq-progress-ghost{ font-family:var(--font-inter); font-size:12.5px; font-weight:600; color:var(--text-muted); background:transparent; border:none; cursor:pointer; -webkit-tap-highlight-color:transparent; white-space:nowrap; padding:9px 3px; }
+.seq-progress-ghost:active{ opacity:.6; }
 
 /* ── PAGE DOSSIER ────────────────────────────────── */
 .folder-page{ position:fixed; inset:0; z-index:450; background:var(--bg); display:flex; flex-direction:column; transform:translateX(100%); transition:transform .38s cubic-bezier(.32,.72,0,1); }
@@ -2320,6 +2374,13 @@ body.focus-mode .focus-exit{ display:flex; }
         Ajouter un flux
       </button>
 
+      <!-- ── Podcasts (ouvre la page plein écran) ── -->
+      <button class="sb-foot-btn" id="sbPodcastToggle" onclick="openPodcast()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1h3zM3 19a2 2 0 0 0 2 2h1a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1H3z"/></svg>
+        Podcasts
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;margin-left:auto;color:var(--text-muted);"><polyline points="9 6 15 12 9 18"/></svg>
+      </button>
+
       <!-- ── Préférences (ouvre la page plein écran) ── -->
       <button class="sb-foot-btn sb-prefs-toggle" id="sbPrefsToggle" onclick="openPrefsPage()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>
@@ -2362,6 +2423,43 @@ body.focus-mode .focus-exit{ display:flex; }
           <span class="dc-detail-title" id="dcDetailTitle"></span>
         </div>
         <div class="dc-feed-list" id="dcFeedList"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===================================================================
+       PAGE PODCASTS — onglets Abonné / Découvrir
+       =================================================================== -->
+  <div class="pc-page" id="podcastPage" aria-hidden="true">
+
+    <div class="pc-topbar">
+      <button class="pc-back" id="podcastBack" aria-label="Fermer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <span class="dc-topbar-title">Podcasts</span>
+    </div>
+
+    <div class="pc-tabs">
+      <button class="pc-tab" data-pctab="abonne">Abonné</button>
+      <button class="pc-tab active" data-pctab="decouvrir">Découvrir</button>
+    </div>
+
+    <div class="pc-body" id="pcBody">
+      <!-- Onglet Découvrir : galerie de thèmes (même habillage que la galerie RSS) -->
+      <div class="pc-pane" id="pcPaneDecouvrir">
+        <div class="dc-search-wrap">
+          <input type="text" class="dc-search" id="pcSearch" placeholder="Rechercher un thème…">
+        </div>
+        <div class="dc-theme-grid" id="pcThemeGrid"></div>
+      </div>
+      <!-- Onglet Abonné : abonnements podcast (vide pour l'instant) -->
+      <div class="pc-pane" id="pcPaneAbonne" hidden>
+        <div class="pc-empty">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1h3zM3 19a2 2 0 0 0 2 2h1a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1H3z"/></svg>
+          <div class="pc-empty-title">Aucun abonnement</div>
+          <div class="pc-empty-sub">Abonnez-vous depuis l'onglet Découvrir pour retrouver vos balados ici.</div>
+        </div>
       </div>
     </div>
 
@@ -2874,6 +2972,7 @@ body.focus-mode .focus-exit{ display:flex; }
 
       <!-- ========== VUE SÉQUENTIELLE ========== -->
       <div class="view" data-view="sequential" hidden>
+        <div class="seq-progress" id="seqProgress"></div>
         <div class="seq-list" id="seqList"></div>
       </div><!-- /vue séquentielle -->
 
@@ -3074,6 +3173,79 @@ body.focus-mode .focus-exit{ display:flex; }
   let _feedPageArts = [];
   let _folderPageArts = [];
 
+  // ════════════════════════════════════════════════════════════
+  //  NAVIGATION CENTRALE — couches flottantes, bouton/geste « retour »
+  //  du navigateur, et verrou de scroll empilé. Un seul point de vérité
+  //  pour fermer la couche du dessus (Escape, swipe-back, bouton retour).
+  // ════════════════════════════════════════════════════════════
+
+  // — Verrou de scroll EMPILÉ : on ne rend le scroll au body qu'au dernier
+  //   niveau. Évite que fermer un modal au-dessus d'une page rende le fond
+  //   défilable alors que la page est encore ouverte.
+  let _scrollLocks = 0;
+  function lockScroll(){ if(_scrollLocks++ === 0) document.body.style.overflow = 'hidden'; }
+  function unlockScroll(){ if(_scrollLocks > 0 && --_scrollLocks === 0) document.body.style.overflow = ''; }
+  function resetScroll(){ _scrollLocks = 0; document.body.style.overflow = ''; }
+
+  // — Couche du dessus : on renvoie SA fonction de fermeture (ou null).
+  //   Ordre = du plus haut (au-dessus) au plus bas.
+  let _artClosing = false;   // modal article en cours d'animation de fermeture
+  let _artCloseTimer = null;
+  function _topLayerCloser(){
+    const am = document.getElementById('artModal');
+    if(am && am.style.display === 'flex' && !_artClosing) return window.closeArtModal;
+    const fpr = document.getElementById('feedPropsOverlay');
+    if(fpr && fpr.style.display === 'flex') return window.closeFeedProps;
+    const af = document.getElementById('afOverlay');
+    if(af && af.classList.contains('open')) return afDismiss;
+    const m3 = document.getElementById('menu3Overlay');
+    if(m3 && m3.classList.contains('open')) return closeMenu3;
+    const fp = document.getElementById('feedPage');
+    if(fp && fp.classList.contains('open')) return window.closeFeedPage;
+    const dp = document.getElementById('folderPage');
+    if(dp && dp.classList.contains('open')) return window.closeFolderPage;
+    const disc = document.getElementById('discoverPage');
+    if(disc && disc.classList.contains('open')){
+      const det = document.getElementById('dcDetailPanel');
+      if(det && det.classList.contains('visible')) return dcCloseTheme;
+      return closeDiscover;
+    }
+    const pc = document.getElementById('podcastPage');
+    if(pc && pc.classList.contains('open')) return window.closePodcast;
+    const pf = document.getElementById('prefsPage');
+    if(pf && pf.classList.contains('open')) return closePrefsPage;
+    const sb = document.getElementById('sidebar');
+    if(sb && sb.classList.contains('open')) return closeSB;
+    return null;
+  }
+  function closeTopLayer(){ const c = _topLayerCloser(); if(c){ c(); return true; } return false; }
+
+  // — Bouton/geste « retour » du navigateur. À l'ouverture d'une couche on
+  //   arme UN piège d'historique ; un retour ferme alors le sommet au lieu de
+  //   quitter la page, et on ré-arme tant qu'il reste des couches en dessous.
+  let _navArmed = false;
+  function navArm(){
+    if(_navArmed) return;
+    _navArmed = true;
+    try{ history.pushState({ bfLayer: 1 }, ''); }catch(e){}
+  }
+  function goBack(){
+    if(_navArmed){ try{ history.back(); return; }catch(e){} }
+    closeTopLayer();
+  }
+  window.addEventListener('popstate', function(){
+    if(closeTopLayer()){
+      if(_topLayerCloser()){ try{ history.pushState({ bfLayer: 1 }, ''); }catch(e){} }
+      else _navArmed = false;
+    } else {
+      _navArmed = false; // plus rien d'ouvert : le prochain retour quitte la page
+    }
+  });
+  // — Escape clavier : ferme UNIQUEMENT la couche du sommet (point unique).
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && _topLayerCloser()){ e.preventDefault(); goBack(); }
+  });
+
   function _switchView(target){
     _currentView = target;
 
@@ -3084,11 +3256,15 @@ body.focus-mode .focus-exit{ display:flex; }
     const folderOpen = dp && dp.classList.contains('open');
 
     if(feedOpen){
+      const c = document.getElementById('feedPageContent');
       if(typeof _feedPageArts !== 'undefined' && _feedPageArts.length)
-        _renderSubpageArts(_feedPageArts, target, document.getElementById('feedPageContent'), '_feedPageArt');
+        _renderSubpageArts(_feedPageArts, target, c, '_feedPageArt');
+      if(c) c.scrollTop = 0;
     } else if(folderOpen){
+      const c = document.getElementById('folderPageContent');
       if(typeof _folderPageArts !== 'undefined' && _folderPageArts.length)
-        _renderSubpageArts(_folderPageArts, target, document.getElementById('folderPageContent'), '_folderArt');
+        _renderSubpageArts(_folderPageArts, target, c, '_folderArt');
+      if(c) c.scrollTop = 0;
     } else {
       // Pas de sous-page : changer la vue accueil normalement
       views.forEach(v => { v.hidden = v.dataset.view !== target; });
@@ -3268,12 +3444,12 @@ body.focus-mode .focus-exit{ display:flex; }
   // =========================================================
   const sidebar  = document.getElementById('sidebar');
   const overlay  = document.getElementById('sbOverlay');
-  const openSB  = () => { sidebar.classList.add('open'); overlay.classList.add('open'); };
+  const openSB  = () => { sidebar.classList.add('open'); overlay.classList.add('open'); navArm(); };
   const closeSB = () => { sidebar.classList.remove('open'); overlay.classList.remove('open'); };
   document.getElementById('menuBtn').addEventListener('click', openSB);
   document.getElementById('sbClose').addEventListener('click', closeSB);
   overlay.addEventListener('click', closeSB);
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSB(); });
+  // (Escape géré centralement par closeTopLayer/goBack)
 
   // Vues : Tout voir / Non lus / Aujourd'hui
   document.querySelectorAll('.sb-item').forEach(it => it.addEventListener('click', () => {
@@ -3389,10 +3565,12 @@ body.focus-mode .focus-exit{ display:flex; }
     ov.style.display = 'flex';
     requestAnimationFrame(() => ov.classList.add('open'));
     setTimeout(() => document.getElementById('afUrlInput').focus(), 400);
+    navArm();
   }
 
   function afDismiss() {
     const ov = document.getElementById('afOverlay');
+    if (!ov || !ov.classList.contains('open')) return;
     ov.classList.remove('open');
     setTimeout(() => { ov.style.display = 'none'; }, 460);
     if (_afDebounce) clearTimeout(_afDebounce);
@@ -3668,7 +3846,7 @@ body.focus-mode .focus-exit{ display:flex; }
       const disc=document.getElementById('discoverPage');
       if(disc&&disc.classList.contains('open')) closeDiscover();
       const prefs=document.getElementById('prefsPage');
-      if(prefs&&prefs.classList.contains('open')) prefs.classList.remove('open');
+      if(prefs&&prefs.classList.contains('open')) closePrefsPage();
       // Afficher la vue courante
       document.querySelectorAll('.view').forEach(v=>{ v.hidden = v.dataset.view !== _currentView; });
       if(_currentView==='browse') renderBrowseTimeline();
@@ -3680,11 +3858,14 @@ body.focus-mode .focus-exit{ display:flex; }
     } else if(idx===2){
       const disc=document.getElementById('discoverPage');
       if(disc&&disc.classList.contains('open')) closeDiscover();
-      document.body.style.overflow = '';
       _openFavoris();
-      return;
     }
-    document.body.style.overflow = '';
+    resetScroll();
+    // Synchro historique : la barre d'onglets ferme les couches sans passer par
+    // le bouton retour. Si un piège était armé et qu'aucune couche ne reste
+    // (accueil/favoris), on le consomme pour éviter un « retour neutre » résiduel.
+    // (idx===1 garde le piège : il couvre la page Discover qu'on vient d'ouvrir.)
+    if(idx!==1 && _navArmed && !_topLayerCloser()){ try{ history.back(); }catch(e){} }
   }
   document.getElementById('navHome').addEventListener('click', ()=>_navTo(0));
   document.getElementById('navDiscover').addEventListener('click', ()=>_navTo(1));
@@ -3801,17 +3982,16 @@ body.focus-mode .focus-exit{ display:flex; }
     if(window.__renderPrefsContent) window.__renderPrefsContent();
     prefsPage.classList.add('open');
     prefsPage.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden';
+    lockScroll();
+    navArm();
   };
   function closePrefsPage(){
     prefsPage.classList.remove('open');
     prefsPage.setAttribute('aria-hidden', 'true');
-    document.body.style.overflow = '';
+    unlockScroll();
   }
   document.getElementById('prefsBack').addEventListener('click', closePrefsPage);
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && prefsPage.classList.contains('open')) closePrefsPage();
-  });
+  // (Escape Préférences géré centralement par closeTopLayer)
 
   // Navigation entre panneaux (Compte / Facturation / Paramètres / Contenu)
   document.querySelectorAll('#prefsNav .pp-nav-item').forEach(btn => {
@@ -4434,15 +4614,101 @@ body.focus-mode .focus-exit{ display:flex; }
 
   const dcPage = document.getElementById('discoverPage');
   function openDiscover(){
-    dcPage.classList.add('open'); dcPage.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden';
+    dcPage.classList.add('open'); dcPage.setAttribute('aria-hidden','false'); lockScroll();
     dcBuildCatalog();
+    navArm();
   }
   function closeDiscover(){
-    dcPage.classList.remove('open'); dcPage.setAttribute('aria-hidden','true'); document.body.style.overflow='';
+    dcPage.classList.remove('open'); dcPage.setAttribute('aria-hidden','true'); unlockScroll();
     dcCloseTheme();
   }
   document.getElementById('discoverBack').addEventListener('click', closeDiscover);
-  document.addEventListener('keydown', e=>{ if(e.key==='Escape' && dcPage.classList.contains('open')) closeDiscover(); });
+  // (Escape géré centralement par closeTopLayer)
+
+  // ═══════════════════════════════════════════════════════════════
+  //  PAGE PODCASTS — onglets Abonné / Découvrir
+  //  Habillage « Découvrir » = mêmes cartes que la galerie RSS.
+  //  (étape 1 : skin + navigation ; le contenu réel des thèmes vient ensuite)
+  // ═══════════════════════════════════════════════════════════════
+  const PC_THEMES = [
+    { id:'nba',   name:'NBA',             illus:'basketball', count:12, desc:'Analyses, trades et podcasts autour de la ligue' },
+    { id:'foot',  name:'Football',        illus:'soccer',     count:14, desc:'Premier League, Ligue 1 et grandes affiches' },
+    { id:'nfl',   name:'NFL',             illus:'podium',     count:9,  desc:'Football américain, draft et coulisses' },
+    { id:'nhl',   name:'NHL',             illus:'podium',     count:7,  desc:'Hockey : matchs, séries et transferts' },
+    { id:'mlb',   name:'MLB',             illus:'podium',     count:6,  desc:'Baseball, saison régulière et World Series' },
+    { id:'actu',  name:'Actualités',      illus:'globe',      count:10, desc:'Info, géopolitique et grands entretiens' },
+    { id:'tech',  name:'Tech & IA',       illus:'neural',     count:8,  desc:'Technologie, intelligence artificielle, produits' },
+    { id:'cult',  name:'Culture',         illus:'film',       count:8,  desc:'Cinéma, séries et conversations culturelles' },
+  ];
+
+  function pcRenderThemeTile(theme){
+    return `<div class="dc-theme-tile" onclick="pcOpenTheme('${theme.id}')">
+      <div class="dc-theme-tile-img" style="background-image:url('${dcSvgUrl(theme.illus)}');"></div>
+      <div class="dc-theme-tile-badge">${theme.count} balados</div>
+      <div class="dc-theme-tile-body">
+        <div class="dc-theme-tile-name">${escapeHtml(theme.name)}</div>
+        <div class="dc-theme-tile-desc">${escapeHtml(theme.desc)}</div>
+      </div>
+    </div>`;
+  }
+
+  function pcBuildCatalog(){
+    const grid = document.getElementById('pcThemeGrid');
+    if(!grid || grid.dataset.built) return;
+    grid.dataset.built = '1';
+    grid.innerHTML = PC_THEMES.map(pcRenderThemeTile).join('');
+  }
+
+  // Stub : ouverture d'un thème (le détail/contenu sera défini à l'étape suivante)
+  window.pcOpenTheme = function(id){
+    const theme = PC_THEMES.find(t=>t.id===id);
+    if(!theme) return;
+    console.log('[podcasts] thème sélectionné :', theme.name, '(détail à implémenter)');
+  };
+
+  // Bascule d'onglets Abonné / Découvrir
+  function pcSetTab(tab){
+    document.querySelectorAll('.pc-tab').forEach(b=>b.classList.toggle('active', b.dataset.pctab===tab));
+    const dec = document.getElementById('pcPaneDecouvrir');
+    const abo = document.getElementById('pcPaneAbonne');
+    if(dec) dec.hidden = tab!=='decouvrir';
+    if(abo) abo.hidden = tab!=='abonne';
+    const body = document.getElementById('pcBody');
+    if(body) body.scrollTop = 0;
+  }
+  document.querySelectorAll('.pc-tab').forEach(b=>{
+    b.addEventListener('click', ()=> pcSetTab(b.dataset.pctab));
+  });
+
+  // Recherche dans la galerie de thèmes
+  document.getElementById('pcSearch')?.addEventListener('input', function(){
+    const q = this.value.trim().toLowerCase();
+    document.querySelectorAll('#pcThemeGrid .dc-theme-tile').forEach(tile=>{
+      const n = (tile.querySelector('.dc-theme-tile-name')?.textContent||'').toLowerCase();
+      const d = (tile.querySelector('.dc-theme-tile-desc')?.textContent||'').toLowerCase();
+      tile.style.display = !q || n.includes(q) || d.includes(q) ? '' : 'none';
+    });
+  });
+
+  const pcPage = document.getElementById('podcastPage');
+  function openPodcast(){
+    closeSB();
+    pcSetTab('decouvrir');
+    pcBuildCatalog();
+    pcPage.classList.add('open'); pcPage.setAttribute('aria-hidden','false');
+    lockScroll();
+    navArm();
+  }
+  function closePodcast(){
+    if(!pcPage || !pcPage.classList.contains('open')) return;
+    pcPage.classList.remove('open'); pcPage.setAttribute('aria-hidden','true');
+    unlockScroll();
+  }
+  window.openPodcast = openPodcast;
+  window.closePodcast = closePodcast;
+  document.getElementById('podcastBack').addEventListener('click', closePodcast);
+  // (Escape géré centralement par closeTopLayer)
+
   // ═══════════════════════════════════════════════════════════════
   //  MOTEUR RSS — IDB + 12 proxies + parse + score + render
   //  Carrosserie Briefeed intacte. Pont : folders[].feeds[] → RSS_FEEDS
@@ -5204,7 +5470,7 @@ body.focus-mode .focus-exit{ display:flex; }
     }catch(e){ view.style.display='none'; return; }
 
     // Premier lancement — bloquer scroll
-    document.body.style.overflow = 'hidden';
+    lockScroll();
 
     window._obContinue = function(method){
       if(method === 'apple' || method === 'google'){
@@ -5243,7 +5509,7 @@ body.focus-mode .focus-exit{ display:flex; }
       try{ localStorage.setItem(OB_KEY,'1'); }catch(e){}
       view.style.transition = 'opacity .5s ease';
       view.style.opacity = '0';
-      document.body.style.overflow = '';
+      unlockScroll();
       setTimeout(()=>{ view.style.display='none'; }, 520);
     };
 
@@ -5435,6 +5701,9 @@ body.focus-mode .focus-exit{ display:flex; }
     // Signal scoring — ouverture explicite
     _SE.trackOpen(a);
 
+    // Mémoire de lecture — l'article est désormais "lu"
+    _RS.mark(a.link);
+
     // Image hero
     const heroWrap = document.getElementById('artModalHeroWrap');
     const heroImg  = document.getElementById('artModalHeroImg');
@@ -5478,9 +5747,16 @@ body.focus-mode .focus-exit{ display:flex; }
     const readerSection = document.getElementById('artReaderSection');
     if(readerSection) _loadArtReader(a, readerSection);
 
-    // Ouvrir
+    // Ouvrir — on annule une éventuelle animation de fermeture en cours.
+    // Si le modal était déjà ouvert ou en train de se fermer, son verrou de
+    // scroll est toujours actif : on ne re-verrouille pas (sinon fuite).
+    const _artHeld = _artClosing || modal.style.display === 'flex';
+    if(_artCloseTimer){ clearTimeout(_artCloseTimer); _artCloseTimer=null; }
+    _artClosing = false;
+    modal.style.transition=''; modal.style.transform=''; modal.style.opacity='';
     modal.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
+    if(!_artHeld) lockScroll();
+    navArm();
   }
 
   window.openArtModal = _showArtModal;
@@ -5492,10 +5768,24 @@ body.focus-mode .focus-exit{ display:flex; }
 
   window.closeArtModal = function(){
     const modal = document.getElementById('artModal');
-    if(modal){ modal.style.display='none'; document.body.style.overflow=''; }
-    if(_artAbort){ try{_artAbort.abort();}catch(e){} _artAbort=null; }
-    const fv = document.querySelector('.view[data-view="favoris"]');
-    if(fv && !fv.hidden) _renderFavoris();
+    if(modal && modal.style.display === 'flex' && !_artClosing){
+      _artClosing = true;
+      modal.style.transition = 'transform .32s cubic-bezier(.32,.72,0,1), opacity .26s ease';
+      modal.style.transform  = 'translateY(40px)';
+      modal.style.opacity    = '0';
+      if(_artCloseTimer) clearTimeout(_artCloseTimer);
+      _artCloseTimer = setTimeout(()=>{
+        modal.style.display='none';
+        modal.style.transition=''; modal.style.transform=''; modal.style.opacity='';
+        _artCloseTimer = null; _artClosing = false;
+        unlockScroll();
+      }, 300);
+      if(_artAbort){ try{_artAbort.abort();}catch(e){} _artAbort=null; }
+      const fv = document.querySelector('.view[data-view="favoris"]');
+      if(fv && !fv.hidden) _renderFavoris();
+      const sq = document.querySelector('.view[data-view="sequential"]');
+      if(sq && !sq.hidden) _seqRefreshReadStates();
+    }
   };
   window.artModalOpenExternal = function(){
     if(_artCurrent?.link && _artCurrent.link!=='#') window.open(_artCurrent.link,'_blank');
@@ -5514,7 +5804,7 @@ body.focus-mode .focus-exit{ display:flex; }
     btn.style.background = saved ? '#ff3c32' : 'rgba(255,255,255,.07)';
     btn.querySelector('svg path')?.setAttribute('fill', saved ? '#fff' : 'none');
   }
-  document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeArtModal(); });
+  // (Escape article géré centralement par closeTopLayer)
 
   // ── Tableau global browse ─────────────────────────────────────
   let _browseArts = [];
@@ -5661,6 +5951,112 @@ body.focus-mode .focus-exit{ display:flex; }
 
   // ── VUE SÉQUENTIELLE ─────────────────────────────────────────
   let _seqArts = [];
+
+  // ════════════════════════════════════════════════════════════════
+  //  Mémoire de lecture — articles déjà ouverts (persistant)
+  //  Socle de la vue Séquentielle : transforme la liste en un fil
+  //  avec une position mémorisée d'une session à l'autre.
+  // ════════════════════════════════════════════════════════════════
+  const _RS = (function(){
+    const KEY = 'bf_read_v1';
+    const CAP = 3000;                 // borne mémoire/stockage
+    let _arr = [];
+    let _set = new Set();
+    try{
+      const raw = JSON.parse(localStorage.getItem(KEY) || '[]');
+      if(Array.isArray(raw)){ _arr = raw.filter(x => typeof x === 'string'); _set = new Set(_arr); }
+    }catch(e){}
+    function _persist(){ try{ localStorage.setItem(KEY, JSON.stringify(_arr)); }catch(e){} }
+    function _trim(){
+      if(_arr.length <= CAP) return;
+      const drop = _arr.splice(0, _arr.length - CAP);
+      drop.forEach(l => { if(_arr.indexOf(l) === -1) _set.delete(l); });
+    }
+    function has(link){ return !!link && _set.has(link); }
+    function mark(link){
+      if(!link || _set.has(link)) return false;
+      _set.add(link); _arr.push(link); _trim(); _persist(); return true;
+    }
+    function markMany(links){
+      let c = 0;
+      (links || []).forEach(l => { if(l && !_set.has(l)){ _set.add(l); _arr.push(l); c++; } });
+      if(c){ _trim(); _persist(); }
+      return c;
+    }
+    function size(){ return _set.size; }
+    function reset(){ _arr = []; _set = new Set(); _persist(); }
+    return { has, mark, markMany, size, reset };
+  })();
+  window._RS = _RS;
+
+  // ── Estimation grossière du temps de lecture (≈200 mots/min) ──
+  function _seqWords(a){
+    const t = ((a.title||'') + ' ' + (a.description||'') + ' ' + (a.contentEncoded||'')).trim();
+    return t ? t.split(/\s+/).length : 0;
+  }
+
+  // ── En-tête de progression : compteur, barre, temps restant ──
+  function _seqRenderProgress(){
+    const host = document.getElementById('seqProgress');
+    if(!host) return;
+    const total = _seqArts ? _seqArts.length : 0;
+    if(!total){ host.className = 'seq-progress'; host.innerHTML = ''; return; }
+    let read = 0, mins = 0;
+    for(const a of _seqArts){
+      if(_RS.has(a.link)) read++;
+      else mins += Math.max(1, Math.round(_seqWords(a) / 200));
+    }
+    const pct  = Math.round(read / total * 100);
+    const done = read >= total;
+    host.className = 'seq-progress show' + (done ? ' is-done' : '');
+    const label = done
+      ? `<div class="seq-progress-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>Vous êtes à jour</div>`
+      : `<div class="seq-progress-label">${read} / ${total} lus</div>`;
+    const time = done ? '' : `<div class="seq-progress-time">~${mins} min de lecture restante</div>`;
+    const actions = done
+      ? ''
+      : `<div class="seq-progress-actions">
+           <button class="seq-progress-action" onclick="_seqResume()">Reprendre →</button>
+           <button class="seq-progress-ghost" onclick="_seqMarkAllRead()">Tout lu</button>
+         </div>`;
+    host.innerHTML =
+      `<div class="seq-progress-info">
+         ${label}
+         ${time}
+         <div class="seq-progress-bar"><div class="seq-progress-fill" style="width:${pct}%"></div></div>
+       </div>
+       ${actions}`;
+  }
+
+  // ── Rafraîchir les états « lu » sans re-render (préserve le scroll) ──
+  function _seqRefreshReadStates(){
+    const list = document.getElementById('seqList');
+    if(!list || !_seqArts || !_seqArts.length){ _seqRenderProgress(); return; }
+    list.querySelectorAll('.seq-item').forEach(el => {
+      const i = +el.getAttribute('data-seq-idx');
+      const a = _seqArts[i];
+      if(a) el.classList.toggle('is-read', _RS.has(a.link));
+    });
+    _seqRenderProgress();
+  }
+
+  // ── Reprendre : défiler jusqu'au premier article non-lu ──
+  window._seqResume = function(){
+    const list = document.getElementById('seqList');
+    if(!list || !_seqArts || !_seqArts.length) return;
+    let idx = _seqArts.findIndex(a => !_RS.has(a.link));
+    if(idx < 0) idx = 0;
+    const el = list.querySelector('.seq-item[data-seq-idx="' + idx + '"]');
+    if(el) el.scrollIntoView({behavior:'smooth', block:'center'});
+  };
+
+  // ── Tout marquer comme lu (vider le retard) ──
+  window._seqMarkAllRead = function(){
+    if(!_seqArts || !_seqArts.length) return;
+    _RS.markMany(_seqArts.map(a => a.link));
+    _seqRefreshReadStates();
+  };
+
   function _renderSequential(){
     const list = document.getElementById('seqList');
     if(!list) return;
@@ -5668,6 +6064,7 @@ body.focus-mode .focus-exit{ display:flex; }
     _seqArts = arts.slice(0,80);
     if(!_seqArts.length){
       list.innerHTML = '<div style="padding:60px 0;text-align:center;color:var(--text-muted);font-size:14px;font-family:var(--font-inter)">Aucun article disponible</div>';
+      _seqRenderProgress();
       return;
     }
     list.innerHTML = _seqArts.map((a,i)=>{
@@ -5675,7 +6072,8 @@ body.focus-mode .focus-exit{ display:flex; }
       const thumb = a.imageUrl
         ? `<div class="seq-thumb"><img src="${escAttr(a.imageUrl)}" alt="" decoding="async" onerror="this.parentNode.style.display='none'"></div>`
         : '';
-      return `<div class="seq-item" onclick="_seqOpen(${i})">
+      const isRead = _RS.has(a.link);
+      return `<div class="seq-item${isRead?' is-read':''}" data-seq-idx="${i}" onclick="_seqOpen(${i})">
         <span class="seq-num">${String(i+1).padStart(2,'0')}</span>
         <div class="seq-body">
           <div class="seq-source">
@@ -5687,6 +6085,18 @@ body.focus-mode .focus-exit{ display:flex; }
         ${thumb}
       </div>`;
     }).join('');
+
+    // Progression (compteur + barre + temps) puis reprise automatique
+    // vers le premier article non-lu si l'on revient en cours de séquence.
+    _seqRenderProgress();
+    const firstUnread = _seqArts.findIndex(a => !_RS.has(a.link));
+    const readCount   = _seqArts.filter(a => _RS.has(a.link)).length;
+    if(readCount > 0 && firstUnread > 0){
+      requestAnimationFrame(()=> setTimeout(()=>{
+        const el = list.querySelector('.seq-item[data-seq-idx="' + firstUnread + '"]');
+        if(el) el.scrollIntoView({behavior:'smooth', block:'center'});
+      }, 140));
+    }
   }
   window._seqOpen = function(i){ const a=_seqArts[i]; if(a) _showArtModal(a); };
 
@@ -6035,12 +6445,13 @@ body.focus-mode .focus-exit{ display:flex; }
       + '</div></div>';
 
     overlay.style.display='flex';
-    document.body.style.overflow='hidden';
+    lockScroll();
+    navArm();
   };
 
   window.closeFeedProps = function(){
     const ov=document.getElementById('feedPropsOverlay');
-    if(ov){ ov.style.display='none'; document.body.style.overflow=''; }
+    if(ov && ov.style.display==='flex'){ ov.style.display='none'; unlockScroll(); }
   };
 
   window._feedPropsUnsub = function(){
@@ -6128,7 +6539,8 @@ body.focus-mode .focus-exit{ display:flex; }
     if(!page) return;
     page.style.display = 'flex';
     requestAnimationFrame(()=> page.classList.add('open'));
-    document.body.style.overflow = 'hidden';
+    lockScroll();
+    navArm();
     // qpill reste visible sur la page flux
   };
 
@@ -6136,21 +6548,15 @@ body.focus-mode .focus-exit{ display:flex; }
 
   window.closeFeedPage = function(){
     const page = document.getElementById('feedPage');
-    if(!page) return;
+    if(!page || !page.classList.contains('open')) return;
     page.classList.remove('open');
     setTimeout(()=>{
       page.style.display='none';
-      document.body.style.overflow='';
+      unlockScroll();
     }, 400);
   };
 
-  // Escape ferme feed-page
-  document.addEventListener('keydown', e=>{
-    if(e.key==='Escape'){
-      const fp = document.getElementById('feedPage');
-      if(fp && fp.classList.contains('open')){ closeFeedPage(); return; }
-    }
-  });
+  // (Escape page flux géré centralement par closeTopLayer)
 
   // ── PAGE DOSSIER ──────────────────────────────────────────────
   // Messages de bienvenue par dossier (clé = nom normalisé)
@@ -6215,15 +6621,17 @@ body.focus-mode .focus-exit{ display:flex; }
     const page = document.getElementById('folderPage');
     page.style.display='flex';
     requestAnimationFrame(()=>page.classList.add('open'));
-    document.body.style.overflow='hidden';
+    lockScroll();
+    navArm();
   }
   window._folderArtOpen = function(i){ const a=_folderPageArts[i]; if(a) _showArtModal(a); };
   window.closeFolderPage = function(){
     const page = document.getElementById('folderPage');
+    if(!page || !page.classList.contains('open')) return;
     page.classList.remove('open');
-    setTimeout(()=>{ page.style.display='none'; document.body.style.overflow=''; },400);
+    setTimeout(()=>{ page.style.display='none'; unlockScroll(); },400);
   };
-  document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ const p=document.getElementById('folderPage'); if(p&&p.classList.contains('open')) closeFolderPage(); }});
+  // (Escape page dossier géré centralement par closeTopLayer)
 
   // Brancher clic sur les noms de dossiers dans la sidebar
   // (override de la délégation d'événement existante)
@@ -6240,9 +6648,11 @@ body.focus-mode .focus-exit{ display:flex; }
     const ov = document.getElementById('menu3Overlay');
     ov.style.display='flex';
     requestAnimationFrame(()=>ov.classList.add('open'));
+    navArm();
   }
   function closeMenu3(){
     const ov = document.getElementById('menu3Overlay');
+    if(!ov || !ov.classList.contains('open')) return;
     ov.classList.remove('open');
     setTimeout(()=>{ ov.style.display='none'; },380);
   }
@@ -6289,24 +6699,9 @@ body.focus-mode .focus-exit{ display:flex; }
       const t=e.changedTouches[0];
       const dx=t.clientX-sx, dy=Math.abs(t.clientY-sy);
       if(dx<MIN_DX||dy>MAX_DY) return;
-      const artModal=document.getElementById('artModal');
-      if(artModal&&artModal.style.display==='flex'){closeArtModal();return;}
-      const fp=document.getElementById('feedPage');
-      if(fp&&fp.classList.contains('open')){closeFeedPage();return;}
-      const dp=document.getElementById('folderPage');
-      if(dp&&dp.classList.contains('open')){closeFolderPage();return;}
-      const disc=document.getElementById('discoverPage');
-      if(disc&&disc.classList.contains('open')){
-        const det=document.getElementById('dcDetailPanel');
-        if(det&&det.classList.contains('visible')){dcCloseTheme();return;}
-        closeDiscover();return;
-      }
-      const prefs=document.getElementById('prefsPage');
-      if(prefs&&prefs.classList.contains('open')){
-        if(typeof closePrefsPage==='function') closePrefsPage();
-        else if(prefs.classList.contains('open')) prefs.classList.remove('open');
-        return;
-      }
+      // Point unique : ferme la couche du dessus (et reste synchro avec le
+      // bouton/geste retour natif via l'historique).
+      if(_topLayerCloser()) goBack();
     },{passive:true});
   })();
 
