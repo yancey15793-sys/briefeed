@@ -289,13 +289,13 @@ button, .ob-btn, .ob-btn-ghost,
 /* Sélecteur de police (option demandée) — discret, hors design */
 /* Sélecteur de police — intégré dans la sidebar */
 .font-switch{
-  display:inline-flex; gap:2px; padding:3px;
+  display:inline-flex; gap:2px; padding:2px;
   border-radius:999px;
   background:rgba(255,255,255,.05);
 }
 .sb-pref{
   display:flex; align-items:center; justify-content:space-between;
-  padding:10px 12px 4px;
+  padding:6px 12px 2px;
 }
 .sb-pref-label{
   font-family:var(--font-inter);
@@ -304,8 +304,8 @@ button, .ob-btn, .ob-btn-ghost,
 }
 .font-switch button{
   font-family:var(--font-inter); cursor:pointer; border:0; background:transparent;
-  color:var(--text-muted); padding:5px 12px; border-radius:999px;
-  font-size:12px; font-weight:600;
+  color:var(--text-muted); padding:4px 10px; border-radius:999px;
+  font-size:11px; font-weight:600;
   transition:background .2s ease, color .2s ease;
 }
 .font-switch button[aria-pressed="true"]{ background:var(--text); color:#000; font-weight:700; }
@@ -500,9 +500,11 @@ button, .ob-btn, .ob-btn-ghost,
 
 .sb-footer{
   border-top:1px solid rgba(255,255,255,.05);
-  /* Padding bas = safe-area uniquement — la tab bar est dans la page principale,
-     pas dans la sidebar. On ajoute 16px de confort sans masquer les boutons. */
-  padding:12px 14px max(calc(env(safe-area-inset-bottom,0px) + 16px), 24px);
+  /* La tab bar (.smart-nav) flotte en z-index:500 PAR-DESSUS la sidebar,
+     son haut est à 76px du bas (bottom:22px + height:54px). On réserve
+     donc ~90px en bas pour que « Préférences » reste visible au-dessus.
+     Valeur fixe car la nav n'est pas safe-area-aware. */
+  padding:8px 14px max(90px, calc(env(safe-area-inset-bottom,0px) + 56px));
   display:flex; flex-direction:column; gap:4px;
   flex-shrink:0;
 }
