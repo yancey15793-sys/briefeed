@@ -111,43 +111,21 @@ button, .ob-btn, .ob-btn-ghost,
 .qpill-trigger, .chev-btn {
   min-width: 44px; min-height: 44px;
 }
-/* Feedback tactile immédiat — scale au :active — durées réduites à 80ms max */
-.art-card:active          { opacity:.82; transform:scale(.988); transition:opacity .08s, transform .08s; }
-.grid2-card:active        { opacity:.82; transform:scale(.96);  transition:opacity .08s, transform .08s; }
-.seq-item:active          { opacity:.7;  transition:opacity .08s; }
-.list-item:active         { opacity:.7;  transition:opacity .08s; }
-.essentiel-card:active    { opacity:.75; transition:opacity .08s; }
-.browse-hero-card:active  { opacity:.85; transform:scale(.98);  transition:opacity .08s, transform .08s; }
-.dc-theme-tile:active     { transform:scale(.96); transition:transform .08s; }
-.feed-item:active         { background:rgba(255,255,255,.06); transition:background .05s; }
-.sb-item:active           { background:rgba(255,255,255,.08); transition:background .05s; }
-.vp-item:active           { background:rgba(255,255,255,.06); transition:background .05s; }
+/* Feedback tactile immédiat — scale au :active */
+.art-card:active          { opacity:.82; transform:scale(.988); transition:opacity .1s, transform .1s; }
+.grid2-card:active        { opacity:.82; transform:scale(.96);  transition:opacity .1s, transform .1s; }
+.seq-item:active          { opacity:.7;  transition:opacity .1s; }
+.list-item:active         { opacity:.7;  transition:opacity .1s; }
+.essentiel-card:active    { opacity:.75; transition:opacity .1s; }
+.browse-hero-card:active  { opacity:.85; transform:scale(.98);  transition:opacity .1s, transform .1s; }
+.dc-theme-tile:active     { transform:scale(.96); transition:transform .12s; }
+.feed-item:active         { background:rgba(255,255,255,.06); transition:background .08s; }
+.sb-item:active           { background:rgba(255,255,255,.08); transition:background .08s; }
+.vp-item:active           { background:rgba(255,255,255,.06); transition:background .08s; }
 [data-theme="light"] .feed-item:active { background:rgba(0,0,0,.05); }
 [data-theme="light"] .sb-item:active   { background:rgba(0,0,0,.06); }
-/* Éliminer le délai 300ms sur TOUS les éléments interactifs */
-*, *::before, *::after { touch-action: manipulation; }
-/* Réintroduire pan-y sur les scrollables (override nécessaire après le * ci-dessus) */
-.row, .feed-page-scroll, .folder-page-scroll,
-.sb-scroll, .dc-catalog-panel, .dc-detail-panel,
-#artModalBody, .ob-wrap, .artModalBody {
-  touch-action: pan-y !important;
-}
-/* will-change pour les éléments animés fréquemment */
-.sidebar { will-change: transform; }
-.art-card, .grid2-card, .browse-hero-card { will-change: transform, opacity; }
-#artModal { will-change: transform, opacity; }
-.nav-capsule { will-change: flex-grow, flex-basis; }
-.nav-pill-indicator { will-change: left; }
-/* Accélération GPU pour les overlays et panneaux glissants */
-.sidebar-overlay, .sidebar,
-.feed-page, .folder-page,
-.dc-page, .pc-page, .pp-page { -webkit-backface-visibility: hidden; backface-visibility: hidden; }
-/* Transitions de navigation accélérées */
-.feed-page, .folder-page { transition: transform .38s cubic-bezier(.32,.72,0,1); }
-/* Scroll momentum natif iOS sur tous les conteneurs */
-.sb-scroll, .feed-page-scroll, .folder-page-scroll,
-#artModalBody, .dc-catalog-panel, .dc-detail-panel,
-.pp-layout, .pc-body { -webkit-overflow-scrolling: touch; }
+/* Éviter le délai 300ms sur tous les boutons */
+button, a, [onclick] { touch-action: manipulation; }
 
 /* Mode clair — overrides ciblés pour les surfaces sombres */
 [data-theme="light"] .sidebar{
@@ -363,9 +341,8 @@ button, .ob-btn, .ob-btn-ghost,
   display:flex; flex-direction:column;
   font-family:var(--font-inter);                   /* Inter pour habiller la sidebar */
   transform:translateX(-105%);
-  transition:transform .42s cubic-bezier(.16,1,.3,1);  /* ressort Motion allégé */
+  transition:transform .62s cubic-bezier(.16,1,.3,1);  /* ressort Motion */
   z-index:90;
-  will-change:transform;
 }
 .sidebar.open{ transform:translateX(0); }
 
@@ -413,7 +390,7 @@ button, .ob-btn, .ob-btn-ghost,
 }
 .sb-search input::placeholder{ color:#666; font-weight:500; }
 
-.sb-scroll{ flex:1; overflow-y:auto; padding:4px 10px 8px; min-height:0; }
+.sb-scroll{ flex:1; overflow-y:auto; padding:4px 10px 18px; }
 
 /* Raccourcis : Tout voir / Non lus / Aujourd'hui */
 .sb-item{
@@ -498,70 +475,10 @@ button, .ob-btn, .ob-btn-ghost,
 .feed-add:hover{ color:var(--text); }
 .feed-add svg{ width:13px; height:13px; }
 
-/* ════════════════════════════════════════════════════════════════
-   MICRO-INTERACTIONS SIDEBAR — spotlight, accent, cascade, masque
-   (effets intégrés depuis le prototype, mappés sur .folder/.feed-item)
-   ════════════════════════════════════════════════════════════════ */
-.folder{ transition:opacity .4s cubic-bezier(.16,1,.3,1), filter .4s cubic-bezier(.16,1,.3,1); }
-.folder-head{ position:relative; transition:padding-left .3s cubic-bezier(.32,.72,0,1); }
-
-/* Barre d'accent latérale (se déploie en scaleY) */
-.folder-head::before{
-  content:""; position:absolute; left:0; top:50%;
-  transform:translateY(-50%) scaleY(.25);
-  width:3px; height:16px; border-radius:0 3px 3px 0; background:var(--accent);
-  opacity:0; transition:transform .3s cubic-bezier(.16,1,.3,1), opacity .2s ease;
-  pointer-events:none;
-}
-.folder.open > .folder-head::before{ opacity:1; transform:translateY(-50%) scaleY(1); }
-.folder.open > .folder-head{ padding-left:16px; }
-
-/* Tactile / pression : feedback du chevron */
-.folder-head .chev-btn{ transition:transform .15s ease; }
-.folder-head .chev-btn:active{ transform:scale(.82); }
-
-/* Cascade des flux à l'ouverture du dossier */
-.folder-body-inner > *{
-  opacity:0; transform:translateX(-8px);
-  transition:opacity .35s ease, transform .4s cubic-bezier(.16,1,.3,1),
-             background .2s ease, color .2s ease, padding-left .25s cubic-bezier(.32,.72,0,1), text-shadow .2s ease;
-}
-.folder.open .folder-body-inner > *{ opacity:1; transform:translateX(0); }
-.folder.open .folder-body-inner > *:nth-child(1){ transition-delay:.04s; }
-.folder.open .folder-body-inner > *:nth-child(2){ transition-delay:.08s; }
-.folder.open .folder-body-inner > *:nth-child(3){ transition-delay:.12s; }
-.folder.open .folder-body-inner > *:nth-child(4){ transition-delay:.16s; }
-.folder.open .folder-body-inner > *:nth-child(5){ transition-delay:.20s; }
-.folder.open .folder-body-inner > *:nth-child(n+6){ transition-delay:.24s; }
-
-/* Masque dégradé haut/bas de la zone scrollable */
-.sb-scroll{
-  -webkit-mask-image:linear-gradient(to bottom, transparent 0, #000 4%, #000 96%, transparent 100%);
-  mask-image:linear-gradient(to bottom, transparent 0, #000 4%, #000 96%, transparent 100%);
-}
-
-/* SPOTLIGHT — desktop : le survol met l'item au net, le reste s'estompe */
-@media (hover:hover){
-  #folderList:hover .folder{ opacity:.32; filter:blur(.5px); }
-  #folderList .folder:hover{ opacity:1; filter:blur(0); }
-  #folderList .folder:hover > .folder-head{ padding-left:16px; }
-  #folderList .folder:hover > .folder-head::before{ opacity:1; transform:translateY(-50%) scaleY(1); }
-  #folderList .feed-item:hover{ padding-left:32px; text-shadow:0 0 12px rgba(255,255,255,.18); }
-}
-[data-theme="light"] #folderList .feed-item:hover{ text-shadow:none; }
-
-/* SPOTLIGHT — tactile : le dossier ouvert devient le focus, les autres s'estompent */
-@media (hover:none){
-  #folderList.has-open .folder:not(.open){ opacity:.4; filter:blur(.4px); }
-}
-
 .sb-footer{
   border-top:1px solid rgba(255,255,255,.05);
-  /* Padding bas = safe-area uniquement — la tab bar est dans la page principale,
-     pas dans la sidebar. On ajoute 16px de confort sans masquer les boutons. */
-  padding:12px 14px max(calc(env(safe-area-inset-bottom,0px) + 16px), 24px);
+  padding:12px 14px max(calc(env(safe-area-inset-bottom,0px) + 88px), 96px);
   display:flex; flex-direction:column; gap:4px;
-  flex-shrink:0;
 }
 .sb-foot-btn{
   display:flex; align-items:center; gap:10px;
@@ -3584,23 +3501,11 @@ body.focus-mode .focus-exit{ display:flex; }
       list.appendChild(el);
     });
 
-    // Spotlight tactile : marque la liste quand un dossier est ouvert
-    list.classList.toggle('has-open', folders.some(f => f.open));
-
-    // Chevron : toggle accordéon uniquement — on bascule la classe sur
-    // l'élément existant (sans re-render) pour que l'expansion et la
-    // cascade des flux s'animent réellement.
+    // Chevron : toggle accordéon uniquement
     list.querySelectorAll('.chev-btn').forEach(btn => btn.addEventListener('click', e => {
       e.stopPropagation();
       const i = +btn.dataset.toggle;
-      folders[i].open = !folders[i].open; persist();
-      const folderEl = btn.closest('.folder');
-      if(folderEl){
-        folderEl.classList.toggle('open', folders[i].open);
-        list.classList.toggle('has-open', folders.some(f => f.open));
-      } else {
-        render();
-      }
+      folders[i].open = !folders[i].open; persist(); render();
     }));
     // Nom du dossier : ouvre la page du dossier
     list.querySelectorAll('.f-name[data-open]').forEach(span => span.addEventListener('click', e => {
@@ -4972,7 +4877,7 @@ body.focus-mode .focus-exit{ display:flex; }
         const img = _extractImg(item);
         const desc = (item.description||'').replace(/<[^>]*>/g,'').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').trim().slice(0,200);
         let pd; try{ pd=new Date(item.pubDate||0); if(isNaN(pd)||pd.getTime()<=0) pd=new Date(latestKnown-86400000-(idx+1)*300000); if(pd.getTime()>now+60000) pd=new Date(now-(idx+1)*60000); }catch(e){ pd=new Date(latestKnown-(idx+1)*300000); }
-        const art = { title:item.title||'Sans titre', link:item.link||'#', description:desc, pubDate:pd, source:feed.name, slug:feed.slug, feedUrl:feed.url, imageUrl:img, needsFetch:!img, contentEncoded:(item['content:encoded']||item.description||'').slice(0,8000), author:(item.author||'').replace(/<[^>]+>/g,'').trim().slice(0,60)||null };
+        const art = { title:item.title||'Sans titre', link:item.link||'#', description:desc, pubDate:pd, source:feed.name, slug:feed.slug, feedUrl:feed.url, imageUrl:img, needsFetch:!img, contentEncoded:(item['content:encoded']||'').slice(0,2000), author:(item.author||'').replace(/<[^>]+>/g,'').trim().slice(0,60)||null };
         if(art.title && art.link !== '#') arr.push(art);
       }catch(e){}
       return arr;
@@ -5635,24 +5540,17 @@ body.focus-mode .focus-exit{ display:flex; }
 
   // Nettoyage contenu RSS
   function _cleanRssContent(html){
-    if(!html||html.length<30)return null;   // seuil abaissé de 80 → 30
+    if(!html||html.length<80)return null;
     const div=document.createElement('div'); div.innerHTML=html;
     div.querySelectorAll('script,style,noscript,iframe,form,button,input').forEach(el=>el.remove());
     const bl=[];
-    // Inclure aussi les <span> et <div> racines si pas de balises sémantiques
-    div.querySelectorAll('p,h2,h3,h4,li,blockquote,span:not(p span),div:not(div div)').forEach(el=>{
-      const tx=el.textContent.trim(); if(tx.length<3)return;
+    div.querySelectorAll('p,h2,h3,h4,li,blockquote').forEach(el=>{
+      const tx=el.textContent.trim(); if(tx.length<5)return;
       if(/^H[2-4]$/.test(el.tagName)) bl.push('<'+el.tagName.toLowerCase()+'>'+tx+'</'+el.tagName.toLowerCase()+'>');
       else if(el.tagName==='BLOCKQUOTE') bl.push('<blockquote>'+tx+'</blockquote>');
       else if(el.tagName==='LI') bl.push('<li>'+tx+'</li>');
       else bl.push('<p>'+tx+'</p>');
     });
-    // Si aucun bloc sémantique trouvé, utiliser le texte brut découpé en paragraphes
-    if(!bl.length){
-      const plain = div.textContent.trim();
-      if(plain.length < 10) return null;
-      plain.split(/\n{2,}|\r\n{2,}/).forEach(s=>{ const t=s.trim(); if(t.length>3) bl.push('<p>'+t+'</p>'); });
-    }
     return bl.length>=1 ? bl.join('') : null;
   }
 
@@ -5757,23 +5655,14 @@ body.focus-mode .focus-exit{ display:flex; }
     const cached = _getReaderCache(a.link);
     if(cached){ _renderReaderContent(cached, container); return; }
 
-    // 2. RSS contentEncoded — seuil abaissé à 30 caractères (couvre TrashTalk et feeds courts)
-    const rssRaw = a.contentEncoded || '';
-    const rssContent = rssRaw.length > 30 ? _cleanRssContent(rssRaw) : null;
-
-    // 2b. Fallback sur la description si contentEncoded vide/court
-    const descRaw = a.description || '';
-    const descContent = !rssContent && descRaw.length > 30 ? _cleanRssContent(descRaw) : null;
-
-    const baseContent = rssContent || descContent;
-
-    if(baseContent && baseContent.length > 40){
-      container.innerHTML = '<div class="art-reader-partial"><div class="art-reader-partial-spin"></div>Enrichissement en cours…</div><div class="art-reader-text" id="_rssBase">'+baseContent+'</div>';
+    // 2. RSS contentEncoded quasi-instantané
+    const rssContent = a.contentEncoded && a.contentEncoded.length>200 ? _cleanRssContent(a.contentEncoded) : null;
+    if(rssContent && rssContent.length>100){
+      container.innerHTML = '<div class="art-reader-partial"><div class="art-reader-partial-spin"></div>Enrichissement en cours…</div><div class="art-reader-text" id="_rssBase">'+rssContent+'</div>';
       // Enrichir en arrière-plan
       _artFetchViaProxies(a.link, signal).then(full=>{
         if(signal.aborted||!full)return;
         const base=container.querySelector('#_rssBase');
-        // Accepter le résultat proxy si 30% plus long (au lieu de 30%)
         if(full.length>(base?.textContent?.length||0)*1.3){
           _setReaderCache(a.link,full); _renderReaderContent(full,container);
         } else {
@@ -5790,15 +5679,10 @@ body.focus-mode .focus-exit{ display:flex; }
     if(signal.aborted) return;
     if(full){ _setReaderCache(a.link,full); _renderReaderContent(full,container); }
     else {
-      // Fallback final : afficher description brute si disponible
+      // Fallback description
       const desc = a.description||a.contentEncoded||'';
-      if(desc.length>20){
-        const cleaned = _cleanRssContent(desc);
-        if(cleaned && cleaned.length>10){
-          container.innerHTML='<div class="art-reader-text">'+cleaned+'</div>';
-        } else {
-          container.innerHTML='<div class="art-reader-text"><p>'+escHtml(desc)+'</p></div>';
-        }
+      if(desc.length>80){
+        container.innerHTML='<div class="art-reader-text"><p>'+escHtml(desc)+'</p></div>';
       } else {
         container.innerHTML='<div style="padding:32px 0;text-align:center;color:var(--text-muted);font-family:var(--font-inter);font-size:14px">Contenu non disponible hors ligne.<br><button onclick="artModalOpenExternal()" style="margin-top:14px;padding:9px 20px;border:none;border-radius:999px;background:#ff3c32;color:#fff;font-family:var(--font-inter);font-size:13px;font-weight:700;cursor:pointer">Ouvrir dans le navigateur</button></div>';
       }
@@ -6803,11 +6687,9 @@ body.focus-mode .focus-exit{ display:flex; }
   // ═══════════════════════════════════════════════════════
 
   // ── Swipe-back universel (bord gauche → retour) ──────────────
-  // Zone élargie à 64px (au lieu de 40), seuil réduit à 48px (au lieu de 72),
-  // tolérance diagonale augmentée à 100px (au lieu de 80).
   (function initSwipeBack(){
     let sx=0, sy=0, tracking=false;
-    const EDGE=64, MIN_DX=48, MAX_DY=100;
+    const EDGE=40, MIN_DX=72, MAX_DY=80;
     document.addEventListener('touchstart', e=>{
       const t=e.touches[0];
       sx=t.clientX; sy=t.clientY; tracking=t.clientX<EDGE;
@@ -6824,7 +6706,6 @@ body.focus-mode .focus-exit{ display:flex; }
   })();
 
   // ── Swipe bas → dismiss modal article ────────────────────────
-  // Seuil de fermeture réduit de 90 → 65px pour plus de réactivité.
   (function initModalSwipeDown(){
     let sy=0, active=false;
     document.addEventListener('touchstart', e=>{
@@ -6838,22 +6719,21 @@ body.focus-mode .focus-exit{ display:flex; }
       if(!active) return;
       const dy=e.touches[0].clientY-sy;
       const modal=document.getElementById('artModal');
-      if(dy>0&&modal) modal.style.transform='translateY('+Math.min(dy*.5,140)+'px)';
+      if(dy>0&&modal) modal.style.transform='translateY('+Math.min(dy*.45,130)+'px)';
     },{passive:true});
     document.addEventListener('touchend', e=>{
       if(!active) return; active=false;
       const dy=e.changedTouches[0].clientY-sy;
       const modal=document.getElementById('artModal');
       if(!modal) return;
-      modal.style.transition='transform .28s cubic-bezier(.32,.72,0,1)';
-      if(dy>65){ closeArtModal(); }
+      modal.style.transition='transform .35s cubic-bezier(.32,.72,0,1)';
+      if(dy>90){ closeArtModal(); }
       else { modal.style.transform=''; }
-      setTimeout(()=>{ modal.style.transition=''; modal.style.transform=''; },300);
+      setTimeout(()=>{ modal.style.transition=''; modal.style.transform=''; },380);
     },{passive:true});
   })();
 
   // ── Swipe horizontal → article suivant/précédent ─────────────
-  // Seuil réduit de 65 → 44px, tolérance diagonale augmentée de 70 → 90px.
   let _artSwipeCtx = {list:[], idx:0};
   window._artSetSwipeCtx = function(list,idx){ _artSwipeCtx={list,idx}; };
   (function initArticleSwipe(){
@@ -6868,7 +6748,7 @@ body.focus-mode .focus-exit{ display:flex; }
       if(!modal||modal.style.display!=='flex') return;
       const dx=e.changedTouches[0].clientX-sx;
       const dy=Math.abs(e.changedTouches[0].clientY-sy);
-      if(Math.abs(dx)<44||dy>90) return;
+      if(Math.abs(dx)<65||dy>70) return;
       const {list,idx}=_artSwipeCtx;
       if(!list.length) return;
       if(dx<0&&idx<list.length-1){ const ni=idx+1; _showArtModal(list[ni]); _artSwipeCtx.idx=ni; }
@@ -6906,47 +6786,24 @@ body.focus-mode .focus-exit{ display:flex; }
   })();
 
   // ── Swipe-open sidebar (bord gauche → glisser vers droite) ────
-  // Zone élargie : les 80 premiers px (au lieu de 32) déclenchent l'écoute.
-  // Seuil de déclenchement réduit : 40px de déplacement horizontal (au lieu de 55).
-  // Ratio diagonal : accepte jusqu'à 45° (dy < dx * 1.2).
   (function initSidebarSwipe(){
-    let sx=0, sy=0, active=false;
+    let sx=0, active=false;
     document.addEventListener('touchstart', e=>{
       const modal=document.getElementById('artModal');
       if(modal&&modal.style.display==='flex') return;
       const sb=document.getElementById('sidebar');
       if(sb&&sb.classList.contains('open')) return;
-      // Zone large : 80px depuis le bord gauche
-      if(e.touches[0].clientX<80){ sx=e.touches[0].clientX; sy=e.touches[0].clientY; active=true; }
-    },{passive:true});
-    document.addEventListener('touchmove', e=>{
-      if(!active) return;
-      const dx = e.touches[0].clientX - sx;
-      const dy = Math.abs(e.touches[0].clientY - sy);
-      // Animation en live : follow le doigt pour feedback immédiat
-      if(dx > 0 && dy < dx * 1.2){
-        const sb = document.getElementById('sidebar');
-        if(sb && !sb.classList.contains('open')){
-          const prog = Math.min(dx / 240, 1);
-          sb.style.transition = 'none';
-          sb.style.transform = 'translateX('+(-105 + prog*105)+'%)';
-        }
-      }
+      if(e.touches[0].clientX<32){ sx=e.touches[0].clientX; active=true; }
     },{passive:true});
     document.addEventListener('touchend', e=>{
       if(!active) return; active=false;
       const dx=e.changedTouches[0].clientX-sx;
-      const dy=Math.abs(e.changedTouches[0].clientY-sy);
-      const sb=document.getElementById('sidebar');
-      const ov=document.getElementById('sbOverlay');
-      if(sb) sb.style.transition = '';
-      // Seuil réduit : 40px de déplacement horizontal ET axe pas trop diagonal
-      if(dx>40 && dy < dx * 1.2){
+      const dy=Math.abs(e.changedTouches[0].clientY-e.changedTouches[0].clientY);
+      if(dx>55){
+        const sb=document.getElementById('sidebar');
+        const ov=document.getElementById('sbOverlay');
         if(sb) sb.classList.add('open');
         if(ov) ov.classList.add('open');
-        if(sb) sb.style.transform='';
-      } else {
-        if(sb) sb.style.transform='';
       }
     },{passive:true});
   })();
