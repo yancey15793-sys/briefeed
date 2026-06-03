@@ -491,6 +491,60 @@ button, a, [onclick] { touch-action: manipulation; }
 .sb-foot-btn svg{ width:17px; height:17px; color:var(--text-muted); flex:none; }
 
 /* ===========================================================
+   RÉACTIVITÉ TACTILE — feedback de pression immédiat (sidebar)
+   Bloc additif : ressort à l'appui (courbe navbar .34,1.56,.64,1),
+   + neutralisation du hover « collant » sur écran tactile.
+   =========================================================== */
+.sb-item, .feed-item, .folder-head, .folder-head .f-name,
+.folder-head .chev-btn, .sb-foot-btn, .sb-close, .sb-add,
+.font-switch button{
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+}
+
+/* Transitions enrichies : le transform anime le retour du ressort */
+.sb-item   { transition:background .18s ease, color .18s ease, transform .22s cubic-bezier(.34,1.56,.64,1); }
+.feed-item { transition:background .18s ease, color .18s ease, transform .22s cubic-bezier(.34,1.56,.64,1); }
+.sb-foot-btn{ transition:background .18s ease, transform .22s cubic-bezier(.34,1.56,.64,1); }
+.sb-close  { transition:background .18s ease, color .18s ease, transform .22s cubic-bezier(.34,1.56,.64,1); }
+.sb-add    { transition:background .18s ease, color .18s ease, transform .22s cubic-bezier(.34,1.56,.64,1); }
+.folder-head .chev-btn{ transition:transform .22s cubic-bezier(.34,1.56,.64,1); }
+.folder-head .f-name { transition:color .15s ease, transform .22s cubic-bezier(.34,1.56,.64,1); }
+.font-switch button  { transition:background .18s ease, color .18s ease, transform .22s cubic-bezier(.34,1.56,.64,1); }
+
+/* Appui — retour visuel instantané (thème sombre) */
+.sb-item:active   { background:#1e1e1f; color:var(--text); transform:scale(.975); }
+.feed-item:active { background:#1e1e1f; color:var(--text); transform:scale(.97); }
+.sb-foot-btn:active{ background:rgba(255,255,255,.11); transform:scale(.975); }
+.sb-close:active  { background:rgba(255,255,255,.12); color:var(--text); transform:scale(.86); }
+.sb-add:active    { background:rgba(255,255,255,.1);  color:var(--text); transform:scale(.84); }
+.folder-head .chev-btn:active{ transform:scale(.78); }
+.folder-head .f-name:active { color:#ff3c32; transform:scale(.985); }
+.font-switch button:active  { transform:scale(.9); }
+
+/* Mode clair — surbrillance d'appui adaptée */
+[data-theme="light"] .sb-item:active,
+[data-theme="light"] .feed-item:active{ background:rgba(0,0,0,.09); color:var(--text); }
+[data-theme="light"] .sb-foot-btn:active,
+[data-theme="light"] .sb-close:active,
+[data-theme="light"] .sb-add:active{ background:rgba(0,0,0,.08); }
+
+/* Écrans tactiles — on retire le hover qui reste « collé » après le tap */
+@media (hover:none){
+  .sb-item:hover   { background:transparent; color:var(--text-muted); }
+  .feed-item:hover { background:transparent; color:var(--text-muted); }
+  .sb-foot-btn:hover{ background:transparent; }
+  .folder-head:hover{ background:transparent; }
+  .folder-head .f-name:hover{ color:inherit; }
+  .sb-close:hover,
+  .sb-add:hover{ background:transparent; color:var(--text-muted); }
+  /* l'état sélectionné, lui, doit rester visible */
+  .sb-item.active{ background:#161616; color:var(--text); }
+  [data-theme="light"] .sb-item.active,
+  [data-theme="light"] .folder-head:hover{ background:rgba(0,0,0,.05); }
+}
+
+/* ===========================================================
    NAVBAR BRIEFEED — smart-nav (capsules liquid glass)
    =========================================================== */
 /* Conteneur flottant */
