@@ -504,13 +504,13 @@ button, .ob-btn, .ob-btn-ghost,
      son haut est à 76px du bas (bottom:22px + height:54px). On réserve
      donc ~90px en bas pour que « Préférences » reste visible au-dessus.
      Valeur fixe car la nav n'est pas safe-area-aware. */
-  padding:8px 14px max(90px, calc(env(safe-area-inset-bottom,0px) + 56px));
-  display:flex; flex-direction:column; gap:4px;
+  padding:6px 14px max(90px, calc(env(safe-area-inset-bottom,0px) + 56px));
+  display:flex; flex-direction:column; gap:2px;
   flex-shrink:0;
 }
 .sb-foot-btn{
   display:flex; align-items:center; gap:10px;
-  padding:10px 12px; border-radius:11px; cursor:pointer;
+  padding:8px 12px; border-radius:11px; cursor:pointer;
   border:0; background:transparent; color:var(--text); font-family:inherit;
   font-size:14px; font-weight:650; letter-spacing:-0.01em; text-align:left;
   transition:background .2s ease;
@@ -1596,6 +1596,9 @@ button, .ob-btn, .ob-btn-ghost,
 .menu3-chip{ padding:8px 16px; border-radius:999px; border:1.5px solid rgba(255,255,255,.12); font-family:var(--font-inter); font-size:13px; font-weight:700; color:var(--text-muted); cursor:pointer; transition:all .2s; -webkit-tap-highlight-color:transparent; }
 [data-theme="light"] .menu3-chip{ border-color:rgba(0,0,0,.12); }
 .menu3-chip.active{ border-color:#ff3c32; background:rgba(255,60,50,.12); color:#ff3c32; }
+/* Chips Police : chacune rendue dans sa propre typo (aperçu instantané) */
+.menu3-chip-font[data-font="inter"]{ font-family:var(--font-inter); }
+.menu3-chip-font[data-font="geist"]{ font-family:var(--font-geist); }
 
 /* Carte article réelle — reprend .hello-card, ajoute source+time */
 .art-card{ display:flex; flex-direction:column; text-decoration:none; color:var(--text); cursor:pointer; -webkit-tap-highlight-color:transparent; }
@@ -2386,13 +2389,6 @@ body.focus-mode .focus-exit{ display:flex; }
     </div>
 
     <div class="sb-footer">
-      <div class="sb-pref">
-        <span class="sb-pref-label">Police</span>
-        <div class="font-switch" role="group" aria-label="Police">
-          <button data-set="inter" aria-pressed="true">Inter</button>
-          <button data-set="geist" aria-pressed="false">Geist</button>
-        </div>
-      </div>
       <button class="sb-foot-btn" id="newFolder">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
         Nouveau dossier
@@ -3186,12 +3182,14 @@ body.focus-mode .focus-exit{ display:flex; }
 <div id="navSearchResults"></div>
 
 <script>
-  // ---- Sélecteur de police (Inter / Geist) ----
-  const btns = document.querySelectorAll('.font-switch button');
-  btns.forEach(b => b.addEventListener('click', () => {
-    document.documentElement.dataset.font = b.dataset.set;
-    btns.forEach(x => x.setAttribute('aria-pressed', x === b));
-  }));
+  // ---- Police (Inter / Geist) — pilotée depuis le menu ⋯ ----
+  // Restaure la préférence enregistrée dès le chargement.
+  (function restoreFont(){
+    let saved; try{ saved = localStorage.getItem('bf_font'); }catch(e){}
+    if(saved === 'inter' || saved === 'geist'){
+      document.documentElement.dataset.font = saved;
+    }
+  })();
 
   // ---- Bouton œil : cycle éditions → grille → séquentiel → parcourir ----
   const views = document.querySelectorAll('.view');
@@ -3305,7 +3303,7 @@ body.focus-mode .focus-exit{ display:flex; }
     }
 
     // Sync UI toujours
-    document.querySelectorAll('.menu3-chip').forEach(c => c.classList.toggle('active', c.dataset.view === target));
+    document.querySelectorAll('#menu3ViewChips .menu3-chip').forEach(c => c.classList.toggle('active', c.dataset.view === target));
     document.querySelectorAll('.vp-item').forEach(el => el.classList.toggle('active', el.dataset.vpview === target));
   }
 
@@ -6693,7 +6691,10 @@ body.focus-mode .focus-exit{ display:flex; }
     document.getElementById('menu3CheckDark').style.display  = t==='dark'  ? '' : 'none';
     document.getElementById('menu3CheckLight').style.display = t==='light' ? '' : 'none';
     // Sync vue active
-    document.querySelectorAll('.menu3-chip').forEach(c=>c.classList.toggle('active', c.dataset.view===_currentView));
+    document.querySelectorAll('#menu3ViewChips .menu3-chip').forEach(c=>c.classList.toggle('active', c.dataset.view===_currentView));
+    // Sync police active
+    const curFont = document.documentElement.dataset.font || 'inter';
+    document.querySelectorAll('#menu3FontChips .menu3-chip').forEach(c=>c.classList.toggle('active', c.dataset.font===curFont));
     const ov = document.getElementById('menu3Overlay');
     ov.style.display='flex';
     requestAnimationFrame(()=>ov.classList.add('open'));
@@ -6716,6 +6717,13 @@ body.focus-mode .focus-exit{ display:flex; }
   window.menu3SetView = function(v){
     closeMenu3();
     setTimeout(()=>_switchView(v), 200);
+  };
+  window.menu3SetFont = function(set){
+    if(set!=='inter' && set!=='geist') return;
+    document.documentElement.dataset.font = set;
+    try{ localStorage.setItem('bf_font', set); }catch(e){}
+    document.querySelectorAll('#menu3FontChips .menu3-chip')
+      .forEach(c=>c.classList.toggle('active', c.dataset.font===set));
   };
   window.menu3Refresh = function(){
     closeMenu3();
@@ -7204,6 +7212,16 @@ body.focus-mode .focus-exit{ display:flex; }
           <div class="menu3-chip" data-view="grille" onclick="menu3SetView('grille')">Grille</div>
           <div class="menu3-chip" data-view="sequential" onclick="menu3SetView('sequential')">Séquentiel</div>
           <div class="menu3-chip" data-view="browse" onclick="menu3SetView('browse')">Parcourir</div>
+        </div>
+      </div>
+
+      <div class="menu3-divider"></div>
+
+      <div class="menu3-section">
+        <div class="menu3-label">Police</div>
+        <div class="menu3-chips" id="menu3FontChips">
+          <div class="menu3-chip menu3-chip-font active" data-font="inter" onclick="menu3SetFont('inter')">Inter</div>
+          <div class="menu3-chip menu3-chip-font" data-font="geist" onclick="menu3SetFont('geist')">Geist</div>
         </div>
       </div>
 
