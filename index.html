@@ -1965,11 +1965,46 @@ body.focus-mode .focus-exit{ display:flex; }
 .offline-dot.online{ background:#34c759; }
 /* Nb articles pré-chargés dans le tooltip */
 .prefetch-indicator{
-  position:fixed; bottom:calc(env(safe-area-inset-bottom,0px) + 80px); right:16px;
-  z-index:5400; font-family:var(--font-inter); font-size:10px; font-weight:700;
-  color:rgba(255,255,255,.4); pointer-events:none;
-  transition:opacity .4s;
+  display:none !important;
 }
+
+/* ── BOUTON PARTAGE sur les cartes articles ──────────────── */
+.art-share-btn{
+  position:absolute; bottom:8px; right:8px;
+  width:30px; height:30px;
+  border:none; border-radius:50%;
+  background:rgba(30,30,32,.75);
+  -webkit-backdrop-filter:blur(12px);
+  backdrop-filter:blur(12px);
+  color:rgba(255,255,255,.5);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer;
+  opacity:0;
+  transform:scale(.78);
+  transition:opacity .16s ease, transform .2s cubic-bezier(.34,1.56,.64,1), background .12s, color .12s;
+  -webkit-tap-highlight-color:transparent;
+  z-index:5;
+}
+/* Desktop : apparaît au hover de la carte parente */
+.art-card:hover .art-share-btn,
+.grid2-card:hover .art-share-btn,
+.essentiel-card:hover .art-share-btn,
+.seq-item:hover .art-share-btn,
+.list-item:hover .art-share-btn,
+.art-card:focus-within .art-share-btn{
+  opacity:1; transform:scale(1);
+}
+/* Mobile (touch) : toujours visible, légèrement transparent */
+@media (hover:none){
+  .art-share-btn{
+    opacity:.55; transform:scale(.88);
+  }
+  .art-share-btn:active{ background:rgba(255,255,255,.18) !important; transform:scale(.82) !important; color:#fff !important; opacity:1 !important; }
+}
+[data-theme="light"] .art-share-btn{ background:rgba(240,240,245,.88); color:rgba(0,0,0,.45); }
+.art-share-btn svg{ width:13px; height:13px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; pointer-events:none; }
+.art-share-btn:hover{ background:rgba(255,255,255,.15); color:#fff; }
+[data-theme="light"] .art-share-btn:hover{ background:rgba(0,0,0,.1); color:#000; }
 
 /* ── PROPRIÉTÉS DU FLUX ─────────────────────────────────── */
 .feed-props-btn{
@@ -5327,7 +5362,30 @@ body.focus-mode .focus-exit{ display:flex; }
         <span class="art-time" style="margin-left:auto">${time}</span>
       </div>
       <div class="art-title">${escHtml(a.title)}</div>
+      ${_shareBtn(a.link, a.title)}
     </div>`;
+  }
+
+  // ── Partage article ───────────────────────────────────────────
+  const _SHARE_SVG = '<svg viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>';
+
+  window._shareArticle = function(e, link, title){
+    e.stopPropagation(); e.preventDefault();
+    if(navigator.share){
+      navigator.share({ title: title || '', url: link }).catch(()=>{});
+    } else {
+      try{ navigator.clipboard.writeText(link); }catch(err){}
+      // Feedback visuel discret
+      const btn = e.currentTarget;
+      const orig = btn.innerHTML;
+      btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:none;stroke:#34c759;stroke-width:2.5;stroke-linecap:round"><polyline points="20 6 9 17 4 12"/></svg>';
+      btn.style.background = 'rgba(52,199,89,.15)';
+      setTimeout(()=>{ btn.innerHTML = orig; btn.style.background=''; }, 1600);
+    }
+  };
+
+  function _shareBtn(link, title){
+    return `<button class="art-share-btn" onclick="_shareArticle(event,'${escAttr(link)}','${escAttr(title)}')" aria-label="Partager" title="Partager">${_SHARE_SVG}</button>`;
   }
 
   window._openEditionArt = function(idx){
@@ -5936,7 +5994,7 @@ body.focus-mode .focus-exit{ display:flex; }
       const imgH = a.imageUrl
         ? `<div class="grid2-img"><img src="${escAttr(a.imageUrl)}" alt="" decoding="async" onerror="this.parentNode.style.background='#1a1a1a'"></div>`
         : `<div class="grid2-img" style="background:linear-gradient(135deg,rgba(255,60,50,.15),#0a0a0a)"></div>`;
-      return `<div class="grid2-card" onclick="_grilleOpen(${i})">
+      return `<div class="grid2-card" onclick="_grilleOpen(${i})" style="position:relative">
         ${imgH}
         <div class="grid2-title">${escHtml(a.title)}</div>
         <div class="grid2-meta">
@@ -5944,6 +6002,7 @@ body.focus-mode .focus-exit{ display:flex; }
           <span>${escHtml(a.source)}</span>
           <span style="margin-left:auto">${relTime(a.pubDate)}</span>
         </div>
+        ${_shareBtn(a.link, a.title)}
       </div>`;
     }).join('');
   }
@@ -6016,7 +6075,7 @@ body.focus-mode .focus-exit{ display:flex; }
     const actions = done
       ? ''
       : `<div class="seq-progress-actions">
-           <button class="seq-progress-action" onclick="_seqResume()">Reprendre →</button>
+           <button class="seq-progress-action" onclick="_seqResume()">Reprendre</button>
            <button class="seq-progress-ghost" onclick="_seqMarkAllRead()">Tout lu</button>
          </div>`;
     host.innerHTML =
@@ -6073,7 +6132,7 @@ body.focus-mode .focus-exit{ display:flex; }
         ? `<div class="seq-thumb"><img src="${escAttr(a.imageUrl)}" alt="" decoding="async" onerror="this.parentNode.style.display='none'"></div>`
         : '';
       const isRead = _RS.has(a.link);
-      return `<div class="seq-item${isRead?' is-read':''}" data-seq-idx="${i}" onclick="_seqOpen(${i})">
+      return `<div class="seq-item${isRead?' is-read':''}" data-seq-idx="${i}" onclick="_seqOpen(${i})" style="position:relative">
         <span class="seq-num">${String(i+1).padStart(2,'0')}</span>
         <div class="seq-body">
           <div class="seq-source">
@@ -6083,6 +6142,7 @@ body.focus-mode .focus-exit{ display:flex; }
           <div class="seq-title">${escHtml(a.title)}</div>
         </div>
         ${thumb}
+        ${_shareBtn(a.link, a.title)}
       </div>`;
     }).join('');
 
@@ -6116,12 +6176,13 @@ body.focus-mode .focus-exit{ display:flex; }
       const thumb = a.imageUrl
         ? `<div class="list-thumb"><img src="${escAttr(a.imageUrl)}" alt="" decoding="async" onerror="this.parentNode.className='list-thumb-empty'"></div>`
         : `<div class="list-thumb-empty"></div>`;
-      return `<div class="list-item" onclick="_listeOpen(${i})">
+      return `<div class="list-item" onclick="_listeOpen(${i})" style="position:relative">
         ${thumb}
         <div class="list-body">
           <div class="list-source"><div class="list-fav"><img src="${escAttr(fav)}" onerror="this.style.opacity='.3'"></div>${escHtml(a.source)} · ${relTime(a.pubDate)}</div>
           <div class="list-title">${escHtml(a.title)}</div>
         </div>
+        ${_shareBtn(a.link, a.title)}
       </div>`;
     }).join('');
   }
@@ -6169,7 +6230,7 @@ body.focus-mode .focus-exit{ display:flex; }
         ? `<div class="essentiel-thumb"><img src="${escAttr(a.imageUrl)}" alt="" decoding="async" onerror="this.parentNode.style.display='none'"></div>`
         : '';
       const desc  = a.description ? `<div class="essentiel-desc">${escHtml(a.description)}</div>` : '';
-      return `<div class="essentiel-card" onclick="_essentielOpen(${i})">
+      return `<div class="essentiel-card" onclick="_essentielOpen(${i})" style="position:relative">
         <span class="essentiel-rank">${String(i+1).padStart(2,'0')}</span>
         <div class="essentiel-body">
           <div class="essentiel-source">
@@ -6181,6 +6242,7 @@ body.focus-mode .focus-exit{ display:flex; }
         </div>
         ${thumb}
         <span class="essentiel-score">${sc}pts</span>
+        ${_shareBtn(a.link, a.title)}
       </div>`;
     }).join('');
 
@@ -6308,21 +6370,23 @@ body.focus-mode .focus-exit{ display:flex; }
       const heroFav = getFavicon(hero.feedUrl||hero.link||'');
       const heroImg = hero.imageUrl ? "background:url('" + hero.imageUrl.replace(/'/g,"\\'") + "') center/cover no-repeat" : 'background:linear-gradient(135deg,rgba(255,60,50,.18),#0a0a0a)';
       let html = '<div style="margin-bottom:20px">';
-      html += '<div class="art-card" onclick="' + arrName + 'Open(' + heroIdx + ')" style="cursor:pointer">';
+      html += '<div class="art-card" onclick="' + arrName + 'Open(' + heroIdx + ')" style="cursor:pointer;position:relative">';
       html += '<div style="border-radius:18px;overflow:hidden;aspect-ratio:16/9;background:#111;margin-bottom:14px">';
       html += hero.imageUrl ? '<img src="' + escAttr(hero.imageUrl) + '" style="width:100%;height:100%;object-fit:cover" decoding="async">' : '<div style="' + heroImg + ';width:100%;height:100%"></div>';
       html += '</div>';
       html += '<div class="art-source-row"><div class="art-fav"><img src="' + escAttr(heroFav) + '" onerror="this.style.opacity=.3"></div><span class="art-source-name">' + escapeHtml(hero.source) + '</span><span class="art-time" style="margin-left:auto">' + relTime(hero.pubDate) + '</span></div>';
       html += '<div class="art-title" style="font-family:var(--font-dm);font-size:22px;font-weight:700;line-height:1.2;letter-spacing:-.015em;color:var(--text)">' + escapeHtml(hero.title) + '</div>';
+      html += _shareBtn(hero.link, hero.title);
       html += '</div></div>';
       html += '<div class="hello-grid">' + rest.map(function(a){
         var realIdx = arts.indexOf(a);
         var fav = getFavicon(a.feedUrl||a.link||'');
         var imgH = a.imageUrl ? '<img src="' + escAttr(a.imageUrl) + '" style="width:100%;height:100%;object-fit:cover" decoding="async">' : '<div style="background:linear-gradient(135deg,rgba(255,60,50,.12),#0a0a0a);width:100%;height:100%"></div>';
-        return '<div class="art-card" onclick="' + arrName + 'Open(' + realIdx + ')" style="cursor:pointer">' +
+        return '<div class="art-card" onclick="' + arrName + 'Open(' + realIdx + ')" style="cursor:pointer;position:relative">' +
           '<div style="border-radius:14px;overflow:hidden;aspect-ratio:16/9;background:#111;margin-bottom:10px">' + imgH + '</div>' +
           '<div class="art-source-row"><div class="art-fav"><img src="' + escAttr(fav) + '" onerror="this.style.opacity=.3"></div><span class="art-source-name">' + escapeHtml(a.source) + '</span><span class="art-time" style="margin-left:auto">' + relTime(a.pubDate) + '</span></div>' +
           '<div class="art-title">' + escapeHtml(a.title) + '</div>' +
+          _shareBtn(a.link, a.title) +
           '</div>';
       }).join('') + '</div>';
       container.innerHTML = html;
@@ -6358,7 +6422,7 @@ body.focus-mode .focus-exit{ display:flex; }
       container.innerHTML = '<div class="seq-list">' + arts.map(function(a,i){
         var fav = getFavicon(a.feedUrl||a.link||'');
         var thumb = a.imageUrl ? '<div class="seq-thumb"><img src="' + escAttr(a.imageUrl) + '" decoding="async"></div>' : '';
-        return '<div class="seq-item" onclick="' + arrName + 'Open(' + i + ')"><span class="seq-num">' + String(i+1).padStart(2,'0') + '</span><div class="seq-body"><div class="seq-source"><div class="seq-fav"><img src="' + escAttr(fav) + '"></div>' + escapeHtml(a.source) + ' · ' + relTime(a.pubDate) + '</div><div class="seq-title">' + escapeHtml(a.title) + '</div></div>' + thumb + '</div>';
+        return '<div class="seq-item" onclick="' + arrName + 'Open(' + i + ')" style="position:relative"><span class="seq-num">' + String(i+1).padStart(2,'0') + '</span><div class="seq-body"><div class="seq-source"><div class="seq-fav"><img src="' + escAttr(fav) + '"></div>' + escapeHtml(a.source) + ' · ' + relTime(a.pubDate) + '</div><div class="seq-title">' + escapeHtml(a.title) + '</div></div>' + thumb + _shareBtn(a.link, a.title) + '</div>';
       }).join('') + '</div>';
 
     } else {
@@ -6366,7 +6430,7 @@ body.focus-mode .focus-exit{ display:flex; }
       container.innerHTML = '<div class="list-view">' + arts.map(function(a,i){
         var fav = getFavicon(a.feedUrl||a.link||'');
         var thumb = a.imageUrl ? '<div class="list-thumb"><img src="' + escAttr(a.imageUrl) + '" decoding="async"></div>' : '<div class="list-thumb-empty"></div>';
-        return '<div class="list-item" onclick="' + arrName + 'Open(' + i + ')">' + thumb + '<div class="list-body"><div class="list-source"><div class="list-fav"><img src="' + escAttr(fav) + '"></div>' + escapeHtml(a.source) + ' · ' + relTime(a.pubDate) + '</div><div class="list-title">' + escapeHtml(a.title) + '</div></div></div>';
+        return '<div class="list-item" onclick="' + arrName + 'Open(' + i + ')" style="position:relative">' + thumb + '<div class="list-body"><div class="list-source"><div class="list-fav"><img src="' + escAttr(fav) + '"></div>' + escapeHtml(a.source) + ' · ' + relTime(a.pubDate) + '</div><div class="list-title">' + escapeHtml(a.title) + '</div></div>' + _shareBtn(a.link, a.title) + '</div>';
       }).join('') + '</div>';
     }
   }
