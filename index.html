@@ -578,11 +578,14 @@ button, a, [onclick] { touch-action: manipulation; }
 .folder.open .folder-body-inner > *:nth-child(n+6){ animation-delay:.28s; }
 @keyframes feedReveal{ from{ opacity:0; } to{ opacity:1; } }
 
-/* Masque de fondu haut/bas du scroll (profondeur) */
-.sb-scroll{
-  -webkit-mask-image:linear-gradient(to bottom,transparent,#000 3%,#000 97%,transparent);
-  mask-image:linear-gradient(to bottom,transparent,#000 3%,#000 97%,transparent);
-}
+/* Pas de fond grisé à la sélection / survol / pression — l'accent + le focus suffisent.
+   Spécificité .sidebar … pour battre les règles sombres ET le mode clair. */
+.sidebar .sb-item:hover, .sidebar .sb-item.active, .sidebar .sb-item:active,
+.sidebar .feed-item:hover, .sidebar .feed-item:active,
+.sidebar .folder-head:hover,
+[data-theme="light"] .sb-item:hover, [data-theme="light"] .sb-item.active, [data-theme="light"] .sb-item:active,
+[data-theme="light"] .feed-item:hover, [data-theme="light"] .feed-item:active,
+[data-theme="light"] .folder-head:hover{ background:transparent; }
 
 /* ===========================================================
    NAVBAR BRIEFEED — smart-nav (capsules liquid glass)
@@ -3648,14 +3651,14 @@ body.focus-mode .focus-exit{ display:flex; }
       list.appendChild(el);
     });
 
-    // Chevron : toggle accordéon uniquement (sur l'élément vivant → animation fluide + cascade)
+    // Chevron : accordéon STRICT — ouvrir un dossier ferme celui qui l'était
     list.querySelectorAll('.chev-btn').forEach(btn => btn.addEventListener('click', e => {
       e.stopPropagation();
       const i = +btn.dataset.toggle;
-      folders[i].open = !folders[i].open; persist();
-      const fEl = btn.closest('.folder');
-      if (fEl) fEl.classList.toggle('open', folders[i].open);
-      else render();
+      const willOpen = !folders[i].open;
+      folders.forEach((f, j) => { f.open = (j === i) ? willOpen : false; });
+      persist();
+      list.querySelectorAll('.folder').forEach((el, j) => el.classList.toggle('open', folders[j].open));
     }));
     // Nom du dossier : ouvre la page du dossier
     list.querySelectorAll('.f-name[data-open]').forEach(span => span.addEventListener('click', e => {
