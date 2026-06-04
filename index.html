@@ -815,6 +815,49 @@ button, a, [onclick] { touch-action: manipulation; }
   color:var(--text-muted);
 }
 
+/* ===========================================================
+   BRIEF DU JOUR — digest intelligent en tête d'édition
+   =========================================================== */
+.daily-brief{
+  align-self:stretch; margin:2px 0 22px;
+  background:linear-gradient(180deg, rgba(255,60,50,.05), rgba(255,255,255,.015));
+  border:1px solid rgba(255,255,255,.06); border-radius:18px;
+  padding:15px 16px 7px;
+}
+.daily-brief .brief-head{ display:flex; align-items:center; gap:8px; margin:0 2px 8px; }
+.daily-brief .brief-kicker{
+  font-family:var(--font-inter); font-size:11px; font-weight:800;
+  letter-spacing:.18em; text-transform:uppercase; color:#ff3c32;
+}
+.daily-brief .brief-list{ display:flex; flex-direction:column; }
+.daily-brief .brief-item{
+  display:flex; align-items:flex-start; gap:12px; width:100%; text-align:left;
+  background:transparent; border:0; cursor:pointer; padding:11px 6px;
+  border-top:1px solid rgba(255,255,255,.05); border-radius:10px;
+  -webkit-tap-highlight-color:transparent;
+  transition:background .15s ease, transform .22s cubic-bezier(.34,1.56,.64,1);
+}
+.daily-brief .brief-item:first-child{ border-top:0; }
+.daily-brief .brief-item:active{ background:rgba(255,255,255,.04); transform:scale(.99); }
+.daily-brief .brief-dot{
+  width:7px; height:7px; border-radius:50%; margin-top:6px; flex:none;
+  background:#ff3c32; box-shadow:0 0 8px rgba(255,60,50,.7);
+}
+.daily-brief .brief-body{ display:flex; flex-direction:column; gap:3px; min-width:0; }
+.daily-brief .brief-title{
+  font-family:var(--font-ui); font-size:15px; font-weight:650; letter-spacing:-.01em;
+  color:var(--text); line-height:1.32;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+}
+.daily-brief .brief-meta{
+  font-family:var(--font-inter); font-size:11.5px; font-weight:500; color:var(--text-muted);
+  letter-spacing:.01em;
+}
+.daily-brief .brief-trend{ color:#ff3c32; font-weight:700; }
+[data-theme="light"] .daily-brief{ background:linear-gradient(180deg, rgba(235,0,27,.05), rgba(0,0,0,.015)); border-color:rgba(0,0,0,.07); }
+[data-theme="light"] .daily-brief .brief-item{ border-top-color:rgba(0,0,0,.06); }
+[data-theme="light"] .daily-brief .brief-item:active{ background:rgba(0,0,0,.04); }
+
 .view{
   align-self:stretch;
   display:flex; flex-direction:column; gap:9.5px;
@@ -3168,6 +3211,9 @@ body.focus-mode .focus-exit{ display:flex; }
             <div class="hello-card sk-card" style="animation:sk 1.4s .4s ease-in-out infinite alternate"></div>
           </div>
         </div>
+
+        <!-- Brief intelligent du jour -->
+        <div id="dailyBrief" class="daily-brief" style="display:none"></div>
 
         <!-- Hero article du jour -->
         <div id="editionsHero"></div>
@@ -5572,6 +5618,83 @@ body.focus-mode .focus-exit{ display:flex; }
   })();
 
 
+  // ── Brief du jour : clustering cross-sources → trending + récence + diversité ──
+  let _briefArts = [];
+  function _clusters(arts){
+    const sorted = [...arts].sort((a,b)=>b.pubDate-a.pubDate); // rep = le plus récent
+    const clusters = []; const index = new Map(); const byLink = new Set();
+    for(const a of sorted){
+      if(a.link && byLink.has(a.link)) continue;
+      if(a.link) byLink.add(a.link);
+      const toks = _tokens(a.title);
+      const cand = new Set();
+      toks.forEach(t=>{ const arr=index.get(t); if(arr) arr.forEach(i=>cand.add(i)); });
+      let hit = -1;
+      for(const i of cand){
+        const c = clusters[i]; let inter=0;
+        toks.forEach(w=>{ if(c.toks.has(w)) inter++; });
+        if(inter/(toks.size + c.toks.size - inter || 1) >= 0.5){ hit=i; break; }
+      }
+      if(hit>=0){ const c=clusters[hit]; c.size++; c.sources.add(a.source); }
+      else {
+        const c = { rep:a, toks, size:1, sources:new Set([a.source]) };
+        const idx = clusters.length; clusters.push(c);
+        toks.forEach(t=>{ let arr=index.get(t); if(!arr){arr=[]; index.set(t,arr);} arr.push(idx); });
+      }
+    }
+    return clusters;
+  }
+  function _briefScore(c, now){
+    const ageMin = (now - (c.rep.pubDate?.getTime?.()||now))/60000;
+    const recency = ageMin<60?3.5 : ageMin<180?2.6 : ageMin<480?1.8 : ageMin<1440?1.1 : 0.5;
+    const trending = c.sources.size;                 // nb de sources distinctes couvrant le sujet
+    const img = c.rep.imageUrl ? 1.15 : 1;
+    return (1 + (trending-1)*1.4) * recency * img;   // multi-sources = forte pondération
+  }
+  function _buildBrief(n=3){
+    if(!_allArticles.length) return [];
+    const now = Date.now();
+    const clusters = _clusters(_allArticles);
+    clusters.forEach(c=>{ c._bs = _briefScore(c, now); });
+    clusters.sort((a,b)=>b._bs - a._bs);
+    const out = []; const used = new Set();
+    for(const c of clusters){               // 1re passe : diversité (une source par sujet)
+      if(used.has(c.rep.source)) continue;
+      out.push(c); used.add(c.rep.source);
+      if(out.length>=n) break;
+    }
+    for(const c of clusters){               // complément si trop peu de sources
+      if(out.length>=n) break;
+      if(!out.includes(c)) out.push(c);
+    }
+    return out;
+  }
+  function _renderBrief(){
+    const el = document.getElementById('dailyBrief');
+    if(!el) return;
+    if(!_allArticles.length){ el.style.display='none'; el.dataset.key=''; return; }
+    const brief = _buildBrief(3);
+    if(!brief.length){ el.style.display='none'; el.dataset.key=''; return; }
+    const key = brief.map(c=>c.rep.link).join('|');
+    if(el.dataset.key === key){ el.style.display='block'; return; } // inchangé
+    _briefArts = brief.map(c=>c.rep);
+    const items = brief.map((c,i)=>{
+      const a = c.rep;
+      const trend = c.sources.size>1 ? ` · <span class="brief-trend">${c.sources.size} sources</span>` : '';
+      return `<button class="brief-item" onclick="_openBriefArt(${i})">
+        <span class="brief-dot"></span>
+        <span class="brief-body">
+          <span class="brief-title">${escHtml(a.title)}</span>
+          <span class="brief-meta">${escHtml(a.source)} · ${relTime(a.pubDate)}${trend}</span>
+        </span>
+      </button>`;
+    }).join('');
+    el.innerHTML = `<div class="brief-head"><span class="brief-kicker">Le brief du jour</span></div><div class="brief-list">${items}</div>`;
+    el.dataset.key = key;
+    el.style.display='block';
+  }
+  window._openBriefArt = function(i){ const a=_briefArts[i]; if(a) _showArtModal(a); };
+
   function _renderEditions(){
     const hero  = document.getElementById('editionsHero');
     const grid  = document.getElementById('editionsGrid');
@@ -5584,6 +5707,8 @@ body.focus-mode .focus-exit{ display:flex; }
       return;
     }
     if(empty) empty.style.display='none';
+
+    _renderBrief();
 
     const deduped = _dedup([..._allArticles].sort((a,b)=>b.pubDate-a.pubDate));
     const best    = deduped.find(a=>a.imageUrl) || deduped[0];
