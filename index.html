@@ -423,6 +423,63 @@ button, a, [onclick] { touch-action: manipulation; }
 .sb-add:hover{ background:#161616; color:var(--text); }
 .sb-add svg{ width:16px; height:16px; }
 
+/* ── Tri / réorganisation des dossiers ── */
+.sb-section{ position:relative; }
+.sb-section-actions{ display:flex; align-items:center; gap:2px; }
+.sb-reorder-done{
+  display:none; align-items:center; border:0; background:transparent;
+  color:#ff3c32; font-size:13px; font-weight:650; letter-spacing:-.01em;
+  cursor:pointer; padding:2px 6px; border-radius:6px; -webkit-tap-highlight-color:transparent;
+  transition:transform .18s cubic-bezier(.34,1.56,.64,1);
+}
+.sb-reorder-done:active{ transform:scale(.94); }
+.sidebar.reorder .sb-reorder-done{ display:inline-flex; }
+.sidebar.reorder #sortFolders,
+.sidebar.reorder #addFolderTop{ display:none; }
+
+/* Popover de tri */
+.sort-pop{
+  position:absolute; top:calc(100% - 4px); right:12px; z-index:30;
+  min-width:214px; padding:6px; display:none; flex-direction:column; gap:2px;
+  background:rgba(28,28,30,.94);
+  -webkit-backdrop-filter:blur(22px) saturate(160%); backdrop-filter:blur(22px) saturate(160%);
+  border:1px solid rgba(255,255,255,.08); border-radius:14px;
+  box-shadow:0 14px 38px rgba(0,0,0,.55); transform-origin:top right;
+}
+.sort-pop.open{ display:flex; animation:sortPopIn .22s cubic-bezier(.16,1,.3,1); }
+@keyframes sortPopIn{ from{ opacity:0; transform:translateY(-6px) scale(.96); } to{ opacity:1; transform:none; } }
+.sort-pop button{
+  display:flex; align-items:center; gap:11px; width:100%; text-align:left;
+  padding:9px 10px; border:0; background:transparent; color:var(--text);
+  font-size:13.5px; font-weight:550; letter-spacing:-.01em; border-radius:9px; cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+  transition:background .15s ease, transform .18s cubic-bezier(.34,1.56,.64,1);
+}
+.sort-pop button:hover{ background:rgba(255,255,255,.07); }
+.sort-pop button:active{ background:rgba(255,255,255,.12); transform:scale(.985); }
+.sort-pop button svg{ width:17px; height:17px; color:var(--text-muted); flex:none; }
+[data-theme="light"] .sort-pop{ background:rgba(255,255,255,.95); border-color:rgba(0,0,0,.08); }
+[data-theme="light"] .sort-pop button:hover{ background:rgba(0,0,0,.05); }
+[data-theme="light"] .sort-pop button:active{ background:rgba(0,0,0,.08); }
+
+/* Poignée + mode réorganisation */
+.folder-head .f-drag{
+  display:none; align-items:center; justify-content:center;
+  background:none; border:0; padding:4px; margin:-4px 2px -4px -4px;
+  color:var(--text-muted); cursor:grab; flex-shrink:0;
+  touch-action:none; -webkit-tap-highlight-color:transparent;
+}
+.folder-head .f-drag svg{ width:18px; height:18px; }
+.sidebar.reorder .folder-head .f-drag{ display:flex; }
+.sidebar.reorder .folder-head .chev-btn,
+.sidebar.reorder .folder-head .f-edit{ display:none; }
+.sidebar.reorder .folder-head .f-name{ pointer-events:none; cursor:default; }
+.sidebar.reorder .folder-body{ grid-template-rows:0fr; }
+.sidebar.reorder .folder{ background:rgba(255,255,255,.035); margin:4px 0; }
+.folder.dragging{ opacity:.92; background:rgba(255,255,255,.08)!important; box-shadow:0 12px 30px rgba(0,0,0,.6); position:relative; z-index:5; cursor:grabbing; }
+[data-theme="light"] .sidebar.reorder .folder{ background:rgba(0,0,0,.035); }
+[data-theme="light"] .folder.dragging{ background:rgba(0,0,0,.06)!important; }
+
 /* État vide */
 .sb-empty{
   padding:10px 12px; font-size:12.5px; line-height:1.5; color:#666;
@@ -2503,9 +2560,26 @@ body.focus-mode .focus-exit{ display:flex; }
       <!-- Dossiers (vides : l'utilisateur les crée) -->
       <div class="sb-section">
         <span>Dossiers</span>
-        <button class="sb-add" id="addFolderTop" aria-label="Nouveau dossier">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        </button>
+        <div class="sb-section-actions">
+          <button class="sb-add" id="sortFolders" aria-label="Trier les dossiers">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="13" y2="6"/><line x1="4" y1="12" x2="11" y2="12"/><line x1="4" y1="18" x2="9" y2="18"/><polyline points="16 8 19 5 22 8"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
+          </button>
+          <button class="sb-add" id="addFolderTop" aria-label="Nouveau dossier">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+          <button class="sb-reorder-done" id="reorderDone">Terminé</button>
+        </div>
+        <!-- Popover de tri -->
+        <div class="sort-pop" id="sortPop" role="menu">
+          <button id="sortAlpha" role="menuitem">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5v14"/><polyline points="3 16 6 19 9 16"/><path d="M13 7h6l-6 5h6"/></svg>
+            <span>Ordre alphabétique</span>
+          </button>
+          <button id="sortManual" role="menuitem">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="8" x2="19" y2="8"/><line x1="5" y1="12" x2="19" y2="12"/><line x1="5" y1="16" x2="19" y2="16"/></svg>
+            <span>Réorganiser manuellement</span>
+          </button>
+        </div>
       </div>
       <div id="folderList"></div>
 
@@ -3595,7 +3669,7 @@ body.focus-mode .focus-exit{ display:flex; }
   const sidebar  = document.getElementById('sidebar');
   const overlay  = document.getElementById('sbOverlay');
   const openSB  = () => { sidebar.classList.add('open'); overlay.classList.add('open'); navArm(); };
-  const closeSB = () => { sidebar.classList.remove('open'); overlay.classList.remove('open'); };
+  const closeSB = () => { sidebar.classList.remove('open','reorder'); overlay.classList.remove('open'); sortPop && sortPop.classList.remove('open'); };
   document.getElementById('menuBtn').addEventListener('click', openSB);
   document.getElementById('sbClose').addEventListener('click', closeSB);
   overlay.addEventListener('click', closeSB);
@@ -3616,6 +3690,7 @@ body.focus-mode .focus-exit{ display:flex; }
   const ICON_CHEV = '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>';
   const ICON_EDIT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
   const ICON_PLUS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+  const ICON_DRAG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="8" x2="19" y2="8"/><line x1="5" y1="12" x2="19" y2="12"/><line x1="5" y1="16" x2="19" y2="16"/></svg>';
 
   const list = document.getElementById('folderList');
   function render(){
@@ -3627,6 +3702,7 @@ body.focus-mode .focus-exit{ display:flex; }
     folders.forEach((f, i) => {
       const el = document.createElement('div');
       el.className = 'folder' + (f.open ? ' open' : '');
+      el.dataset.idx = i;
       const feeds = (f.feeds || []).map(fd => {
         // Si c'est une URL, chercher le nom dans feedMeta ou extraire le hostname
         let displayName = fd;
@@ -3639,6 +3715,7 @@ body.focus-mode .focus-exit{ display:flex; }
       }).join('');
       el.innerHTML = `
         <div class="folder-head" data-i="${i}">
+          <button class="f-drag" aria-label="Glisser pour réorganiser">${ICON_DRAG}</button>
           <button class="chev-btn" data-toggle="${i}" aria-label="Ouvrir dossier">${ICON_CHEV}</button>
           <span class="f-name" data-open="${i}">${escapeHtml(f.name)}</span>
           <span class="f-count">${(f.feeds||[]).length}</span>
@@ -3675,6 +3752,7 @@ body.focus-mode .focus-exit{ display:flex; }
         openFeedPage(item.dataset.url, item.dataset.name);
       });
     });
+    bindReorder();
   }
   function escapeHtml(s){ return s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
@@ -3693,6 +3771,72 @@ body.focus-mode .focus-exit{ display:flex; }
   document.getElementById('addFolderTop').addEventListener('click', createFolder);
   document.getElementById('newFolder').addEventListener('click', createFolder);
   document.getElementById('newFeed').addEventListener('click', () => afOpen());
+
+  // =========================================================
+  //  TRI / RÉORGANISATION DES DOSSIERS (depuis la sidebar)
+  // =========================================================
+  const sortPop = document.getElementById('sortPop');
+  const sortBtn = document.getElementById('sortFolders');
+  const closeSortPop = () => sortPop.classList.remove('open');
+
+  sortBtn.addEventListener('click', e => { e.stopPropagation(); sortPop.classList.toggle('open'); });
+  document.addEventListener('click', e => {
+    if (sortPop.classList.contains('open') && !sortPop.contains(e.target) && !sortBtn.contains(e.target)) closeSortPop();
+  });
+
+  document.getElementById('sortAlpha').addEventListener('click', () => {
+    closeSortPop();
+    folders.sort((a, b) => a.name.localeCompare(b.name, 'fr', { sensitivity:'base', numeric:true }));
+    persist(); render();
+  });
+  document.getElementById('sortManual').addEventListener('click', () => { closeSortPop(); enterReorder(); });
+  document.getElementById('reorderDone').addEventListener('click', exitReorder);
+
+  function enterReorder(){
+    folders.forEach(f => f.open = false); persist(); render();   // liste compacte, dossiers fermés
+    sidebar.classList.add('reorder');
+  }
+  function exitReorder(){ sidebar.classList.remove('reorder'); }
+
+  // Drag-reorder — Pointer Events (souris + tactile)
+  let _drag = null;
+  function bindReorder(){
+    list.querySelectorAll('.f-drag').forEach(h => h.addEventListener('pointerdown', onDragStart));
+  }
+  function onDragStart(e){
+    if (!sidebar.classList.contains('reorder')) return;
+    e.preventDefault();
+    _drag = e.currentTarget.closest('.folder');
+    if (!_drag) return;
+    _drag.classList.add('dragging');
+    try { e.currentTarget.setPointerCapture(e.pointerId); } catch(_){}
+    document.addEventListener('pointermove', onDragMove);
+    document.addEventListener('pointerup', onDragEnd, { once:true });
+    document.addEventListener('pointercancel', onDragEnd, { once:true });
+  }
+  function onDragMove(e){
+    if (!_drag) return;
+    const y = e.clientY;
+    const sibs = [...list.querySelectorAll('.folder:not(.dragging)')];
+    let placed = false;
+    for (const other of sibs){
+      const r = other.getBoundingClientRect();
+      if (y < r.top + r.height / 2){ list.insertBefore(_drag, other); placed = true; break; }
+    }
+    if (!placed) list.appendChild(_drag);
+  }
+  function onDragEnd(){
+    if (!_drag) return;
+    _drag.classList.remove('dragging');
+    document.removeEventListener('pointermove', onDragMove);
+    const order = [...list.querySelectorAll('.folder')].map(el => +el.dataset.idx);
+    const snap = folders.slice();
+    folders = order.map(i => snap[i]);
+    _drag = null;
+    persist();
+    render();   // re-normalise les data-idx + re-lie les poignées (la classe .reorder reste)
+  }
+
   render();
 
   // =========================================================
