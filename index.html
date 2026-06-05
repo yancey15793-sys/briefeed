@@ -838,9 +838,8 @@ button, a, [onclick] { touch-action: manipulation; }
   text-decoration:none; color:inherit;
 }
 .browse-card .hello-img-wrapper > .img{
-  transition:transform .5s cubic-bezier(.32,.72,0,1);
+  width:100%; height:100%;
 }
-.browse-card:hover .hello-img-wrapper > .img{ transform:scale(1.04); }
 
 /* Pill de durée vidéo (play + minutes) */
 .duration{
@@ -2224,8 +2223,7 @@ button, a, [onclick] { touch-action: manipulation; }
 .browse-folder-btn:hover{ background:rgba(255,255,255,.12); color:var(--text); }
 [data-theme="light"] .browse-folder-btn{ background:rgba(0,0,0,.05); }
 /* Carte hero — même ratio que hello-card magazine */
-.browse-hero-card{ position:relative; border-radius:20px; overflow:hidden; aspect-ratio:16/9; cursor:pointer; margin-bottom:12px; -webkit-tap-highlight-color:transparent; transition:transform .3s cubic-bezier(.32,.72,0,1); }
-.browse-hero-card:hover{ transform:scale(1.015); }
+.browse-hero-card{ position:relative; border-radius:20px; overflow:hidden; aspect-ratio:16/9; cursor:pointer; margin-bottom:12px; -webkit-tap-highlight-color:transparent; }
 .browse-hero-img{ position:absolute; inset:0; background-size:cover; background-position:center; }
 .browse-hero-card::before{ content:""; position:absolute; inset:0; background:linear-gradient(180deg,rgba(0,0,0,0) 30%,rgba(0,0,0,.85) 100%); z-index:1; }
 .browse-hero-body{ position:absolute; left:0; right:0; bottom:0; z-index:2; padding:18px 20px; }
@@ -2234,6 +2232,22 @@ button, a, [onclick] { touch-action: manipulation; }
 /* Grille 2 colonnes sous le hero */
 .browse-folder-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:4px; }
 /* grid2-img déjà défini — on réutilise */
+
+/* Lire la suite — bas de chaque bloc dossier */
+.browse-more-link{
+  display:flex; align-items:center; justify-content:flex-end; gap:5px;
+  padding:16px 2px 2px;
+  cursor:pointer; -webkit-tap-highlight-color:transparent;
+  transition:opacity .14s;
+  border:none; background:transparent;
+  font-family:var(--font-inter);
+}
+.browse-more-link:active{ opacity:.55; }
+.browse-more-link-label{
+  font-size:12.5px; font-weight:700;
+  color:#ff3c32; letter-spacing:.01em; text-transform:uppercase;
+}
+.browse-more-link svg{ color:#ff3c32; flex-shrink:0; }
 
 /* Bouton vue dans les topbars de sous-pages */
 .subpage-view-btn{
@@ -3970,6 +3984,12 @@ body.focus-mode .focus-exit{ display:flex; }
         });
         html += '</div>';
       }
+
+      // ── Lire la suite ──
+      html += `<button class="browse-more-link" onclick="_browseOpenFolder(${fi})">
+        <span class="browse-more-link-label">Lire la suite</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" width="13" height="13"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>`;
     });
 
     if (!html) {
@@ -3987,6 +4007,7 @@ body.focus-mode .focus-exit{ display:flex; }
     if(!confirm('Supprimer « ' + folders[i]?.name + ' » et tous ses flux ?')) return;
     folders.splice(i, 1); persist(); render(); renderBrowseTimeline();
   };
+  window._browseOpenFolder = function(i){ openFolderPage(i); };
 
   const nameEl = document.getElementById('userName');
   const KEY = 'reader.userName';
