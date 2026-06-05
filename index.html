@@ -112,13 +112,13 @@ button, .ob-btn, .ob-btn-ghost,
   min-width: 44px; min-height: 44px;
 }
 /* Feedback tactile immédiat — scale au :active */
-.art-card:active          { opacity:.82; transform:scale(.988); transition:opacity .1s, transform .1s; }
-.grid2-card:active        { opacity:.82; transform:scale(.96);  transition:opacity .1s, transform .1s; }
+.art-card:active          { opacity:.82; transition:opacity .1s; }
+.grid2-card:active        { opacity:.82; transition:opacity .1s; }
 .seq-item:active          { opacity:.7;  transition:opacity .1s; }
 .list-item:active         { opacity:.7;  transition:opacity .1s; }
 .essentiel-card:active    { opacity:.75; transition:opacity .1s; }
-.browse-hero-card:active  { opacity:.85; transform:scale(.98);  transition:opacity .1s, transform .1s; }
-.dc-theme-tile:active     { transform:scale(.96); transition:transform .12s; }
+.browse-hero-card:active  { opacity:.85; transition:opacity .1s; }
+.dc-theme-tile:active     { opacity:.8;  transition:opacity .12s; }
 .feed-item:active         { background:rgba(255,255,255,.06); transition:background .08s; }
 .sb-item:active           { background:rgba(255,255,255,.08); transition:background .08s; }
 .vp-item:active           { background:rgba(255,255,255,.06); transition:background .08s; }
@@ -297,27 +297,61 @@ button, a, [onclick] { touch-action: manipulation; }
    BOUTON MENU (grille 3×3) — haut gauche, ouvre la sidebar
    =========================================================== */
 .menu-btn{
-  position:fixed; top:16px; left:16px; z-index:70;
-  width:40px; height:40px;
+  position:fixed;
+  top:max(env(safe-area-inset-top,0px),16px);
+  left:16px; z-index:70;
+  width:44px; height:44px;
   display:inline-flex; align-items:center; justify-content:center;
   border:0;
-  background:rgba(255,255,255,.07);
-  -webkit-backdrop-filter:blur(20px) saturate(180%);
-  backdrop-filter:blur(20px) saturate(180%);
+  background:#1c1c1e;
+  box-shadow:
+    0 6px 20px rgba(0,0,0,.5),
+    0 2px 6px rgba(0,0,0,.35),
+    inset 0 0.5px 0 rgba(255,255,255,.07);
   border-radius:50%;
-  box-shadow:0 6px 18px rgba(0,0,0,.35),0 1px 3px rgba(0,0,0,.25);
-  color:var(--text); cursor:pointer;
+  color:rgba(255,255,255,.88); cursor:pointer;
   -webkit-tap-highlight-color:transparent;
-  transition:transform .3s cubic-bezier(.34,1.56,.64,1), background .2s ease;
+  transition:transform .22s cubic-bezier(.34,1.56,.64,1), background .18s ease;
 }
-.menu-btn:hover{ transform:scale(1.1); background:rgba(255,255,255,.12); }
-.menu-btn:active{ transform:scale(.88); }
-.menu-btn svg{ width:22px; height:22px; }
+.menu-btn:hover{ background:#2c2c2e; }
+.menu-btn:active{ transform:scale(.86); background:#111113; }
+.menu-btn svg{ width:20px; height:20px; }
 [data-theme="light"] .menu-btn{
-  background:rgba(255,255,255,.7);
-  box-shadow:0 10px 28px rgba(0,0,0,.1),0 2px 6px rgba(0,0,0,.06);
+  background:#f2f2f7;
+  box-shadow:
+    0 4px 16px rgba(0,0,0,.13),
+    0 1px 4px rgba(0,0,0,.08),
+    inset 0 -0.5px 0 rgba(0,0,0,.06);
+  color:#3a3a3c;
 }
-[data-theme="light"] .menu-btn:hover{ background:rgba(255,255,255,.85); }
+[data-theme="light"] .menu-btn:hover{ background:#e5e5ea; }
+[data-theme="light"] .menu-btn:active{ background:#d8d8de; }
+
+/* Bouton sidebar — grille 3×3, secondaire au gear */
+.sb-open-btn{
+  position:fixed;
+  top:max(env(safe-area-inset-top,0px),16px);
+  left:68px; z-index:70;
+  width:36px; height:36px;
+  display:inline-flex; align-items:center; justify-content:center;
+  border:0;
+  background:#1c1c1e;
+  box-shadow:0 3px 10px rgba(0,0,0,.38), 0 1px 3px rgba(0,0,0,.25), inset 0 0.5px 0 rgba(255,255,255,.06);
+  border-radius:50%;
+  color:rgba(255,255,255,.65); cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+  transition:transform .22s cubic-bezier(.34,1.56,.64,1), background .18s, color .18s;
+}
+.sb-open-btn:hover{ background:#2c2c2e; color:rgba(255,255,255,.9); }
+.sb-open-btn:active{ transform:scale(.86); background:#111113; }
+.sb-open-btn svg{ width:14px; height:14px; }
+[data-theme="light"] .sb-open-btn{
+  background:#f2f2f7;
+  box-shadow:0 3px 10px rgba(0,0,0,.1), 0 1px 3px rgba(0,0,0,.07), inset 0 -0.5px 0 rgba(0,0,0,.05);
+  color:#3a3a3c;
+}
+[data-theme="light"] .sb-open-btn:hover{ background:#e5e5ea; }
+[data-theme="light"] .sb-open-btn:active{ background:#d8d8de; }
 
 /* ===========================================================
    SIDEBAR — collée au bord gauche, sans coins arrondis
@@ -1198,10 +1232,13 @@ button, a, [onclick] { touch-action: manipulation; }
 .pp-tabs{
   display:flex; gap:22px;
   border-bottom:1px solid var(--border);
-  padding-bottom:12px; margin-bottom:30px;
+  padding:10px 0 12px;
+  margin-bottom:30px;
   overflow-x:auto; scrollbar-width:none;
   flex-wrap:nowrap;
   -webkit-overflow-scrolling:touch;
+  position:sticky; top:0; z-index:8;
+  background:var(--bg);
 }
 .pp-tabs::-webkit-scrollbar{ display:none; }
 [data-theme="light"] .pp-tabs{ border-bottom-color:rgba(0,0,0,.08); }
@@ -1269,7 +1306,7 @@ button, a, [onclick] { touch-action: manipulation; }
   [data-theme="light"] .pp-nav-item{ background:rgba(0,0,0,.04); }
   .pp-nav-sub{ display:none; }
   .pp-nav-title{ font-size:15px; }
-  .pp-content{ overflow-y:visible; overflow-x:hidden; max-width:none; margin-top:18px; width:100%; }
+  .pp-content{ overflow:visible; max-width:none; margin-top:18px; }
   .pp-tabs{ gap:16px; min-width:0; }
 }
 
@@ -2719,9 +2756,16 @@ body.focus-mode .focus-exit{ display:flex; }
   </div>
 
 
-  <!-- Bouton menu (grille 3×3, style block.xyz) -->
-  <!-- Bouton menu sidebar (grille 3×3) — haut gauche -->
-  <button class="menu-btn" id="menuBtn" aria-label="Ouvrir le menu">
+  <!-- Bouton paramètres — haut gauche, style Pocket Casts -->
+  <button class="menu-btn" id="menuBtn" aria-label="Préférences">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+      <circle cx="12" cy="12" r="3"/>
+    </svg>
+  </button>
+
+  <!-- Bouton sidebar — grille 3×3, secondaire -->
+  <button class="sb-open-btn" id="sbOpenBtn" aria-label="Ouvrir la navigation">
     <svg viewBox="0 0 24 24" fill="currentColor">
       <rect x="3"   y="3"   width="5" height="5" rx="1.3"/>
       <rect x="9.5" y="3"   width="5" height="5" rx="1.3"/>
@@ -4079,7 +4123,8 @@ body.focus-mode .focus-exit{ display:flex; }
 
   const openSB  = () => { _closeAllSurfaces('sidebar'); sidebar.classList.add('open'); overlay.classList.add('open'); navArm(); };
   const closeSB = () => { sidebar.classList.remove('open','reorder'); overlay.classList.remove('open'); sortPop && sortPop.classList && sortPop.classList.remove('open'); };
-  document.getElementById('menuBtn').addEventListener('click', openSB);
+  document.getElementById('menuBtn').addEventListener('click', () => openPrefsPage());
+  document.getElementById('sbOpenBtn').addEventListener('click', openSB);
   document.getElementById('sbClose').addEventListener('click', closeSB);
   overlay.addEventListener('click', closeSB);
   // (Escape géré centralement par closeTopLayer/goBack)
