@@ -799,7 +799,7 @@ button, a, [onclick] { touch-action: manipulation; }
 .nav-item.active .nav-label{color:#ffffff;font-weight:600;}
 .nav-badge{position:absolute;top:2px;right:4px;background:#ed1149;color:#fff;font-size:9px;font-weight:800;min-width:14px;height:14px;padding:0 3px;border-radius:7px;display:flex;align-items:center;justify-content:center;border:1.5px solid transparent;line-height:1;z-index:4;}
 .nav-badge.hidden{display:none;}
-.nav-pill-indicator{position:absolute;width:calc((100% - 6px) / 3);top:3px;bottom:3px;border-radius:99px;background:linear-gradient(180deg,rgba(255,255,255,.1) 0%,rgba(255,255,255,.04) 100%);box-shadow:0px 4px 14px rgba(0,0,0,.35),inset 0px 1px 0px rgba(255,255,255,.12),inset 0px -1px 0px rgba(0,0,0,.25);transition:left .28s cubic-bezier(.4,0,.2,1);z-index:2;pointer-events:none;left:3px;}
+.nav-pill-indicator{position:absolute;width:calc((100% - 6px) / 4);top:3px;bottom:3px;border-radius:99px;background:linear-gradient(180deg,rgba(255,255,255,.1) 0%,rgba(255,255,255,.04) 100%);box-shadow:0px 4px 14px rgba(0,0,0,.35),inset 0px 1px 0px rgba(255,255,255,.12),inset 0px -1px 0px rgba(0,0,0,.25);transition:left .28s cubic-bezier(.4,0,.2,1);z-index:2;pointer-events:none;left:3px;}
 [data-theme="light"] .nav-capsule{background:rgba(255,255,255,0.92);box-shadow:0px 0px 0px 1px rgba(0,0,0,.10),0px 8px 32px rgba(0,0,0,.12),inset 0px -1px 0px rgba(0,0,0,.06);}
 [data-theme="light"] .nav-pill-indicator{background:linear-gradient(180deg,rgba(0,0,0,.12) 0%,rgba(0,0,0,.06) 100%);box-shadow:0px 4px 14px rgba(0,0,0,.15),inset 0px 1px 0px rgba(255,255,255,.5),inset 0px -1px 0px rgba(0,0,0,.1);}
 [data-theme="light"] .nav-item svg{stroke:rgba(0,0,0,.35);}
@@ -2703,17 +2703,18 @@ body.focus-mode .focus-exit{ display:flex; }
   100%{ background-position:-200% 0; }
 }
 .art-img-wrap,
-.grid2-img,
 .list-thumb,
 .list-thumb-empty,
 .seq-thumb,
-.essentiel-thumb,
-.browse-hero-img,
-.browse-folder-grid .grid2-img{
+.essentiel-thumb{
   background-color:#1a1a1a;
   background-image:linear-gradient(90deg,#1a1a1a 25%,#242424 50%,#1a1a1a 75%);
   background-size:400% 100%;
   animation:imgShimmer 1.6s ease-in-out infinite;
+}
+/* Les browse cards utilisent background inline → pas de shimmer */
+.browse-hero-img, .grid2-img{
+  background-color:#1a1a1a;
 }
 /* Stopper le shimmer dès que l'image est chargée */
 .img-loaded .art-img-wrap,
@@ -2756,16 +2757,8 @@ body.focus-mode .focus-exit{ display:flex; }
   </div>
 
 
-  <!-- Bouton paramètres — haut gauche, style Pocket Casts -->
-  <button class="menu-btn" id="menuBtn" aria-label="Préférences">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
-      <circle cx="12" cy="12" r="3"/>
-    </svg>
-  </button>
-
-  <!-- Bouton sidebar — grille 3×3, secondaire -->
-  <button class="sb-open-btn" id="sbOpenBtn" aria-label="Ouvrir la navigation">
+  <!-- Bouton sidebar — grille 3×3, haut gauche -->
+  <button class="menu-btn" id="menuBtn" aria-label="Ouvrir le menu">
     <svg viewBox="0 0 24 24" fill="currentColor">
       <rect x="3"   y="3"   width="5" height="5" rx="1.3"/>
       <rect x="9.5" y="3"   width="5" height="5" rx="1.3"/>
@@ -3795,6 +3788,7 @@ body.focus-mode .focus-exit{ display:flex; }
             <button class="nav-item active" id="navHome" data-nav-idx="0"><svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg><span class="nav-label">Flux</span></button>
             <button class="nav-item" id="navDiscover" data-nav-idx="1"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polygon points="15.5 8.5 13.5 13.5 8.5 15.5 10.5 10.5"/></svg><span class="nav-label">Découvrir</span></button>
             <button class="nav-item" id="navFavorites" data-nav-idx="2"><svg viewBox="0 0 24 24"><polygon points="12 3 14.5 8.5 20.5 9.3 16.2 13.5 17.3 19.5 12 16.6 6.7 19.5 7.8 13.5 3.5 9.3 9.5 8.5 12 3"/></svg><span class="nav-label">Favoris</span><span class="nav-badge hidden" id="navRLBadge">0</span></button>
+            <button class="nav-item" id="navSettings" data-nav-idx="3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg><span class="nav-label">Réglages</span></button>
         </div>
         <div class="nav-layer nav-layer-home" id="navLayerHome" onclick="closeNavSearch()"><svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg></div>
     </div>
@@ -4123,8 +4117,8 @@ body.focus-mode .focus-exit{ display:flex; }
 
   const openSB  = () => { _closeAllSurfaces('sidebar'); sidebar.classList.add('open'); overlay.classList.add('open'); navArm(); };
   const closeSB = () => { sidebar.classList.remove('open','reorder'); overlay.classList.remove('open'); sortPop && sortPop.classList && sortPop.classList.remove('open'); };
-  document.getElementById('menuBtn').addEventListener('click', () => openPrefsPage());
-  document.getElementById('sbOpenBtn').addEventListener('click', openSB);
+  document.getElementById('menuBtn').addEventListener('click', openSB);
+  if(document.getElementById('sbOpenBtn')) document.getElementById('sbOpenBtn').remove();
   document.getElementById('sbClose').addEventListener('click', closeSB);
   overlay.addEventListener('click', closeSB);
   // (Escape géré centralement par closeTopLayer/goBack)
@@ -4582,31 +4576,29 @@ body.focus-mode .focus-exit{ display:flex; }
   }
 
   // Pill indicator + item actif
+  const NAV_COUNT = 4;
   function updateNavPill(idx){
-    const pill = document.getElementById('navPill');
+    const pill  = document.getElementById('navPill');
     const items = document.querySelectorAll('#navLayerMain .nav-item');
     items.forEach((it, i) => it.classList.toggle('active', i === idx));
-    const leftW = document.getElementById('navCapsuleLeft')?.offsetWidth || 240;
-    const itemW = (leftW - 6) / 3;
+    const leftW = document.getElementById('navCapsuleLeft')?.offsetWidth || 320;
+    const itemW = (leftW - 6) / NAV_COUNT;
     if(pill) pill.style.left = (3 + idx * itemW) + 'px';
   }
-  // Tab bar — gestion centralisée (ferme tout, active la bonne vue)
+
   function _navTo(idx){
     updateNavPill(idx);
-    // Fermer toutes les pages flottantes
     const artModal=document.getElementById('artModal');
     if(artModal&&artModal.style.display==='flex') closeArtModal();
     const fp=document.getElementById('feedPage');
     if(fp&&fp.classList.contains('open')) closeFeedPage();
     const dp=document.getElementById('folderPage');
     if(dp&&dp.classList.contains('open')) closeFolderPage();
-    // Fermer discover/prefs si on quitte vers accueil
     if(idx===0){
       const disc=document.getElementById('discoverPage');
       if(disc&&disc.classList.contains('open')) closeDiscover();
       const prefs=document.getElementById('prefsPage');
       if(prefs&&prefs.classList.contains('open')) closePrefsPage();
-      // Afficher la vue courante
       document.querySelectorAll('.view').forEach(v=>{ v.hidden = v.dataset.view !== _currentView; });
       if(_currentView==='browse') renderBrowseTimeline();
       if(_currentView==='grille') _renderGrille();
@@ -4618,17 +4610,56 @@ body.focus-mode .focus-exit{ display:flex; }
       const disc=document.getElementById('discoverPage');
       if(disc&&disc.classList.contains('open')) closeDiscover();
       _openFavoris();
+    } else if(idx===3){
+      openPrefsPage();
     }
     resetScroll();
-    // Synchro historique : la barre d'onglets ferme les couches sans passer par
-    // le bouton retour. Si un piège était armé et qu'aucune couche ne reste
-    // (accueil/favoris), on le consomme pour éviter un « retour neutre » résiduel.
-    // (idx===1 garde le piège : il couvre la page Discover qu'on vient d'ouvrir.)
-    if(idx!==1 && _navArmed && !_topLayerCloser()){ try{ history.back(); }catch(e){} }
+    if(idx!==1 && idx!==3 && _navArmed && !_topLayerCloser()){ try{ history.back(); }catch(e){} }
   }
-  document.getElementById('navHome').addEventListener('click', ()=>_navTo(0));
-  document.getElementById('navDiscover').addEventListener('click', ()=>_navTo(1));
+
+  // ── Swipe-to-switch : press+glisser sur la capsule pour changer d'onglet ──
+  let _swipeStartX = null, _swipeStartIdx = 0, _swipePeekIdx = null;
+  const _navCapsule = document.getElementById('navCapsuleLeft');
+
+  _navCapsule.addEventListener('pointerdown', e => {
+    _swipeStartX = e.clientX;
+    const its = [...document.querySelectorAll('#navLayerMain .nav-item')];
+    _swipeStartIdx = its.findIndex(it => it.classList.contains('active'));
+    if(_swipeStartIdx < 0) _swipeStartIdx = 0;
+    _swipePeekIdx = null;
+    _navCapsule.setPointerCapture(e.pointerId);
+  });
+
+  _navCapsule.addEventListener('pointermove', e => {
+    if(_swipeStartX === null) return;
+    if(Math.abs(e.clientX - _swipeStartX) < 12) return; // dead-zone
+    const rect = _navCapsule.getBoundingClientRect();
+    const idx  = Math.max(0, Math.min(NAV_COUNT - 1, Math.floor((e.clientX - rect.left) / (rect.width / NAV_COUNT))));
+    if(idx === _swipePeekIdx) return;
+    _swipePeekIdx = idx;
+    // Déplacer la pill en temps réel (sans navigation)
+    const pill  = document.getElementById('navPill');
+    const items = document.querySelectorAll('#navLayerMain .nav-item');
+    items.forEach((it, i) => it.classList.toggle('active', i === idx));
+    if(pill){ const iW = (rect.width - 6) / NAV_COUNT; pill.style.left = (3 + idx * iW) + 'px'; }
+  });
+
+  _navCapsule.addEventListener('pointerup', e => {
+    if(_swipeStartX === null) return;
+    const wasDrag = Math.abs(e.clientX - _swipeStartX) >= 12;
+    if(wasDrag && _swipePeekIdx !== null) _navTo(_swipePeekIdx);
+    _swipeStartX = null; _swipePeekIdx = null;
+  });
+
+  _navCapsule.addEventListener('pointercancel', () => {
+    if(_swipeStartIdx !== null) updateNavPill(_swipeStartIdx);
+    _swipeStartX = null; _swipePeekIdx = null;
+  });
+
+  document.getElementById('navHome').addEventListener('click',      ()=>_navTo(0));
+  document.getElementById('navDiscover').addEventListener('click',  ()=>_navTo(1));
   document.getElementById('navFavorites').addEventListener('click', ()=>_navTo(2));
+  document.getElementById('navSettings').addEventListener('click',  ()=>_navTo(3));
   updateNavPill(0);
 
   // ---- Pill expansible ••• : vue + thème ----
