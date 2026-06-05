@@ -2270,6 +2270,11 @@ button, a, [onclick] { touch-action: manipulation; }
 .browse-folder-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:4px; }
 /* grid2-img déjà défini — on réutilise */
 
+/* Respiration entre groupes de 7 sur la page dossier */
+.browse-group-spacer{
+  height:52px;
+}
+
 /* Lire la suite — bas de chaque bloc dossier */
 .browse-more-link{
   display:flex; align-items:center; justify-content:flex-end; gap:5px;
@@ -3832,6 +3837,19 @@ body.focus-mode .focus-exit{ display:flex; }
   function unlockScroll(){ if(_scrollLocks > 0 && --_scrollLocks === 0) document.body.style.overflow = ''; }
   function resetScroll(){ _scrollLocks = 0; document.body.style.overflow = ''; }
 
+  // Scroll-to-top centralisé — instant ou smooth selon le contexte
+  function _stTop(selector, instant){
+    const el = typeof selector === 'string' ? document.querySelector(selector) : selector;
+    if(!el) return;
+    if(instant){ el.scrollTop = 0; }
+    else { try{ el.scrollTo({ top: 0, behavior: 'smooth' }); }catch(e){ el.scrollTop = 0; } }
+  }
+  // Raccourcis
+  const _stMain  = (instant) => _stTop('.row', instant);
+  const _stFeed  = (instant) => _stTop('.feed-page-scroll', instant);
+  const _stFold  = (instant) => _stTop('.folder-page-scroll', instant);
+  const _stPrefs = (instant) => { _stTop('#prefsContent', instant); _stTop('.pp-layout', instant); };
+
   // — Couche du dessus : on renvoie SA fonction de fermeture (ou null).
   //   Ordre = du plus haut (au-dessus) au plus bas.
   let _artClosing = false;   // modal article en cours d'animation de fermeture
@@ -3919,7 +3937,7 @@ body.focus-mode .focus-exit{ display:flex; }
       if(target === 'sequential')_renderSequential();
       if(target === 'liste')     _renderListe();
       if(target === 'essentiel') _renderEssentiel();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      _stMain(false); // smooth scroll to top via le bon conteneur
     }
 
     // Sync UI toujours
@@ -4614,6 +4632,7 @@ body.focus-mode .focus-exit{ display:flex; }
       openPrefsPage();
     }
     resetScroll();
+    _stMain(false); // retour en haut du contenu principal, doux
     if(idx!==1 && idx!==3 && _navArmed && !_topLayerCloser()){ try{ history.back(); }catch(e){} }
   }
 
@@ -4918,6 +4937,7 @@ body.focus-mode .focus-exit{ display:flex; }
   window.openPrefsPage = function(){
     closeSB();
     if(window.__renderPrefsContent) window.__renderPrefsContent();
+    _stPrefs(true); // en haut avant l'animation d'entrée
     prefsPage.classList.add('open');
     prefsPage.setAttribute('aria-hidden', 'false');
     lockScroll();
@@ -5552,6 +5572,7 @@ body.focus-mode .focus-exit{ display:flex; }
 
   const dcPage = document.getElementById('discoverPage');
   function openDiscover(){
+    _stTop('#dcCatalogPanel', true); // en haut avant l'animation
     dcPage.classList.add('open'); dcPage.setAttribute('aria-hidden','false'); lockScroll();
     dcBuildCatalog();
     navArm();
@@ -5559,6 +5580,7 @@ body.focus-mode .focus-exit{ display:flex; }
   function closeDiscover(){
     dcPage.classList.remove('open'); dcPage.setAttribute('aria-hidden','true'); unlockScroll();
     dcCloseTheme();
+    _stMain(false); // retour doux en haut du flux principal
   }
   document.getElementById('discoverBack').addEventListener('click', closeDiscover);
   // (Escape géré centralement par closeTopLayer)
@@ -6835,6 +6857,12 @@ body.focus-mode .focus-exit{ display:flex; }
         modal.style.transition=''; modal.style.transform=''; modal.style.opacity='';
         _artCloseTimer = null; _artClosing = false;
         unlockScroll();
+        // Si aucune sous-page n'est visible, remonter doucement dans le flux
+        const fp = document.getElementById('feedPage');
+        const dp = document.getElementById('folderPage');
+        if(!(fp&&fp.classList.contains('open')) && !(dp&&dp.classList.contains('open'))){
+          _stMain(false);
+        }
       }, 300);
       if(_artAbort){ try{_artAbort.abort();}catch(e){} _artAbort=null; }
       const fv = document.querySelector('.view[data-view="favoris"]');
@@ -7389,24 +7417,39 @@ body.focus-mode .focus-exit{ display:flex; }
       container.innerHTML = html;
 
     } else if(view === 'browse'){
-      const hero = arts.find(a=>a.imageUrl) || arts[0];
-      const heroIdx = arts.indexOf(hero);
-      const grid = arts.filter(a=>a!==hero); // tous les articles, pas de limite
-      const heroImg = hero.imageUrl ? "background:url('" + hero.imageUrl.replace(/'/g,"\\'") + "') center/cover no-repeat" : 'background:linear-gradient(135deg,rgba(10,132,255,.18),#0a0a0a)';
-      const heroFav = getFavicon(hero.feedUrl||hero.link||'');
-      let html = '<div class="browse-hero-card" onclick="' + arrName + 'Open(' + heroIdx + ')">';
-      html += '<div class="browse-hero-img" style="' + heroImg + '"></div>';
-      html += '<div class="browse-hero-body"><div class="browse-hero-source"><img src="' + escAttr(heroFav) + '" style="width:16px;height:16px;border-radius:50%;object-fit:contain;margin-right:6px;flex-shrink:0">' + escapeHtml(hero.source) + ' · ' + relTime(hero.pubDate) + '</div>';
-      html += '<div class="browse-hero-title">' + escapeHtml(hero.title) + '</div></div></div>';
-      if(grid.length){
-        html += '<div class="browse-folder-grid">' + grid.map(function(a){
-          var realIdx = arts.indexOf(a);
-          var fav = getFavicon(a.feedUrl||a.link||'');
-          var imgStyle = a.imageUrl ? "background:url('" + a.imageUrl.replace(/'/g,"\\'") + "') center/cover no-repeat" : 'background:linear-gradient(135deg,rgba(10,132,255,.12),#0a0a0a)';
-          return '<div class="grid2-card" onclick="' + arrName + 'Open(' + realIdx + ')"><div class="grid2-img" style="' + imgStyle + '"></div><div class="grid2-title">' + escapeHtml(a.title) + '</div><div class="grid2-meta"><div class="grid2-fav"><img src="' + escAttr(fav) + '"></div><span>' + escapeHtml(a.source) + '</span><span style="margin-left:auto">' + relTime(a.pubDate) + '</span></div></div>';
-        }).join('') + '</div>';
+      // Groupes de 7 : 1 hero + 6 grille, répétés sur tous les articles avec respiration
+      const CHUNK = 7;
+      let html = '';
+      for(let g = 0; g < arts.length; g += CHUNK){
+        const chunk = arts.slice(g, g + CHUNK);
+        // Choisir le hero : premier article avec image, sinon le premier
+        let hi = chunk.findIndex(a => a.imageUrl);
+        if(hi < 0) hi = 0;
+        const hero     = chunk[hi];
+        const heroReal = g + hi;
+        const heroImg  = hero.imageUrl ? "background:url('" + hero.imageUrl.replace(/'/g,"\\'") + "') center/cover no-repeat" : 'background:linear-gradient(135deg,rgba(10,132,255,.18),#0a0a0a)';
+        const heroFav  = getFavicon(hero.feedUrl||hero.link||'');
+
+        // Respiration entre groupes (pas de séparateur visuel, juste de l'air)
+        if(g > 0) html += '<div class="browse-group-spacer"></div>';
+
+        // Hero pleine largeur
+        html += '<div class="browse-hero-card" onclick="' + arrName + 'Open(' + heroReal + ')">';
+        html += '<div class="browse-hero-img" style="' + heroImg + '"></div>';
+        html += '<div class="browse-hero-body"><div class="browse-hero-source"><img src="' + escAttr(heroFav) + '" style="width:16px;height:16px;border-radius:50%;object-fit:contain;margin-right:6px;flex-shrink:0">' + escapeHtml(hero.source) + ' · ' + relTime(hero.pubDate) + '</div>';
+        html += '<div class="browse-hero-title">' + escapeHtml(hero.title) + '</div></div></div>';
+
+        // Grille : tous les articles du chunk sauf le hero
+        const gridItems = chunk.map(function(a, ci){ return { a: a, real: g + ci }; }).filter(function(_, ci){ return ci !== hi; });
+        if(gridItems.length){
+          html += '<div class="browse-folder-grid">' + gridItems.map(function(item){
+            var fav      = getFavicon(item.a.feedUrl||item.a.link||'');
+            var imgStyle = item.a.imageUrl ? "background:url('" + item.a.imageUrl.replace(/'/g,"\\'") + "') center/cover no-repeat" : 'background:linear-gradient(135deg,rgba(10,132,255,.12),#0a0a0a)';
+            return '<div class="grid2-card" onclick="' + arrName + 'Open(' + item.real + ')"><div class="grid2-img" style="' + imgStyle + '"></div><div class="grid2-title">' + escapeHtml(item.a.title) + '</div><div class="grid2-meta"><div class="grid2-fav"><img src="' + escAttr(fav) + '"></div><span>' + escapeHtml(item.a.source) + '</span><span style="margin-left:auto">' + relTime(item.a.pubDate) + '</span></div></div>';
+          }).join('') + '</div>';
+        }
       }
-      container.innerHTML = html;
+      container.innerHTML = html || '<div style="padding:60px 0;text-align:center;color:var(--text-muted);font-size:14px;font-family:var(--font-inter)">Aucun article.</div>';
 
     } else if(view === 'grille'){
       container.innerHTML = '<div class="grid2-wrap">' + arts.map(function(a,i){
@@ -7602,6 +7645,7 @@ body.focus-mode .focus-exit{ display:flex; }
 
     const page = document.getElementById('feedPage');
     if(!page) return;
+    _stFeed(true); // en haut avant l'animation d'entrée
     page.style.display = 'flex';
     requestAnimationFrame(()=> page.classList.add('open'));
     lockScroll();
@@ -7618,6 +7662,7 @@ body.focus-mode .focus-exit{ display:flex; }
     setTimeout(()=>{
       page.style.display='none';
       unlockScroll();
+      _stMain(false);
     }, 400);
   };
 
@@ -7683,6 +7728,7 @@ body.focus-mode .focus-exit{ display:flex; }
     _folderPageArts = arts;
     const content = document.getElementById('folderPageContent');
     _renderSubpageArts(_folderPageArts, _currentView, content, '_folderArt');
+    _stFold(true); // en haut avant l'animation d'entrée
     const page = document.getElementById('folderPage');
     page.style.display='flex';
     requestAnimationFrame(()=>page.classList.add('open'));
@@ -7694,7 +7740,7 @@ body.focus-mode .focus-exit{ display:flex; }
     const page = document.getElementById('folderPage');
     if(!page || !page.classList.contains('open')) return;
     page.classList.remove('open');
-    setTimeout(()=>{ page.style.display='none'; unlockScroll(); },400);
+    setTimeout(()=>{ page.style.display='none'; unlockScroll(); _stMain(false); },400);
   };
   // (Escape page dossier géré centralement par closeTopLayer)
 
