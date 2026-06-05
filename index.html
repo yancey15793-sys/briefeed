@@ -2035,31 +2035,33 @@ button, a, [onclick] { touch-action: manipulation; }
 
 /* ── NEW ARTICLES PILL — style Inoreader ─────────────────── */
 #newArtsPill{
-  position:fixed; top:calc(max(env(safe-area-inset-top,0px),16px) + 80px);
-  left:50%; transform:translateX(-50%) translateY(-18px);
+  position:fixed;
+  top:calc(max(env(safe-area-inset-top,0px),16px) + 76px);
+  left:50%;
+  transform:translateX(-50%) translateY(-10px) scale(.92);
   z-index:490; pointer-events:none; opacity:0;
-  transition:opacity .3s ease, transform .3s cubic-bezier(.34,1.56,.64,1);
+  transition:opacity .2s ease, transform .34s cubic-bezier(.34,1.56,.64,1);
 }
 #newArtsPill.visible{
   opacity:1; pointer-events:auto;
-  transform:translateX(-50%) translateY(0);
+  transform:translateX(-50%) translateY(0) scale(1);
 }
 #newArtsPill button{
-  display:inline-flex; align-items:center; gap:7px;
-  background:#0a84ff; color:#fff;
+  display:inline-flex; align-items:center; gap:5px;
+  background:#ff3c32; color:#fff;
   border:none; border-radius:999px;
-  padding:9px 18px 9px 14px;
-  font-family:var(--font-inter); font-size:13px; font-weight:700;
-  letter-spacing:-.01em; cursor:pointer;
-  box-shadow:0 6px 20px rgba(10,132,255,.45), 0 2px 6px rgba(0,0,0,.25);
+  padding:6px 13px 6px 9px;
+  font-family:var(--font-inter); font-size:11.5px; font-weight:700;
+  letter-spacing:.01em; cursor:pointer;
+  box-shadow:0 3px 12px rgba(255,60,50,.38), 0 1px 3px rgba(0,0,0,.2);
   -webkit-tap-highlight-color:transparent;
-  transition:transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .18s;
+  transition:transform .18s cubic-bezier(.34,1.56,.64,1), opacity .14s;
   white-space:nowrap;
 }
-#newArtsPill button:active{ transform:scale(.94); box-shadow:0 2px 8px rgba(10,132,255,.35); }
-#newArtsPill button svg{ width:14px; height:14px; flex-shrink:0; }
+#newArtsPill button:active{ transform:scale(.91); opacity:.82; }
+#newArtsPill button svg{ width:11px; height:11px; flex-shrink:0; }
 [data-theme="light"] #newArtsPill button{
-  box-shadow:0 6px 20px rgba(10,132,255,.3), 0 2px 6px rgba(0,0,0,.12);
+  box-shadow:0 3px 12px rgba(255,60,50,.28), 0 1px 3px rgba(0,0,0,.1);
 }
 /* ── VUE FAVORIS ─────────────────────────────────────────── */
 .fav-header{ display:flex; align-items:baseline; justify-content:space-between; padding:20px 18px 12px; }
@@ -6205,6 +6207,21 @@ body.focus-mode .focus-exit{ display:flex; }
     else if(_currentView === 'essentiel') _renderEssentiel();
   }
 
+  // Crossfade lisse : fade out .column → swap DOM → fade in
+  function _smoothRenderCurrentView(cb){
+    const col = document.querySelector('.column');
+    if(!col){ _renderCurrentView(); if(cb) cb(); return; }
+    col.style.transition = 'opacity .14s ease';
+    col.style.opacity    = '0';
+    setTimeout(()=>{
+      _renderCurrentView();
+      col.offsetHeight; // force reflow
+      col.style.transition = 'opacity .2s ease';
+      col.style.opacity    = '1';
+      setTimeout(()=>{ col.style.transition=''; if(cb) cb(); }, 220);
+    }, 150);
+  }
+
   // ── Pending articles (background fetch) ──────────────────
   let _pendingNewArts  = [];
   let _pendingNewCount = 0;
@@ -6225,9 +6242,10 @@ body.focus-mode .focus-exit{ display:flex; }
     _allArticles = _dedup([..._pendingNewArts, ..._allArticles].sort((a,b)=>new Date(b.pubDate)-new Date(a.pubDate)));
     _pendingNewArts = []; _pendingNewCount = 0;
     _hideNewArtsPill();
-    _renderCurrentView();
-    window.scrollTo({ top:0, behavior:'smooth' });
-    try{ idbSaveArticles(_allArticles); }catch(e){}
+    // Remonter en haut instantanément avant le crossfade
+    const rowEl = document.querySelector('.row');
+    if(rowEl) rowEl.scrollTop = 0; else window.scrollTo(0,0);
+    _smoothRenderCurrentView(()=>{ try{ idbSaveArticles(_allArticles); }catch(e){} });
   };
 
   async function loadAllFeeds(force=false){
@@ -6309,12 +6327,16 @@ body.focus-mode .focus-exit{ display:flex; }
           // Contenu déjà visible : accumuler, pill non-intrusive
           _pendingNewArts.push(...batch);
           _pendingNewCount = _pendingNewArts.length;
-          // Auto-apply si l'utilisateur est en haut de page (scroll < 80px)
-          const scrollEl = document.querySelector('.row') || document.scrollingElement;
-          const atTop = (scrollEl ? scrollEl.scrollTop : window.scrollY) < 80;
+          // Détecter la position de scroll
+          const rowEl  = document.querySelector('.row');
+          const atTop  = (rowEl ? rowEl.scrollTop : window.scrollY) < 80;
           if(atTop){
-            window._applyPendingArts();
+            // En haut : fusionner silencieusement avec crossfade
+            _allArticles = _dedup([..._pendingNewArts, ..._allArticles].sort((a,b)=>new Date(b.pubDate)-new Date(a.pubDate)));
+            _pendingNewArts = []; _pendingNewCount = 0;
+            _smoothRenderCurrentView();
           } else {
+            // Scrollé : pill rouge discrète, l'utilisateur choisit
             _showNewArtsPill(_pendingNewCount);
           }
         }
