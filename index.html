@@ -2322,6 +2322,9 @@ button, a, [onclick] { touch-action: manipulation; }
 .art-reader-partial-spin{ width:9px; height:9px; border-radius:50%; border:1.5px solid rgba(255,255,255,.12); border-top-color:#0a84ff; animation:af-spin .8s linear infinite; }
 /* Toolbar bas */
 .art-modal-toolbar{ position:sticky; bottom:0; left:0; right:0; z-index:5; display:flex; align-items:center; justify-content:flex-end; padding:10px 20px 14px; background:linear-gradient(transparent,var(--bg) 40%); }
+/* artModal — entrée animée */
+#artModal{ transform:translateY(32px); opacity:0; transition:transform .38s cubic-bezier(.25,1,.4,1), opacity .28s ease; }
+#artModal.art-open{ transform:none; opacity:1; }
 .art-toolbar-pill{ display:flex; align-items:center; gap:2px; background:rgba(255,255,255,.08); border-radius:999px; padding:4px; }
 [data-theme="light"] .art-toolbar-pill{ background:rgba(0,0,0,.07); }
 .art-toolbar-btn{ width:36px; height:36px; border:none; background:transparent; color:var(--text-muted); cursor:pointer; display:flex; align-items:center; justify-content:center; border-radius:50%; transition:background .15s,color .15s; -webkit-tap-highlight-color:transparent; }
@@ -2463,17 +2466,23 @@ body.focus-mode .focus-exit{ display:flex; }
 .feed-props-btn:active{ transform:scale(.88); }
 .feed-props-overlay{
   position:fixed; inset:0; z-index:7500;
-  background:rgba(0,0,0,.55); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+  background:rgba(0,0,0,0); backdrop-filter:blur(0px); -webkit-backdrop-filter:blur(0px);
   display:none; align-items:flex-end; justify-content:center;
+  transition:background .3s ease, backdrop-filter .3s ease, -webkit-backdrop-filter .3s ease;
 }
 .feed-props-overlay.open{ display:flex; }
+.feed-props-overlay.feed-props-visible{
+  background:rgba(0,0,0,.55); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+}
 .feed-props-sheet{
   width:100%; max-width:520px;
   background:#111; border-radius:22px 22px 0 0;
   padding-bottom:max(env(safe-area-inset-bottom,0px),20px);
   max-height:80vh; display:flex; flex-direction:column;
-  animation:slideUp .35s cubic-bezier(.32,.72,0,1);
+  transform:translateY(110%);
+  transition:transform .42s cubic-bezier(.25,1,.4,1);
 }
+.feed-props-overlay.feed-props-visible .feed-props-sheet{ transform:none; }
 [data-theme="light"] .feed-props-sheet{ background:#fff; }
 @keyframes slideUp{ from{ transform:translateY(100%); } to{ transform:none; } }
 .feed-props-handle{ width:36px; height:4px; border-radius:2px; background:rgba(255,255,255,.2); margin:10px auto 0; flex-shrink:0; }
@@ -6575,6 +6584,7 @@ body.focus-mode .focus-exit{ display:flex; }
     _artClosing = false;
     modal.style.transition=''; modal.style.transform=''; modal.style.opacity='';
     modal.style.display = 'flex';
+    requestAnimationFrame(()=> requestAnimationFrame(()=> modal.classList.add('art-open')));
     if(!_artHeld) lockScroll();
     navArm();
   }
@@ -6590,6 +6600,7 @@ body.focus-mode .focus-exit{ display:flex; }
     const modal = document.getElementById('artModal');
     if(modal && modal.style.display === 'flex' && !_artClosing){
       _artClosing = true;
+      modal.classList.remove('art-open');
       modal.style.transition = 'transform .32s cubic-bezier(.32,.72,0,1), opacity .26s ease';
       modal.style.transform  = 'translateY(40px)';
       modal.style.opacity    = '0';
@@ -7265,13 +7276,17 @@ body.focus-mode .focus-exit{ display:flex; }
       + '</div></div>';
 
     overlay.style.display='flex';
+    requestAnimationFrame(()=> requestAnimationFrame(()=> overlay.classList.add('feed-props-visible')));
     lockScroll();
     navArm();
   };
 
   window.closeFeedProps = function(){
     const ov=document.getElementById('feedPropsOverlay');
-    if(ov && ov.style.display==='flex'){ ov.style.display='none'; unlockScroll(); }
+    if(ov && ov.style.display==='flex'){
+      ov.classList.remove('feed-props-visible');
+      setTimeout(()=>{ ov.style.display='none'; unlockScroll(); }, 420);
+    }
   };
 
   window._feedPropsUnsub = function(){
@@ -7467,7 +7482,7 @@ body.focus-mode .focus-exit{ display:flex; }
     document.querySelectorAll('.menu3-chip').forEach(c=>c.classList.toggle('active', c.dataset.view===_currentView));
     const ov = document.getElementById('menu3Overlay');
     ov.style.display='flex';
-    requestAnimationFrame(()=>ov.classList.add('open'));
+    requestAnimationFrame(()=> requestAnimationFrame(()=>ov.classList.add('open')));
     navArm();
   }
   function closeMenu3(){
