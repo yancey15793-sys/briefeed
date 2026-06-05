@@ -7365,7 +7365,7 @@ body.focus-mode .focus-exit{ display:flex; }
     if(view === 'editions'){
       const hero = arts.find(a=>a.imageUrl) || arts[0];
       const heroIdx = arts.indexOf(hero);
-      const rest = arts.filter(a=>a!==hero).slice(0,20);
+      const rest = arts.filter(a=>a!==hero); // tous les articles
       const heroFav = getFavicon(hero.feedUrl||hero.link||'');
       const heroImg = hero.imageUrl ? "background:url('" + hero.imageUrl.replace(/'/g,"\\'") + "') center/cover no-repeat" : 'background:linear-gradient(135deg,rgba(10,132,255,.18),#0a0a0a)';
       let html = '<div style="margin-bottom:20px">';
@@ -7391,7 +7391,7 @@ body.focus-mode .focus-exit{ display:flex; }
     } else if(view === 'browse'){
       const hero = arts.find(a=>a.imageUrl) || arts[0];
       const heroIdx = arts.indexOf(hero);
-      const grid = arts.filter(a=>a!==hero).slice(0,6);
+      const grid = arts.filter(a=>a!==hero); // tous les articles, pas de limite
       const heroImg = hero.imageUrl ? "background:url('" + hero.imageUrl.replace(/'/g,"\\'") + "') center/cover no-repeat" : 'background:linear-gradient(135deg,rgba(10,132,255,.18),#0a0a0a)';
       const heroFav = getFavicon(hero.feedUrl||hero.link||'');
       let html = '<div class="browse-hero-card" onclick="' + arrName + 'Open(' + heroIdx + ')">';
