@@ -2032,6 +2032,35 @@ button, a, [onclick] { touch-action: manipulation; }
   background:linear-gradient(90deg, transparent 0%, #34c759 40%, transparent 100%);
 }
 #refreshBadge.ok::after{ animation:none; }
+
+/* ── NEW ARTICLES PILL — style Inoreader ─────────────────── */
+#newArtsPill{
+  position:fixed; top:calc(max(env(safe-area-inset-top,0px),16px) + 80px);
+  left:50%; transform:translateX(-50%) translateY(-18px);
+  z-index:490; pointer-events:none; opacity:0;
+  transition:opacity .3s ease, transform .3s cubic-bezier(.34,1.56,.64,1);
+}
+#newArtsPill.visible{
+  opacity:1; pointer-events:auto;
+  transform:translateX(-50%) translateY(0);
+}
+#newArtsPill button{
+  display:inline-flex; align-items:center; gap:7px;
+  background:#0a84ff; color:#fff;
+  border:none; border-radius:999px;
+  padding:9px 18px 9px 14px;
+  font-family:var(--font-inter); font-size:13px; font-weight:700;
+  letter-spacing:-.01em; cursor:pointer;
+  box-shadow:0 6px 20px rgba(10,132,255,.45), 0 2px 6px rgba(0,0,0,.25);
+  -webkit-tap-highlight-color:transparent;
+  transition:transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .18s;
+  white-space:nowrap;
+}
+#newArtsPill button:active{ transform:scale(.94); box-shadow:0 2px 8px rgba(10,132,255,.35); }
+#newArtsPill button svg{ width:14px; height:14px; flex-shrink:0; }
+[data-theme="light"] #newArtsPill button{
+  box-shadow:0 6px 20px rgba(10,132,255,.3), 0 2px 6px rgba(0,0,0,.12);
+}
 /* ── VUE FAVORIS ─────────────────────────────────────────── */
 .fav-header{ display:flex; align-items:baseline; justify-content:space-between; padding:20px 18px 12px; }
 .fav-header-title{ font-family:var(--font-inter); font-size:26px; font-weight:800; letter-spacing:-.03em; color:var(--text); }
@@ -2360,6 +2389,7 @@ body.focus-mode .sidebar-overlay,
 body.focus-mode .smart-nav,
 body.focus-mode .welcome,
 body.focus-mode .qpill,
+body.focus-mode #newArtsPill,
 body.focus-mode .view-picker-overlay{ display:none !important; }
 body.focus-mode .column{ padding-top:24px !important; width:min(100%,660px) !important; margin:0 auto; }
 body.focus-mode .row{ padding:0 24px; }
@@ -3712,7 +3742,7 @@ body.focus-mode .focus-exit{ display:flex; }
   // ---- Bouton œil : cycle éditions → grille → séquentiel → parcourir ----
   const views = document.querySelectorAll('.view');
   const order = ['editions', 'essentiel', 'liste', 'grille', 'sequential', 'browse'];
-  let _currentView = 'editions';
+  let _currentView = (() => { try { const v = localStorage.getItem('bf_view'); return order.includes(v) ? v : 'editions'; } catch(e){ return 'editions'; } })();
   // Déclarés tôt pour éviter reference-before-declaration dans _switchView
   let _feedPageArts = [];
   let _folderPageArts = [];
@@ -3792,6 +3822,7 @@ body.focus-mode .focus-exit{ display:flex; }
 
   function _switchView(target){
     _currentView = target;
+    try { localStorage.setItem('bf_view', target); } catch(e) {}
 
     // Si une sous-page est ouverte, re-rendre uniquement celle-ci
     const fp = document.getElementById('feedPage');
@@ -6163,21 +6194,60 @@ body.focus-mode .focus-exit{ display:flex; }
 
 
   // ── 14. loadAllFeeds — moteur principal ──────────────────────
+  // ── Rendu de la vue courante (point unique) ───────────────
+  function _renderCurrentView(){
+    views.forEach(v => { v.hidden = v.dataset.view !== _currentView; });
+    if(_currentView === 'editions')    _renderEditions();
+    else if(_currentView === 'browse') renderBrowseTimeline();
+    else if(_currentView === 'grille') _renderGrille();
+    else if(_currentView === 'sequential') _renderSequential();
+    else if(_currentView === 'liste')  _renderListe();
+    else if(_currentView === 'essentiel') _renderEssentiel();
+  }
+
+  // ── Pending articles (background fetch) ──────────────────
+  let _pendingNewArts  = [];
+  let _pendingNewCount = 0;
+
+  function _showNewArtsPill(count){
+    const pill  = document.getElementById('newArtsPill');
+    const label = document.getElementById('newArtsPillLabel');
+    if(!pill) return;
+    if(label) label.textContent = count === 1 ? '1 nouvel article' : `${count} nouveaux articles`;
+    pill.classList.add('visible');
+  }
+  function _hideNewArtsPill(){
+    const pill = document.getElementById('newArtsPill');
+    if(pill) pill.classList.remove('visible');
+  }
+  window._applyPendingArts = function(){
+    if(!_pendingNewArts.length){ _hideNewArtsPill(); return; }
+    _allArticles = _dedup([..._pendingNewArts, ..._allArticles].sort((a,b)=>new Date(b.pubDate)-new Date(a.pubDate)));
+    _pendingNewArts = []; _pendingNewCount = 0;
+    _hideNewArtsPill();
+    _renderCurrentView();
+    window.scrollTo({ top:0, behavior:'smooth' });
+    try{ idbSaveArticles(_allArticles); }catch(e){}
+  };
+
   async function loadAllFeeds(force=false){
     // Relire feedMeta depuis localStorage (mis à jour par afSubmit)
     try{ _feedMeta = JSON.parse(localStorage.getItem(_FMETA_KEY)||'{}'); }catch(e){}
     _syncRSSFeeds();
 
     if(!_rssFeeds.length){
-      const empty = document.getElementById('editionsEmpty');
-      if(empty) empty.style.display='block';
-      const skel = document.getElementById('editionsSkeleton');
-      if(skel) skel.style.display='none';
+      if(_currentView === 'editions'){
+        const empty = document.getElementById('editionsEmpty');
+        if(empty) empty.style.display='block';
+        const skel = document.getElementById('editionsSkeleton');
+        if(skel) skel.style.display='none';
+      }
       return;
     }
 
-    // Phase 1 — IDB instantané
+    // Phase 1 — IDB instantané → rendu immédiat, stable
     const skel = document.getElementById('editionsSkeleton');
+    let _hasCachedContent = false;
     try{
       const idbArts = await idbLoadAll();
       const activeSlugs = new Set(_rssFeeds.map(f=>f.slug));
@@ -6187,7 +6257,8 @@ body.focus-mode .focus-exit{ display:flex; }
           .filter(a=>activeSlugs.has(a.slug)&&!seen.has(a.link)&&seen.add(a.link))
           .sort((a,b)=>new Date(b.pubDate)-new Date(a.pubDate));
         if(skel) skel.style.display='none';
-        _renderEditions();
+        _renderCurrentView();
+        _hasCachedContent = true;
       } else {
         // Phase 1.5 — fallback cache localStorage
         const cached = [];
@@ -6200,18 +6271,15 @@ body.focus-mode .focus-exit{ display:flex; }
           _allArticles = cached.filter(a=>{if(seen.has(a.link))return false;seen.add(a.link);return true;})
             .sort((a,b)=>new Date(b.pubDate)-new Date(a.pubDate));
           if(skel) skel.style.display='none';
-          _renderEditions();
+          _renderCurrentView();
+          _hasCachedContent = true;
         } else {
           if(skel) skel.style.display='block';
         }
       }
     }catch(e){ if(skel) skel.style.display='block'; }
 
-    // Verrou anti-réentrance : UN SEUL chargement réseau à la fois.
-    // Avant, force=true remettait juste _isLoading à false puis relançait un
-    // 2e pool en parallèle (ex. ajout d'un flux pendant un refresh) → deux
-    // chargements concurrents mutant le même état. Désormais, si un load tourne
-    // déjà, on note la demande et on relancera UNE fois à la fin.
+    // Verrou anti-réentrance
     if(_isLoading){ if(force) _rerunRequested = true; return; }
     if(!force && _allArticles.length && (Date.now()-_lastLoad)<_COOLDOWN){
       if(skel) skel.style.display='none'; return;
@@ -6224,22 +6292,36 @@ body.focus-mode .focus-exit{ display:flex; }
     let newCount=0, completed=0;
     const newArts = [];
 
-    // Debounce du rendu — une seule fois 300ms après le dernier flux
+    // Debounce du rendu — NON-JARRING si contenu déjà affiché
     let _renderTimer = null;
     const _scheduleRender = () => {
       clearTimeout(_renderTimer);
       _renderTimer = setTimeout(()=>{
-        if(newArts.length){
-          _allArticles = _dedup([..._allArticles,...newArts.splice(0)].sort((a,b)=>new Date(b.pubDate)-new Date(a.pubDate)));
+        if(!newArts.length) return;
+        const batch = newArts.splice(0);
+        if(!_hasCachedContent){
+          // Aucun contenu affiché : rendre immédiatement
+          _allArticles = _dedup([..._allArticles, ...batch].sort((a,b)=>new Date(b.pubDate)-new Date(a.pubDate)));
+          _renderCurrentView();
+          _hasCachedContent = true;
+          if(skel) skel.style.display='none';
+        } else {
+          // Contenu déjà visible : accumuler, pill non-intrusive
+          _pendingNewArts.push(...batch);
+          _pendingNewCount = _pendingNewArts.length;
+          // Auto-apply si l'utilisateur est en haut de page (scroll < 80px)
+          const scrollEl = document.querySelector('.row') || document.scrollingElement;
+          const atTop = (scrollEl ? scrollEl.scrollTop : window.scrollY) < 80;
+          if(atTop){
+            window._applyPendingArts();
+          } else {
+            _showNewArtsPill(_pendingNewCount);
+          }
         }
-        _renderEditions();
-      }, 300);
+      }, 400);
     };
 
-    // POOL DE CONCURRENCE BORNÉ — au plus POOL flux chargés en même temps,
-    // quel que soit le nombre total de flux. La charge réseau devient O(POOL),
-    // plus O(nombre de flux) : c'est ce qui rend le parc de flux « illimité »
-    // indolore. Les flux sont drainés d'une file partagée par les workers.
+    // Pool borné
     const POOL = 5;
     let _qi = 0;
     const _worker = async () => {
@@ -6251,29 +6333,36 @@ body.focus-mode .focus-exit{ display:flex; }
           _setCached(feed.slug, arts);
           arts.forEach(a=>{ if(!existingLinks.has(a.link)){ existingLinks.add(a.link); newArts.push(a); newCount++; } });
           completed++;
-          _scheduleRender(); // debounced — ne rend qu'une fois 300ms après le dernier flux
+          _scheduleRender();
         }
       }
     };
     await Promise.all(Array.from({length: Math.min(POOL, _rssFeeds.length)}, _worker));
 
-    if(newArts.length){ _allArticles=[..._allArticles,...newArts].sort((a,b)=>new Date(b.pubDate)-new Date(a.pubDate)); }
-    _allArticles = _dedup(_allArticles);
+    // Fin du fetch réseau
     _isLoading = false;
     if(skel) skel.style.display='none';
-    _renderEditions();
-    // Sauve en IDB
-    try{ idbSaveArticles(_allArticles); idbPrune(); }catch(e){}
-    if(newCount>0) showBadge(`+${newCount} article${newCount>1?'s':''}`,true);
-    else hideBadge();
-    // Raffraîchir browse si visible
-    const browseView=document.querySelector('.view[data-view="browse"]');
-    if(browseView&&!browseView.hidden) renderBrowseTimeline();
+
+    // Flush final si rien n'a encore été rendu
+    if(!_hasCachedContent && _allArticles.length){
+      _renderCurrentView();
+    }
+
+    // Persister en IDB (silencieux)
+    if(newCount > 0){
+      // Fusionner les pending restants dans _allArticles pour l'IDB
+      const toSave = _pendingNewArts.length
+        ? _dedup([..._pendingNewArts, ..._allArticles].sort((a,b)=>new Date(b.pubDate)-new Date(a.pubDate)))
+        : _allArticles;
+      try{ idbSaveArticles(toSave); idbPrune(); }catch(e){}
+      showBadge(`+${newCount} article${newCount>1?'s':''}`, true);
+    } else {
+      hideBadge();
+    }
+
     // Enrichir images en arrière-plan
     setTimeout(()=>_enrichImages(_allArticles),1500);
-    // Un passage forcé a-t-il été demandé pendant ce chargement ? On le rejoue
-    // UNE fois (ex. flux ajouté en cours de route), sans concurrence.
-    if(_rerunRequested){ _rerunRequested = false; loadAllFeeds(true); }
+    if(_rerunRequested){ _rerunRequested=false; loadAllFeeds(true); }
   }
 
   // ── 16. Modal article ─────────────────────────────────────────
@@ -6669,21 +6758,26 @@ body.focus-mode .focus-exit{ display:flex; }
   })();
 
   _syncRSSFeeds();
+  // Appliquer la vue persistée dès le démarrage
+  views.forEach(v => { v.hidden = v.dataset.view !== _currentView; });
   if(_rssFeeds.length){
-    document.getElementById('editionsSkeleton').style.display = 'block';
+    if(_currentView === 'editions'){
+      const skel = document.getElementById('editionsSkeleton');
+      if(skel) skel.style.display='block';
+    }
     loadAllFeeds();
   } else {
-    document.getElementById('editionsEmpty').style.display = 'block';
+    if(_currentView === 'editions'){
+      const empty = document.getElementById('editionsEmpty');
+      if(empty) empty.style.display='block';
+    }
   }
   // ── Vue Favoris ───────────────────────────────────────────────
   const _MAIN_VIEWS = ['editions','browse','themes'];
   function _showMainViews(){
     document.querySelectorAll('.view').forEach(v=>{
-      v.hidden = !_MAIN_VIEWS.includes(v.dataset.view) || v.dataset.view !== 'editions';
+      v.hidden = v.dataset.view !== _currentView;
     });
-    // Rétablir la vue courante (editions visible)
-    const editions = document.querySelector('.view[data-view="editions"]');
-    if(editions) editions.hidden = false;
   }
 
   function _openFavoris(){
@@ -7505,6 +7599,7 @@ body.focus-mode .focus-exit{ display:flex; }
   };
   window.menu3Refresh = function(){
     closeMenu3();
+    _pendingNewArts = []; _pendingNewCount = 0; _hideNewArtsPill();
     if(typeof loadAllFeeds==='function') loadAllFeeds(true);
   };
   window.menu3OpenDiscover = function(){
@@ -8005,6 +8100,7 @@ body.focus-mode .focus-exit{ display:flex; }
 
   <!-- Badge hors-ligne -->
   <div class="offline-badge" id="offlineBadge">
+  <div id="newArtsPill"><button onclick="_applyPendingArts()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg><span id="newArtsPillLabel">Nouveaux articles</span></button></div>
     <div class="offline-dot" id="offlineDot"></div>
     <span id="offlineText">Hors-ligne</span>
   </div>
