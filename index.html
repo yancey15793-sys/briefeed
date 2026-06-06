@@ -834,42 +834,39 @@ button, a, [onclick] { touch-action: manipulation; }
 .nav-badge{position:absolute;top:2px;right:4px;background:#ed1149;color:#fff;font-size:9px;font-weight:800;min-width:14px;height:14px;padding:0 3px;border-radius:7px;display:flex;align-items:center;justify-content:center;border:1.5px solid transparent;line-height:1;z-index:4;}
 .nav-badge.hidden{display:none;}
 /* ── Selection — fond fixe sous l'onglet actif (kit Apple tab bar) ─────
-   #EDEDED mix-blend-mode:plus-darker en light
-   rgba(255,255,255,0.10) mix-blend-mode:plus-darker en dark
+   Light : #EDEDED mix-blend-mode:plus-darker
+   Dark  : transparent — distinction via couleur icône/label uniquement
    ──────────────────────────────────────────────────────────────────── */
 .nav-selection{
   position:absolute;inset:0;border-radius:100px;
-  background:rgba(255,255,255,0.10);
-  mix-blend-mode:plus-darker;
+  background:rgba(255,255,255,0.07);
+  mix-blend-mode:normal;
   opacity:0;
   transition:opacity .18s ease;
   pointer-events:none;z-index:0;
 }
 .nav-item.active .nav-selection{ opacity:1; }
 
-/* Dark — icônes/labels inactifs : blanc atténué / actifs : blanc pur */
+/* Dark — inactifs : atténué / actifs : #0091FF (kit) */
 .nav-item svg{width:18px;height:18px;fill:none;stroke:rgba(195,203,210,.55);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;transition:stroke .2s;flex-shrink:0;position:relative;z-index:1;}
-.nav-item.active svg{stroke:#ffffff;}
+.nav-item.active svg{stroke:#0091FF;}
 .nav-item .nav-label{font-size:9.5px;font-weight:500;letter-spacing:-.1px;color:rgba(195,203,210,.55);line-height:1;white-space:nowrap;transition:color .2s;position:relative;z-index:1;}
-.nav-item.active .nav-label{color:#ffffff;font-weight:590;}
+.nav-item.active .nav-label{color:#0091FF;font-weight:590;}
 .nav-badge{position:absolute;top:2px;right:4px;background:#ed1149;color:#fff;font-size:9px;font-weight:800;min-width:14px;height:14px;padding:0 3px;border-radius:7px;display:flex;align-items:center;justify-content:center;border:1.5px solid transparent;line-height:1;z-index:4;}
 .nav-badge.hidden{display:none;}
 
-/* Pill quasi-transparent dark — conservé pour la logique swipe JS, rendu invisible */
+/* Pill — caché dans les deux thèmes */
 .nav-pill-indicator{display:none;}
 
-/* Light — selection #EDEDED plus-darker / actif #0088FF / inactif #404040 plus-darker */
+/* Light — selection rgba semi-transparent (rendu équivalent #EDEDED sans blend mode) */
 [data-theme="light"] .nav-selection{
-  background:#EDEDED;
-  mix-blend-mode:plus-darker;
+  background:rgba(0,0,0,0.07);
+  mix-blend-mode:normal;
 }
 [data-theme="light"] .nav-item svg{stroke:#404040;mix-blend-mode:plus-darker;}
 [data-theme="light"] .nav-item.active svg{stroke:#0088FF;mix-blend-mode:normal;}
 [data-theme="light"] .nav-item .nav-label{color:#404040;mix-blend-mode:plus-darker;}
 [data-theme="light"] .nav-item.active .nav-label{color:#0088FF;font-weight:590;mix-blend-mode:normal;}
-
-/* Pill light — idem, caché */
-[data-theme="light"] .nav-pill-indicator{display:none;}
 /* ── Liquid Glass — mode clair (tokens kit Figma WWDC25) ────────────────
    BG-Small-UI light : Fill F7F7F7 + plus-darker / backdrop blur(20px) saturate(180%)
    Glass Effect : rgba(0,0,0,0.004) vernis neutre (vs rgba(0,0,0,0.2) screen en dark)
