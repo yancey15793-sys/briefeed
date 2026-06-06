@@ -766,24 +766,30 @@ button, a, [onclick] { touch-action: manipulation; }
   position:relative;overflow:hidden;border-radius:99px;
   background:
     linear-gradient(0deg, rgba(255,255,255,0.06), rgba(255,255,255,0.06)),
-    linear-gradient(0deg, rgba(0,0,0,0.60), rgba(0,0,0,0.60)),
-    rgba(204,204,204,0.50);
+    linear-gradient(0deg, rgba(0,0,0,0.42), rgba(0,0,0,0.42)),
+    rgba(204,204,204,0.28);
   background-blend-mode: normal, normal, color-burn;
-  opacity:0.92;
-  backdrop-filter:blur(20px) saturate(160%);
-  -webkit-backdrop-filter:blur(20px) saturate(160%);
+  opacity:0.96;
+  backdrop-filter:blur(40px) saturate(200%);
+  -webkit-backdrop-filter:blur(40px) saturate(200%);
   box-shadow:
-    0px 0px 0px 0.5px rgba(255,255,255,0.08),
-    0px 8px 32px rgba(0,0,0,0.55),
-    0px 2px 8px rgba(0,0,0,0.35),
-    inset 0px 1px 0px rgba(255,255,255,0.08),
-    inset 0px -0.5px 0px rgba(0,0,0,0.30);
+    0px 0px 0px 0.5px rgba(255,255,255,0.14),
+    0px 10px 40px rgba(0,0,0,0.50),
+    0px 2px 8px rgba(0,0,0,0.28),
+    inset 0px 1.5px 0px rgba(255,255,255,0.22),
+    inset 0px -1px 0px rgba(0,0,0,0.20);
   transition:flex-grow .42s cubic-bezier(.25,1,.4,1),flex-basis .42s cubic-bezier(.25,1,.4,1);
+}
+/* Reflet bombé haut — simule la courbure du verre (dark) */
+.nav-capsule::before{
+  content:'';position:absolute;left:8%;right:8%;top:0;height:50%;border-radius:99px 99px 60% 60%;
+  background:linear-gradient(180deg, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.0) 100%);
+  pointer-events:none;z-index:11;
 }
 /* Glass Effect overlay dark — rgba(0,0,0,0.2) blend screen */
 .nav-capsule::after{
   content:'';position:absolute;inset:0;border-radius:99px;
-  background:rgba(0,0,0,0.20);
+  background:rgba(0,0,0,0.14);
   mix-blend-mode:screen;
   pointer-events:none;z-index:10;
 }
@@ -827,40 +833,67 @@ button, a, [onclick] { touch-action: manipulation; }
 .nav-item.active .nav-label{color:#ffffff;font-weight:600;}
 .nav-badge{position:absolute;top:2px;right:4px;background:#ed1149;color:#fff;font-size:9px;font-weight:800;min-width:14px;height:14px;padding:0 3px;border-radius:7px;display:flex;align-items:center;justify-content:center;border:1.5px solid transparent;line-height:1;z-index:4;}
 .nav-badge.hidden{display:none;}
-/* Pill active dark — BG-Small-UI Tinted dark (blend plus-darker/overlay/saturation) */
-.nav-pill-indicator{
-  position:absolute;width:calc((100% - 6px) / 4);top:3px;bottom:3px;border-radius:99px;
-  background:
-    linear-gradient(0deg, rgba(10,132,255,0.22), rgba(10,132,255,0.22)),
-    linear-gradient(0deg, rgba(153,153,153,0.12), rgba(153,153,153,0.12)),
-    rgba(255,255,255,0.08);
-  background-blend-mode: plus-darker, overlay, normal;
-  box-shadow:
-    0px 0px 2px rgba(0,0,0,0.20),
-    0px 1px 8px rgba(0,0,0,0.30),
-    inset 0px 1px 0px rgba(255,255,255,0.14),
-    inset 0px -0.5px 0px rgba(0,0,0,0.25);
-  transition:left .28s cubic-bezier(.4,0,.2,1);
-  z-index:2;pointer-events:none;left:3px;
+/* ── Selection — fond fixe sous l'onglet actif (kit Apple tab bar) ─────
+   #EDEDED mix-blend-mode:plus-darker en light
+   rgba(255,255,255,0.10) mix-blend-mode:plus-darker en dark
+   ──────────────────────────────────────────────────────────────────── */
+.nav-selection{
+  position:absolute;inset:0;border-radius:100px;
+  background:rgba(255,255,255,0.10);
+  mix-blend-mode:plus-darker;
+  opacity:0;
+  transition:opacity .18s ease;
+  pointer-events:none;z-index:0;
 }
+.nav-item.active .nav-selection{ opacity:1; }
+
+/* Dark — icônes/labels inactifs : blanc atténué / actifs : blanc pur */
+.nav-item svg{width:18px;height:18px;fill:none;stroke:rgba(195,203,210,.55);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;transition:stroke .2s;flex-shrink:0;position:relative;z-index:1;}
+.nav-item.active svg{stroke:#ffffff;}
+.nav-item .nav-label{font-size:9.5px;font-weight:500;letter-spacing:-.1px;color:rgba(195,203,210,.55);line-height:1;white-space:nowrap;transition:color .2s;position:relative;z-index:1;}
+.nav-item.active .nav-label{color:#ffffff;font-weight:590;}
+.nav-badge{position:absolute;top:2px;right:4px;background:#ed1149;color:#fff;font-size:9px;font-weight:800;min-width:14px;height:14px;padding:0 3px;border-radius:7px;display:flex;align-items:center;justify-content:center;border:1.5px solid transparent;line-height:1;z-index:4;}
+.nav-badge.hidden{display:none;}
+
+/* Pill quasi-transparent dark — conservé pour la logique swipe JS, rendu invisible */
+.nav-pill-indicator{display:none;}
+
+/* Light — selection #EDEDED plus-darker / actif #0088FF / inactif #404040 plus-darker */
+[data-theme="light"] .nav-selection{
+  background:#EDEDED;
+  mix-blend-mode:plus-darker;
+}
+[data-theme="light"] .nav-item svg{stroke:#404040;mix-blend-mode:plus-darker;}
+[data-theme="light"] .nav-item.active svg{stroke:#0088FF;mix-blend-mode:normal;}
+[data-theme="light"] .nav-item .nav-label{color:#404040;mix-blend-mode:plus-darker;}
+[data-theme="light"] .nav-item.active .nav-label{color:#0088FF;font-weight:590;mix-blend-mode:normal;}
+
+/* Pill light — idem, caché */
+[data-theme="light"] .nav-pill-indicator{display:none;}
 /* ── Liquid Glass — mode clair (tokens kit Figma WWDC25) ────────────────
    BG-Small-UI light : Fill F7F7F7 + plus-darker / backdrop blur(20px) saturate(180%)
    Glass Effect : rgba(0,0,0,0.004) vernis neutre (vs rgba(0,0,0,0.2) screen en dark)
    ──────────────────────────────────────────────────────────────────── */
 [data-theme="light"] .nav-capsule{
   background:
-    linear-gradient(0deg, rgba(247,247,247,0.82), rgba(247,247,247,0.82)),
-    rgba(255,255,255,0.50);
+    linear-gradient(0deg, rgba(247,247,247,0.60), rgba(247,247,247,0.60)),
+    rgba(255,255,255,0.30);
   background-blend-mode: plus-darker, normal;
   opacity:1;
-  backdrop-filter:blur(20px) saturate(180%);
-  -webkit-backdrop-filter:blur(20px) saturate(180%);
+  backdrop-filter:blur(40px) saturate(220%);
+  -webkit-backdrop-filter:blur(40px) saturate(220%);
   box-shadow:
-    0px 0px 0px 0.5px rgba(0,0,0,0.12),
-    0px 8px 32px rgba(0,0,0,0.10),
-    0px 2px 8px rgba(0,0,0,0.08),
-    inset 0px 1px 0px rgba(255,255,255,0.72),
-    inset 0px -0.5px 0px rgba(0,0,0,0.06);
+    0px 0px 0px 0.5px rgba(0,0,0,0.10),
+    0px 10px 40px rgba(0,0,0,0.08),
+    0px 2px 8px rgba(0,0,0,0.06),
+    inset 0px 1.5px 0px rgba(255,255,255,0.90),
+    inset 0px -0.5px 0px rgba(0,0,0,0.04);
+}
+/* Reflet bombé haut — simule la courbure du verre (light) */
+[data-theme="light"] .nav-capsule::before{
+  content:'';position:absolute;left:8%;right:8%;top:0;height:50%;border-radius:99px 99px 60% 60%;
+  background:linear-gradient(180deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.0) 100%);
+  pointer-events:none;z-index:11;
 }
 /* Glass Effect light — rgba(0,0,0,0.004) vernis neutre, pas de mix-blend screen */
 [data-theme="light"] .nav-capsule::after{
@@ -869,27 +902,11 @@ button, a, [onclick] { touch-action: manipulation; }
   mix-blend-mode:normal;
   pointer-events:none;z-index:10;
 }
-/* Pill active — BG-Small-UI Tinted (bleu accent, blend plus-darker/overlay) */
-[data-theme="light"] .nav-pill-indicator{
-  background:
-    linear-gradient(0deg, rgba(0,102,204,0.12), rgba(0,102,204,0.12)),
-    linear-gradient(0deg, rgba(153,153,153,0.08), rgba(153,153,153,0.08)),
-    rgba(255,255,255,0.60);
-  background-blend-mode: plus-darker, overlay, normal;
-  box-shadow:
-    0px 0px 2px rgba(0,0,0,0.10),
-    0px 1px 8px rgba(0,0,0,0.12),
-    inset 0px 1px 0px rgba(255,255,255,0.80),
-    inset 0px -0.5px 0px rgba(0,0,0,0.06);
-}
-/* Icônes et labels — Small UI Dynamic (Over light background) */
-[data-theme="light"] .nav-item svg{stroke:rgba(0,0,0,0.38);}
-[data-theme="light"] .nav-item.active svg{stroke:#000000;}
-[data-theme="light"] .nav-item .nav-label{color:rgba(0,0,0,0.38);}
-[data-theme="light"] .nav-item.active .nav-label{color:#000000;font-weight:600;}
-[data-theme="light"] .nav-layer-search-icon svg{stroke:rgba(0,0,0,0.38);}
-[data-theme="light"] .nav-layer-search-icon .nav-label{color:rgba(0,0,0,0.38);}
-[data-theme="light"] .nav-layer-search-bar svg{stroke:rgba(0,0,0,0.38);}
+/* Pill active — idem, caché */
+[data-theme="light"] .nav-pill-indicator{display:none;}
+[data-theme="light"] .nav-layer-search-icon svg{stroke:rgba(0,0,0,0.40);}
+[data-theme="light"] .nav-layer-search-icon .nav-label{color:rgba(0,0,0,0.40);}
+[data-theme="light"] .nav-layer-search-bar svg{stroke:rgba(0,0,0,0.40);}
 
 /* Résultats de recherche */
 #navSearchResults{position:fixed;inset:0;bottom:90px;z-index:55;overflow-y:auto;padding:72px 20px 20px;scrollbar-width:none;pointer-events:none;opacity:0;transition:opacity .25s;}
@@ -3870,11 +3887,10 @@ body.focus-mode .focus-exit{ display:flex; }
     <svg width="0" height="0" style="position:absolute"><defs><linearGradient id="navGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#93C5FD"/><stop offset="33%" stop-color="#D8B4FE"/><stop offset="66%" stop-color="#FCA5A5"/><stop offset="100%" stop-color="#93C5FD"/></linearGradient></defs></svg>
     <div class="nav-capsule nav-capsule-left" id="navCapsuleLeft">
         <div class="nav-layer nav-layer-main" id="navLayerMain">
-            <div class="nav-pill-indicator" id="navPill"></div>
-            <button class="nav-item active" id="navHome" data-nav-idx="0"><svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg><span class="nav-label">Flux</span></button>
-            <button class="nav-item" id="navDiscover" data-nav-idx="1"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polygon points="15.5 8.5 13.5 13.5 8.5 15.5 10.5 10.5"/></svg><span class="nav-label">Découvrir</span></button>
-            <button class="nav-item" id="navFavorites" data-nav-idx="2"><svg viewBox="0 0 24 24"><polygon points="12 3 14.5 8.5 20.5 9.3 16.2 13.5 17.3 19.5 12 16.6 6.7 19.5 7.8 13.5 3.5 9.3 9.5 8.5 12 3"/></svg><span class="nav-label">Favoris</span><span class="nav-badge hidden" id="navRLBadge">0</span></button>
-            <button class="nav-item" id="navSettings" data-nav-idx="3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg><span class="nav-label">Réglages</span></button>
+            <button class="nav-item active" id="navHome" data-nav-idx="0"><div class="nav-selection"></div><svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg><span class="nav-label">Flux</span></button>
+            <button class="nav-item" id="navDiscover" data-nav-idx="1"><div class="nav-selection"></div><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polygon points="15.5 8.5 13.5 13.5 8.5 15.5 10.5 10.5"/></svg><span class="nav-label">Découvrir</span></button>
+            <button class="nav-item" id="navFavorites" data-nav-idx="2"><div class="nav-selection"></div><svg viewBox="0 0 24 24"><polygon points="12 3 14.5 8.5 20.5 9.3 16.2 13.5 17.3 19.5 12 16.6 6.7 19.5 7.8 13.5 3.5 9.3 9.5 8.5 12 3"/></svg><span class="nav-label">Favoris</span><span class="nav-badge hidden" id="navRLBadge">0</span></button>
+            <button class="nav-item" id="navSettings" data-nav-idx="3"><div class="nav-selection"></div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg><span class="nav-label">Réglages</span></button>
         </div>
         <div class="nav-layer nav-layer-home" id="navLayerHome" onclick="closeNavSearch()"><svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg></div>
     </div>
@@ -4674,15 +4690,11 @@ body.focus-mode .focus-exit{ display:flex; }
     el.innerHTML = '<div style="color:rgba(255,255,255,.5);padding:20px;text-align:center">Recherche : ' + q + '</div>';
   }
 
-  // Pill indicator + item actif
+  // Selection indicator : toggle active sur l'item (plus de pill glissante)
   const NAV_COUNT = 4;
   function updateNavPill(idx){
-    const pill  = document.getElementById('navPill');
     const items = document.querySelectorAll('#navLayerMain .nav-item');
     items.forEach((it, i) => it.classList.toggle('active', i === idx));
-    const leftW = document.getElementById('navCapsuleLeft')?.offsetWidth || 320;
-    const itemW = (leftW - 6) / NAV_COUNT;
-    if(pill) pill.style.left = (3 + idx * itemW) + 'px';
   }
 
   function _navTo(idx){
@@ -4737,11 +4749,9 @@ body.focus-mode .focus-exit{ display:flex; }
     const idx  = Math.max(0, Math.min(NAV_COUNT - 1, Math.floor((e.clientX - rect.left) / (rect.width / NAV_COUNT))));
     if(idx === _swipePeekIdx) return;
     _swipePeekIdx = idx;
-    // Déplacer la pill en temps réel (sans navigation)
-    const pill  = document.getElementById('navPill');
+    // Mettre à jour la selection en temps réel (sans navigation)
     const items = document.querySelectorAll('#navLayerMain .nav-item');
     items.forEach((it, i) => it.classList.toggle('active', i === idx));
-    if(pill){ const iW = (rect.width - 6) / NAV_COUNT; pill.style.left = (3 + idx * iW) + 'px'; }
   });
 
   _navCapsule.addEventListener('pointerup', e => {
