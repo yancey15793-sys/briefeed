@@ -15,7 +15,7 @@
 <!-- Polices par option : Inter (≈ SF Pro, bien grasse) + Geist -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;590;700;800&family=Geist:wght@400;500;600;700;800&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;590;700;800&family=Geist:wght@400;500;600;700;800&family=DM+Serif+Display&family=Oswald:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 <!-- Reader mode -->
 <script src="https://cdn.jsdelivr.net/npm/@mozilla/readability@0.5.0/Readability.min.js"></script>
@@ -2328,45 +2328,165 @@ button, a, [onclick] { touch-action: manipulation; }
   margin:2px 0;
 }
 [data-theme="light"] .vp-divider{ background:rgba(0,0,0,.06); }/* ── VUE PARCOURIR PAR DOSSIERS ──────────────────── */
-.browse-folder-sep{ border:none; border-top:1px solid var(--border); margin:36px 0 28px; }
-[data-theme="light"] .browse-folder-sep{ border-color:rgba(0,0,0,.08); }
-.browse-folder-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
-.browse-folder-name{ font-family:var(--font-inter); font-size:24px; font-weight:800; letter-spacing:-.03em; color:var(--text); }
-.browse-folder-actions{ display:flex; gap:8px; }
-.browse-folder-btn{ width:32px; height:32px; border:none; border-radius:50%; background:rgba(255,255,255,.07); color:var(--text-muted); cursor:pointer; display:flex; align-items:center; justify-content:center; -webkit-tap-highlight-color:transparent; transition:background .15s; }
+/* ── VUE PARCOURIR — nouveau système Oswald ── */
+.browse-folder-item{ border-bottom:0.5px solid var(--border); }
+.browse-folder-item:first-child{ border-top:0.5px solid var(--border); }
+
+.browse-folder-head{
+  display:flex; flex-direction:column; align-items:center;
+  justify-content:center; text-align:center;
+  padding:14px 0; cursor:pointer; user-select:none; gap:5px;
+  -webkit-tap-highlight-color:transparent;
+}
+.browse-folder-name{
+  font-family:'Oswald', sans-serif;
+  font-size:clamp(38px,9vw,68px);
+  font-weight:700; text-transform:uppercase;
+  letter-spacing:-0.02em; line-height:1;
+  color:var(--text); opacity:0.15;
+  transition:opacity .2s ease, transform .65s cubic-bezier(.34,1.56,.64,1);
+  transform-origin:center center; display:block; width:100%;
+}
+.browse-folder-item.bf-open .browse-folder-name{ opacity:1; }
+.browse-folder-head:active .browse-folder-name{ opacity:.8; }
+
+.browse-folder-meta{
+  display:flex; align-items:center; gap:7px; justify-content:center;
+}
+.browse-folder-count{
+  font-family:var(--font-inter); font-size:11px; font-weight:500;
+  color:rgba(255,255,255,.14); letter-spacing:.05em;
+  font-variant-numeric:tabular-nums; transition:color .2s;
+}
+.browse-folder-item.bf-open .browse-folder-count{ color:rgba(255,255,255,.4); }
+.browse-folder-actions{ display:flex; gap:6px; }
+.browse-folder-btn{
+  width:26px; height:26px; border:none; border-radius:50%;
+  background:rgba(255,255,255,.06); color:var(--text-muted);
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+  -webkit-tap-highlight-color:transparent; transition:background .15s;
+}
 .browse-folder-btn:hover{ background:rgba(255,255,255,.12); color:var(--text); }
 [data-theme="light"] .browse-folder-btn{ background:rgba(0,0,0,.05); }
-/* Carte hero — même ratio que hello-card magazine */
-.browse-hero-card{ position:relative; border-radius:20px; overflow:hidden; aspect-ratio:16/9; cursor:pointer; margin-bottom:12px; -webkit-tap-highlight-color:transparent; }
-.browse-hero-img{ position:absolute; inset:0; background-size:cover; background-position:center; }
-.browse-hero-card::before{ content:""; position:absolute; inset:0; background:linear-gradient(180deg,rgba(0,0,0,0) 30%,rgba(0,0,0,.85) 100%); z-index:1; }
-.browse-hero-body{ position:absolute; left:0; right:0; bottom:0; z-index:2; padding:18px 20px; }
-.browse-hero-source{ display:flex; align-items:center; font-family:var(--font-inter); font-size:10.5px; font-weight:700; color:rgba(255,255,255,.7); text-transform:uppercase; letter-spacing:.04em; margin-bottom:7px; }
-.browse-hero-title{ font-family:var(--font-inter); font-size:19px; font-weight:700; line-height:1.25; letter-spacing:-.01em; color:#fff; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
-/* Grille 2 colonnes sous le hero */
-.browse-folder-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:4px; }
-/* grid2-img déjà défini — on réutilise */
-
-/* Respiration entre groupes de 7 sur la page dossier */
-.browse-group-spacer{
-  height:52px;
+.browse-folder-chevron{
+  width:14px; height:14px; flex-shrink:0; display:flex;
+  align-items:center; justify-content:center;
+}
+.browse-folder-chevron svg{
+  width:10px; height:10px; stroke:rgba(255,255,255,.15);
+  transition:transform .4s cubic-bezier(.34,1.56,.64,1), stroke .2s;
+}
+.browse-folder-item.bf-open .browse-folder-chevron svg{
+  transform:rotate(180deg); stroke:var(--accent);
 }
 
-/* Lire la suite — bas de chaque bloc dossier */
+/* ACCORDÉON */
+.browse-folder-body{
+  display:grid; grid-template-rows:0fr;
+  transition:grid-template-rows .55s cubic-bezier(.33,1,.68,1);
+  overflow:hidden;
+}
+.browse-folder-item.bf-open .browse-folder-body{ grid-template-rows:1fr; }
+.browse-folder-body-inner{ overflow:hidden; min-height:0; }
+
+/* PANEL immersif */
+.browse-folder-panel{
+  background:rgba(255,255,255,.025); border-radius:16px;
+  margin:0 0 20px; padding:18px 16px 16px;
+}
+
+/* CARROUSEL 5 cards */
+.browse-carousel{
+  display:flex; gap:10px;
+  overflow-x:auto; overflow-y:visible;
+  scroll-snap-type:x mandatory;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none; padding-bottom:2px;
+  opacity:0; transform:translateY(12px);
+  transition:opacity .3s ease .06s, transform .5s cubic-bezier(.34,1.56,.64,1) .06s;
+}
+.browse-carousel::-webkit-scrollbar{ display:none; }
+.browse-folder-item.bf-open .browse-carousel{ opacity:1; transform:translateY(0); }
+
+/* Card hero — plus large */
+.browse-c-hero{
+  flex:0 0 72%; scroll-snap-align:start;
+  position:relative; border-radius:14px; overflow:hidden;
+  aspect-ratio:4/3; cursor:pointer; -webkit-tap-highlight-color:transparent;
+}
+/* Cards secondaires */
+.browse-c-card{
+  flex:0 0 46%; scroll-snap-align:start;
+  border-radius:14px; overflow:hidden; cursor:pointer;
+  display:flex; flex-direction:column;
+  -webkit-tap-highlight-color:transparent;
+}
+.browse-c-img{
+  aspect-ratio:4/3; background:#111; overflow:hidden;
+  border-radius:12px; margin-bottom:8px; position:relative;
+  background-size:cover; background-position:center;
+}
+.browse-c-img::after{
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.55) 100%);
+}
+.browse-c-hero .browse-c-img{
+  position:absolute; inset:0; border-radius:0; margin:0; aspect-ratio:unset;
+}
+.browse-c-hero .browse-c-img::after{
+  background:linear-gradient(180deg,rgba(0,0,0,0) 30%,rgba(0,0,0,.88) 100%);
+}
+.browse-c-hero-body{
+  position:absolute; left:0; right:0; bottom:0; z-index:2; padding:16px 16px;
+}
+.browse-c-source{
+  font-family:var(--font-inter); font-size:9.5px; font-weight:700;
+  color:var(--accent); text-transform:uppercase; letter-spacing:.07em;
+  margin-bottom:5px; display:flex; align-items:center; gap:5px;
+}
+.browse-c-source img{ width:14px; height:14px; border-radius:50%; object-fit:contain; }
+.browse-c-hero .browse-c-source{ color:rgba(255,255,255,.7); }
+.browse-c-title{
+  font-family:var(--font-inter); font-size:13px; font-weight:700;
+  line-height:1.3; color:var(--text);
+  display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;
+}
+.browse-c-hero .browse-c-title{
+  font-size:16px; color:#fff; position:relative; z-index:2;
+}
+.browse-c-time{
+  font-family:var(--font-inter); font-size:10px; font-weight:500;
+  color:var(--text-muted); margin-top:4px;
+}
+
+/* Voir tout */
 .browse-more-link{
-  display:flex; align-items:center; justify-content:flex-end; gap:5px;
-  padding:16px 2px 2px;
-  cursor:pointer; -webkit-tap-highlight-color:transparent;
-  transition:opacity .14s;
-  border:none; background:transparent;
+  display:flex; align-items:center; justify-content:center; gap:5px;
+  padding:14px 2px 2px; cursor:pointer; -webkit-tap-highlight-color:transparent;
+  transition:opacity .14s; border:none; background:transparent;
   font-family:var(--font-inter);
 }
 .browse-more-link:active{ opacity:.55; }
 .browse-more-link-label{
-  font-size:12.5px; font-weight:700;
-  color:#ff3c32; letter-spacing:.01em; text-transform:uppercase;
+  font-size:11px; font-weight:700; color:rgba(255,255,255,.25);
+  letter-spacing:.08em; text-transform:uppercase;
+  transition:color .2s;
 }
-.browse-more-link svg{ color:#ff3c32; flex-shrink:0; }
+.browse-more-link:hover .browse-more-link-label{ color:var(--accent); }
+.browse-more-link svg{ color:rgba(255,255,255,.25); flex-shrink:0; transition:color .2s; }
+.browse-more-link:hover svg{ color:var(--accent); }
+
+/* Respiration entre groupes */
+.browse-group-spacer{ height:52px; }
+
+/* Séparateur legacy — gardé pour rétrocompat */
+.browse-folder-sep{ display:none; }
+
+/* Hero card — tap feedback */
+.browse-c-hero:active, .browse-c-card:active{ opacity:.82; transition:opacity .1s; }
+
+[data-theme="light"] .browse-folder-name{ color:var(--text); }
+[data-theme="light"] .browse-folder-panel{ background:rgba(0,0,0,.025); }
 
 /* Bouton vue dans les topbars de sous-pages */
 .subpage-view-btn{
@@ -4083,75 +4203,88 @@ body.focus-mode .focus-exit{ display:flex; }
       const arts = _dedup([...allArts]
         .filter(a => feedUrls.size ? feedUrls.has(a.feedUrl || '') : false)
         .sort((a, b) => b.pubDate - a.pubDate)
-      ).slice(0, 7); // hero + 6 grille (2×3)
+      ).slice(0, 5); // hero + 4 cards carrousel
 
-      if (!arts.length) return; // dossier vide → skip
+      if (!arts.length) return;
 
       const baseIdx = _browseArts.length;
       arts.forEach(a => _browseArts.push(a));
 
-      // ── Séparateur inter-dossiers ──
-      if (fi > 0) html += '<hr class="browse-folder-sep">';
+      const artCount = arts.length;
 
-      // ── En-tête dossier ──
-      html += `<div class="browse-folder-head">
+      // ── Item dossier ──
+      html += `<div class="browse-folder-item" id="bf-item-${fi}">`;
+
+      // ── En-tête centré cliquable ──
+      html += `<div class="browse-folder-head" onclick="_bfToggle(${fi})">
         <span class="browse-folder-name">${escapeHtml(folder.name)}</span>
-        <div class="browse-folder-actions">
-          <button class="browse-folder-btn" onclick="_browseEditFolder(${fi})" aria-label="Modifier">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="14" height="14"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-          </button>
-          <button class="browse-folder-btn" onclick="_browseDeleteFolder(${fi})" aria-label="Supprimer">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-          </button>
-        </div>
-      </div>`;
-
-      // ── Carte hero (première, pleine largeur) ──
-      const hero = arts[0];
-      const hFav = typeof getFavicon === 'function' ? getFavicon(hero.feedUrl || hero.link || '') : '';
-      const hTime = typeof relTime === 'function' ? relTime(hero.pubDate) : '';
-      const hImgStyle = hero.imageUrl
-        ? `background:url('${hero.imageUrl.replace(/'/g,"\\'")}') center/cover no-repeat`
-        : 'background:linear-gradient(135deg,rgba(10,132,255,.18),#0a0a0a)';
-      html += `<div class="browse-hero-card" onclick="_openBrowseArt(${baseIdx})">
-        <div class="browse-hero-img" style="${hImgStyle}"></div>
-        <div class="browse-hero-body">
-          <div class="browse-hero-source">
-            <img src="${hFav}" onerror="this.style.opacity='.3'" style="width:16px;height:16px;border-radius:50%;object-fit:contain;margin-right:6px;flex-shrink:0">
-            ${escapeHtml(hero.source)} · ${hTime}
+        <div class="browse-folder-meta">
+          <span class="browse-folder-count">${artCount} article${artCount > 1 ? 's' : ''}</span>
+          <div class="browse-folder-chevron">
+            <svg viewBox="0 0 12 12" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="2,4 6,8 10,4"/>
+            </svg>
           </div>
-          <div class="browse-hero-title">${escapeHtml(hero.title)}</div>
+          <div class="browse-folder-actions" onclick="event.stopPropagation()">
+            <button class="browse-folder-btn" onclick="_browseEditFolder(${fi})" aria-label="Modifier">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="12" height="12"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+            <button class="browse-folder-btn" onclick="_browseDeleteFolder(${fi})" aria-label="Supprimer">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="12" height="12"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+            </button>
+          </div>
         </div>
       </div>`;
 
-      // ── Grille 2 colonnes (articles 1–12) ──
-      const grid = arts.slice(1, 7);
-      if (grid.length) {
-        html += '<div class="browse-folder-grid">';
-        grid.forEach((a, gi) => {
-          const fav  = typeof getFavicon === 'function' ? getFavicon(a.feedUrl || a.link || '') : '';
-          const time = typeof relTime === 'function' ? relTime(a.pubDate) : '';
-          const imgStyle = a.imageUrl
-            ? `background:url('${a.imageUrl.replace(/'/g,"\\'")}') center/cover no-repeat`
-            : 'background:linear-gradient(135deg,rgba(10,132,255,.12),#0a0a0a)';
-          html += `<div class="grid2-card" onclick="_openBrowseArt(${baseIdx + 1 + gi})">
-            <div class="grid2-img" style="${imgStyle}"></div>
-            <div class="grid2-title">${escapeHtml(a.title)}</div>
-            <div class="grid2-meta">
-              <div class="grid2-fav"><img src="${fav}" onerror="this.style.opacity='.3'"></div>
-              <span>${escapeHtml(a.source)}</span>
-              <span style="margin-left:auto">${time}</span>
+      // ── Accordéon ──
+      html += `<div class="browse-folder-body"><div class="browse-folder-body-inner">`;
+      html += `<div class="browse-folder-panel">`;
+
+      // ── Carrousel 5 cards (hero + 4) ──
+      html += `<div class="browse-carousel">`;
+
+      arts.forEach((a, ai) => {
+        const fav  = typeof getFavicon === 'function' ? getFavicon(a.feedUrl || a.link || '') : '';
+        const time = typeof relTime === 'function' ? relTime(a.pubDate) : '';
+        const imgStyle = a.imageUrl
+          ? `background:url('${a.imageUrl.replace(/'/g,"\\'")}') center/cover no-repeat`
+          : 'background:linear-gradient(135deg,rgba(0,145,255,.18),#0a0a0a)';
+
+        if (ai === 0) {
+          // Hero — grande card
+          html += `<div class="browse-c-hero" onclick="_openBrowseArt(${baseIdx})">
+            <div class="browse-c-img" style="${imgStyle}"></div>
+            <div class="browse-c-hero-body">
+              <div class="browse-c-source">
+                <img src="${fav}" onerror="this.style.opacity='.3'">
+                ${escapeHtml(a.source)}
+              </div>
+              <div class="browse-c-title">${escapeHtml(a.title)}</div>
             </div>
           </div>`;
-        });
-        html += '</div>';
-      }
+        } else {
+          // Cards secondaires
+          html += `<div class="browse-c-card" onclick="_openBrowseArt(${baseIdx + ai})">
+            <div class="browse-c-img" style="${imgStyle}"></div>
+            <div class="browse-c-source">
+              <img src="${fav}" onerror="this.style.opacity='.3'" style="width:13px;height:13px;border-radius:50%;object-fit:contain;flex-shrink:0">
+              ${escapeHtml(a.source)}
+            </div>
+            <div class="browse-c-title">${escapeHtml(a.title)}</div>
+            <div class="browse-c-time">${time}</div>
+          </div>`;
+        }
+      });
 
-      // ── Lire la suite ──
+      html += `</div>`; // /browse-carousel
+
+      // ── Voir tout ──
       html += `<button class="browse-more-link" onclick="_browseOpenFolder(${fi})">
-        <span class="browse-more-link-label">Lire la suite</span>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" width="13" height="13"><polyline points="9 18 15 12 9 6"/></svg>
+        <span class="browse-more-link-label">Voir tous les articles</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" width="11" height="11"><polyline points="9 18 15 12 9 6"/></svg>
       </button>`;
+
+      html += `</div></div></div></div>`; // /panel /body-inner /body /item
     });
 
     if (!html) {
@@ -4160,6 +4293,15 @@ body.focus-mode .focus-exit{ display:flex; }
     }
     section.innerHTML = html;
   }
+
+  // Toggle accordéon single-open
+  window._bfToggle = function(fi) {
+    const item = document.getElementById('bf-item-' + fi);
+    if (!item) return;
+    const isOpen = item.classList.contains('bf-open');
+    document.querySelectorAll('.browse-folder-item.bf-open').forEach(el => el.classList.remove('bf-open'));
+    if (!isOpen) item.classList.add('bf-open');
+  };
 
   window._browseEditFolder = function(i){
     const name = prompt('Renommer le dossier :', folders[i]?.name || '');
