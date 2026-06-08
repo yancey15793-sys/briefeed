@@ -2395,9 +2395,9 @@ button, a, [onclick] { touch-action: manipulation; }
   margin:0 0 20px; padding:18px 16px 16px;
 }
 
-/* CARROUSEL 5 cards */
+/* CARROUSEL 5 cards — format art-card édition */
 .browse-carousel{
-  display:flex; gap:12px;
+  display:flex; gap:16px;
   overflow-x:auto; overflow-y:visible;
   -webkit-overflow-scrolling:touch;
   scrollbar-width:none; padding-bottom:4px;
@@ -2409,60 +2409,60 @@ button, a, [onclick] { touch-action: manipulation; }
 .browse-carousel::-webkit-scrollbar{ display:none; }
 .browse-folder-item.bf-open .browse-carousel{ opacity:1; transform:translateY(0); }
 
-/* Card hero — grande */
-.browse-c-hero{
-  flex:0 0 78%; scroll-snap-align:start;
-  position:relative; border-radius:18px; overflow:hidden;
-  aspect-ratio:3/2; cursor:pointer; -webkit-tap-highlight-color:transparent;
-  user-select:none;
-}
-/* Cards secondaires */
+/* Toutes les cards — même largeur, format édition */
+.browse-c-hero,
 .browse-c-card{
-  flex:0 0 52%; scroll-snap-align:start;
-  border-radius:16px; overflow:hidden; cursor:pointer;
+  flex:0 0 72%; scroll-snap-align:start;
   display:flex; flex-direction:column;
-  -webkit-tap-highlight-color:transparent;
+  text-decoration:none; color:var(--text);
+  cursor:pointer; -webkit-tap-highlight-color:transparent;
   user-select:none;
 }
-.browse-c-img{
-  aspect-ratio:3/2; background:#111; overflow:hidden;
-  border-radius:14px; margin-bottom:10px; position:relative;
-  background-size:cover; background-position:center;
-  transition:transform .35s ease;
+
+/* Image wrapper — identique à .art-card .hello-img-wrapper */
+.browse-c-img-wrap{
+  position:relative; border-radius:16px; overflow:hidden;
+  aspect-ratio:16/9; background:#111; margin-bottom:0;
+  flex-shrink:0;
 }
-.browse-c-card:active .browse-c-img{ transform:scale(.98); }
-.browse-c-img::after{
-  content:''; position:absolute; inset:0;
-  background:linear-gradient(180deg,transparent 35%,rgba(0,0,0,.6) 100%);
+.browse-c-img-wrap img{
+  position:absolute; inset:0; width:100%; height:100%;
+  object-fit:cover; display:block;
+  pointer-events:none;
 }
-.browse-c-hero .browse-c-img{
-  position:absolute; inset:0; border-radius:0; margin:0; aspect-ratio:unset;
+.browse-c-img-wrap .browse-c-img-placeholder{
+  position:absolute; inset:0;
+  background:linear-gradient(135deg,rgba(0,145,255,.15),#0a0a0a);
 }
-.browse-c-hero .browse-c-img::after{
-  background:linear-gradient(180deg,rgba(0,0,0,0) 25%,rgba(0,0,0,.9) 100%);
+
+/* Source row — identique à .art-source-row */
+.browse-c-source-row{
+  display:flex; align-items:center; gap:5px; margin:10px 0 4px;
 }
-.browse-c-hero-body{
-  position:absolute; left:0; right:0; bottom:0; z-index:2; padding:20px 18px;
+.browse-c-fav{
+  width:18px; height:18px; border-radius:50%; overflow:hidden;
+  flex-shrink:0; background:transparent;
 }
-.browse-c-source{
-  font-family:var(--font-inter); font-size:9.5px; font-weight:700;
-  color:var(--accent); text-transform:uppercase; letter-spacing:.08em;
-  margin-bottom:6px; display:flex; align-items:center; gap:5px;
+.browse-c-fav img{ width:100%; height:100%; object-fit:contain; border-radius:50%; display:block; }
+.browse-c-source-name{
+  font-family:var(--font-inter); font-size:11px; font-weight:700;
+  color:var(--text-muted); text-transform:uppercase; letter-spacing:.04em;
 }
-.browse-c-source img{ width:14px; height:14px; border-radius:50%; object-fit:contain; flex-shrink:0; }
-.browse-c-hero .browse-c-source{ color:rgba(255,255,255,.65); }
+.browse-c-time-label{
+  font-family:var(--font-inter); font-size:11px; color:var(--text-muted);
+}
+
+/* Titre — identique à .art-title avec DM Serif Display */
 .browse-c-title{
-  font-family:var(--font-inter); font-size:13.5px; font-weight:700;
-  line-height:1.3; color:var(--text);
+  font-family:var(--font-dm); font-size:17px; font-weight:700;
+  line-height:1.28; letter-spacing:-.01em; color:var(--text);
   display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;
 }
+/* Hero : titre légèrement plus grand comme #editionsHero */
 .browse-c-hero .browse-c-title{
-  font-size:17px; color:#fff; position:relative; z-index:2; letter-spacing:-.01em;
+  font-size:20px; line-height:1.2; -webkit-line-clamp:4;
 }
-.browse-c-time{
-  font-family:var(--font-inter); font-size:10px; font-weight:500;
-  color:var(--text-muted); margin-top:5px;
-}
+.browse-c-hero .browse-c-source-row{ margin-top:12px; }
 
 /* Voir tout */
 .browse-more-link{
@@ -4251,34 +4251,20 @@ body.focus-mode .focus-exit{ display:flex; }
       arts.forEach((a, ai) => {
         const fav  = typeof getFavicon === 'function' ? getFavicon(a.feedUrl || a.link || '') : '';
         const time = typeof relTime === 'function' ? relTime(a.pubDate) : '';
-        const imgStyle = a.imageUrl
-          ? `background:url('${a.imageUrl.replace(/'/g,"\\'")}') center/cover no-repeat`
-          : 'background:linear-gradient(135deg,rgba(0,145,255,.18),#0a0a0a)';
+        const cls  = ai === 0 ? 'browse-c-hero' : 'browse-c-card';
+        const imgContent = a.imageUrl
+          ? `<img src="${a.imageUrl.replace(/'/g,"\\'")}" alt="" loading="lazy" onerror="this.style.display='none'">`
+          : `<div class="browse-c-img-placeholder"></div>`;
 
-        if (ai === 0) {
-          // Hero — grande card
-          html += `<div class="browse-c-hero" onclick="_openBrowseArt(${baseIdx})">
-            <div class="browse-c-img" style="${imgStyle}"></div>
-            <div class="browse-c-hero-body">
-              <div class="browse-c-source">
-                <img src="${fav}" onerror="this.style.opacity='.3'">
-                ${escapeHtml(a.source)}
-              </div>
-              <div class="browse-c-title">${escapeHtml(a.title)}</div>
-            </div>
-          </div>`;
-        } else {
-          // Cards secondaires
-          html += `<div class="browse-c-card" onclick="_openBrowseArt(${baseIdx + ai})">
-            <div class="browse-c-img" style="${imgStyle}"></div>
-            <div class="browse-c-source">
-              <img src="${fav}" onerror="this.style.opacity='.3'" style="width:13px;height:13px;border-radius:50%;object-fit:contain;flex-shrink:0">
-              ${escapeHtml(a.source)}
-            </div>
-            <div class="browse-c-title">${escapeHtml(a.title)}</div>
-            <div class="browse-c-time">${time}</div>
-          </div>`;
-        }
+        html += `<div class="${cls}" onclick="_openBrowseArt(${baseIdx + ai})">
+          <div class="browse-c-img-wrap">${imgContent}</div>
+          <div class="browse-c-source-row">
+            <div class="browse-c-fav"><img src="${fav}" alt="" onerror="this.style.opacity='.3'"></div>
+            <span class="browse-c-source-name">${escapeHtml(a.source)}</span>
+            <span class="browse-c-time-label">${time}</span>
+          </div>
+          <div class="browse-c-title">${escapeHtml(a.title)}</div>
+        </div>`;
       });
 
       html += `</div>`; // /browse-carousel
