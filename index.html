@@ -2395,13 +2395,12 @@ button, a, [onclick] { touch-action: manipulation; }
   margin:0 0 20px; padding:18px 16px 16px;
 }
 
-/* CARROUSEL 5 cards — format art-card édition */
+/* CARROUSEL 5 cards — format Apple Developer tile */
 .browse-carousel{
   display:flex; gap:14px;
   overflow-x:auto; overflow-y:visible;
   -webkit-overflow-scrolling:touch;
   scrollbar-width:none; padding-bottom:4px;
-  /* déborde du panel pour atteindre les bords de la colonne */
   margin-left:-16px; margin-right:-16px;
   padding-left:16px; padding-right:16px;
   cursor:grab;
@@ -2412,60 +2411,77 @@ button, a, [onclick] { touch-action: manipulation; }
 .browse-carousel::-webkit-scrollbar{ display:none; }
 .browse-folder-item.bf-open .browse-carousel{ opacity:1; transform:translateY(0); }
 
-/* Toutes les cards — pleine largeur colonne, format art-card édition */
+/* Tile 400px — image pleine hauteur en fond */
 .browse-c-hero,
 .browse-c-card{
   flex:0 0 100%; scroll-snap-align:start;
-  display:flex; flex-direction:column;
-  text-decoration:none; color:var(--text);
-  cursor:pointer; -webkit-tap-highlight-color:transparent;
-  user-select:none;
+  position:relative; width:100%; height:400px; min-height:400px;
+  border-radius:18px; overflow:hidden;
+  cursor:pointer; -webkit-tap-highlight-color:transparent; user-select:none;
+  display:flex; flex-direction:column; justify-content:flex-end; align-items:flex-start;
 }
 
-/* Image wrapper — identique à .art-card .hello-img-wrapper */
+/* Image pleine carte */
 .browse-c-img-wrap{
-  position:relative; border-radius:16px; overflow:hidden;
-  aspect-ratio:16/9; background:#111; margin-bottom:0;
-  flex-shrink:0; width:100%;
+  position:absolute; inset:0; background:#1a1a1a;
 }
 .browse-c-img-wrap img{
   position:absolute; inset:0; width:100%; height:100%;
-  object-fit:cover; display:block;
-  pointer-events:none;
+  object-fit:cover; display:block; pointer-events:none;
 }
 .browse-c-img-wrap .browse-c-img-placeholder{
   position:absolute; inset:0;
-  background:linear-gradient(135deg,rgba(0,145,255,.15),#0a0a0a);
+  background:linear-gradient(160deg,#1c1c2e,#0d0d0d);
 }
 
-/* Source row — identique à .art-source-row */
+/* Dégradé bas pour lisibilité */
+.browse-c-hero::before,
+.browse-c-card::before{
+  content:''; position:absolute; inset:0; z-index:1;
+  background:linear-gradient(180deg,
+    rgba(0,0,0,0) 25%,
+    rgba(0,0,0,.5) 55%,
+    rgba(0,0,0,.88) 100%);
+}
+
+/* Corps texte */
+.browse-c-body{
+  position:relative; z-index:2;
+  display:flex; flex-direction:column; align-items:flex-start; gap:8px;
+  padding:25.5px; width:100%;
+}
+
+/* Source row */
 .browse-c-source-row{
-  display:flex; align-items:center; gap:5px; margin:10px 0 4px;
+  display:flex; align-items:center; gap:5px; margin-bottom:2px;
 }
 .browse-c-fav{
-  width:18px; height:18px; border-radius:50%; overflow:hidden;
-  flex-shrink:0; background:transparent;
+  width:16px; height:16px; border-radius:50%; overflow:hidden; flex-shrink:0;
 }
 .browse-c-fav img{ width:100%; height:100%; object-fit:contain; border-radius:50%; display:block; }
 .browse-c-source-name{
   font-family:var(--font-inter); font-size:11px; font-weight:700;
-  color:var(--text-muted); text-transform:uppercase; letter-spacing:.04em;
+  color:rgba(255,255,255,.55); text-transform:uppercase; letter-spacing:.06em;
 }
 .browse-c-time-label{
-  font-family:var(--font-inter); font-size:11px; color:var(--text-muted);
+  font-family:var(--font-inter); font-size:11px;
+  color:rgba(255,255,255,.35); margin-left:auto;
 }
 
-/* Titre — DM Serif Display, identique à .art-title */
+/* Titre — Inter 590 23.8px comme Apple tile */
 .browse-c-title{
-  font-family:var(--font-dm); font-size:17px; font-weight:700;
-  line-height:1.28; letter-spacing:-.01em; color:var(--text);
+  font-family:var(--font-inter); font-size:23.8px; font-weight:590;
+  line-height:1.17; letter-spacing:.009em; color:#f5f5f7;
   display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;
 }
-/* Hero : titre plus grand comme #editionsHero */
-.browse-c-hero .browse-c-title{
-  font-size:22px; line-height:1.2; -webkit-line-clamp:4;
+
+/* Lien bleu Apple */
+.browse-c-link{
+  display:inline-flex; align-items:center; gap:3px;
+  font-family:var(--font-inter); font-size:16.9px; font-weight:400;
+  color:#2997FF; letter-spacing:-.01em; margin-top:2px;
 }
-.browse-c-hero .browse-c-source-row{ margin-top:14px; }
+.browse-c-link svg{ flex-shrink:0; }
 
 /* Voir tout */
 .browse-more-link{
@@ -4261,12 +4277,17 @@ body.focus-mode .focus-exit{ display:flex; }
 
         html += `<div class="${cls}" onclick="_openBrowseArt(${baseIdx + ai})">
           <div class="browse-c-img-wrap">${imgContent}</div>
-          <div class="browse-c-source-row">
-            <div class="browse-c-fav"><img src="${fav}" alt="" onerror="this.style.opacity='.3'"></div>
-            <span class="browse-c-source-name">${escapeHtml(a.source)}</span>
-            <span class="browse-c-time-label">${time}</span>
+          <div class="browse-c-body">
+            <div class="browse-c-source-row">
+              <div class="browse-c-fav"><img src="${fav}" alt="" onerror="this.style.opacity='.3'"></div>
+              <span class="browse-c-source-name">${escapeHtml(a.source)}</span>
+              <span class="browse-c-time-label">${time}</span>
+            </div>
+            <div class="browse-c-title">${escapeHtml(a.title)}</div>
+            <span class="browse-c-link">Voir l'article
+              <svg width="10" height="16" viewBox="0 0 8 13" fill="none"><path d="M1 1.5l5.5 5L1 11.5" stroke="#2997FF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
           </div>
-          <div class="browse-c-title">${escapeHtml(a.title)}</div>
         </div>`;
       });
 
@@ -8668,95 +8689,111 @@ body.focus-mode .focus-exit{ display:flex; }
 <!-- Drag + inertia + snap pour les carrousels browse -->
 <script>
 (function(){
+  /* ── Snap vers la card la plus proche ── */
+  function snapToNearest(el){
+    const items = el.querySelectorAll('.browse-c-hero,.browse-c-card');
+    if(!items.length) return;
+    let best = null, bestD = Infinity;
+    items.forEach(item => {
+      const d = Math.abs(item.offsetLeft - el.scrollLeft);
+      if(d < bestD){ bestD = d; best = item; }
+    });
+    if(best) el.scrollTo({ left: best.offsetLeft, behavior: 'smooth' });
+  }
+
   function initCarousel(el){
     if(el._dragInit) return;
     el._dragInit = true;
 
-    let startX, startScroll, velX = 0, lastX, lastT, rafId, dragging = false, moved = false;
+    /* Historique glissant sur 5 frames pour vélocité stable */
+    const HIST = 5;
+    let hist = [];          // [{x, t}]
+    let startX = 0, startScroll = 0;
+    let rafId = null;
+    let dragging = false, moved = false;
 
-    const snap = () => {
-      const items = el.querySelectorAll('.browse-c-hero, .browse-c-card');
-      if(!items.length) return;
-      const center = el.scrollLeft + el.clientWidth / 2;
-      let best = null, bestD = Infinity;
-      items.forEach(item => {
-        const d = Math.abs((item.offsetLeft + item.offsetWidth / 2) - center);
-        if(d < bestD){ bestD = d; best = item; }
-      });
-      if(best){
-        el.style.scrollBehavior = 'smooth';
-        el.scrollLeft = best.offsetLeft - (el.clientWidth - best.offsetWidth) / 2;
-        setTimeout(() => el.style.removeProperty('scroll-behavior'), 400);
-      }
-    };
+    /* ── Inertia loop ── */
+    let velPx = 0;          // px/ms
+    const FRICTION = 0.97;  // 0.97 = fluide iOS-like
+    const MIN_VEL  = 0.05;  // px/ms sous laquelle on snape
 
-    const applyInertia = () => {
-      velX *= 0.92;
-      el.scrollLeft += velX;
-      if(Math.abs(velX) > 0.5){
-        rafId = requestAnimationFrame(applyInertia);
+    function inertiaLoop(){
+      velPx *= FRICTION;
+      el.scrollLeft += velPx * 16; // ×16 ≈ un frame 60fps
+      if(Math.abs(velPx) > MIN_VEL){
+        rafId = requestAnimationFrame(inertiaLoop);
       } else {
-        snap();
-        el.style.setProperty('scroll-snap-type','x mandatory');
+        velPx = 0;
+        snapToNearest(el);
       }
-    };
+    }
 
+    /* ── Pointerdown ── */
     el.addEventListener('pointerdown', e => {
-      if(e.button !== 0) return;
-      cancelAnimationFrame(rafId);
-      el.style.setProperty('scroll-snap-type','none');
-      startX = e.clientX;
+      if(e.button !== 0 && e.pointerType === 'mouse') return;
+      cancelAnimationFrame(rafId); velPx = 0;
+      startX      = e.clientX;
       startScroll = el.scrollLeft;
-      lastX = e.clientX;
-      lastT = Date.now();
-      velX = 0; dragging = true; moved = false;
+      hist        = [{ x: e.clientX, t: e.timeStamp }];
+      dragging    = true;
+      moved       = false;
       el.classList.add('is-dragging');
       el.setPointerCapture(e.pointerId);
-    }, {passive:true});
+    }, { passive: true });
 
+    /* ── Pointermove ── */
     el.addEventListener('pointermove', e => {
       if(!dragging) return;
       const dx = e.clientX - startX;
-      if(Math.abs(dx) > 4) moved = true;
+      if(!moved && Math.abs(dx) > 5) moved = true;
       if(!moved) return;
-      const now = Date.now(), dt = now - lastT || 1;
-      velX = (lastX - e.clientX) / dt * 16;
-      lastX = e.clientX; lastT = now;
       el.scrollLeft = startScroll - dx;
-    }, {passive:true});
+      /* Rolling history — garde 5 points récents */
+      hist.push({ x: e.clientX, t: e.timeStamp });
+      if(hist.length > HIST) hist.shift();
+    }, { passive: true });
 
-    const end = () => {
+    /* ── Fin du drag ── */
+    function endDrag(){
       if(!dragging) return;
       dragging = false;
       el.classList.remove('is-dragging');
-      if(Math.abs(velX) > 1){
-        rafId = requestAnimationFrame(applyInertia);
+
+      if(!moved){ snapToNearest(el); return; }
+
+      /* Vélocité = moyenne sur les derniers points d'historique */
+      if(hist.length >= 2){
+        const first = hist[0], last = hist[hist.length - 1];
+        const dt = last.t - first.t;
+        velPx = dt > 0 ? (first.x - last.x) / dt : 0;
+        /* Plafonner à 3 px/ms pour éviter les lancers extrêmes */
+        velPx = Math.max(-3, Math.min(3, velPx));
       } else {
-        snap();
-        el.style.setProperty('scroll-snap-type','x mandatory');
+        velPx = 0;
       }
-    };
 
-    el.addEventListener('pointerup', e => {
-      // si pas de mouvement → laisser le click passer normalement
-      if(!moved){ end(); return; }
-      end();
-    });
-    el.addEventListener('pointercancel', end);
+      if(Math.abs(velPx) > MIN_VEL){
+        rafId = requestAnimationFrame(inertiaLoop);
+      } else {
+        snapToNearest(el);
+      }
+    }
 
-    // bloquer click sur les cards si drag a eu lieu
+    el.addEventListener('pointerup',     endDrag);
+    el.addEventListener('pointercancel', endDrag);
+
+    /* Bloquer click si swipe a eu lieu */
     el.addEventListener('click', e => {
       if(moved){ e.preventDefault(); e.stopPropagation(); moved = false; }
     }, true);
   }
 
-  // Observer : initialise chaque carrousel quand il devient visible (accordéon ouvert)
+  /* ── Observer : init à chaque ouverture d'accordéon ── */
   const mo = new MutationObserver(() => {
     document.querySelectorAll('.browse-carousel').forEach(initCarousel);
   });
-  mo.observe(document.body, { attributes:true, subtree:true, attributeFilter:['class'] });
+  mo.observe(document.body, { attributes: true, subtree: true, attributeFilter: ['class'] });
 
-  // Init au chargement si déjà présents
   document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.browse-carousel').forEach(initCarousel);
   });
