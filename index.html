@@ -2397,7 +2397,7 @@ button, a, [onclick] { touch-action: manipulation; }
 
 /* CARROUSEL — format Apple Developer video card */
 .browse-carousel{
-  display:flex; gap:12px;
+  display:flex; gap:10px;
   overflow-x:auto; overflow-y:visible;
   -webkit-overflow-scrolling:touch;
   scrollbar-width:none; padding-bottom:4px;
@@ -2411,11 +2411,10 @@ button, a, [onclick] { touch-action: manipulation; }
 .browse-carousel::-webkit-scrollbar{ display:none; }
 .browse-folder-item.bf-open .browse-carousel{ opacity:1; transform:translateY(0); }
 
-/* Card — layout vertical image + info */
+/* Card — 85% visible, suivante qui dépasse */
 .browse-c-hero,
 .browse-c-card{
-  flex:0 0 100%; scroll-snap-align:start;
-  width:100%;
+  flex:0 0 85%; scroll-snap-align:start;
   border-radius:16px; overflow:hidden;
   background:rgba(255,255,255,.04);
   border:0.5px solid rgba(255,255,255,.07);
@@ -2426,14 +2425,11 @@ button, a, [onclick] { touch-action: manipulation; }
 .browse-c-hero:active,
 .browse-c-card:active{ background:rgba(255,255,255,.07); }
 
-/* Image — ratio 16/9, fixe en haut */
+/* Image — 16/9 fixe en haut */
 .browse-c-img-wrap{
-  width:100%;
-  aspect-ratio:16/9;
-  position:relative;
-  background:#111;
-  flex-shrink:0;
-  overflow:hidden;
+  width:100%; aspect-ratio:16/9;
+  position:relative; background:#111;
+  flex-shrink:0; overflow:hidden;
 }
 .browse-c-img-wrap img{
   position:absolute; inset:0; width:100%; height:100%;
@@ -2444,57 +2440,66 @@ button, a, [onclick] { touch-action: manipulation; }
 .browse-c-card:active .browse-c-img-wrap img{ transform:scale(1.02); }
 .browse-c-img-wrap .browse-c-img-placeholder{
   position:absolute; inset:0;
-  background:linear-gradient(135deg,rgba(0,145,255,.1),#111);
+  background:linear-gradient(135deg,rgba(0,145,255,.08),#111);
 }
 
-/* Zone info — padding 17px 25.5px, hauteur min 109px */
+/* Zone info — 17px top/bottom · 25.5px gauche/droite · min 109px */
 .browse-c-body{
   display:flex; flex-direction:column;
   justify-content:space-between; align-items:flex-start;
-  padding:17px 17px;
-  min-height:109px; gap:0;
+  padding:17px 25.5px;
+  min-height:109px;
 }
 
-/* Titre — Inter 590 13.2px / lh 21px */
+/* Title:margin — padding-bottom 8px */
 .browse-c-title-wrap{
   display:flex; flex-direction:column;
-  align-items:flex-start; padding-bottom:8px; width:100%;
+  align-items:flex-start;
+  padding-bottom:8px; width:100%;
 }
+
+/* Titre — Inter 590 13.4px / lh 21px */
 .browse-c-title{
-  font-family:var(--font-inter); font-size:13.2px; font-weight:590;
-  line-height:21px; letter-spacing:.014em;
+  font-family:var(--font-inter); font-size:13.4px; font-weight:590;
+  line-height:21px; letter-spacing:.013em;
   color:rgba(255,255,255,.92);
   display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
   width:100%;
 }
 
-/* Availability row — badge source + temps */
+/* Availability — padding-top 3px */
 .browse-c-avail{
   display:flex; flex-direction:row;
   align-items:center; gap:6px;
   padding-top:3px; width:100%;
 }
+
+/* Badge source — padding 3px 6px · border-radius 5px */
 .browse-c-badge{
   display:inline-flex; flex-direction:row;
   align-items:center; gap:4px;
-  padding:3px 6px;
+  padding:3px 6px; height:22px;
   background:rgba(255,255,255,.07);
-  border-radius:5px;
-  flex-shrink:0;
+  border-radius:5px; flex-shrink:0;
 }
 .browse-c-badge img{
-  width:12px; height:12px; border-radius:50%; object-fit:contain; display:block;
+  width:12px; height:12px;
+  border-radius:50%; object-fit:contain; display:block;
+  flex-shrink:0;
 }
+/* Label badge — Inter 590 12px / lh 16px */
 .browse-c-badge-label{
   font-family:var(--font-inter); font-size:12px; font-weight:590;
   line-height:16px; letter-spacing:-.01em;
-  color:rgba(255,255,255,.5);
-  white-space:nowrap; max-width:140px;
+  color:rgba(255,255,255,.45);
+  white-space:nowrap; max-width:150px;
   overflow:hidden; text-overflow:ellipsis;
 }
+
+/* Temps */
 .browse-c-time-label{
   font-family:var(--font-inter); font-size:11px; font-weight:400;
-  color:rgba(255,255,255,.28); letter-spacing:.01em;
+  color:rgba(255,255,255,.25); letter-spacing:.01em; flex-shrink:0;
 }
 
 /* Voir tout */
