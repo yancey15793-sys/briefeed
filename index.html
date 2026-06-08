@@ -2397,10 +2397,13 @@ button, a, [onclick] { touch-action: manipulation; }
 
 /* CARROUSEL 5 cards — format art-card édition */
 .browse-carousel{
-  display:flex; gap:16px;
+  display:flex; gap:14px;
   overflow-x:auto; overflow-y:visible;
   -webkit-overflow-scrolling:touch;
   scrollbar-width:none; padding-bottom:4px;
+  /* déborde du panel pour atteindre les bords de la colonne */
+  margin-left:-16px; margin-right:-16px;
+  padding-left:16px; padding-right:16px;
   cursor:grab;
   opacity:0; transform:translateY(12px);
   transition:opacity .3s ease .06s, transform .5s cubic-bezier(.34,1.56,.64,1) .06s;
@@ -2409,10 +2412,10 @@ button, a, [onclick] { touch-action: manipulation; }
 .browse-carousel::-webkit-scrollbar{ display:none; }
 .browse-folder-item.bf-open .browse-carousel{ opacity:1; transform:translateY(0); }
 
-/* Toutes les cards — même largeur, format édition */
+/* Toutes les cards — pleine largeur colonne, format art-card édition */
 .browse-c-hero,
 .browse-c-card{
-  flex:0 0 72%; scroll-snap-align:start;
+  flex:0 0 100%; scroll-snap-align:start;
   display:flex; flex-direction:column;
   text-decoration:none; color:var(--text);
   cursor:pointer; -webkit-tap-highlight-color:transparent;
@@ -2423,7 +2426,7 @@ button, a, [onclick] { touch-action: manipulation; }
 .browse-c-img-wrap{
   position:relative; border-radius:16px; overflow:hidden;
   aspect-ratio:16/9; background:#111; margin-bottom:0;
-  flex-shrink:0;
+  flex-shrink:0; width:100%;
 }
 .browse-c-img-wrap img{
   position:absolute; inset:0; width:100%; height:100%;
@@ -2452,17 +2455,17 @@ button, a, [onclick] { touch-action: manipulation; }
   font-family:var(--font-inter); font-size:11px; color:var(--text-muted);
 }
 
-/* Titre — identique à .art-title avec DM Serif Display */
+/* Titre — DM Serif Display, identique à .art-title */
 .browse-c-title{
   font-family:var(--font-dm); font-size:17px; font-weight:700;
   line-height:1.28; letter-spacing:-.01em; color:var(--text);
   display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;
 }
-/* Hero : titre légèrement plus grand comme #editionsHero */
+/* Hero : titre plus grand comme #editionsHero */
 .browse-c-hero .browse-c-title{
-  font-size:20px; line-height:1.2; -webkit-line-clamp:4;
+  font-size:22px; line-height:1.2; -webkit-line-clamp:4;
 }
-.browse-c-hero .browse-c-source-row{ margin-top:12px; }
+.browse-c-hero .browse-c-source-row{ margin-top:14px; }
 
 /* Voir tout */
 .browse-more-link{
