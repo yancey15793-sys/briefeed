@@ -2397,66 +2397,71 @@ button, a, [onclick] { touch-action: manipulation; }
 
 /* CARROUSEL 5 cards */
 .browse-carousel{
-  display:flex; gap:10px;
+  display:flex; gap:12px;
   overflow-x:auto; overflow-y:visible;
-  scroll-snap-type:x mandatory;
   -webkit-overflow-scrolling:touch;
-  scrollbar-width:none; padding-bottom:2px;
+  scrollbar-width:none; padding-bottom:4px;
+  cursor:grab;
   opacity:0; transform:translateY(12px);
   transition:opacity .3s ease .06s, transform .5s cubic-bezier(.34,1.56,.64,1) .06s;
 }
+.browse-carousel.is-dragging{ cursor:grabbing; }
 .browse-carousel::-webkit-scrollbar{ display:none; }
 .browse-folder-item.bf-open .browse-carousel{ opacity:1; transform:translateY(0); }
 
-/* Card hero — plus large */
+/* Card hero — grande */
 .browse-c-hero{
-  flex:0 0 72%; scroll-snap-align:start;
-  position:relative; border-radius:14px; overflow:hidden;
-  aspect-ratio:4/3; cursor:pointer; -webkit-tap-highlight-color:transparent;
+  flex:0 0 78%; scroll-snap-align:start;
+  position:relative; border-radius:18px; overflow:hidden;
+  aspect-ratio:3/2; cursor:pointer; -webkit-tap-highlight-color:transparent;
+  user-select:none;
 }
 /* Cards secondaires */
 .browse-c-card{
-  flex:0 0 46%; scroll-snap-align:start;
-  border-radius:14px; overflow:hidden; cursor:pointer;
+  flex:0 0 52%; scroll-snap-align:start;
+  border-radius:16px; overflow:hidden; cursor:pointer;
   display:flex; flex-direction:column;
   -webkit-tap-highlight-color:transparent;
+  user-select:none;
 }
 .browse-c-img{
-  aspect-ratio:4/3; background:#111; overflow:hidden;
-  border-radius:12px; margin-bottom:8px; position:relative;
+  aspect-ratio:3/2; background:#111; overflow:hidden;
+  border-radius:14px; margin-bottom:10px; position:relative;
   background-size:cover; background-position:center;
+  transition:transform .35s ease;
 }
+.browse-c-card:active .browse-c-img{ transform:scale(.98); }
 .browse-c-img::after{
   content:''; position:absolute; inset:0;
-  background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.55) 100%);
+  background:linear-gradient(180deg,transparent 35%,rgba(0,0,0,.6) 100%);
 }
 .browse-c-hero .browse-c-img{
   position:absolute; inset:0; border-radius:0; margin:0; aspect-ratio:unset;
 }
 .browse-c-hero .browse-c-img::after{
-  background:linear-gradient(180deg,rgba(0,0,0,0) 30%,rgba(0,0,0,.88) 100%);
+  background:linear-gradient(180deg,rgba(0,0,0,0) 25%,rgba(0,0,0,.9) 100%);
 }
 .browse-c-hero-body{
-  position:absolute; left:0; right:0; bottom:0; z-index:2; padding:16px 16px;
+  position:absolute; left:0; right:0; bottom:0; z-index:2; padding:20px 18px;
 }
 .browse-c-source{
   font-family:var(--font-inter); font-size:9.5px; font-weight:700;
-  color:var(--accent); text-transform:uppercase; letter-spacing:.07em;
-  margin-bottom:5px; display:flex; align-items:center; gap:5px;
+  color:var(--accent); text-transform:uppercase; letter-spacing:.08em;
+  margin-bottom:6px; display:flex; align-items:center; gap:5px;
 }
-.browse-c-source img{ width:14px; height:14px; border-radius:50%; object-fit:contain; }
-.browse-c-hero .browse-c-source{ color:rgba(255,255,255,.7); }
+.browse-c-source img{ width:14px; height:14px; border-radius:50%; object-fit:contain; flex-shrink:0; }
+.browse-c-hero .browse-c-source{ color:rgba(255,255,255,.65); }
 .browse-c-title{
-  font-family:var(--font-inter); font-size:13px; font-weight:700;
+  font-family:var(--font-inter); font-size:13.5px; font-weight:700;
   line-height:1.3; color:var(--text);
   display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;
 }
 .browse-c-hero .browse-c-title{
-  font-size:16px; color:#fff; position:relative; z-index:2;
+  font-size:17px; color:#fff; position:relative; z-index:2; letter-spacing:-.01em;
 }
 .browse-c-time{
   font-family:var(--font-inter); font-size:10px; font-weight:500;
-  color:var(--text-muted); margin-top:4px;
+  color:var(--text-muted); margin-top:5px;
 }
 
 /* Voir tout */
@@ -8670,6 +8675,104 @@ body.focus-mode .focus-exit{ display:flex; }
     <span id="offlineText">Hors-ligne</span>
   </div>
   <div class="prefetch-indicator" id="prefetchIndicator"></div>
+
+<!-- Drag + inertia + snap pour les carrousels browse -->
+<script>
+(function(){
+  function initCarousel(el){
+    if(el._dragInit) return;
+    el._dragInit = true;
+
+    let startX, startScroll, velX = 0, lastX, lastT, rafId, dragging = false, moved = false;
+
+    const snap = () => {
+      const items = el.querySelectorAll('.browse-c-hero, .browse-c-card');
+      if(!items.length) return;
+      const center = el.scrollLeft + el.clientWidth / 2;
+      let best = null, bestD = Infinity;
+      items.forEach(item => {
+        const d = Math.abs((item.offsetLeft + item.offsetWidth / 2) - center);
+        if(d < bestD){ bestD = d; best = item; }
+      });
+      if(best){
+        el.style.scrollBehavior = 'smooth';
+        el.scrollLeft = best.offsetLeft - (el.clientWidth - best.offsetWidth) / 2;
+        setTimeout(() => el.style.removeProperty('scroll-behavior'), 400);
+      }
+    };
+
+    const applyInertia = () => {
+      velX *= 0.92;
+      el.scrollLeft += velX;
+      if(Math.abs(velX) > 0.5){
+        rafId = requestAnimationFrame(applyInertia);
+      } else {
+        snap();
+        el.style.setProperty('scroll-snap-type','x mandatory');
+      }
+    };
+
+    el.addEventListener('pointerdown', e => {
+      if(e.button !== 0) return;
+      cancelAnimationFrame(rafId);
+      el.style.setProperty('scroll-snap-type','none');
+      startX = e.clientX;
+      startScroll = el.scrollLeft;
+      lastX = e.clientX;
+      lastT = Date.now();
+      velX = 0; dragging = true; moved = false;
+      el.classList.add('is-dragging');
+      el.setPointerCapture(e.pointerId);
+    }, {passive:true});
+
+    el.addEventListener('pointermove', e => {
+      if(!dragging) return;
+      const dx = e.clientX - startX;
+      if(Math.abs(dx) > 4) moved = true;
+      if(!moved) return;
+      const now = Date.now(), dt = now - lastT || 1;
+      velX = (lastX - e.clientX) / dt * 16;
+      lastX = e.clientX; lastT = now;
+      el.scrollLeft = startScroll - dx;
+    }, {passive:true});
+
+    const end = () => {
+      if(!dragging) return;
+      dragging = false;
+      el.classList.remove('is-dragging');
+      if(Math.abs(velX) > 1){
+        rafId = requestAnimationFrame(applyInertia);
+      } else {
+        snap();
+        el.style.setProperty('scroll-snap-type','x mandatory');
+      }
+    };
+
+    el.addEventListener('pointerup', e => {
+      // si pas de mouvement → laisser le click passer normalement
+      if(!moved){ end(); return; }
+      end();
+    });
+    el.addEventListener('pointercancel', end);
+
+    // bloquer click sur les cards si drag a eu lieu
+    el.addEventListener('click', e => {
+      if(moved){ e.preventDefault(); e.stopPropagation(); moved = false; }
+    }, true);
+  }
+
+  // Observer : initialise chaque carrousel quand il devient visible (accordéon ouvert)
+  const mo = new MutationObserver(() => {
+    document.querySelectorAll('.browse-carousel').forEach(initCarousel);
+  });
+  mo.observe(document.body, { attributes:true, subtree:true, attributeFilter:['class'] });
+
+  // Init au chargement si déjà présents
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.browse-carousel').forEach(initCarousel);
+  });
+})();
+</script>
 
 </body>
 </html>
