@@ -985,7 +985,7 @@ button, a, [onclick] { touch-action: manipulation; }
 .edition-label{
   align-self:stretch;
   text-align:center;
-  margin:32px 0 16px;
+  margin:72px 0 36px;
   font-family:var(--font-inter);
   font-size:12.5px; font-weight:700;
   letter-spacing:.18em; text-transform:uppercase;
@@ -1773,7 +1773,7 @@ button, a, [onclick] { touch-action: manipulation; }
 .seq-source{ font-family:var(--font-inter); font-size:10.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.04em; margin-bottom:5px; display:flex; align-items:center; gap:4px; }
 .seq-fav{ width:16px; height:16px; border-radius:50%; overflow:hidden; background:transparent; }
 .seq-fav img{ width:100%; height:100%; object-fit:contain; border-radius:50%; display:block; }
-.seq-title{ font-family:var(--font-dm); font-size:17px; font-weight:700; line-height:1.28; color:var(--text); letter-spacing:-.01em; }
+.seq-title{ font-family:var(--font-ui); font-size:16px; font-weight:700; line-height:1.32; color:var(--text); letter-spacing:-.018em; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
 .seq-thumb{ width:114px; height:76px; flex-shrink:0; border-radius:10px; overflow:hidden; background:#111; align-self:center; }
 .seq-thumb img{ width:100%; height:100%; object-fit:cover; }
 
@@ -1818,6 +1818,46 @@ button, a, [onclick] { touch-action: manipulation; }
 .folder-page-scroll{ flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
 .folder-page-scroll::-webkit-scrollbar{ display:none; }
 .folder-page-inner{ padding:16px 18px 90px; }
+
+/* ── SOURCE BUBBLES NAV — page dossier ───────────────────── */
+.fp-sources{
+  display:flex; flex-wrap:wrap; gap:10px;
+  padding:20px 18px 24px;
+  justify-content:center;
+}
+.fp-src-bubble{
+  display:flex; flex-direction:column; align-items:center; gap:5px;
+  cursor:pointer; -webkit-tap-highlight-color:transparent;
+  transition:transform .18s cubic-bezier(.34,1.56,.64,1), opacity .15s;
+  min-width:52px;
+}
+.fp-src-bubble:active{ transform:scale(.88); opacity:.7; }
+.fp-src-bubble.active .fp-src-ring{
+  box-shadow:0 0 0 2.5px var(--accent);
+}
+.fp-src-ring{
+  width:44px; height:44px; border-radius:50%;
+  background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.1);
+  overflow:hidden; position:relative;
+  transition:box-shadow .2s;
+  flex-shrink:0;
+}
+[data-theme="light"] .fp-src-ring{
+  background:rgba(0,0,0,.05);
+  border-color:rgba(0,0,0,.09);
+}
+.fp-src-ring img{
+  width:100%; height:100%; object-fit:contain; border-radius:50%;
+  display:block;
+}
+.fp-src-label{
+  font-family:var(--font-ui); font-size:9.5px; font-weight:600;
+  color:var(--text-muted); text-align:center; letter-spacing:.01em;
+  max-width:52px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  line-height:1.2;
+}
+.fp-src-bubble.active .fp-src-label{ color:var(--accent); }
 
 /* ── MENU 3 POINTS ───────────────────────────────── */
 .menu3-btn{ display:none; }
@@ -2133,7 +2173,7 @@ button, a, [onclick] { touch-action: manipulation; }
 .art-card .art-fav img{ width:100%; height:100%; object-fit:contain; border-radius:50%; display:block; }
 .art-card .art-source-name{ font-family:var(--font-inter); font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.04em; }
 .art-card .art-time{ font-family:var(--font-inter); font-size:11px; color:var(--text-muted); }
-.art-card .art-title{ font-family:var(--font-dm); font-size:17px; font-weight:700; line-height:1.28; letter-spacing:-.01em; color:var(--text); display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+.art-card .art-title{ font-family:var(--font-ui); font-size:17px; font-weight:700; line-height:1.28; letter-spacing:-.01em; color:var(--text); display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
 /* Hero plus grand */
 #editionsHero .art-card .art-title{ font-size:22px; line-height:1.2; -webkit-line-clamp:4; }
 #editionsHero .art-card .art-source-row{ margin-top:14px; }
@@ -3074,7 +3114,7 @@ body.focus-mode .focus-exit{ display:flex; }
               <a class="sub-link sub-link-sm" data-qtheme="dark"  onclick="qmenuSetTheme('dark')">Sombre</a>
               <a class="sub-link sub-link-sm" data-qtheme="light" onclick="qmenuSetTheme('light')">Clair</a>
               <div class="qmenu-sub-section-label" style="margin-top:10px">Vue</div>
-              <a class="sub-link sub-link-sm" data-qview="editions"   onclick="qmenuSetView('editions')">Magazine</a>
+              <a class="sub-link sub-link-sm" data-qview="editions"   onclick="qmenuSetView('editions')">Éditions</a>
               <a class="sub-link sub-link-sm" data-qview="essentiel"  onclick="qmenuSetView('essentiel')">Essentiel</a>
               <a class="sub-link sub-link-sm" data-qview="liste"      onclick="qmenuSetView('liste')">Liste</a>
               <a class="sub-link sub-link-sm" data-qview="grille"     onclick="qmenuSetView('grille')">Grille</a>
@@ -3140,7 +3180,7 @@ body.focus-mode .focus-exit{ display:flex; }
           <rect x="13" y="16" width="8" height="5" rx="1.5"/>
         </svg>
       </div>
-      <span class="vp-label">Magazine</span>
+      <span class="vp-label">Éditions</span>
       <span class="vp-check"><svg viewBox="0 0 24 24" fill="none" stroke="#0a84ff" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></span>
     </div>
 
@@ -3839,7 +3879,7 @@ body.focus-mode .focus-exit{ display:flex; }
       </header>
 
       <!-- Label centré, toujours présent au-dessus de toutes les vues -->
-      <h2 class="edition-label">Mon magazine du jour</h2>
+      <h2 class="edition-label">Mon édition du jour</h2>
 
       <!-- ========== VUE ÉDITIONS (magazine) ========== -->
       <div class="view" data-view="editions">
@@ -4206,7 +4246,7 @@ body.focus-mode .focus-exit{ display:flex; }
       if(target === 'sequential')_renderSequential();
       if(target === 'liste')     _renderListe();
       if(target === 'essentiel') _renderEssentiel();
-      _stMain(true); // scroll instantané au changement de vue (évite la position résiduelle)
+      _stMain(false); // smooth scroll to top via le bon conteneur
     }
 
     // Sync UI toujours
@@ -8140,13 +8180,66 @@ body.focus-mode .focus-exit{ display:flex; }
     const welcomeEl = document.getElementById('folderPageWelcome');
     if(welcomeEl) welcomeEl.textContent = _getFolderWelcome(folder.name);
     const feedUrls = new Set(folder.feeds||[]);
-    const arts = typeof _allArticles !== 'undefined'
+    const allArts = typeof _allArticles !== 'undefined'
       ? _dedup([..._allArticles].filter(a=>feedUrls.has(a.feedUrl||'')).sort((a,b)=>b.pubDate-a.pubDate))
       : [];
-    _folderPageArts = arts;
+    _folderPageArts = allArts;
+
+    // ── Bulles sources ──────────────────────────────────────────
+    let _fpActiveSrc = null; // null = toutes les sources
+    const srcContainer = document.getElementById('folderPageSources');
     const content = document.getElementById('folderPageContent');
-    _renderSubpageArts(_folderPageArts, _currentView, content, '_folderArt');
-    _stFold(true); // en haut avant l'animation d'entrée
+
+    function _fpRenderBubbles(){
+      if(!srcContainer) return;
+      const feedMeta = (() => { try{ return JSON.parse(localStorage.getItem('reader.feedMeta')||'{}'); }catch(e){ return {}; } })();
+      const srcs = (folder.feeds||[]).map(url => {
+        const meta = feedMeta[url] || {};
+        const domain = (()=>{ try{ return new URL(url).hostname.replace(/^www\./,''); }catch(e){ return url; } })();
+        return { url, name: meta.name || domain, domain };
+      });
+      if(srcs.length < 2){ srcContainer.innerHTML=''; return; }
+      const allActive = _fpActiveSrc === null;
+      let html = `<div class="fp-src-bubble${allActive?' active':''}" data-src="">
+        <div class="fp-src-ring" style="display:flex;align-items:center;justify-content:center">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        </div>
+        <span class="fp-src-label">Tout</span>
+      </div>`;
+      srcs.forEach(s => {
+        const active = _fpActiveSrc === s.url;
+        const favUrl = 'https://www.google.com/s2/favicons?domain='+encodeURIComponent(s.domain)+'&sz=64';
+        html += `<div class="fp-src-bubble${active?' active':''}" data-src="${escapeHtml(s.url)}">
+          <div class="fp-src-ring"><img src="${escapeHtml(favUrl)}" alt="" loading="lazy" onerror="this.style.display='none'"></div>
+          <span class="fp-src-label">${escapeHtml(s.name)}</span>
+        </div>`;
+      });
+      srcContainer.innerHTML = html;
+      srcContainer.querySelectorAll('.fp-src-bubble').forEach(el => {
+        el.addEventListener('click', () => {
+          const src = el.dataset.src || null;
+          _fpActiveSrc = src === '' ? null : src;
+          _fpRenderBubbles();
+          _fpRenderArts();
+          // Scroll doux vers le contenu
+          const scroll = document.querySelector('.folder-page-scroll');
+          if(scroll) scroll.scrollTo({ top: scroll.scrollTop > 200 ? 200 : scroll.scrollTop, behavior:'smooth' });
+        });
+      });
+    }
+
+    function _fpRenderArts(){
+      const arts = _fpActiveSrc
+        ? allArts.filter(a => a.feedUrl === _fpActiveSrc)
+        : allArts;
+      _folderPageArts = arts;
+      _renderSubpageArts(_folderPageArts, _currentView, content, '_folderArt');
+    }
+
+    _fpRenderBubbles();
+    _fpRenderArts();
+
+    _stFold(true);
     const page = document.getElementById('folderPage');
     page.style.display='flex';
     requestAnimationFrame(()=>page.classList.add('open'));
@@ -8348,7 +8441,7 @@ body.focus-mode .focus-exit{ display:flex; }
         {icon:'←', text:'Glissez depuis le bord gauche pour revenir en arrière sur n’importe quelle page ou modal.'},
         {icon:'↕', text:'Glissez vers le bas pour fermer un article. Glissez latéralement pour naviguer entre articles.'},
         {icon:'☰', text:'Glissez depuis le bord gauche de l’écran pour ouvrir la sidebar. Tapez un dossier pour voir ses articles.'},
-        {icon:'👁', text:'La pill ••• en haut à droite : tapez l’œil pour changer la vue (Magazine, Liste, Grille, Séquentiel, Parcourir).'},
+        {icon:'👁', text:'La pill ••• en haut à droite : tapez l’œil pour changer la vue (Éditions, Liste, Grille, Séquentiel, Parcourir).'},
         {icon:'↓', text:'Tirez vers le bas depuis le haut de l’accueil pour actualiser tous vos flux.'},
       ];
       let cur=0;
@@ -8629,6 +8722,7 @@ body.focus-mode .focus-exit{ display:flex; }
         <div class="folder-page-welcome" id="folderPageWelcome"></div>
         <div class="folder-page-sep"></div>
       </div>
+      <div class="fp-sources" id="folderPageSources"></div>
       <div class="folder-page-inner" id="folderPageContent"></div>
     </div>
   </div>
@@ -8657,7 +8751,7 @@ body.focus-mode .focus-exit{ display:flex; }
       <div class="menu3-section">
         <div class="menu3-label">Vue</div>
         <div class="menu3-chips" id="menu3ViewChips">
-          <div class="menu3-chip active" data-view="editions" onclick="menu3SetView('editions')">Magazine</div>
+          <div class="menu3-chip active" data-view="editions" onclick="menu3SetView('editions')">Éditions</div>
           <div class="menu3-chip" data-view="grille" onclick="menu3SetView('grille')">Grille</div>
           <div class="menu3-chip" data-view="sequential" onclick="menu3SetView('sequential')">Séquentiel</div>
           <div class="menu3-chip" data-view="browse" onclick="menu3SetView('browse')">Parcourir</div>
