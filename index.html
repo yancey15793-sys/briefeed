@@ -2133,7 +2133,7 @@ button, a, [onclick] { touch-action: manipulation; }
 .art-card .art-fav img{ width:100%; height:100%; object-fit:contain; border-radius:50%; display:block; }
 .art-card .art-source-name{ font-family:var(--font-inter); font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.04em; }
 .art-card .art-time{ font-family:var(--font-inter); font-size:11px; color:var(--text-muted); }
-.art-card .art-title{ font-family:var(--font-dm); font-size:17px; font-weight:700; line-height:1.28; letter-spacing:-.01em; color:var(--text); display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+.art-card .art-title{ font-family:var(--font-ui); font-size:17px; font-weight:700; line-height:1.28; letter-spacing:-.01em; color:var(--text); display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
 /* Hero plus grand */
 #editionsHero .art-card .art-title{ font-size:22px; line-height:1.2; -webkit-line-clamp:4; }
 #editionsHero .art-card .art-source-row{ margin-top:14px; }
@@ -3074,7 +3074,7 @@ body.focus-mode .focus-exit{ display:flex; }
               <a class="sub-link sub-link-sm" data-qtheme="dark"  onclick="qmenuSetTheme('dark')">Sombre</a>
               <a class="sub-link sub-link-sm" data-qtheme="light" onclick="qmenuSetTheme('light')">Clair</a>
               <div class="qmenu-sub-section-label" style="margin-top:10px">Vue</div>
-              <a class="sub-link sub-link-sm" data-qview="editions"   onclick="qmenuSetView('editions')">Éditions</a>
+              <a class="sub-link sub-link-sm" data-qview="editions"   onclick="qmenuSetView('editions')">Magazine</a>
               <a class="sub-link sub-link-sm" data-qview="essentiel"  onclick="qmenuSetView('essentiel')">Essentiel</a>
               <a class="sub-link sub-link-sm" data-qview="liste"      onclick="qmenuSetView('liste')">Liste</a>
               <a class="sub-link sub-link-sm" data-qview="grille"     onclick="qmenuSetView('grille')">Grille</a>
@@ -3140,7 +3140,7 @@ body.focus-mode .focus-exit{ display:flex; }
           <rect x="13" y="16" width="8" height="5" rx="1.5"/>
         </svg>
       </div>
-      <span class="vp-label">Éditions</span>
+      <span class="vp-label">Magazine</span>
       <span class="vp-check"><svg viewBox="0 0 24 24" fill="none" stroke="#0a84ff" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></span>
     </div>
 
@@ -3839,7 +3839,7 @@ body.focus-mode .focus-exit{ display:flex; }
       </header>
 
       <!-- Label centré, toujours présent au-dessus de toutes les vues -->
-      <h2 class="edition-label">Mon édition du jour</h2>
+      <h2 class="edition-label">Mon magazine du jour</h2>
 
       <!-- ========== VUE ÉDITIONS (magazine) ========== -->
       <div class="view" data-view="editions">
@@ -4199,14 +4199,15 @@ body.focus-mode .focus-exit{ display:flex; }
         _renderSubpageArts(_folderPageArts, target, c, '_folderArt');
       if(c) c.scrollTop = 0;
     } else {
-      // Pas de sous-page : changer la vue accueil normalement
+      // Pas de sous-page : remonter en haut instantanément avant d'afficher la nouvelle vue
+      const _rowEl = document.querySelector('.row');
+      if(_rowEl) _rowEl.scrollTop = 0;
       views.forEach(v => { v.hidden = v.dataset.view !== target; });
       if(target === 'browse')    renderBrowseTimeline();
       if(target === 'grille')    _renderGrille();
       if(target === 'sequential')_renderSequential();
       if(target === 'liste')     _renderListe();
       if(target === 'essentiel') _renderEssentiel();
-      _stMain(false); // smooth scroll to top via le bon conteneur
     }
 
     // Sync UI toujours
@@ -7820,7 +7821,7 @@ body.focus-mode .focus-exit{ display:flex; }
       html += hero.imageUrl ? '<img src="' + escAttr(hero.imageUrl) + '" style="width:100%;height:100%;object-fit:cover" decoding="async">' : '<div style="' + heroImg + ';width:100%;height:100%"></div>';
       html += '</div>';
       html += '<div class="art-source-row"><div class="art-fav"><img src="' + escAttr(heroFav) + '" onerror="this.style.opacity=.3"></div><span class="art-source-name">' + escapeHtml(hero.source) + '</span><span class="art-time" style="margin-left:auto">' + relTime(hero.pubDate) + '</span></div>';
-      html += _titleWithShare('<span style="font-family:var(--font-dm);font-size:22px;font-weight:700;line-height:1.2;letter-spacing:-.015em;color:var(--text)">' + escapeHtml(hero.title) + '</span>', hero.link, hero.title, 'art-title');
+      html += _titleWithShare('<span style="font-family:var(--font-ui);font-size:22px;font-weight:700;line-height:1.2;letter-spacing:-.015em;color:var(--text)">' + escapeHtml(hero.title) + '</span>', hero.link, hero.title, 'art-title');
       html += '</div></div>';
       html += '<div class="hello-grid">' + rest.map(function(a){
         var realIdx = arts.indexOf(a);
@@ -8348,7 +8349,7 @@ body.focus-mode .focus-exit{ display:flex; }
         {icon:'←', text:'Glissez depuis le bord gauche pour revenir en arrière sur n’importe quelle page ou modal.'},
         {icon:'↕', text:'Glissez vers le bas pour fermer un article. Glissez latéralement pour naviguer entre articles.'},
         {icon:'☰', text:'Glissez depuis le bord gauche de l’écran pour ouvrir la sidebar. Tapez un dossier pour voir ses articles.'},
-        {icon:'👁', text:'La pill ••• en haut à droite : tapez l’œil pour changer la vue (Éditions, Liste, Grille, Séquentiel, Parcourir).'},
+        {icon:’👁’, text:’La pill ••• en haut à droite : tapez l’œil pour changer la vue (Magazine, Liste, Grille, Séquentiel, Parcourir).’},
         {icon:'↓', text:'Tirez vers le bas depuis le haut de l’accueil pour actualiser tous vos flux.'},
       ];
       let cur=0;
@@ -8657,7 +8658,7 @@ body.focus-mode .focus-exit{ display:flex; }
       <div class="menu3-section">
         <div class="menu3-label">Vue</div>
         <div class="menu3-chips" id="menu3ViewChips">
-          <div class="menu3-chip active" data-view="editions" onclick="menu3SetView('editions')">Éditions</div>
+          <div class="menu3-chip active" data-view="editions" onclick="menu3SetView('editions')">Magazine</div>
           <div class="menu3-chip" data-view="grille" onclick="menu3SetView('grille')">Grille</div>
           <div class="menu3-chip" data-view="sequential" onclick="menu3SetView('sequential')">Séquentiel</div>
           <div class="menu3-chip" data-view="browse" onclick="menu3SetView('browse')">Parcourir</div>
