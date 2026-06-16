@@ -985,7 +985,7 @@ button, a, [onclick] { touch-action: manipulation; }
 .edition-label{
   align-self:stretch;
   text-align:center;
-  margin:72px 0 36px;
+  margin:32px 0 16px;
   font-family:var(--font-inter);
   font-size:12.5px; font-weight:700;
   letter-spacing:.18em; text-transform:uppercase;
@@ -1773,7 +1773,7 @@ button, a, [onclick] { touch-action: manipulation; }
 .seq-source{ font-family:var(--font-inter); font-size:10.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.04em; margin-bottom:5px; display:flex; align-items:center; gap:4px; }
 .seq-fav{ width:16px; height:16px; border-radius:50%; overflow:hidden; background:transparent; }
 .seq-fav img{ width:100%; height:100%; object-fit:contain; border-radius:50%; display:block; }
-.seq-title{ font-family:var(--font-ui); font-size:16px; font-weight:700; line-height:1.32; color:var(--text); letter-spacing:-.018em; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+.seq-title{ font-family:var(--font-dm); font-size:17px; font-weight:700; line-height:1.28; color:var(--text); letter-spacing:-.01em; }
 .seq-thumb{ width:114px; height:76px; flex-shrink:0; border-radius:10px; overflow:hidden; background:#111; align-self:center; }
 .seq-thumb img{ width:100%; height:100%; object-fit:cover; }
 
@@ -1819,46 +1819,6 @@ button, a, [onclick] { touch-action: manipulation; }
 .folder-page-scroll::-webkit-scrollbar{ display:none; }
 .folder-page-inner{ padding:16px 18px 90px; }
 
-/* ── SOURCE BUBBLES NAV — page dossier ───────────────────── */
-.fp-sources{
-  display:flex; flex-wrap:wrap; gap:10px;
-  padding:20px 18px 24px;
-  justify-content:center;
-}
-.fp-src-bubble{
-  display:flex; flex-direction:column; align-items:center; gap:5px;
-  cursor:pointer; -webkit-tap-highlight-color:transparent;
-  transition:transform .18s cubic-bezier(.34,1.56,.64,1), opacity .15s;
-  min-width:52px;
-}
-.fp-src-bubble:active{ transform:scale(.88); opacity:.7; }
-.fp-src-bubble.active .fp-src-ring{
-  box-shadow:0 0 0 2.5px var(--accent);
-}
-.fp-src-ring{
-  width:44px; height:44px; border-radius:50%;
-  background:rgba(255,255,255,.07);
-  border:1px solid rgba(255,255,255,.1);
-  overflow:hidden; position:relative;
-  transition:box-shadow .2s;
-  flex-shrink:0;
-}
-[data-theme="light"] .fp-src-ring{
-  background:rgba(0,0,0,.05);
-  border-color:rgba(0,0,0,.09);
-}
-.fp-src-ring img{
-  width:100%; height:100%; object-fit:contain; border-radius:50%;
-  display:block;
-}
-.fp-src-label{
-  font-family:var(--font-ui); font-size:9.5px; font-weight:600;
-  color:var(--text-muted); text-align:center; letter-spacing:.01em;
-  max-width:52px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-  line-height:1.2;
-}
-.fp-src-bubble.active .fp-src-label{ color:var(--accent); }
-
 /* ── MENU 3 POINTS ───────────────────────────────── */
 .menu3-btn{ display:none; }
 
@@ -1894,9 +1854,17 @@ button, a, [onclick] { touch-action: manipulation; }
   color:var(--text);
   -webkit-tap-highlight-color:transparent;
   z-index:3; position:relative;
-  transition:transform .15s;
+  transition:transform .15s, opacity .3s;
 }
 .qpill-trigger:active{ transform:scale(.88); }
+/* Pulsation silencieuse pendant le fetch réseau */
+@keyframes bf-breathe{
+  0%,100%{ opacity:1; }
+  50%{ opacity:.38; }
+}
+.qpill-trigger.is-loading{
+  animation:bf-breathe 1.6s ease-in-out infinite;
+}
 
 /* Active pill — indicateur glissant (comme le HTML fourni) */
 .qpill-active-pill{
@@ -2173,66 +2141,54 @@ button, a, [onclick] { touch-action: manipulation; }
 .art-card .art-fav img{ width:100%; height:100%; object-fit:contain; border-radius:50%; display:block; }
 .art-card .art-source-name{ font-family:var(--font-inter); font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.04em; }
 .art-card .art-time{ font-family:var(--font-inter); font-size:11px; color:var(--text-muted); }
-.art-card .art-title{ font-family:var(--font-ui); font-size:17px; font-weight:700; line-height:1.28; letter-spacing:-.01em; color:var(--text); display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+.art-card .art-title{ font-family:var(--font-dm); font-size:17px; font-weight:700; line-height:1.28; letter-spacing:-.01em; color:var(--text); display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
 /* Hero plus grand */
 #editionsHero .art-card .art-title{ font-size:22px; line-height:1.2; -webkit-line-clamp:4; }
 #editionsHero .art-card .art-source-row{ margin-top:14px; }
-/* Indicateur de refresh */
-/* Indicateur de synchro — ligne fine en haut, discrète */
-#refreshBadge{
-  position:fixed; top:0; left:0; right:0; z-index:9999;
-  height:2px; background:transparent;
-  pointer-events:none; opacity:0;
-  transition:opacity .4s ease;
-}
-#refreshBadge::after{
-  content:''; position:absolute; top:0; left:-100%; width:60%;
-  height:100%;
-  background:linear-gradient(90deg, transparent, #0a84ff, transparent);
-  animation:none;
-}
-@keyframes syncSlide{
-  0%  { left:-60%; }
-  100%{ left:110%; }
-}
-#refreshBadge.vis{ opacity:1; }
-#refreshBadge.vis::after{ animation:syncSlide 1.4s ease-in-out infinite; }
-#refreshBadge.ok{
-  height:3px; opacity:1;
-  background:linear-gradient(90deg, transparent 0%, #34c759 40%, transparent 100%);
-}
-#refreshBadge.ok::after{ animation:none; }
+/* refreshBadge — désactivé, remplacé par respiration silencieuse */
+#refreshBadge{ display:none; }
 
-/* ── NEW ARTICLES PILL — style Inoreader ─────────────────── */
+/* ── NEW ARTICLES PILL — sobre, accent bleu ──────────────── */
 #newArtsPill{
   position:fixed;
-  top:calc(max(env(safe-area-inset-top,0px),16px) + 76px);
+  top:calc(max(env(safe-area-inset-top,0px),16px) + 72px);
   left:50%;
-  transform:translateX(-50%) translateY(-10px) scale(.92);
+  transform:translateX(-50%) translateY(-14px) scale(.9);
   z-index:490; pointer-events:none; opacity:0;
-  transition:opacity .2s ease, transform .34s cubic-bezier(.34,1.56,.64,1);
+  transition:opacity .22s ease, transform .36s cubic-bezier(.34,1.56,.64,1);
 }
 #newArtsPill.visible{
   opacity:1; pointer-events:auto;
   transform:translateX(-50%) translateY(0) scale(1);
 }
 #newArtsPill button{
-  display:inline-flex; align-items:center; gap:5px;
-  background:#ff3c32; color:#fff;
-  border:none; border-radius:999px;
-  padding:6px 13px 6px 9px;
-  font-family:var(--font-inter); font-size:11.5px; font-weight:700;
+  display:inline-flex; align-items:center; gap:6px;
+  background:rgba(10,132,255,.14);
+  backdrop-filter:blur(16px) saturate(1.4);
+  -webkit-backdrop-filter:blur(16px) saturate(1.4);
+  border:1px solid rgba(10,132,255,.28);
+  border-radius:999px;
+  padding:7px 15px 7px 11px;
+  color:#0a84ff;
+  font-family:var(--font-ui); font-size:12px; font-weight:700;
   letter-spacing:.01em; cursor:pointer;
-  box-shadow:0 3px 12px rgba(255,60,50,.38), 0 1px 3px rgba(0,0,0,.2);
+  box-shadow:0 2px 16px rgba(10,132,255,.18), 0 1px 4px rgba(0,0,0,.18);
   -webkit-tap-highlight-color:transparent;
-  transition:transform .18s cubic-bezier(.34,1.56,.64,1), opacity .14s;
+  transition:transform .18s cubic-bezier(.34,1.56,.64,1), opacity .14s, background .15s;
   white-space:nowrap;
 }
-#newArtsPill button:active{ transform:scale(.91); opacity:.82; }
-#newArtsPill button svg{ width:11px; height:11px; flex-shrink:0; }
-[data-theme="light"] #newArtsPill button{
-  box-shadow:0 3px 12px rgba(255,60,50,.28), 0 1px 3px rgba(0,0,0,.1);
+#newArtsPill button:active{
+  transform:scale(.93); opacity:.85;
+  background:rgba(10,132,255,.22);
 }
+#newArtsPill button svg{ width:12px; height:12px; flex-shrink:0; stroke:#0a84ff; }
+[data-theme="light"] #newArtsPill button{
+  background:rgba(0,102,204,.1);
+  border-color:rgba(0,102,204,.22);
+  color:#0066cc;
+  box-shadow:0 2px 12px rgba(0,102,204,.14), 0 1px 3px rgba(0,0,0,.08);
+}
+[data-theme="light"] #newArtsPill button svg{ stroke:#0066cc; }
 /* ── VUE FAVORIS ─────────────────────────────────────────── */
 .fav-header{ display:flex; align-items:baseline; justify-content:space-between; padding:20px 18px 12px; }
 .fav-header-title{ font-family:var(--font-inter); font-size:26px; font-weight:800; letter-spacing:-.03em; color:var(--text); }
@@ -6145,13 +6101,16 @@ body.focus-mode .focus-exit{ display:flex; }
   }
   function getFaviconDomain(url){ try{ return new URL(url).hostname.replace(/^www\./,''); }catch(e){ return url; } }
   function getFavicon(url){ return 'https://www.google.com/s2/favicons?domain='+getFaviconDomain(url)+'&sz=64'; }
-  function showBadge(msg, ok=false){
-    const b = document.getElementById('refreshBadge'); if(!b) return;
-    b.className = ok ? 'ok' : 'vis';
-    clearTimeout(b._t);
-    if(ok) b._t = setTimeout(()=>{ b.className=''; }, 1800);
+
+  // Pulsation silencieuse sur le ••• pendant le fetch — aucune barre visible
+  function _setLoadingPulse(on){
+    const t = document.querySelector('.qpill-trigger');
+    if(!t) return;
+    if(on) t.classList.add('is-loading');
+    else   t.classList.remove('is-loading');
   }
-  function hideBadge(){ const b=document.getElementById('refreshBadge'); if(b) b.className=''; }
+  function showBadge(msg, ok=false){ if(!ok) _setLoadingPulse(true); else _setLoadingPulse(false); }
+  function hideBadge(){ _setLoadingPulse(false); }
 
   // ── 1. Pont : folders Briefeed → RSS_FEEDS objects ───────────
   let _rssFeeds = [];
@@ -6824,7 +6783,7 @@ body.focus-mode .focus-exit{ display:flex; }
     const pill  = document.getElementById('newArtsPill');
     const label = document.getElementById('newArtsPillLabel');
     if(!pill) return;
-    if(label) label.textContent = count === 1 ? '1 nouvel article' : `${count} nouveaux articles`;
+    if(label) label.textContent = count === 1 ? '↑ 1 article' : `↑ ${count} articles`;
     pill.classList.add('visible');
   }
   function _hideNewArtsPill(){
@@ -8180,66 +8139,13 @@ body.focus-mode .focus-exit{ display:flex; }
     const welcomeEl = document.getElementById('folderPageWelcome');
     if(welcomeEl) welcomeEl.textContent = _getFolderWelcome(folder.name);
     const feedUrls = new Set(folder.feeds||[]);
-    const allArts = typeof _allArticles !== 'undefined'
+    const arts = typeof _allArticles !== 'undefined'
       ? _dedup([..._allArticles].filter(a=>feedUrls.has(a.feedUrl||'')).sort((a,b)=>b.pubDate-a.pubDate))
       : [];
-    _folderPageArts = allArts;
-
-    // ── Bulles sources ──────────────────────────────────────────
-    let _fpActiveSrc = null; // null = toutes les sources
-    const srcContainer = document.getElementById('folderPageSources');
+    _folderPageArts = arts;
     const content = document.getElementById('folderPageContent');
-
-    function _fpRenderBubbles(){
-      if(!srcContainer) return;
-      const feedMeta = (() => { try{ return JSON.parse(localStorage.getItem('reader.feedMeta')||'{}'); }catch(e){ return {}; } })();
-      const srcs = (folder.feeds||[]).map(url => {
-        const meta = feedMeta[url] || {};
-        const domain = (()=>{ try{ return new URL(url).hostname.replace(/^www\./,''); }catch(e){ return url; } })();
-        return { url, name: meta.name || domain, domain };
-      });
-      if(srcs.length < 2){ srcContainer.innerHTML=''; return; }
-      const allActive = _fpActiveSrc === null;
-      let html = `<div class="fp-src-bubble${allActive?' active':''}" data-src="">
-        <div class="fp-src-ring" style="display:flex;align-items:center;justify-content:center">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-        </div>
-        <span class="fp-src-label">Tout</span>
-      </div>`;
-      srcs.forEach(s => {
-        const active = _fpActiveSrc === s.url;
-        const favUrl = 'https://www.google.com/s2/favicons?domain='+encodeURIComponent(s.domain)+'&sz=64';
-        html += `<div class="fp-src-bubble${active?' active':''}" data-src="${escapeHtml(s.url)}">
-          <div class="fp-src-ring"><img src="${escapeHtml(favUrl)}" alt="" loading="lazy" onerror="this.style.display='none'"></div>
-          <span class="fp-src-label">${escapeHtml(s.name)}</span>
-        </div>`;
-      });
-      srcContainer.innerHTML = html;
-      srcContainer.querySelectorAll('.fp-src-bubble').forEach(el => {
-        el.addEventListener('click', () => {
-          const src = el.dataset.src || null;
-          _fpActiveSrc = src === '' ? null : src;
-          _fpRenderBubbles();
-          _fpRenderArts();
-          // Scroll doux vers le contenu
-          const scroll = document.querySelector('.folder-page-scroll');
-          if(scroll) scroll.scrollTo({ top: scroll.scrollTop > 200 ? 200 : scroll.scrollTop, behavior:'smooth' });
-        });
-      });
-    }
-
-    function _fpRenderArts(){
-      const arts = _fpActiveSrc
-        ? allArts.filter(a => a.feedUrl === _fpActiveSrc)
-        : allArts;
-      _folderPageArts = arts;
-      _renderSubpageArts(_folderPageArts, _currentView, content, '_folderArt');
-    }
-
-    _fpRenderBubbles();
-    _fpRenderArts();
-
-    _stFold(true);
+    _renderSubpageArts(_folderPageArts, _currentView, content, '_folderArt');
+    _stFold(true); // en haut avant l'animation d'entrée
     const page = document.getElementById('folderPage');
     page.style.display='flex';
     requestAnimationFrame(()=>page.classList.add('open'));
@@ -8722,7 +8628,6 @@ body.focus-mode .focus-exit{ display:flex; }
         <div class="folder-page-welcome" id="folderPageWelcome"></div>
         <div class="folder-page-sep"></div>
       </div>
-      <div class="fp-sources" id="folderPageSources"></div>
       <div class="folder-page-inner" id="folderPageContent"></div>
     </div>
   </div>
@@ -8794,10 +8699,10 @@ body.focus-mode .focus-exit{ display:flex; }
 
   <!-- Badge hors-ligne -->
   <div class="offline-badge" id="offlineBadge">
-  <div id="newArtsPill"><button onclick="_applyPendingArts()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg><span id="newArtsPillLabel">Nouveaux articles</span></button></div>
     <div class="offline-dot" id="offlineDot"></div>
     <span id="offlineText">Hors-ligne</span>
   </div>
+  <div id="newArtsPill"><button onclick="_applyPendingArts()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg><span id="newArtsPillLabel">Nouveaux articles</span></button></div>
   <div class="prefetch-indicator" id="prefetchIndicator"></div>
 
 <!-- Drag + inertia + snap pour les carrousels browse -->
