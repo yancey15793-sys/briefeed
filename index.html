@@ -576,6 +576,32 @@ button, .ob-btn, .ob-btn-ghost,
   padding:10px 12px; font-size:12.5px; line-height:1.5; color:#666;
 }
 
+/* Flux intelligents — lignes dans la sidebar */
+.smart-item{
+  display:flex; align-items:center; gap:10px;
+  padding:9px 12px; border-radius:10px; cursor:pointer; color:var(--text);
+  -webkit-tap-highlight-color:transparent;
+  transition:background .16s ease, transform .22s cubic-bezier(.34,1.56,.64,1);
+}
+.smart-item:active{ transform:scale(.97); background:rgba(127,127,127,.12); }
+.smart-item .si-ic{
+  width:26px; height:26px; flex:none; border-radius:8px;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(10,132,255,.16); color:#0a84ff;
+}
+.smart-item .si-ic svg{ width:15px; height:15px; }
+.smart-item .si-label{
+  flex:1; min-width:0; font-size:15px; font-weight:700; letter-spacing:-.02em;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.smart-item .si-count{ font-size:12px; font-weight:700; color:#666; font-variant-numeric:tabular-nums; }
+.smart-item .si-del{
+  opacity:0; border:0; background:transparent; color:var(--text-muted);
+  cursor:pointer; padding:2px; flex:none; transition:opacity .2s ease;
+}
+.smart-item .si-del svg{ width:14px; height:14px; }
+.smart-item:hover .si-del{ opacity:1; }
+
 /* Dossiers — accordéon fluide */
 .folder{ border-radius:10px; overflow:hidden; }
 .folder-head{
@@ -2510,8 +2536,8 @@ button, .ob-btn, .ob-btn-ghost,
 .srail-cats::-webkit-scrollbar{ display:none; }
 .sr-cat{
   flex:0 0 auto; scroll-snap-align:start;
-  display:inline-flex; align-items:center; gap:8px;
-  height:32px; padding:0 14px; border-radius:999px;
+  display:inline-flex; align-items:center; gap:6px;
+  height:32px; padding:0 13px; border-radius:999px;
   background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.09);
   -webkit-backdrop-filter:blur(12px) saturate(140%); backdrop-filter:blur(12px) saturate(140%);
   font-family:var(--font-inter); font-size:12.5px; font-weight:600; letter-spacing:-.01em;
@@ -2521,15 +2547,15 @@ button, .ob-btn, .ob-btn-ghost,
 .sr-cat:active{ transform:scale(.95); transition:transform .07s ease-in; }
 [data-theme="light"] .sr-cat{ background:rgba(0,0,0,.04); border-color:rgba(0,0,0,.08); }
 .sr-cat-count{
-  font-family:var(--font-inter); font-size:11px; font-weight:700;
+  font-family:var(--font-inter); font-size:10px; font-weight:700; line-height:1;
   color:var(--text-muted); background:rgba(255,255,255,.07);
-  border-radius:999px; padding:1px 7px; min-width:20px; text-align:center;
+  border-radius:999px; padding:3px 6px; min-width:18px; text-align:center;
   transition:background .22s ease, color .22s ease;
 }
 [data-theme="light"] .sr-cat-count{ background:rgba(0,0,0,.06); }
 .sr-cat.has-active{ border-color:rgba(10,132,255,.32); }
 .sr-cat-chev{
-  width:13px; height:13px; flex:0 0 auto; opacity:.55;
+  width:11px; height:11px; flex:0 0 auto; opacity:.5; margin-right:-2px;
   transition:transform .4s cubic-bezier(.34,1.56,.64,1);
 }
 .sr-cat.open .sr-cat-chev{ transform:rotate(180deg); opacity:1; }
@@ -3785,6 +3811,17 @@ body.focus-mode .focus-exit{ display:flex; }
         </div>
       </div>
       <div id="folderList"></div>
+
+      <!-- Flux intelligents (règles automatiques) -->
+      <div class="sb-section" id="smartSection" hidden>
+        <span>Flux intelligents</span>
+        <div class="sb-section-actions">
+          <button class="sb-add" id="addSmartTop" aria-label="Nouveau flux intelligent" onclick="BF_SMART.openCreate()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+        </div>
+      </div>
+      <div id="smartList"></div>
 
     </div>
 
@@ -6990,10 +7027,36 @@ body.focus-mode .focus-exit{ display:flex; }
   // Dédup Jaccard léger
   function _tokens(t){ return new Set((t||'').toLowerCase().split(/\W+/).filter(w=>w.length>3)); }
   function _sim(a,b){ const sa=_tokens(a.title),sb=_tokens(b.title); let inter=0; sa.forEach(w=>{if(sb.has(w))inter++;}); return inter/(sa.size+sb.size-inter||1); }
+  // ── Filtre anti-doublons configurable (« Clone Wars ») ──────────
+  //   off    : seul le lien identique est dédupliqué (filtre minimal)
+  //   exact  : + titres strictement identiques (après normalisation)
+  //   fuzzy  : + titres très similaires (Jaccard ≥ .55) — défaut historique
+  const _DEDUPE_KEY = 'reader.dedupe';
+  let _dedupeCfg = { mode:'fuzzy' };
+  function _dedupeReload(){
+    try{ const s = JSON.parse(localStorage.getItem(_DEDUPE_KEY)||'{}');
+         _dedupeCfg = { mode: (s.mode==='off'||s.mode==='exact'||s.mode==='fuzzy') ? s.mode : 'fuzzy' }; }
+    catch(e){ _dedupeCfg = { mode:'fuzzy' }; }
+  }
+  _dedupeReload();
+  function _normTitle(t){
+    return String(t||'').toLowerCase()
+      .replace(/[^a-zàâäéèêëîïôöùûüç0-9\s]/g,' ').replace(/\s+/g,' ').trim();
+  }
+
   function _dedup(arts){
     // 1) Dédup exact par lien — O(n)
     const byLink = new Set(); const stage = [];
     for(const a of arts){ if(a.link && byLink.has(a.link)) continue; if(a.link) byLink.add(a.link); stage.push(a); }
+
+    const mode = _dedupeCfg.mode;
+    if(mode === 'off') return stage;
+    if(mode === 'exact'){
+      // Titres strictement identiques après normalisation — on garde la 1re occurrence.
+      const seen = new Set(); const out = [];
+      for(const a of stage){ const k = _normTitle(a.title); if(k && seen.has(k)) continue; if(k) seen.add(k); out.push(a); }
+      return out;
+    }
     // 2) Quasi-doublons par titre via index inversé de tokens — quasi-linéaire.
     //    On ne compare qu'aux articles DÉJÀ gardés partageant ≥1 token signifiant,
     //    et les tokens de chaque titre sont calculés UNE seule fois (plus de O(n²)
@@ -7591,6 +7654,7 @@ body.focus-mode .focus-exit{ display:flex; }
     else if(_currentView === 'grille') _renderGrille();
     else if(_currentView === 'sequential') _renderSequential();
     else if(_currentView === 'liste')  _renderListe();
+    if(window.BF_SMART && BF_SMART.renderSidebar){ try{ BF_SMART.renderSidebar(); }catch(e){} }
   }
 
   // Rendu stable : swap en place + préservation du défilement (zéro saut)
@@ -9974,6 +10038,61 @@ body.focus-mode .focus-exit{ display:flex; }
   .bf-chip-sm .c{color:var(--text-muted);font-weight:500;margin-left:5px;}
   .bf-empty{padding:40px 20px;text-align:center;color:var(--text-muted);font-family:var(--font-inter);font-size:14px;line-height:1.6;}
 
+  /* ── Constructeur de règles (flux intelligents) ── */
+  .bf-cond{
+    display:flex;flex-direction:column;gap:8px;
+    padding:11px;margin-bottom:10px;border:1px solid var(--border);border-radius:14px;
+    background:rgba(127,127,127,.05);position:relative;
+  }
+  .bf-cond-top{display:flex;gap:8px;}
+  .bf-cond-sel{
+    flex:1;min-width:0;-webkit-appearance:none;appearance:none;
+    padding:10px 30px 10px 12px;border:1px solid var(--border);border-radius:11px;
+    background:rgba(127,127,127,.06) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 11px center;
+    color:var(--text);font-family:var(--font-inter);font-size:14px;font-weight:600;outline:none;cursor:pointer;
+  }
+  .bf-cond-sel:focus{border-color:#0a84ff;}
+  .bf-cond-val{
+    width:100%;padding:11px 13px;border:1px solid var(--border);border-radius:11px;
+    background:rgba(127,127,127,.06);color:var(--text);font-family:var(--font-inter);font-size:14.5px;outline:none;
+  }
+  .bf-cond-val:focus{border-color:#0a84ff;}
+  .bf-cond-del{
+    width:34px;flex:none;border:1px solid var(--border);border-radius:11px;background:rgba(127,127,127,.06);
+    color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;
+  }
+  .bf-cond-del svg{width:15px;height:15px;}
+  .bf-cond-del:active{transform:scale(.94);}
+  .bf-add-cond{
+    width:100%;padding:12px;border:1px dashed var(--border);border-radius:13px;background:none;
+    color:#0a84ff;font-family:var(--font-inter);font-size:13.5px;font-weight:700;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;gap:7px;margin-bottom:14px;
+  }
+  .bf-add-cond:active{transform:scale(.99);background:rgba(10,132,255,.06);}
+  .bf-add-cond svg{width:15px;height:15px;}
+
+  /* ── Filtre anti-doublons (carte de réglage) ── */
+  .bf-dd-card{
+    border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:18px;
+    background:rgba(127,127,127,.05);
+  }
+  .bf-dd-head{display:flex;align-items:center;gap:11px;margin-bottom:12px;}
+  .bf-dd-ic{width:34px;height:34px;flex:none;border-radius:10px;display:flex;align-items:center;justify-content:center;background:rgba(10,132,255,.16);color:#0a84ff;}
+  .bf-dd-ic svg{width:18px;height:18px;}
+  .bf-dd-tt{font-family:var(--font-inter);font-size:14.5px;font-weight:700;color:var(--text);letter-spacing:-.01em;}
+  .bf-dd-ds{font-family:var(--font-inter);font-size:11.5px;color:var(--text-muted);margin-top:1px;}
+  .bf-dd-opts{display:flex;flex-direction:column;gap:7px;}
+  .bf-dd-opt{
+    display:flex;align-items:flex-start;gap:11px;padding:11px 12px;border-radius:12px;cursor:pointer;
+    border:1px solid var(--border);background:rgba(127,127,127,.04);transition:border-color .15s,background .15s;
+  }
+  .bf-dd-opt.on{border-color:#0a84ff;background:rgba(10,132,255,.08);}
+  .bf-dd-radio{width:19px;height:19px;flex:none;border-radius:50%;border:2px solid var(--text-muted);margin-top:1px;position:relative;transition:border-color .15s;}
+  .bf-dd-opt.on .bf-dd-radio{border-color:#0a84ff;}
+  .bf-dd-opt.on .bf-dd-radio::after{content:'';position:absolute;inset:3px;border-radius:50%;background:#0a84ff;}
+  .bf-dd-ot{font-family:var(--font-inter);font-size:14px;font-weight:600;color:var(--text);}
+  .bf-dd-od{font-family:var(--font-inter);font-size:11.5px;color:var(--text-muted);margin-top:2px;line-height:1.4;}
+
   /* ── Page liste générique (résultats smart feed / tag) ── */
   .bf-list-page{
     position:fixed;inset:0;z-index:6800;display:flex;flex-direction:column;background:var(--bg);
@@ -10373,30 +10492,117 @@ body.focus-mode .focus-exit{ display:flex; }
   const BF_SMART = (function(){
     const KEY = 'reader.smartfeeds';
     function load(){ try{ return JSON.parse(localStorage.getItem(KEY)||'[]'); }catch(e){ return []; } }
-    function save(list){ try{ localStorage.setItem(KEY, JSON.stringify(list)); }catch(e){} }
+    function save(list){ try{ localStorage.setItem(KEY, JSON.stringify(list)); }catch(e){} renderSidebar(); }
 
     function _articles(){ return (typeof _allArticles!=='undefined' && _allArticles) ? _allArticles : []; }
 
-    function run(sf){
-      const terms = (sf.terms||[]).map(t=>t.toLowerCase()).filter(Boolean);
+    // ── Champs & opérateurs disponibles (logique façon Inoreader) ──
+    const FIELDS = {
+      titlebody:'Titre ou description',
+      title:'Titre',
+      body:'Description',
+      url:'Lien (URL)',
+      source:'Source',
+      author:'Auteur'
+    };
+    const OPS = {
+      contains:'contient',
+      not_contains:'ne contient pas',
+      starts:'commence par',
+      is:'est exactement',
+      regex:'correspond (regex)'
+    };
+
+    function _fieldText(a, field){
+      switch(field){
+        case 'title':  return a.title||'';
+        case 'body':   return a.description||'';
+        case 'url':    return a.link||a.feedUrl||'';
+        case 'source': return a.source||'';
+        case 'author': return a.author||'';
+        default:       return (a.title||'')+' '+(a.description||'');
+      }
+    }
+    function _evalCond(a, c){
+      const raw = _fieldText(a, c.field);
+      if(c.op==='regex'){ try{ return new RegExp(c.value,'i').test(raw); }catch(e){ return false; } }
+      const hay = raw.toLowerCase();
+      const v   = String(c.value||'').toLowerCase().trim();
+      if(!v) return c.op==='not_contains'; // condition vide : neutre
+      switch(c.op){
+        case 'contains':     return hay.includes(v);
+        case 'not_contains': return !hay.includes(v);
+        case 'starts':       return hay.trimStart().startsWith(v);
+        case 'is':           return hay.trim()===v;
+        default:             return false;
+      }
+    }
+
+    // Migration : anciens flux (terms + match) → conditions
+    function _conditions(sf){
+      if(Array.isArray(sf.conditions) && sf.conditions.length) return sf.conditions;
+      return (sf.terms||[]).filter(Boolean).map(t=>({field:'titlebody', op:'contains', value:t}));
+    }
+
+    function _filter(sf){
       const srcs  = new Set(sf.sources||[]);
-      const arts = _articles().filter(a=>{
+      const conds = _conditions(sf);
+      const all   = sf.match==='all';
+      return _articles().filter(a=>{
         if(srcs.size && !srcs.has(a.feedUrl||'')) return false;
-        if(!terms.length) return true;
-        const hay = ((a.title||'')+' '+(a.description||'')).toLowerCase();
-        return sf.match==='all' ? terms.every(t=>hay.includes(t)) : terms.some(t=>hay.includes(t));
+        if(!conds.length) return true;
+        return all ? conds.every(c=>_evalCond(a,c)) : conds.some(c=>_evalCond(a,c));
       }).sort((a,b)=>new Date(b.pubDate)-new Date(a.pubDate));
-      const sub = [
-        (sf.terms&&sf.terms.length)?(sf.match==='all'?'Tous : ':'Au moins un : ')+sf.terms.join(', '):null,
-        (sf.sources&&sf.sources.length)?(sf.sources.length+' source'+(sf.sources.length>1?'s':'')):null
-      ].filter(Boolean).join(' · ');
-      bfSheetClose();
-      bfListPageOpen({ title:sf.name, subtitle:sub||'Tous vos abonnements', articles:arts,
+    }
+
+    function _summary(sf){
+      const conds = _conditions(sf);
+      const parts = [];
+      if(conds.length){
+        const join = sf.match==='all' ? ' ET ' : ' OU ';
+        parts.push(conds.map(c=>{
+          const f = FIELDS[c.field]||c.field;
+          const o = OPS[c.op]||c.op;
+          return c.field==='titlebody' ? (o+' « '+c.value+' »') : (f+' '+o+' « '+c.value+' »');
+        }).join(join));
+      }
+      if(sf.sources&&sf.sources.length) parts.push(sf.sources.length+' source'+(sf.sources.length>1?'s':''));
+      return parts.join(' · ');
+    }
+
+    function run(sf){
+      const arts = _filter(sf);
+      if(typeof bfSheetClose==='function') bfSheetClose();
+      if(typeof window._closeAllSurfaces==='function') window._closeAllSurfaces();
+      bfListPageOpen({ title:sf.name, subtitle:_summary(sf)||'Tous vos abonnements', articles:arts,
         emptyMsg:'Aucun article ne correspond encore. Les résultats se rempliront à mesure que vos flux se chargent.' });
     }
     function runById(id){ const sf = load().find(x=>x.id===id); if(sf) run(sf); }
 
-    function del(id){ save(load().filter(x=>x.id!==id)); openList(); }
+    function del(id){
+      if(typeof confirm==='function' && !confirm('Supprimer ce flux intelligent ?')) return;
+      save(load().filter(x=>x.id!==id)); openList();
+    }
+
+    // ── Rendu sidebar ──────────────────────────────────────────────
+    const ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h18"/><path d="M6 9h12"/><path d="M9 14h6"/><path d="M11 19h2"/></svg>';
+    const ICON_X = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>';
+    function renderSidebar(){
+      const sec  = $('smartSection');
+      const host = $('smartList');
+      if(!host) return;
+      const list = load();
+      if(sec) sec.hidden = !list.length;
+      host.innerHTML = list.map(sf=>{
+        let n = 0; try{ n = _filter(sf).length; }catch(e){}
+        return '<div class="smart-item" onclick="BF_SMART.runById(\''+sf.id+'\')">'
+          + '<span class="si-ic">'+ICON+'</span>'
+          + '<span class="si-label">'+esc(sf.name)+'</span>'
+          + (n?'<span class="si-count">'+n+'</span>':'')
+          + '<button class="si-del" aria-label="Supprimer" onclick="event.stopPropagation();BF_SMART.del(\''+sf.id+'\')">'+ICON_X+'</button>'
+          + '</div>';
+      }).join('');
+    }
 
     // Suggestions automatiques à partir des mots fréquents dans les titres
     function _suggest(){
@@ -10409,71 +10615,166 @@ body.focus-mode .focus-exit{ display:flex; }
       return Object.entries(cnt).filter(([,n])=>n>=3).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([w])=>w);
     }
 
+    // ── Carte filtre anti-doublons ─────────────────────────────────
+    const _DD_MODES = [
+      { id:'fuzzy', t:'Titres similaires', d:'Masque les articles dont le titre est très proche, même sur des sources différentes. Recommandé.' },
+      { id:'exact', t:'Titres identiques', d:'Masque uniquement les articles au titre rigoureusement identique.' },
+      { id:'off',   t:'Désactivé',         d:'Ne déduplique que les liens strictement identiques.' }
+    ];
+    function _ddMode(){ try{ const m=(JSON.parse(localStorage.getItem('reader.dedupe')||'{}')).mode; return (m==='off'||m==='exact'||m==='fuzzy')?m:'fuzzy'; }catch(e){ return 'fuzzy'; } }
+    function _ddCard(){
+      const cur = _ddMode();
+      const opts = _DD_MODES.map(m=>
+        '<div class="bf-dd-opt'+(m.id===cur?' on':'')+'" onclick="BF_SMART._setDedupe(\''+m.id+'\')">'
+        + '<span class="bf-dd-radio"></span>'
+        + '<span><span class="bf-dd-ot">'+m.t+'</span><span class="bf-dd-od">'+m.d+'</span></span>'
+        + '</div>').join('');
+      return '<div class="bf-dd-card">'
+        + '<div class="bf-dd-head">'
+        + '<span class="bf-dd-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></span>'
+        + '<span><div class="bf-dd-tt">Filtre anti-doublons</div><div class="bf-dd-ds">Élimine les articles en double sur l\'ensemble de vos flux.</div></span>'
+        + '</div>'
+        + '<div class="bf-dd-opts">'+opts+'</div>'
+        + '</div>';
+    }
+    function _setDedupe(mode){
+      try{ localStorage.setItem('reader.dedupe', JSON.stringify({mode})); }catch(e){}
+      if(typeof _dedupeReload==='function') _dedupeReload();
+      // rafraîchir la carte
+      const card = document.querySelector('.bf-dd-card');
+      if(card){ const tmp=document.createElement('div'); tmp.innerHTML=_ddCard(); card.replaceWith(tmp.firstElementChild); }
+      renderSidebar();
+      if(typeof _renderCurrentView==='function') _renderCurrentView();
+    }
+
     function openList(){
       const list = load();
       const rows = list.length ? list.map(sf=>{
-        const sub = [(sf.terms||[]).join(', '), (sf.sources&&sf.sources.length)?(sf.sources.length+' src'):''].filter(Boolean).join(' · ');
         return '<div class="bf-row">'
-          + '<div class="bf-ri" style="color:#0a84ff;background:rgba(10,132,255,.16)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h18"/><path d="M6 9h12"/><path d="M9 14h6"/><path d="M11 19h2"/></svg></div>'
-          + '<div class="bf-rm" onclick="BF_SMART.runById(\''+sf.id+'\')"><div class="bf-rn">'+esc(sf.name)+'</div><div class="bf-rs">'+esc(sub||'Tous les articles')+'</div></div>'
-          + '<button class="bf-rx" onclick="BF_SMART.del(\''+sf.id+'\')" aria-label="Supprimer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>'
+          + '<div class="bf-ri" style="color:#0a84ff;background:rgba(10,132,255,.16)">'+ICON+'</div>'
+          + '<div class="bf-rm" onclick="BF_SMART.runById(\''+sf.id+'\')"><div class="bf-rn">'+esc(sf.name)+'</div><div class="bf-rs">'+esc(_summary(sf)||'Tous les articles')+'</div></div>'
+          + '<button class="bf-rx" onclick="BF_SMART.openEdit(\''+sf.id+'\')" aria-label="Modifier"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>'
+          + '<button class="bf-rx" onclick="BF_SMART.del(\''+sf.id+'\')" aria-label="Supprimer">'+ICON_X+'</button>'
           + '</div>';
-      }).join('') : '<div class="bf-empty">Aucun flux intelligent.<br>Combinez mots-clés et sources pour créer une vue thématique automatique.</div>';
+      }).join('') : '<div class="bf-empty">Aucun flux intelligent.<br>Créez des règles pour filtrer automatiquement tous vos abonnements.</div>';
 
       const sugg = _suggest();
       const suggHtml = sugg.length ? ('<div style="font-family:var(--font-inter);font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px">Suggestions</div><div class="bf-chips">'
         + sugg.map(w=>'<span class="bf-chip-sm" onclick="BF_SMART.quick(\''+esc(w).replace(/'/g,"")+'\')">'+esc(w)+'</span>').join('')+'</div>') : '';
 
       bfSheetOpen('Flux intelligents',
-        '<div class="bf-sub">Un flux intelligent filtre automatiquement tous vos abonnements selon des mots-clés et des sources.</div>'
+        _ddCard()
+        + '<div class="bf-sub">Un flux intelligent applique des règles (titre, source, auteur…) pour rassembler automatiquement les articles qui vous intéressent.</div>'
         + rows + suggHtml
         + '<button class="bf-cta" onclick="BF_SMART.openCreate()" style="margin-top:14px">+ Nouveau flux intelligent</button>');
     }
 
     function quick(word){
-      const sf = { id:'sf'+Date.now().toString(36), name:word.charAt(0).toUpperCase()+word.slice(1), terms:[word], sources:[], match:'any' };
+      const sf = { id:'sf'+Date.now().toString(36), name:word.charAt(0).toUpperCase()+word.slice(1),
+        match:'any', conditions:[{field:'titlebody',op:'contains',value:word}], sources:[] };
       const l = load(); l.unshift(sf); save(l);
       run(sf);
     }
 
+    // ── Éditeur (création + modification) ──────────────────────────
     let _formSources = new Set();
     let _formMatch = 'any';
-    function openCreate(){
-      _formSources = new Set(); _formMatch = 'any';
-      // Liste des sources abonnées
+    let _editId = null;
+
+    function _condRowHtml(c){
+      c = c || {field:'titlebody', op:'contains', value:''};
+      const fieldOpts = Object.keys(FIELDS).map(k=>'<option value="'+k+'"'+(k===c.field?' selected':'')+'>'+FIELDS[k]+'</option>').join('');
+      const opOpts    = Object.keys(OPS).map(k=>'<option value="'+k+'"'+(k===c.op?' selected':'')+'>'+OPS[k]+'</option>').join('');
+      return '<div class="bf-cond">'
+        + '<div class="bf-cond-top">'
+        + '<select class="bf-cond-sel bf-cond-field">'+fieldOpts+'</select>'
+        + '<select class="bf-cond-sel bf-cond-op">'+opOpts+'</select>'
+        + '<button type="button" class="bf-cond-del" aria-label="Retirer" onclick="BF_SMART._delCond(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg></button>'
+        + '</div>'
+        + '<input class="bf-cond-val" placeholder="Valeur à rechercher…" autocapitalize="none" value="'+escA(c.value||'')+'">'
+        + '</div>';
+    }
+    function _addCond(c){
+      const host = $('bfCondList');
+      if(!host) return;
+      const tmp = document.createElement('div');
+      tmp.innerHTML = _condRowHtml(c);
+      host.appendChild(tmp.firstElementChild);
+    }
+    function _delCond(btn){
+      const row = btn.closest('.bf-cond');
+      const host = $('bfCondList');
+      if(row && host && host.children.length>1) row.remove();
+      else if(row){ // garder au moins une ligne : on la réinitialise
+        const v = row.querySelector('.bf-cond-val'); if(v) v.value='';
+      }
+    }
+
+    function _srcRows(){
       const meta = (()=>{ try{ return JSON.parse(localStorage.getItem('reader.feedMeta')||'{}'); }catch(e){ return {}; } })();
       const urls = []; const seen = new Set();
       (folders||[]).forEach(f=>(f.feeds||[]).forEach(u=>{ if(!seen.has(u)){ seen.add(u); urls.push(u); } }));
-      const srcRows = urls.length ? urls.map(u=>{
+      return urls.length ? urls.map(u=>{
         const nm = (meta[u]&&meta[u].name) || (()=>{try{return new URL(u).hostname.replace(/^www\./,'');}catch(e){return u;}})();
         const fav = (typeof getFavicon==='function')?getFavicon(u):'';
-        return '<div class="bf-src-row" data-url="'+escA(u)+'" onclick="BF_SMART._toggleSrc(this)"><img src="'+escA(fav)+'" alt="" onerror="this.style.opacity=\'.3\'"><span class="nm">'+esc(nm)+'</span><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></span></div>';
+        const on = _formSources.has(u) ? ' on' : '';
+        return '<div class="bf-src-row'+on+'" data-url="'+escA(u)+'" onclick="BF_SMART._toggleSrc(this)"><img src="'+escA(fav)+'" alt="" onerror="this.style.opacity=\'.3\'"><span class="nm">'+esc(nm)+'</span><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></span></div>';
       }).join('') : '<div class="bf-empty" style="padding:18px">Aucune source. Ajoutez d’abord des flux.</div>';
-
-      bfSheetOpen('Nouveau flux intelligent',
-        '<div class="bf-field"><label>Nom</label><input class="bf-input" id="bfSfName" placeholder="ex. Apple + IA" maxlength="40"></div>'
-        + '<div class="bf-field"><label>Mots-clés (séparés par des virgules)</label><input class="bf-input" id="bfSfTerms" placeholder="apple, intelligence artificielle" autocapitalize="none"></div>'
-        + '<div class="bf-field"><label>Correspondance</label><div class="bf-seg" id="bfSfSeg"><button class="on" onclick="BF_SMART._setMatch(\'any\',this)">Au moins un</button><button onclick="BF_SMART._setMatch(\'all\',this)">Tous</button></div></div>'
-        + '<div class="bf-field"><label>Limiter à des sources (optionnel)</label><div class="bf-src-list">'+srcRows+'</div></div>'
-        + '<button class="bf-cta" onclick="BF_SMART._submit()">Créer le flux</button>');
-      setTimeout(()=>{ const n=$('bfSfName'); if(n) n.focus(); }, 420);
     }
+
+    function _openEditor(sf){
+      _editId = sf ? sf.id : null;
+      _formSources = new Set(sf ? (sf.sources||[]) : []);
+      _formMatch = (sf && sf.match==='all') ? 'all' : 'any';
+      const conds = sf ? _conditions(sf) : [{field:'titlebody',op:'contains',value:''}];
+      const condHtml = (conds.length?conds:[{field:'titlebody',op:'contains',value:''}]).map(_condRowHtml).join('');
+
+      bfSheetOpen(sf ? 'Modifier le flux' : 'Nouveau flux intelligent',
+        '<div class="bf-field"><label>Nom</label><input class="bf-input" id="bfSfName" placeholder="ex. Apple + IA" maxlength="40" value="'+(sf?escA(sf.name):'')+'"></div>'
+        + '<div class="bf-field"><label>Correspondance des règles</label><div class="bf-seg" id="bfSfSeg"><button class="'+(_formMatch==='any'?'on':'')+'" onclick="BF_SMART._setMatch(\'any\',this)">Au moins une</button><button class="'+(_formMatch==='all'?'on':'')+'" onclick="BF_SMART._setMatch(\'all\',this)">Toutes</button></div></div>'
+        + '<div class="bf-field"><label>Règles</label><div id="bfCondList">'+condHtml+'</div>'
+        + '<button type="button" class="bf-add-cond" onclick="BF_SMART._addCond()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Ajouter une règle</button></div>'
+        + '<div class="bf-field"><label>Limiter à des sources (optionnel)</label><div class="bf-src-list" id="bfSfSrc">'+_srcRows()+'</div></div>'
+        + '<button class="bf-cta" onclick="BF_SMART._submit()">'+(sf?'Enregistrer':'Créer le flux')+'</button>');
+      setTimeout(()=>{ const n=$('bfSfName'); if(n && !sf) n.focus(); }, 420);
+    }
+    function openCreate(){ _openEditor(null); }
+    function openEdit(id){ const sf = load().find(x=>x.id===id); if(sf) _openEditor(sf); }
+
     function _toggleSrc(el){ const u=el.dataset.url; if(_formSources.has(u)){ _formSources.delete(u); el.classList.remove('on'); } else { _formSources.add(u); el.classList.add('on'); } }
     function _setMatch(m, btn){ _formMatch=m; const seg=$('bfSfSeg'); if(seg) seg.querySelectorAll('button').forEach(b=>b.classList.toggle('on', b===btn)); }
+
+    function _gatherConds(){
+      const host = $('bfCondList'); if(!host) return [];
+      return [...host.querySelectorAll('.bf-cond')].map(row=>({
+        field: row.querySelector('.bf-cond-field').value,
+        op:    row.querySelector('.bf-cond-op').value,
+        value: (row.querySelector('.bf-cond-val').value||'').trim()
+      })).filter(c=>c.value);
+    }
+
     function _submit(){
       const name = ($('bfSfName')?.value||'').trim();
-      const terms = ($('bfSfTerms')?.value||'').split(',').map(s=>s.trim()).filter(Boolean);
-      if(!name && !terms.length){ const n=$('bfSfName'); if(n) n.focus(); return; }
-      if(!terms.length && !_formSources.size){ const t=$('bfSfTerms'); if(t) t.focus(); return; }
-      const sf = { id:'sf'+Date.now().toString(36), name:name||terms.join(' + '), terms, sources:[..._formSources], match:_formMatch };
-      const l = load(); l.unshift(sf); save(l);
+      const conditions = _gatherConds();
+      if(!conditions.length && !_formSources.size){
+        const host=$('bfCondList'); const v=host&&host.querySelector('.bf-cond-val'); if(v) v.focus();
+        return;
+      }
+      const fallback = conditions.length ? conditions.map(c=>c.value).join(' + ') : 'Sources sélectionnées';
+      const sf = { id:_editId||('sf'+Date.now().toString(36)), name:name||fallback,
+        match:_formMatch, conditions, sources:[..._formSources] };
+      let l = load();
+      if(_editId){ l = l.map(x=>x.id===_editId?sf:x); } else { l.unshift(sf); }
+      save(l);
       run(sf);
     }
 
-    return { openList, openCreate, runById, del, quick, _toggleSrc, _setMatch, _submit };
+    return { openList, openCreate, openEdit, runById, del, quick, renderSidebar,
+             _toggleSrc, _setMatch, _submit, _addCond, _delCond, _setDedupe };
   })();
   window.BF_SMART = BF_SMART;
   window.bfSmartOpenList = BF_SMART.openList;
+  try{ BF_SMART.renderSidebar(); }catch(e){}
 
   // ════════════════════════════════════════════════════════════════
   //  4) BF_TAGS — étiquettes par article
