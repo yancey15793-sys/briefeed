@@ -195,13 +195,15 @@ button, a, [onclick] { touch-action: manipulation; }
   backdrop-filter:blur(20px) saturate(180%);
   align-self:stretch;
   text-align:center;
-  padding:max(env(safe-area-inset-top,18px),18px) 28px 14px;
+  /* padding latéral = clearance des boutons flottants (sidebar 44px + marge) */
+  padding:max(env(safe-area-inset-top,18px),18px) 66px 14px;
   border-bottom:1px solid rgba(255,255,255,.06);
 }
 [data-theme="light"] .welcome{ border-bottom-color:rgba(0,0,0,.06); }
 .welcome-title{
-  font-weight:800; font-size:38px; line-height:1.06;
+  font-weight:800; font-size:clamp(28px,8.2vw,38px); line-height:1.06;
   letter-spacing:-0.03em; color:var(--text);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
 }
 .welcome-title .name{
   outline:none; cursor:text;
@@ -2143,31 +2145,57 @@ button, a, [onclick] { touch-action: manipulation; }
 /* Hero plus grand */
 #editionsHero .art-card .art-title{ font-size:22px; line-height:1.2; -webkit-line-clamp:4; }
 #editionsHero .art-card .art-source-row{ margin-top:14px; }
-/* Indicateur de refresh */
-/* Indicateur de synchro — ligne fine en haut, discrète */
+/* ── Indicateur de synchro — pastille sobre centrée (style Feedly) ── */
 #refreshBadge{
-  position:fixed; top:0; left:0; right:0; z-index:9999;
-  height:2px; background:transparent;
-  pointer-events:none; opacity:0;
-  transition:opacity .4s ease;
+  position:fixed; left:50%;
+  top:calc(max(env(safe-area-inset-top,0px),14px) + 60px);
+  transform:translateX(-50%) translateY(-12px) scale(.96);
+  z-index:60; display:flex; align-items:center; gap:8px;
+  padding:8px 15px; border-radius:999px;
+  background:rgba(28,28,30,.86);
+  -webkit-backdrop-filter:blur(22px) saturate(180%);
+  backdrop-filter:blur(22px) saturate(180%);
+  border:1px solid rgba(255,255,255,.08);
+  box-shadow:0 8px 28px rgba(0,0,0,.32), 0 1px 3px rgba(0,0,0,.2);
+  font-family:var(--font-inter); font-size:12.5px; font-weight:600; letter-spacing:-.01em;
+  color:var(--text);
+  opacity:0; pointer-events:none;
+  transition:opacity .26s ease, transform .34s cubic-bezier(.34,1.56,.64,1);
 }
-#refreshBadge::after{
-  content:''; position:absolute; top:0; left:-100%; width:60%;
-  height:100%;
-  background:linear-gradient(90deg, transparent, #0a84ff, transparent);
-  animation:none;
+[data-theme="light"] #refreshBadge{
+  background:rgba(255,255,255,.86); border-color:rgba(0,0,0,.06);
+  box-shadow:0 8px 28px rgba(0,0,0,.12), 0 1px 3px rgba(0,0,0,.06);
 }
-@keyframes syncSlide{
-  0%  { left:-60%; }
-  100%{ left:110%; }
+#refreshBadge.vis, #refreshBadge.ok{
+  opacity:1; transform:translateX(-50%) translateY(0) scale(1);
 }
-#refreshBadge.vis{ opacity:1; }
-#refreshBadge.vis::after{ animation:syncSlide 1.4s ease-in-out infinite; }
-#refreshBadge.ok{
-  height:3px; opacity:1;
-  background:linear-gradient(90deg, transparent 0%, #34c759 40%, transparent 100%);
+#refreshBadge.ok{ color:#34c759; }
+.rb-spin{
+  width:13px; height:13px; border-radius:50%; flex-shrink:0;
+  border:2px solid rgba(140,140,145,.3); border-top-color:#0a84ff;
+  animation:rbspin .7s linear infinite;
 }
-#refreshBadge.ok::after{ animation:none; }
+.rb-check{ width:14px; height:14px; flex-shrink:0; }
+@keyframes rbspin{ to{ transform:rotate(360deg); } }
+
+/* ── Pull-to-refresh — pastille « tirez / relâchez » ───────────────── */
+.ptr-pill{
+  display:flex; align-items:center; gap:7px;
+  background:rgba(28,28,30,.9);
+  -webkit-backdrop-filter:blur(16px) saturate(180%);
+  backdrop-filter:blur(16px) saturate(180%);
+  border:1px solid rgba(255,255,255,.08);
+  padding:7px 15px; border-radius:999px;
+  font-family:var(--font-inter); font-size:12px; font-weight:600;
+  color:rgba(255,255,255,.85); white-space:nowrap;
+  box-shadow:0 6px 20px rgba(0,0,0,.3);
+}
+[data-theme="light"] .ptr-pill{
+  background:rgba(255,255,255,.9); border-color:rgba(0,0,0,.06);
+  color:rgba(0,0,0,.7); box-shadow:0 6px 20px rgba(0,0,0,.12);
+}
+.ptr-arrow{ transition:transform .3s cubic-bezier(.34,1.56,.64,1); }
+#ptrIndicator.ptr-armed .ptr-arrow{ transform:rotate(180deg); color:#0a84ff; }
 
 /* ── NEW ARTICLES PILL — style Inoreader ─────────────────── */
 #newArtsPill{
@@ -6227,9 +6255,15 @@ body.focus-mode .focus-exit{ display:flex; }
   function getFavicon(url){ return 'https://www.google.com/s2/favicons?domain='+getFaviconDomain(url)+'&sz=64'; }
   function showBadge(msg, ok=false){
     const b = document.getElementById('refreshBadge'); if(!b) return;
-    b.className = ok ? 'ok' : 'vis';
     clearTimeout(b._t);
-    if(ok) b._t = setTimeout(()=>{ b.className=''; }, 1800);
+    if(ok){
+      b.innerHTML = '<svg class="rb-check" viewBox="0 0 24 24" fill="none" stroke="#34c759" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>'+(msg||'À jour')+'</span>';
+      b.className = 'ok';
+      b._t = setTimeout(()=>{ b.className=''; }, 1700);
+    } else {
+      b.innerHTML = '<span class="rb-spin"></span><span>'+(msg||'Actualisation…')+'</span>';
+      b.className = 'vis';
+    }
   }
   function hideBadge(){ const b=document.getElementById('refreshBadge'); if(b) b.className=''; }
 
@@ -6810,23 +6844,16 @@ body.focus-mode .focus-exit{ display:flex; }
 
     if(hero.dataset.key === heroKey && grid.dataset.key === gridKey) return; // rien n'a changé
 
-    // Si première fois → direct, sinon fade discret
     const isFirst = !hero.dataset.key;
-    if(!isFirst){
-      grid.style.transition = 'opacity .25s ease';
-      grid.style.opacity = '0.4';
-    }
+    const rowEl   = document.querySelector('.row');
+    const prevTop = rowEl ? rowEl.scrollTop : 0;
     requestAnimationFrame(()=>{
       if(heroHtml) hero.innerHTML = heroHtml;
       grid.innerHTML = gridHtml;
       hero.dataset.key = heroKey;
       grid.dataset.key = gridKey;
-      if(!isFirst){
-        requestAnimationFrame(()=>{
-          grid.style.opacity = '1';
-          setTimeout(()=>{ grid.style.transition = ''; }, 300);
-        });
-      }
+      // Anti-saut : restaurer la position de défilement après réécriture du DOM
+      if(rowEl && !isFirst && rowEl.scrollTop !== prevTop) rowEl.scrollTop = prevTop;
       // Activer le preload des images nouvellement rendues
       if(typeof window._obsImage === 'function') setTimeout(window._obsImage, 50);
     });
@@ -6910,19 +6937,16 @@ body.focus-mode .focus-exit{ display:flex; }
     else if(_currentView === 'essentiel') _renderEssentiel();
   }
 
-  // Crossfade lisse : fade out .column → swap DOM → fade in
+  // Rendu stable : swap en place + préservation du défilement (zéro saut)
   function _smoothRenderCurrentView(cb){
-    const col = document.querySelector('.column');
-    if(!col){ _renderCurrentView(); if(cb) cb(); return; }
-    col.style.transition = 'opacity .14s ease';
-    col.style.opacity    = '0';
-    setTimeout(()=>{
-      _renderCurrentView();
-      col.offsetHeight; // force reflow
-      col.style.transition = 'opacity .2s ease';
-      col.style.opacity    = '1';
-      setTimeout(()=>{ col.style.transition=''; if(cb) cb(); }, 220);
-    }, 150);
+    const rowEl   = document.querySelector('.row');
+    const prevTop = rowEl ? rowEl.scrollTop : 0;
+    _renderCurrentView();
+    // Restaurer la position après le rendu (rAF couvre le cas éditions)
+    requestAnimationFrame(()=>{
+      if(rowEl && rowEl.scrollTop !== prevTop) rowEl.scrollTop = prevTop;
+      if(cb) cb();
+    });
   }
 
   // ── Pending articles (background fetch) ──────────────────
@@ -7082,7 +7106,8 @@ body.focus-mode .focus-exit{ display:flex; }
       try{ idbSaveArticles(toSave); idbPrune(); }catch(e){}
       showBadge(`+${newCount} article${newCount>1?'s':''}`, true);
     } else {
-      hideBadge();
+      // Refresh manuel sans nouveauté → confirmation discrète « À jour »
+      if(force) showBadge('À jour', true); else hideBadge();
     }
 
     // Enrichir images en arrière-plan
@@ -8448,32 +8473,63 @@ body.focus-mode .focus-exit{ display:flex; }
     },{passive:true});
   })();
 
-  // ── Pull-to-refresh avec indicateur visuel ────────────────────
+  // ── Pull-to-refresh — ciblé sur le conteneur .row (anti-faux-refresh) ──
   (function initPullRefresh(){
-    let startY=0;
-    const H=50;
+    const H=56, THRESHOLD=90;
+    let startY=0, pulling=false, armed=false;
+
     const ind=document.createElement('div');
-    ind.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%) translateY(-'+H+'px);z-index:600;height:'+H+'px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:8px;pointer-events:none;transition:transform .25s ease';
-    ind.innerHTML='<div style="display:flex;align-items:center;gap:6px;background:rgba(28,28,30,.9);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:6px 14px;border-radius:999px;font-family:var(--font-inter);font-size:12px;font-weight:600;color:rgba(255,255,255,.8)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.08-5"/></svg>Actualiser</div>';
+    ind.id='ptrIndicator';
+    ind.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%) translateY(-'+H+'px);z-index:600;height:'+H+'px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:10px;pointer-events:none;transition:transform .28s cubic-bezier(.34,1.56,.64,1)';
+    ind.innerHTML='<div class="ptr-pill"><svg class="ptr-arrow" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg><span class="ptr-txt">Tirez pour actualiser</span></div>';
     document.body.appendChild(ind);
+    const txt=()=>ind.querySelector('.ptr-txt');
+    const reset=()=>{ ind.style.transition='transform .28s cubic-bezier(.34,1.56,.64,1)'; ind.style.transform='translateX(-50%) translateY(-'+H+'px)'; ind.classList.remove('ptr-armed'); };
+
+    // Le pull n'est valide qu'en haut de l'accueil, aucune surface par-dessus
+    function eligible(){
+      const r=document.querySelector('.row');
+      if(!r || r.scrollTop>2) return false;
+      const sb=document.getElementById('sidebar');
+      if(sb&&sb.classList.contains('open')) return false;
+      const modal=document.getElementById('artModal');
+      if(modal&&modal.style.display==='flex') return false;
+      // Pages plein écran ouvertes ?
+      for(const id of ['folderPage','feedPage','discoverPage','podcastPage','prefsPage','bfListPage']){
+        const el=document.getElementById(id);
+        if(el && el.classList.contains('open')) return false;
+      }
+      return true;
+    }
 
     document.addEventListener('touchstart', e=>{
-      if(window.scrollY<2) startY=e.touches[0].clientY;
+      if(e.touches.length!==1 || !eligible()){ startY=0; pulling=false; return; }
+      startY=e.touches[0].clientY; pulling=true; armed=false;
     },{passive:true});
+
     document.addEventListener('touchmove', e=>{
-      if(!startY||window.scrollY>2) return;
-      const dy=Math.max(0,e.touches[0].clientY-startY);
-      const prog=Math.min(dy/90,1);
+      if(!pulling || !startY) return;
+      const r=document.querySelector('.row');
+      if(r && r.scrollTop>2){ startY=0; pulling=false; reset(); return; }
+      const dy=e.touches[0].clientY-startY;
+      if(dy<=0){ ind.style.transition='none'; ind.style.transform='translateX(-50%) translateY(-'+H+'px)'; armed=false; ind.classList.remove('ptr-armed'); return; }
+      const dist=Math.min(dy*0.55, H+14);   // résistance élastique
       ind.style.transition='none';
-      ind.style.transform='translateX(-50%) translateY('+(-H+prog*H)+'px)';
+      ind.style.transform='translateX(-50%) translateY('+(-H+dist)+'px)';
+      const nowArmed=dy>THRESHOLD;
+      if(nowArmed!==armed){
+        armed=nowArmed;
+        ind.classList.toggle('ptr-armed',armed);
+        const t=txt(); if(t) t.textContent=armed?'Relâchez pour actualiser':'Tirez pour actualiser';
+      }
     },{passive:true});
+
     document.addEventListener('touchend', e=>{
-      if(!startY) return;
+      if(!pulling || !startY){ startY=0; pulling=false; return; }
       const dy=e.changedTouches[0].clientY-startY;
-      ind.style.transition='transform .3s ease';
-      ind.style.transform='translateX(-50%) translateY(-'+H+'px)';
-      if(dy>80&&window.scrollY<2) loadAllFeeds(true);
-      startY=0;
+      pulling=false; startY=0;
+      reset();
+      if(dy>THRESHOLD && eligible()) loadAllFeeds(true);   // la pastille de synchro prend le relais
     },{passive:true});
   })();
 
