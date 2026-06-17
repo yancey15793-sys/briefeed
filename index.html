@@ -2482,80 +2482,105 @@ button, .ob-btn, .ob-btn-ghost,
 #editionsHero .art-card .art-title{ font-size:22px; line-height:1.2; -webkit-line-clamp:4; }
 #editionsHero .art-card .art-source-row{ margin-top:14px; }
 /* ══════════════════════════════════════════════════════════
-   SOURCE RAIL — rail sobre par catégories (partagé toutes vues)
-   Une seule ligne · masques de bord (zéro rognage) ·
-   focus subtil au filtrage · filtre global (4 vues).
+   SOURCE RAIL — chips catégories → logos révélés (toutes vues)
+   Masques de bord (zéro rognage) · révélation fluide ·
+   filtre global (4 vues). Calibré iPhone 17 (colonne 341px).
    ══════════════════════════════════════════════════════════ */
-.srail{ margin:8px 0 20px; }
+.srail{ align-self:stretch; width:100%; margin:8px 0 22px; }
 
-.srail-scroll{
-  display:flex; align-items:center; gap:0;
-  overflow-x:auto; overflow-y:visible;
-  padding:6px 4px 8px; margin:0 -4px;
-  scrollbar-width:none; -ms-overflow-style:none;
-  scroll-snap-type:x proximity;
-  -webkit-overflow-scrolling:touch;
-  /* Dégradé de bord : les logos s'effacent en douceur au lieu d'être tranchés */
-  -webkit-mask-image:linear-gradient(90deg, transparent 0, #000 22px, #000 calc(100% - 22px), transparent 100%);
-          mask-image:linear-gradient(90deg, transparent 0, #000 22px, #000 calc(100% - 22px), transparent 100%);
+/* — Rangée 1 : chips catégories — */
+.srail-cats{
+  display:flex; gap:9px; overflow-x:auto;
+  padding:4px 2px; scrollbar-width:none; -ms-overflow-style:none;
+  scroll-snap-type:x proximity; -webkit-overflow-scrolling:touch;
+  -webkit-mask-image:linear-gradient(90deg, transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%);
+          mask-image:linear-gradient(90deg, transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%);
 }
-.srail-scroll::-webkit-scrollbar{ display:none; }
-
-/* — Groupe = label catégorie + ses logos — */
-.sr-group{ display:flex; align-items:center; gap:13px; flex:0 0 auto; padding:0 4px; }
-.sr-group + .sr-group{ margin-left:6px; padding-left:20px; border-left:1px solid rgba(255,255,255,.07); }
-[data-theme="light"] .sr-group + .sr-group{ border-left-color:rgba(0,0,0,.08); }
+.srail-cats::-webkit-scrollbar{ display:none; }
 .sr-cat{
-  font-family:var(--font-inter); font-size:9.5px; font-weight:800;
-  letter-spacing:.13em; text-transform:uppercase; color:rgba(255,255,255,.32);
-  white-space:nowrap; flex:0 0 auto; align-self:center;
-  transition:opacity .3s ease, color .3s ease;
+  flex:0 0 auto; scroll-snap-align:start;
+  display:inline-flex; align-items:center; gap:8px;
+  height:40px; padding:0 17px; border-radius:999px;
+  background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.09);
+  -webkit-backdrop-filter:blur(12px) saturate(140%); backdrop-filter:blur(12px) saturate(140%);
+  font-family:var(--font-inter); font-size:13.5px; font-weight:600; letter-spacing:-.01em;
+  color:var(--text); cursor:pointer; white-space:nowrap; -webkit-tap-highlight-color:transparent;
+  transition:transform .38s cubic-bezier(.34,1.56,.64,1), background .22s ease, border-color .22s ease, color .22s ease;
 }
-[data-theme="light"] .sr-cat{ color:rgba(0,0,0,.36); }
-.srail.is-filtered .sr-cat{ opacity:.4; }
+.sr-cat:active{ transform:scale(.95); transition:transform .07s ease-in; }
+[data-theme="light"] .sr-cat{ background:rgba(0,0,0,.04); border-color:rgba(0,0,0,.08); }
+.sr-cat-count{
+  font-family:var(--font-inter); font-size:11px; font-weight:700;
+  color:var(--text-muted); background:rgba(255,255,255,.07);
+  border-radius:999px; padding:1px 7px; min-width:20px; text-align:center;
+  transition:background .22s ease, color .22s ease;
+}
+[data-theme="light"] .sr-cat-count{ background:rgba(0,0,0,.06); }
+.sr-cat.open{
+  background:rgba(10,132,255,.16); border-color:rgba(10,132,255,.42); color:#0a84ff;
+}
+.sr-cat.open .sr-cat-count{ background:rgba(10,132,255,.22); color:#0a84ff; }
+.sr-cat.has-active{ border-color:rgba(10,132,255,.32); }
+.sr-cat-chev{
+  width:13px; height:13px; flex:0 0 auto; opacity:.55;
+  transition:transform .4s cubic-bezier(.34,1.56,.64,1);
+}
+.sr-cat.open .sr-cat-chev{ transform:rotate(180deg); opacity:1; }
 
-/* — Source (logo seul, sobre) — */
+/* — Rangée 2 : panneau logos (révélé via grid-template-rows) — */
+.srail-reveal{
+  display:grid; grid-template-rows:0fr;
+  transition:grid-template-rows .46s cubic-bezier(.32,.72,0,1);
+}
+.srail.is-open .srail-reveal{ grid-template-rows:1fr; }
+.srail-reveal-inner{ overflow:hidden; min-height:0; }
+.srail-bubbles{
+  display:flex; gap:16px; overflow-x:auto;
+  padding:18px 2px 6px; scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;
+  -webkit-mask-image:linear-gradient(90deg, transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%);
+          mask-image:linear-gradient(90deg, transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%);
+}
+.srail-bubbles::-webkit-scrollbar{ display:none; }
 .sr-src{
-  flex:0 0 auto; width:42px; height:42px; position:relative;
-  border:none; background:none; padding:0; cursor:pointer;
-  scroll-snap-align:center; -webkit-tap-highlight-color:transparent;
-  opacity:0; transform:translateY(7px);
-  animation:srcIn .42s cubic-bezier(.16,1,.3,1) forwards;
+  flex:0 0 auto; width:58px; display:flex; flex-direction:column; align-items:center; gap:8px;
+  border:none; background:none; padding:0; cursor:pointer; -webkit-tap-highlight-color:transparent;
+  opacity:0; transform:translateY(8px);
+  animation:srcIn .44s cubic-bezier(.16,1,.3,1) forwards;
 }
 @keyframes srcIn{ to{ opacity:1; transform:translateY(0); } }
 .sr-src-ring{
-  width:42px; height:42px; border-radius:50%;
+  width:54px; height:54px; border-radius:50%; position:relative;
   background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1);
-  box-shadow:0 2px 9px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.05);
-  display:flex; align-items:center; justify-content:center; overflow:hidden;
-  transition:transform .42s cubic-bezier(.34,1.56,.64,1),
-             opacity .35s ease, border-color .25s ease, box-shadow .25s ease;
+  box-shadow:0 3px 11px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.05);
+  display:flex; align-items:center; justify-content:center; overflow:visible;
+  transition:transform .42s cubic-bezier(.34,1.56,.64,1), border-color .25s ease, box-shadow .25s ease;
 }
 [data-theme="light"] .sr-src-ring{ background:rgba(0,0,0,.04); border-color:rgba(0,0,0,.09); }
-.sr-src-ring img{ width:24px; height:24px; object-fit:contain; border-radius:6px; display:block; }
-.sr-src:active .sr-src-ring{ transform:scale(.86); transition:transform .08s ease-in; }
+.sr-src-ring img{ width:30px; height:30px; object-fit:contain; border-radius:7px; display:block; }
+.sr-src:active .sr-src-ring{ transform:scale(.88); transition:transform .08s ease-in; }
 .sr-dot{
-  position:absolute; top:-1px; right:-1px; width:11px; height:11px;
+  position:absolute; top:0; right:0; width:13px; height:13px;
   border-radius:50%; background:#0a84ff; border:2.5px solid var(--bg);
-  transition:opacity .35s ease;
 }
-
-/* Focus subtil : au filtrage, les non-sélectionnés s'estompent */
-.srail.is-filtered .sr-src:not(.sel) .sr-src-ring{ opacity:.3; }
-.srail.is-filtered .sr-src:not(.sel) .sr-dot{ opacity:.25; }
 .sr-src.sel .sr-src-ring{
-  transform:scale(1.06);
-  border-color:#0a84ff;
-  box-shadow:0 0 0 2px rgba(10,132,255,.6), 0 4px 12px rgba(10,132,255,.22);
+  border-color:#0a84ff; box-shadow:0 0 0 2px rgba(10,132,255,.6), 0 4px 13px rgba(10,132,255,.25);
 }
+.sr-src-name{
+  font-family:var(--font-inter); font-size:10.5px; font-weight:600;
+  color:var(--text-muted); text-align:center; width:58px;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  transition:color .22s ease;
+}
+.sr-src.sel .sr-src-name{ color:#0a84ff; }
 
 /* — Bas de rail : source active + reset (révélé au filtrage) — */
 .srail-foot{
   display:flex; align-items:center; gap:8px;
   overflow:hidden; max-height:0; opacity:0; margin-top:0;
-  transition:max-height .38s cubic-bezier(.32,.72,0,1), opacity .3s ease, margin-top .38s ease;
+  transition:max-height .4s cubic-bezier(.32,.72,0,1), opacity .3s ease, margin-top .4s ease;
 }
-.srail-foot.vis{ max-height:30px; opacity:1; margin-top:12px; }
+.srail-foot.vis{ max-height:32px; opacity:1; margin-top:14px; }
 .srail-foot-dot{ width:6px; height:6px; border-radius:50%; background:var(--accent); flex:0 0 auto; box-shadow:0 0 8px rgba(10,132,255,.5); }
 .srail-foot-name{
   font-family:var(--font-inter); font-size:12.5px; font-weight:700;
@@ -4351,9 +4376,14 @@ body.focus-mode .focus-exit{ display:flex; }
       <!-- Label centré, toujours présent au-dessus de toutes les vues -->
       <h2 class="edition-label">Mon édition du jour</h2>
 
-      <!-- Source Rail — rail sobre par catégories (partagé sur TOUTES les vues) -->
+      <!-- Source Rail — chips catégories → logos révélés (partagé sur TOUTES les vues) -->
       <div id="srcRail" class="srail" hidden>
-        <div class="srail-scroll" id="srailScroll"></div>
+        <div class="srail-cats" id="srailCats"></div>
+        <div class="srail-reveal" id="srailReveal">
+          <div class="srail-reveal-inner">
+            <div class="srail-bubbles" id="srailBubbles"></div>
+          </div>
+        </div>
         <div class="srail-foot" id="srailFoot">
           <span class="srail-foot-dot"></span>
           <span class="srail-foot-name" id="srailFootName"></span>
@@ -6993,11 +7023,13 @@ body.focus-mode .focus-exit{ display:flex; }
   let _editionArts = [];
 
   // ══════════════════════════════════════════════════════════════
-  //  SOURCE RAIL — rail sobre par catégories + filtre global
-  //  Une seule ligne, masques de bord (zéro rognage), focus subtil.
+  //  SOURCE RAIL — chips catégories → logos révélés + filtre global
   //  Filtre unique (_railFilterUrl) respecté par les 4 vues.
+  //  Les chips ne sont reconstruites qu'au changement de structure
+  //  → le défilement ne saute plus au dépliage d'une catégorie.
   // ══════════════════════════════════════════════════════════════
   let _railFilterUrl = null;
+  let _railOpenCat   = null;    // nom de la catégorie dépliée (ou null)
   let _railSig       = '';      // signature des catégories (rebuild si change)
   let _railBound     = false;   // écouteurs attachés une fois
   let _railCats      = [];      // [{name, feeds:[{name,url}]}]
@@ -7027,6 +7059,8 @@ body.focus-mode .focus-exit{ display:flex; }
     return n;
   }
 
+  const _CHEV_SVG = '<svg class="sr-cat-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
+
   function _renderSrcRail(){
     const rail = document.getElementById('srcRail');
     if(!rail) return;
@@ -7039,44 +7073,75 @@ body.focus-mode .focus-exit{ display:flex; }
       _railFilterUrl = null;
       try{ localStorage.removeItem('bf_rail_filter'); }catch(e){}
     }
+    // La catégorie ouverte existe-t-elle encore ?
+    if(_railOpenCat && !_railCats.some(c => c.name === _railOpenCat)) _railOpenCat = null;
+    // Au premier rendu avec un filtre actif : ouvrir sa catégorie pour le contexte
+    if(_railFilterUrl && _railOpenCat === null){
+      const owner = _railCats.find(c => c.feeds.some(f => f.url === _railFilterUrl));
+      if(owner) _railOpenCat = owner.name;
+    }
 
-    // Reconstruire seulement si la structure a changé (évite les re-renders inutiles)
+    // Les chips ne sont reconstruites qu'au changement de structure
+    // (préserve la position de défilement lors des dépliages)
     const sig = _railCats.map(c => c.name + ':' + c.feeds.map(f=>f.url).join(',')).join('|');
-    if(sig !== _railSig){ _railSig = sig; _railBuildRail(); }
+    if(sig !== _railSig){ _railSig = sig; _railBuildChips(); }
+    _railRenderBubbles();
     _railSyncUI();
     _railBindOnce();
   }
 
-  function _railBuildRail(){
-    const scroll = document.getElementById('srailScroll');
-    if(!scroll) return;
-    let n = 0;
-    scroll.innerHTML = _railCats.map(c => {
-      const logos = c.feeds.map(f => {
-        const hasUnread = _railUnread(f.url) > 0;
-        const delay = (n++ * 0.028).toFixed(3);
-        return `<button class="sr-src" type="button" data-url="${escAttr(f.url)}" title="${escAttr(f.name)}" style="animation-delay:${delay}s">
-          <span class="sr-src-ring"><img src="${escAttr(getFavicon(f.url))}" alt="${escAttr(f.name)}" onerror="this.style.opacity='.3'"></span>
-          ${hasUnread ? '<span class="sr-dot"></span>' : ''}
-        </button>`;
-      }).join('');
-      return `<div class="sr-group"><span class="sr-cat">${escHtml(c.name)}</span>${logos}</div>`;
+  // Rangée 1 — chips catégories (rebuild rare)
+  function _railBuildChips(){
+    const cats = document.getElementById('srailCats');
+    if(!cats) return;
+    cats.innerHTML = _railCats.map(c => {
+      let unread = 0;
+      c.feeds.forEach(f => { unread += _railUnread(f.url); });
+      return `<button class="sr-cat" type="button" data-cat="${escAttr(c.name)}">
+        <span>${escHtml(c.name)}</span>
+        ${unread ? `<span class="sr-cat-count">${unread > 99 ? '99+' : unread}</span>` : ''}
+        ${_CHEV_SVG}
+      </button>`;
     }).join('');
   }
 
-  // Sélection du logo filtré + bas de rail (nom actif + reset)
+  // Rangée 2 — logos de la catégorie dépliée
+  function _railRenderBubbles(){
+    const rail    = document.getElementById('srcRail');
+    const bubbles = document.getElementById('srailBubbles');
+    if(!rail || !bubbles) return;
+
+    rail.classList.toggle('is-open', !!_railOpenCat);
+    const cat = _railOpenCat ? _railCats.find(c => c.name === _railOpenCat) : null;
+    if(cat){
+      bubbles.innerHTML = cat.feeds.map((f, i) => {
+        const hasUnread = _railUnread(f.url) > 0;
+        const isSel     = _railFilterUrl === f.url;
+        return `<button class="sr-src${isSel ? ' sel' : ''}" type="button" data-url="${escAttr(f.url)}" style="animation-delay:${(i*0.03).toFixed(3)}s">
+          <span class="sr-src-ring"><img src="${escAttr(getFavicon(f.url))}" alt="" onerror="this.style.opacity='.3'">${hasUnread ? '<span class="sr-dot"></span>' : ''}</span>
+          <span class="sr-src-name">${escHtml(f.name)}</span>
+        </button>`;
+      }).join('');
+    }
+    // (si fermé, on laisse le contenu — il est masqué par le repli — pour éviter un flash)
+  }
+
+  // États des chips (ouverte / contient la source active) + bas de rail
   function _railSyncUI(){
     const rail = document.getElementById('srcRail');
     if(!rail) return;
-    rail.classList.toggle('is-filtered', !!_railFilterUrl);
+    const ownerCat = _railFilterUrl
+      ? (_railCats.find(c => c.feeds.some(f => f.url === _railFilterUrl)) || {}).name
+      : null;
+    rail.querySelectorAll('.sr-cat').forEach(chip => {
+      const name = chip.dataset.cat;
+      chip.classList.toggle('open', name === _railOpenCat);
+      chip.classList.toggle('has-active', !!ownerCat && name === ownerCat);
+    });
 
-    rail.querySelectorAll('.sr-src.sel').forEach(el=>el.classList.remove('sel'));
     const foot  = document.getElementById('srailFoot');
     const fname = document.getElementById('srailFootName');
     if(_railFilterUrl){
-      const esc = (window.CSS && CSS.escape) ? CSS.escape(_railFilterUrl) : _railFilterUrl;
-      const sel = rail.querySelector(`.sr-src[data-url="${esc}"]`);
-      if(sel) sel.classList.add('sel');
       let name = _railFilterUrl;
       for(const c of _railCats){ const f = c.feeds.find(x=>x.url===_railFilterUrl); if(f){ name=f.name; break; } }
       if(fname) fname.textContent = name;
@@ -7086,12 +7151,28 @@ body.focus-mode .focus-exit{ display:flex; }
     }
   }
 
+  function _railToggleCat(name){
+    _railOpenCat = (_railOpenCat === name) ? null : name;
+    _railRenderBubbles();
+    _railSyncUI();
+  }
+
   function _railPickSource(url){
     _railFilterUrl = (_railFilterUrl === url) ? null : url;
     try{
       if(_railFilterUrl) localStorage.setItem('bf_rail_filter', _railFilterUrl);
       else localStorage.removeItem('bf_rail_filter');
     }catch(e){}
+    // MAJ visuelle de la sélection sans reconstruire (préserve le scroll des bulles)
+    const bubbles = document.getElementById('srailBubbles');
+    if(bubbles){
+      bubbles.querySelectorAll('.sr-src.sel').forEach(el=>el.classList.remove('sel'));
+      if(_railFilterUrl){
+        const esc = (window.CSS && CSS.escape) ? CSS.escape(_railFilterUrl) : _railFilterUrl;
+        const sel = bubbles.querySelector(`.sr-src[data-url="${esc}"]`);
+        if(sel) sel.classList.add('sel');
+      }
+    }
     _railSyncUI();
     _renderCurrentView();   // applique le filtre à la vue active
   }
@@ -7099,6 +7180,8 @@ body.focus-mode .focus-exit{ display:flex; }
   function _railClearFilter(){
     _railFilterUrl = null;
     try{ localStorage.removeItem('bf_rail_filter'); }catch(e){}
+    const bubbles = document.getElementById('srailBubbles');
+    if(bubbles) bubbles.querySelectorAll('.sr-src.sel').forEach(el=>el.classList.remove('sel'));
     _railSyncUI();
     _renderCurrentView();
   }
@@ -7106,9 +7189,14 @@ body.focus-mode .focus-exit{ display:flex; }
   function _railBindOnce(){
     if(_railBound) return;
     _railBound = true;
-    const scroll = document.getElementById('srailScroll');
-    const reset  = document.getElementById('srailFootReset');
-    if(scroll) scroll.addEventListener('click', e => {
+    const cats    = document.getElementById('srailCats');
+    const bubbles = document.getElementById('srailBubbles');
+    const reset   = document.getElementById('srailFootReset');
+    if(cats) cats.addEventListener('click', e => {
+      const chip = e.target.closest('.sr-cat');
+      if(chip) _railToggleCat(chip.dataset.cat);
+    });
+    if(bubbles) bubbles.addEventListener('click', e => {
       const src = e.target.closest('.sr-src');
       if(src) _railPickSource(src.dataset.url);
     });
