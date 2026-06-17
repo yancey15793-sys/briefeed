@@ -3309,6 +3309,27 @@ body.focus-mode .focus-exit{ display:flex; }
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;margin-left:auto;color:var(--text-muted);"><polyline points="9 6 15 12 9 18"/></svg>
       </button>
 
+      <!-- ── Flux intelligents (combine sources + mots-clés) ── -->
+      <button class="sb-foot-btn" id="sbSmartToggle" onclick="bfSmartOpenList()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h18"/><path d="M6 9h12"/><path d="M9 14h6"/><path d="M11 19h2"/></svg>
+        Flux intelligents
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;margin-left:auto;color:var(--text-muted);"><polyline points="9 6 15 12 9 18"/></svg>
+      </button>
+
+      <!-- ── Étiquettes (tags) ── -->
+      <button class="sb-foot-btn" id="sbTagsToggle" onclick="bfTagsOpen()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4 13 21a1.7 1.7 0 0 1-2.4 0l-7.6-7.6a1.7 1.7 0 0 1-.5-1.2V4.5A1.5 1.5 0 0 1 4 3h7.7c.5 0 .9.2 1.2.5l7.7 7.6a1.7 1.7 0 0 1 0 2.3z"/><circle cx="7.5" cy="7.5" r="1.2" fill="currentColor"/></svg>
+        Étiquettes
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;margin-left:auto;color:var(--text-muted);"><polyline points="9 6 15 12 9 18"/></svg>
+      </button>
+
+      <!-- ── Import / Export OPML ── -->
+      <button class="sb-foot-btn" id="sbOpmlToggle" onclick="bfOpmlOpen()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Import / Export OPML
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;margin-left:auto;color:var(--text-muted);"><polyline points="9 6 15 12 9 18"/></svg>
+      </button>
+
       <!-- ── Préférences (ouvre la page plein écran) ── -->
       <button class="sb-foot-btn sb-prefs-toggle" id="sbPrefsToggle" onclick="openPrefsPage()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>
@@ -4155,6 +4176,9 @@ body.focus-mode .focus-exit{ display:flex; }
   let _artClosing = false;   // modal article en cours d'animation de fermeture
   let _artCloseTimer = null;
   function _topLayerCloser(){
+    // Feuille générique Briefeed (bottom sheet) — au-dessus de tout (z 7200)
+    const bfSheet = document.getElementById('bfSheet');
+    if(bfSheet && bfSheet.classList.contains('open')) return window.bfSheetClose;
     const am = document.getElementById('artModal');
     if(am && am.style.display === 'flex' && !_artClosing) return window.closeArtModal;
     const fpr = document.getElementById('feedPropsOverlay');
@@ -4177,6 +4201,8 @@ body.focus-mode .focus-exit{ display:flex; }
     if(pc && pc.classList.contains('open')) return window.closePodcast;
     const pf = document.getElementById('prefsPage');
     if(pf && pf.classList.contains('open')) return closePrefsPage;
+    const bfList = document.getElementById('bfListPage');
+    if(bfList && bfList.classList.contains('open')) return window.bfListPageClose;
     const sb = document.getElementById('sidebar');
     if(sb && sb.classList.contains('open')) return closeSB;
     return null;
@@ -4620,13 +4646,16 @@ body.focus-mode .focus-exit{ display:flex; }
       el.dataset.idx = i;
       const feeds = (f.feeds || []).map(fd => {
         // Si c'est une URL, chercher le nom dans feedMeta ou extraire le hostname
-        let displayName = fd;
+        let displayName = fd, ftype = 'rss';
         try {
           new URL(fd);
           const meta = JSON.parse(localStorage.getItem('reader.feedMeta') || '{}');
           displayName = meta[fd]?.name || new URL(fd).hostname.replace(/^www\./, '');
+          ftype = meta[fd]?.type || 'rss';
         } catch(e) {}
-        return `<div class="feed-item" data-url="${escapeHtml(fd)}" data-name="${escapeHtml(displayName)}"><span class="dot"></span>${escapeHtml(displayName)}</div>`;
+        const badge = (window.BF_SOURCES && ftype && ftype!=='rss' && ftype!=='site')
+          ? `<span class="feed-type-pill" title="${escapeHtml(ftype)}">${window.BF_SOURCES.typeIcon(ftype)}</span>` : '';
+        return `<div class="feed-item" data-url="${escapeHtml(fd)}" data-name="${escapeHtml(displayName)}"><span class="dot"></span><span class="feed-item-name">${escapeHtml(displayName)}</span>${badge}</div>`;
       }).join('');
       el.innerHTML = `
         <div class="folder-head" data-i="${i}">
@@ -4768,6 +4797,7 @@ body.focus-mode .focus-exit{ display:flex; }
   let _afDebounce = null;
   let _afLastUrl  = '';
   let _afSelFolder = null; // index dans folders[] ou null
+  let _afDetected = null;  // {type,label,color,feedUrl,originalUrl} si source non-RSS détectée
 
   // Accès global pour le bouton « Importer un flux RSS » de l'état vide
   window.bfImportFeed = function(){ try{ afOpen(); }catch(e){} };
@@ -4782,6 +4812,8 @@ body.focus-mode .focus-exit{ display:flex; }
     document.getElementById('afCta').disabled = false;
     document.getElementById('afCta').textContent = 'S\u2019abonner';
     _afLastUrl = '';
+    _afDetected = null;
+    if(window.BF_SOURCES) window.BF_SOURCES.afHideBadge();
     _afResetFavicon();
     _afUpdateFolderLabel();
     const ov = document.getElementById('afOverlay');
@@ -4871,6 +4903,22 @@ body.focus-mode .focus-exit{ display:flex; }
     if (sp) sp.style.display = 'block';
     if (ph) ph.style.display = 'none';
 
+    // ── Détection intelligente du type de source (YouTube, Reddit, …) ──
+    let metaUrl = url;
+    if (window.BF_SOURCES) {
+      try {
+        _afDetected = await window.BF_SOURCES.resolve(url);
+        if (_afDetected) {
+          window.BF_SOURCES.afShowBadge(_afDetected);
+          metaUrl = _afDetected.feedUrl || url;
+          if (_afDetected.name) {
+            const ni0 = document.getElementById('afNameInput');
+            if (ni0 && !ni0.value) ni0.value = _afDetected.name;
+          }
+        } else { window.BF_SOURCES.afHideBadge(); }
+      } catch(e) { _afDetected = null; }
+    }
+
     const PROXIES = [
       'https://api.allorigins.win/raw?url=',
       'https://corsproxy.io/?',
@@ -4879,7 +4927,7 @@ body.focus-mode .focus-exit{ display:flex; }
     let name = '', desc = '';
     for (const px of PROXIES) {
       try {
-        const r = await fetch(px + encodeURIComponent(url), { signal: AbortSignal.timeout(6000) });
+        const r = await fetch(px + encodeURIComponent(metaUrl), { signal: AbortSignal.timeout(6000) });
         if (!r.ok) continue;
         const txt = await r.text();
         // Extraire <title> du channel RSS ou Atom
@@ -4977,14 +5025,24 @@ body.focus-mode .focus-exit{ display:flex; }
   // ── Submit ────────────────────────────────────────────────
   async function afSubmit() {
     const urlInput = document.getElementById('afUrlInput');
-    const url = (urlInput?.value || '').trim();
-    if (!url) { urlInput?.focus(); return; }
-    try { new URL(url); } catch(e) { return; }
+    const rawUrl = (urlInput?.value || '').trim();
+    if (!rawUrl) { urlInput?.focus(); return; }
+    try { new URL(rawUrl); } catch(e) { return; }
+
+    // Si une source non-RSS a été détectée, on s'abonne à l'URL de flux résolue.
+    // Sinon on tente une résolution de dernière minute (collage sans debounce).
+    let det = _afDetected;
+    if (window.BF_SOURCES && (!det || det.originalUrl !== rawUrl)) {
+      try { det = await window.BF_SOURCES.resolve(rawUrl); } catch(e) { det = null; }
+    }
+    const url  = (det && det.feedUrl) ? det.feedUrl : rawUrl;
+    const type = det ? det.type : 'rss';
 
     let name = document.getElementById('afNameInput').value.trim();
+    if (!name && det && det.name) name = det.name;
     if (!name) {
       try {
-        name = new URL(url).hostname.replace(/^www\./, '').split('.')[0];
+        name = new URL(rawUrl).hostname.replace(/^www\./, '').split('.')[0];
         name = name.charAt(0).toUpperCase() + name.slice(1);
       } catch(e) { name = 'Flux RSS'; }
     }
@@ -5008,8 +5066,8 @@ body.focus-mode .focus-exit{ display:flex; }
       folders.push({ name: name, feeds: [url], open: true });
     }
 
-    // Sauvegarder le nom AVANT render() pour que la sidebar affiche le bon nom
-    if(url && name) { try{ const m=JSON.parse(localStorage.getItem('reader.feedMeta')||'{}'); m[url]={name}; localStorage.setItem('reader.feedMeta',JSON.stringify(m)); }catch(e){} }
+    // Sauvegarder le nom + type AVANT render() pour que la sidebar affiche le bon nom
+    if(url && name) { try{ const m=JSON.parse(localStorage.getItem('reader.feedMeta')||'{}'); m[url]={name, type, originalUrl:rawUrl}; localStorage.setItem('reader.feedMeta',JSON.stringify(m)); }catch(e){} }
     persist();
     render();
     afDismiss();
@@ -6255,7 +6313,8 @@ body.focus-mode .focus-exit{ display:flex; }
         description: g('description')||g('summary'),
         'content:encoded': g('content\\:encoded')||g('encoded')||'',
         pubDate: g('pubDate')||g('published')||g('updated'),
-        enclosure: (()=>{const e=el.querySelector('enclosure');return e?{url:e.getAttribute('url')}:null})(),
+        enclosure: (()=>{const e=el.querySelector('enclosure');return e?{url:e.getAttribute('url'),type:e.getAttribute('type')||'',length:e.getAttribute('length')||''}:null})(),
+        'itunes:duration': g('itunes\\:duration')||'',
         'media:content': mc.length?mc[0]:null,
         'media:thumbnail': mt.length?mt[0]:null,
         'itunes:image': (()=>{const ii=el.querySelector('itunes\\:image');return ii?{href:ii.getAttribute('href')}:null})(),
@@ -6291,7 +6350,11 @@ body.focus-mode .focus-exit{ display:flex; }
         const img = _extractImg(item);
         const desc = (item.description||'').replace(/<[^>]*>/g,'').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').trim().slice(0,200);
         let pd; try{ pd=new Date(item.pubDate||0); if(isNaN(pd)||pd.getTime()<=0) pd=new Date(latestKnown-86400000-(idx+1)*300000); if(pd.getTime()>now+60000) pd=new Date(now-(idx+1)*60000); }catch(e){ pd=new Date(latestKnown-(idx+1)*300000); }
-        const art = { title:item.title||'Sans titre', link:item.link||'#', description:desc, pubDate:pd, source:feed.name, slug:feed.slug, feedUrl:feed.url, imageUrl:img, needsFetch:!img, contentEncoded:(item['content:encoded']||'').slice(0,2000), author:(item.author||'').replace(/<[^>]+>/g,'').trim().slice(0,60)||null };
+        // Podcast — pister une pièce jointe audio (enclosure)
+        const enc = item.enclosure;
+        const audioUrl = (enc && enc.url && (/^audio\//i.test(enc.type||'') || /\.(mp3|m4a|aac|ogg|wav|opus)(\?|$)/i.test(enc.url))) ? enc.url : null;
+        const art = { title:item.title||'Sans titre', link:item.link||'#', description:desc, pubDate:pd, source:feed.name, slug:feed.slug, feedUrl:feed.url, imageUrl:img, needsFetch:!img, contentEncoded:(item['content:encoded']||'').slice(0,2000), author:(item.author||'').replace(/<[^>]+>/g,'').trim().slice(0,60)||null, audioUrl, audioDuration:(item['itunes:duration']||'')||null };
+        if(audioUrl && feed.url && window.BF_SOURCES) window.BF_SOURCES.markType(feed.url,'podcast');
         if(art.title && art.link !== '#') arr.push(art);
       }catch(e){}
       return arr;
@@ -6301,6 +6364,30 @@ body.focus-mode .focus-exit{ display:flex; }
   // ── 9. loadSingleFeed — fetch direct + 12 proxies en course ──
   async function _loadSingleFeed(feed){
     const MAX = 30; const T = 5000;
+    // ── Sources JSON natives (Bluesky) — pas de RSS, API publique CORS ──
+    if(/public\.api\.bsky\.app\/xrpc\//.test(feed.url)){
+      try{
+        const r = await fetch(feed.url,{signal:AbortSignal.timeout(7000)});
+        if(r.ok){
+          const d = await r.json();
+          const items = (d.feed||[]).map(fp=>{
+            const p = fp.post||{}; const rec = p.record||{};
+            const handle = p.author?.handle || '';
+            const txt = (rec.text||'').trim();
+            const img = p.embed?.images?.[0]?.thumb || p.embed?.external?.thumb || null;
+            return {
+              title: txt.split('\n')[0].slice(0,120) || ('Post de @'+handle),
+              link: p.uri ? ('https://bsky.app/profile/'+handle+'/post/'+p.uri.split('/').pop()) : (feed.url),
+              description: txt, 'content:encoded':'<p>'+txt.replace(/\n/g,'<br>')+'</p>',
+              pubDate: rec.createdAt||p.indexedAt||'', enclosure:null,
+              'media:content': img?{url:img}:null, author:'@'+handle,
+            };
+          });
+          if(items.length){ if(window.BF_SOURCES) window.BF_SOURCES.markType(feed.url,'bluesky'); return _parseItems(items.slice(0,MAX), feed); }
+        }
+      }catch(e){}
+      return [];
+    }
     const U = encodeURIComponent(feed.url);
     const parseRaw = txt => {
       if(!txt || txt.length < 200 || _isBlock(txt)) return null;
@@ -7272,6 +7359,19 @@ body.focus-mode .focus-exit{ display:flex; }
     // Scroll top
     const body = document.getElementById('artModalBody');
     if(body) body.scrollTop = 0;
+
+    // Lecteur audio podcast
+    const audioEl = document.getElementById('artModalAudio');
+    if(audioEl){
+      if(a.audioUrl){
+        const dur = a.audioDuration ? `<span class="art-audio-dur">${escAttr(a.audioDuration)}</span>` : '';
+        audioEl.innerHTML = `<div class="art-audio-label"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1h3zM3 19a2 2 0 0 0 2 2h1a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1H3z"/></svg>Épisode audio${dur}</div><audio controls preload="none" src="${escAttr(a.audioUrl)}" style="width:100%"></audio>`;
+        audioEl.style.display = 'block';
+      } else { audioEl.style.display = 'none'; audioEl.innerHTML = ''; }
+    }
+
+    // Étiquettes (tags)
+    if(window.BF_TAGS) window.BF_TAGS.renderBar(a);
 
     // Charger le reader
     const readerSection = document.getElementById('artReaderSection');
@@ -8501,6 +8601,9 @@ body.focus-mode .focus-exit{ display:flex; }
         </div>
       </div>
 
+      <!-- Badge type détecté (YouTube, Reddit, Podcast…) -->
+      <div id="afTypeBadge" class="af-type-badge" style="display:none"></div>
+
       <!-- Champs -->
       <div class="af-fields">
         <!-- URL -->
@@ -8598,6 +8701,12 @@ body.focus-mode .focus-exit{ display:flex; }
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
           </button>
         </div>
+
+        <!-- Lecteur audio (podcasts) -->
+        <div id="artModalAudio" class="art-modal-audio" style="display:none"></div>
+
+        <!-- Étiquettes (tags) -->
+        <div id="artModalTags" class="art-modal-tags"></div>
 
         <!-- Reader content -->
         <div class="art-reader-section" id="artReaderSection"></div>
@@ -8853,6 +8962,720 @@ body.focus-mode .focus-exit{ display:flex; }
   document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.browse-carousel').forEach(initCarousel);
   });
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     BRIEFEED — EXTENSIONS
+     1) Sources universelles (YouTube, Reddit, HN, GitHub, Mastodon, Bluesky, Podcast)
+     2) Import / Export OPML
+     3) Flux intelligents (Smart Feeds)
+     4) Étiquettes (Tags)
+     ═══════════════════════════════════════════════════════════════════ -->
+<style>
+  /* ── Badge type dans la feuille d'ajout ── */
+  .af-type-badge{
+    display:flex;align-items:center;gap:8px;justify-content:center;
+    margin:0 16px 6px;padding:8px 14px;border-radius:12px;
+    font-family:var(--font-inter);font-size:13px;font-weight:700;letter-spacing:-.01em;
+    color:#fff;
+  }
+  .af-type-badge svg{width:16px;height:16px;flex:none;}
+  .af-type-badge .aft-sub{font-weight:500;opacity:.85;font-size:12px;}
+
+  /* ── Pastille type dans la sidebar ── */
+  .feed-item{display:flex;align-items:center;gap:8px;}
+  .feed-item-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .feed-type-pill{
+    flex:none;display:inline-flex;align-items:center;justify-content:center;
+    width:18px;height:18px;border-radius:5px;background:rgba(255,255,255,.08);color:var(--text-muted);
+  }
+  .feed-type-pill svg{width:11px;height:11px;}
+  [data-theme="light"] .feed-type-pill{background:rgba(0,0,0,.06);}
+
+  /* ── Lecteur audio podcast ── */
+  .art-modal-audio{margin:14px 0 4px;padding:14px;border-radius:16px;background:rgba(127,127,127,.08);border:1px solid var(--border);}
+  .art-audio-label{display:flex;align-items:center;gap:8px;font-family:var(--font-inter);font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px;}
+  .art-audio-dur{margin-left:auto;font-weight:500;color:var(--text-muted);font-variant-numeric:tabular-nums;}
+  .art-modal-audio audio{border-radius:10px;}
+
+  /* ── Étiquettes (modal) ── */
+  .art-modal-tags{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin:14px 0 2px;}
+  .bf-tag-chip{
+    display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;
+    background:rgba(10,132,255,.14);color:#0a84ff;font-family:var(--font-inter);
+    font-size:12.5px;font-weight:600;letter-spacing:-.01em;cursor:default;
+  }
+  .bf-tag-chip button{border:0;background:none;color:inherit;cursor:pointer;display:inline-flex;padding:0;opacity:.7;}
+  .bf-tag-chip button:hover{opacity:1;}
+  .bf-tag-chip button svg{width:11px;height:11px;}
+  .bf-tag-add{
+    display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:999px;
+    background:rgba(127,127,127,.12);color:var(--text-muted);font-family:var(--font-inter);
+    font-size:12.5px;font-weight:600;cursor:pointer;border:1px dashed rgba(127,127,127,.35);
+  }
+  .bf-tag-add:active{transform:scale(.96);}
+  .bf-tag-input{
+    width:120px;padding:5px 11px;border-radius:999px;border:1px solid #0a84ff;
+    background:transparent;color:var(--text);font-family:var(--font-inter);font-size:12.5px;outline:none;
+  }
+
+  /* ── Feuille générique (bottom sheet) ── */
+  .bf-sheet-overlay{
+    position:fixed;inset:0;z-index:7200;display:none;align-items:flex-end;justify-content:center;
+    background:rgba(0,0,0,.45);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+    opacity:0;transition:opacity .35s ease;
+  }
+  .bf-sheet-overlay.open{opacity:1;}
+  .bf-sheet{
+    width:100%;max-width:540px;max-height:86vh;overflow-y:auto;scrollbar-width:none;
+    background:#161618;border-radius:26px 26px 0 0;
+    transform:translateY(100%);transition:transform .46s cubic-bezier(.16,1,.3,1);
+    padding-bottom:max(env(safe-area-inset-bottom,0px),22px);
+  }
+  .bf-sheet::-webkit-scrollbar{display:none;}
+  [data-theme="light"] .bf-sheet{background:#fff;}
+  .bf-sheet-overlay.open .bf-sheet{transform:translateY(0);}
+  .bf-handle{width:36px;height:4px;border-radius:2px;background:rgba(127,127,127,.4);margin:10px auto 4px;}
+  .bf-sheet-head{display:flex;align-items:center;justify-content:space-between;padding:8px 20px 6px;}
+  .bf-sheet-title{font-family:var(--font-inter);font-size:18px;font-weight:800;color:var(--text);letter-spacing:-.02em;}
+  .bf-sheet-x{width:30px;height:30px;border:0;border-radius:50%;background:rgba(127,127,127,.14);color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+  .bf-sheet-x svg{width:13px;height:13px;}
+  .bf-sheet-body{padding:6px 20px 8px;}
+  .bf-sub{font-family:var(--font-inter);font-size:13px;color:var(--text-muted);line-height:1.5;margin:2px 0 14px;}
+
+  .bf-big-btn{
+    display:flex;align-items:center;gap:14px;width:100%;text-align:left;
+    padding:16px;margin-bottom:10px;border:1px solid var(--border);border-radius:16px;
+    background:rgba(127,127,127,.05);color:var(--text);cursor:pointer;font-family:var(--font-inter);
+    transition:background .15s,transform .12s;
+  }
+  .bf-big-btn:active{transform:scale(.985);background:rgba(127,127,127,.1);}
+  .bf-big-btn .bf-bi{width:40px;height:40px;flex:none;border-radius:11px;display:flex;align-items:center;justify-content:center;background:rgba(10,132,255,.16);color:#0a84ff;}
+  .bf-big-btn .bf-bi svg{width:20px;height:20px;}
+  .bf-big-btn .bf-bt{font-size:15px;font-weight:700;letter-spacing:-.01em;}
+  .bf-big-btn .bf-bd{font-size:12.5px;color:var(--text-muted);margin-top:2px;}
+
+  .bf-cta{
+    width:100%;padding:15px;border:0;border-radius:15px;background:#0a84ff;color:#fff;
+    font-family:var(--font-inter);font-size:15px;font-weight:700;cursor:pointer;margin-top:6px;
+    transition:transform .12s,opacity .15s;
+  }
+  .bf-cta:active{transform:scale(.98);}
+  .bf-cta:disabled{opacity:.4;pointer-events:none;}
+  .bf-field{margin-bottom:14px;}
+  .bf-field label{display:block;font-family:var(--font-inter);font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:7px;}
+  .bf-input{
+    width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:13px;
+    background:rgba(127,127,127,.06);color:var(--text);font-family:var(--font-inter);font-size:15px;outline:none;
+  }
+  .bf-input:focus{border-color:#0a84ff;}
+  .bf-seg{display:inline-flex;gap:3px;padding:3px;border-radius:11px;background:rgba(127,127,127,.12);}
+  .bf-seg button{border:0;background:none;color:var(--text-muted);padding:7px 16px;border-radius:9px;font-family:var(--font-inter);font-size:13px;font-weight:600;cursor:pointer;}
+  .bf-seg button.on{background:var(--text);color:var(--bg);font-weight:700;}
+  .bf-src-list{max-height:190px;overflow-y:auto;border:1px solid var(--border);border-radius:13px;padding:4px;scrollbar-width:thin;}
+  .bf-src-row{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;cursor:pointer;}
+  .bf-src-row:active{background:rgba(127,127,127,.1);}
+  .bf-src-row img{width:18px;height:18px;border-radius:4px;flex:none;}
+  .bf-src-row .nm{flex:1;font-family:var(--font-inter);font-size:13.5px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .bf-src-row .ck{width:20px;height:20px;border-radius:6px;border:1.5px solid var(--text-muted);flex:none;display:flex;align-items:center;justify-content:center;}
+  .bf-src-row.on .ck{background:#0a84ff;border-color:#0a84ff;}
+  .bf-src-row.on .ck svg{width:12px;height:12px;stroke:#fff;}
+
+  .bf-row{display:flex;align-items:center;gap:12px;padding:13px 6px;border-bottom:1px solid var(--border);}
+  .bf-row:last-child{border-bottom:0;}
+  .bf-row .bf-ri{width:38px;height:38px;flex:none;border-radius:11px;display:flex;align-items:center;justify-content:center;background:rgba(127,127,127,.1);color:var(--text);}
+  .bf-row .bf-ri svg{width:18px;height:18px;}
+  .bf-row .bf-rm{flex:1;min-width:0;cursor:pointer;}
+  .bf-row .bf-rn{font-family:var(--font-inter);font-size:14.5px;font-weight:700;color:var(--text);letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .bf-row .bf-rs{font-family:var(--font-inter);font-size:12px;color:var(--text-muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .bf-row .bf-rx{border:0;background:none;color:var(--text-muted);cursor:pointer;padding:8px;flex:none;}
+  .bf-row .bf-rx svg{width:16px;height:16px;}
+  .bf-chips{display:flex;flex-wrap:wrap;gap:7px;margin:2px 0 6px;}
+  .bf-chip-sm{padding:6px 12px;border-radius:999px;background:rgba(127,127,127,.12);color:var(--text);font-family:var(--font-inter);font-size:13px;font-weight:600;cursor:pointer;}
+  .bf-chip-sm:active{transform:scale(.96);}
+  .bf-chip-sm .c{color:var(--text-muted);font-weight:500;margin-left:5px;}
+  .bf-empty{padding:40px 20px;text-align:center;color:var(--text-muted);font-family:var(--font-inter);font-size:14px;line-height:1.6;}
+
+  /* ── Page liste générique (résultats smart feed / tag) ── */
+  .bf-list-page{
+    position:fixed;inset:0;z-index:6800;display:flex;flex-direction:column;background:var(--bg);
+    transform:translateX(100%);transition:transform .42s cubic-bezier(.16,1,.3,1);visibility:hidden;
+  }
+  .bf-list-page.open{transform:translateX(0);visibility:visible;}
+  .bf-list-bar{display:flex;align-items:center;gap:10px;padding:max(env(safe-area-inset-top,14px),14px) 16px 8px;flex-shrink:0;}
+  .bf-list-back{width:36px;height:36px;border:0;border-radius:50%;background:rgba(127,127,127,.12);color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;}
+  .bf-list-back svg{width:17px;height:17px;}
+  .bf-list-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:0 18px 120px;}
+  .bf-list-scroll::-webkit-scrollbar{display:none;}
+  .bf-list-h1{font-family:var(--font-title);font-size:30px;font-weight:800;color:var(--text);letter-spacing:-.03em;padding:6px 0 2px;}
+  .bf-list-sub{font-family:var(--font-inter);font-size:13.5px;color:var(--text-muted);padding-bottom:18px;border-bottom:1px solid var(--border);margin-bottom:6px;}
+  .bf-art-row{display:flex;gap:14px;padding:16px 0;border-bottom:1px solid var(--border);cursor:pointer;align-items:flex-start;}
+  .bf-art-row:active{opacity:.7;}
+  .bf-art-tx{flex:1;min-width:0;}
+  .bf-art-src{display:flex;align-items:center;gap:7px;font-family:var(--font-inter);font-size:12px;font-weight:700;color:var(--text-muted);margin-bottom:6px;}
+  .bf-art-src img{width:15px;height:15px;border-radius:4px;}
+  .bf-art-ti{font-family:var(--font-title);font-size:17px;font-weight:700;line-height:1.28;color:var(--text);letter-spacing:-.01em;}
+  .bf-art-me{font-family:var(--font-inter);font-size:12px;color:var(--text-muted);margin-top:7px;}
+  .bf-art-im{width:96px;height:96px;flex:none;border-radius:13px;object-fit:cover;background:rgba(127,127,127,.1);}
+</style>
+
+<!-- Feuille générique -->
+<div class="bf-sheet-overlay" id="bfSheet" onclick="if(event.target===this)bfSheetClose()">
+  <div class="bf-sheet">
+    <div class="bf-handle"></div>
+    <div class="bf-sheet-head">
+      <span class="bf-sheet-title" id="bfSheetTitle"></span>
+      <button class="bf-sheet-x" onclick="bfSheetClose()" aria-label="Fermer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="bf-sheet-body" id="bfSheetBody"></div>
+  </div>
+</div>
+
+<!-- Page liste générique -->
+<div class="bf-list-page" id="bfListPage">
+  <div class="bf-list-bar">
+    <button class="bf-list-back" onclick="bfListPageClose()" aria-label="Retour"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div style="flex:1"></div>
+  </div>
+  <div class="bf-list-scroll" id="bfListScroll"></div>
+</div>
+
+<!-- Entrée fichier OPML (caché) -->
+<input type="file" id="bfOpmlFile" accept=".opml,.xml,text/xml,application/xml" style="display:none" onchange="BF_OPML._onFile(this)">
+
+<script>
+(function(){
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const esc  = (typeof escapeHtml==='function') ? escapeHtml : (s=>String(s||''));
+  const escA = (typeof escAttr==='function')   ? escAttr   : (s=>String(s||'').replace(/"/g,'&quot;'));
+
+  // ════════════════════════════════════════════════════════════════
+  //  COMPOSANTS PARTAGÉS — feuille + page liste
+  // ════════════════════════════════════════════════════════════════
+  window.bfSheetOpen = function(title, html){
+    $('bfSheetTitle').textContent = title || '';
+    $('bfSheetBody').innerHTML = html || '';
+    const ov = $('bfSheet');
+    ov.style.display = 'flex';
+    requestAnimationFrame(()=>ov.classList.add('open'));
+    if(typeof lockScroll==='function') lockScroll();
+    if(typeof navArm==='function') navArm();
+  };
+  window.bfSheetClose = function(){
+    const ov = $('bfSheet');
+    if(!ov || !ov.classList.contains('open')) return;
+    ov.classList.remove('open');
+    setTimeout(()=>{ ov.style.display='none'; $('bfSheetBody').innerHTML=''; }, 420);
+    if(typeof unlockScroll==='function') unlockScroll();
+  };
+
+  let _bfListArts = [];
+  window.bfListPageOpen = function(opts){
+    _bfListArts = (opts.articles||[]).slice();
+    const sub = opts.subtitle ? `<div class="bf-list-sub">${esc(opts.subtitle)}</div>` : '';
+    let rows;
+    if(!_bfListArts.length){
+      rows = `<div class="bf-empty">${esc(opts.emptyMsg||'Aucun article pour le moment.')}</div>`;
+    } else {
+      rows = _bfListArts.map((a,i)=>{
+        const fav = (typeof getFavicon==='function') ? getFavicon(a.feedUrl||a.link||'') : '';
+        const t   = (typeof relTime==='function') ? relTime(a.pubDate instanceof Date?a.pubDate:new Date(a.pubDate||0)) : '';
+        const img = a.imageUrl ? `<img class="bf-art-im" src="${escA(a.imageUrl)}" alt="" loading="lazy" onerror="this.remove()">` : '';
+        return `<div class="bf-art-row" onclick="bfListOpenArt(${i})">
+          <div class="bf-art-tx">
+            <div class="bf-art-src"><img src="${escA(fav)}" alt="" onerror="this.style.opacity='.3'">${esc(a.source||'')}</div>
+            <div class="bf-art-ti">${esc(a.title||'')}</div>
+            <div class="bf-art-me">${esc(t)}${a.audioUrl?' · 🎧 Audio':''}</div>
+          </div>${img}
+        </div>`;
+      }).join('');
+    }
+    $('bfListScroll').innerHTML = `<div class="bf-list-h1">${esc(opts.title||'')}</div>${sub}${rows}`;
+    $('bfListScroll').scrollTop = 0;
+    const pg = $('bfListPage');
+    pg.classList.add('open');
+    if(typeof lockScroll==='function') lockScroll();
+    if(typeof navArm==='function') navArm();
+  };
+  window.bfListPageClose = function(){
+    const pg = $('bfListPage');
+    if(!pg || !pg.classList.contains('open')) return;
+    pg.classList.remove('open');
+    if(typeof unlockScroll==='function') unlockScroll();
+  };
+  window.bfListOpenArt = function(i){
+    const a = _bfListArts[i]; if(!a) return;
+    if(typeof openArtModal==='function') openArtModal({...a, pubDate: a.pubDate instanceof Date?a.pubDate:new Date(a.pubDate||0)});
+  };
+
+  // ════════════════════════════════════════════════════════════════
+  //  1) BF_SOURCES — détection & résolution des sources universelles
+  // ════════════════════════════════════════════════════════════════
+  const BF_SOURCES = (function(){
+    const META = {
+      rss:       { label:'Flux RSS',         color:'#e8820c' },
+      site:      { label:'Site web',         color:'#5a6470' },
+      youtube:   { label:'Chaîne YouTube',   color:'#ff0033' },
+      reddit:    { label:'Reddit',           color:'#ff4500' },
+      hackernews:{ label:'Hacker News',      color:'#ff6600' },
+      github:    { label:'GitHub Releases',  color:'#6e5494' },
+      mastodon:  { label:'Mastodon',         color:'#6364ff' },
+      bluesky:   { label:'Bluesky',          color:'#1185fe' },
+      podcast:   { label:'Podcast',          color:'#9b35e8' },
+    };
+    const ICONS = {
+      youtube:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M23 12s0-3.8-.5-5.6a2.9 2.9 0 0 0-2-2C18.7 4 12 4 12 4s-6.7 0-8.5.4a2.9 2.9 0 0 0-2 2C1 8.2 1 12 1 12s0 3.8.5 5.6a2.9 2.9 0 0 0 2 2c1.8.4 8.5.4 8.5.4s6.7 0 8.5-.4a2.9 2.9 0 0 0 2-2C23 15.8 23 12 23 12zM10 15.5v-7l6 3.5z"/></svg>',
+      reddit:'<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" opacity=".18"/><path d="M22 12a2.1 2.1 0 0 0-3.6-1.5 10 10 0 0 0-5-1.4l.9-4 2.8.7a1.5 1.5 0 1 0 .2-1l-3.4-.8-1.1 5.1a10 10 0 0 0-5.1 1.4A2.1 2.1 0 1 0 3 13.8a3.9 3.9 0 0 0 0 .6c0 3 3.6 5.5 8 5.5s8-2.5 8-5.5a3.9 3.9 0 0 0 0-.6A2.1 2.1 0 0 0 22 12zM8.5 13.5a1.3 1.3 0 1 1 1.3 1.3 1.3 1.3 0 0 1-1.3-1.3zm6.9 3.3a4.6 4.6 0 0 1-3.4 1 4.6 4.6 0 0 1-3.4-1 .4.4 0 0 1 .6-.6 3.9 3.9 0 0 0 2.8.8 3.9 3.9 0 0 0 2.8-.8.4.4 0 1 1 .6.6zm-.7-2a1.3 1.3 0 1 1 1.3-1.3 1.3 1.3 0 0 1-1.3 1.3z"/></svg>',
+      hackernews:'<svg viewBox="0 0 24 24" fill="currentColor"><rect width="24" height="24" rx="4" opacity=".18"/><path d="M12 13.2 8.4 6.5h1.9L12 10.4l1.7-3.9h1.9L12 13.2V18h-1.5v-4.8z" transform="translate(.5)"/></svg>',
+      github:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.7c-2.8.6-3.4-1.3-3.4-1.3-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.5 2.3 1.1 2.9.8.1-.6.3-1.1.6-1.4-2.2-.2-4.6-1.1-4.6-5a3.9 3.9 0 0 1 1-2.7 3.6 3.6 0 0 1 .1-2.6s.8-.3 2.7 1a9.3 9.3 0 0 1 4.9 0c1.9-1.3 2.7-1 2.7-1a3.6 3.6 0 0 1 .1 2.6 3.9 3.9 0 0 1 1 2.7c0 3.9-2.3 4.8-4.6 5 .4.3.7.9.7 1.8v2.6c0 .3.2.6.7.5A10 10 0 0 0 12 2z"/></svg>',
+      mastodon:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 8.4c0-3.5-2.3-4.5-2.3-4.5A18 18 0 0 0 12 3.2a18 18 0 0 0-6.7.7S3 4.9 3 8.4c0 4.2-.2 9.4 3.8 10.4a23 23 0 0 0 4 .6l.1-1.8s-2.3.1-3.2-.2c-1.3-.4-1.3-1.7-1.3-1.7a14 14 0 0 0 3.2.6c2 .2 3.9-.1 5.8-.4 2.5-.3 4.7-1.9 5-3.3.4-2.2.3-5.8.3-5.8zm-3 5.4h-1.9v-4.5c0-1-.4-1.5-1.3-1.5s-1.3.6-1.3 1.7v2.4h-1.8V9.9c0-1.1-.4-1.7-1.3-1.7s-1.3.5-1.3 1.5v4.1H6V9.7a2.7 2.7 0 0 1 .8-2.1 2.8 2.8 0 0 1 2-.8c1 0 1.7.4 2.2 1.1l.5.8.5-.8c.5-.7 1.2-1.1 2.2-1.1a2.8 2.8 0 0 1 2 .8 2.7 2.7 0 0 1 .8 2.1z"/></svg>',
+      bluesky:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 10.8C10.9 8.6 7.9 4.7 5.1 3.3 3.7 2.6 2 2.3 2 4.3c0 .8.4 4.2.7 4.8.7 1.9 2.6 2.4 4.4 2.1-2.6.4-4.9 1.4-1.9 4.7 3.4 3.5 4.6-1 5.3-2.4l.5-1 .5 1c.7 1.4 1.9 5.9 5.3 2.4 3-3.3.7-4.3-1.9-4.7 1.8.3 3.7-.2 4.4-2.1.3-.6.7-4 .7-4.8 0-2-1.7-1.7-3.1-1C16.1 4.7 13.1 8.6 12 10.8z"/></svg>',
+      podcast:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1h3zM3 19a2 2 0 0 0 2 2h1a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1H3z"/></svg>',
+      rss:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1" fill="currentColor"/></svg>',
+      site:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>',
+    };
+
+    function typeMeta(t){ return META[t] || META.rss; }
+    function typeIcon(t){ return ICONS[t] || ICONS.rss; }
+
+    // Récupère du texte via proxies (résolution YouTube handle)
+    async function _fetchText(url){
+      const PX = ['https://api.allorigins.win/raw?url=','https://corsproxy.io/?','https://api.codetabs.com/v1/proxy?quest='];
+      for(const p of PX){
+        try{
+          const r = await fetch(p+encodeURIComponent(url),{signal:AbortSignal.timeout(6000)});
+          if(r.ok){ const t = await r.text(); if(t && t.length>200) return t; }
+        }catch(e){}
+      }
+      return null;
+    }
+
+    const RESERVED_GH = new Set(['features','about','pricing','marketplace','explore','topics','collections','trending','events','sponsors','settings','notifications','login','join','search','orgs','apps']);
+
+    // Détection + résolution → {type,label,color,feedUrl,originalUrl,name} ou null
+    async function resolve(raw){
+      let u; try{ u = new URL(raw.trim()); }catch(e){ return null; }
+      const host = u.hostname.replace(/^www\./,'').toLowerCase();
+      const path = u.pathname.replace(/\/+$/,'');
+      const seg  = path.split('/').filter(Boolean);
+      const mk = (type, feedUrl, name) => ({ type, ...typeMeta(type), feedUrl, originalUrl:raw.trim(), name:name||'' });
+
+      // ── YouTube ──
+      if(host==='youtube.com' || host==='m.youtube.com' || host==='youtu.be'){
+        if(seg[0]==='channel' && seg[1]) return mk('youtube','https://www.youtube.com/feeds/videos.xml?channel_id='+seg[1]);
+        if(u.searchParams.get('list')) return mk('youtube','https://www.youtube.com/feeds/videos.xml?playlist_id='+u.searchParams.get('list'),'Playlist YouTube');
+        // @handle, /c/nom, /user/nom → résoudre channelId via la page
+        const handle = (path.startsWith('/@')) ? path.slice(1)
+                     : (seg[0]==='c'||seg[0]==='user') ? seg[1] : null;
+        if(handle || path.startsWith('/@')){
+          const html = await _fetchText(u.origin+path);
+          if(html){
+            const m = html.match(/"(?:channelId|externalId)":"(UC[\w-]{20,})"/) || html.match(/channel_id=(UC[\w-]{20,})/) || html.match(/\/channel\/(UC[\w-]{20,})/);
+            if(m) return mk('youtube','https://www.youtube.com/feeds/videos.xml?channel_id='+m[1], handle.replace(/^@/,''));
+          }
+          return mk('youtube', null, (handle||'').replace(/^@/,'')); // non résolu → feedUrl null
+        }
+        return mk('youtube', null);
+      }
+
+      // ── Reddit ──
+      if(host==='reddit.com' || host.endsWith('.reddit.com')){
+        if(seg[0]==='r' && seg[1])  return mk('reddit','https://www.reddit.com/r/'+seg[1]+'/.rss','r/'+seg[1]);
+        if((seg[0]==='user'||seg[0]==='u') && seg[1]) return mk('reddit','https://www.reddit.com/user/'+seg[1]+'/.rss','u/'+seg[1]);
+        return mk('reddit','https://www.reddit.com/.rss','Reddit');
+      }
+
+      // ── Hacker News ──
+      if(host==='news.ycombinator.com' || host==='hnrss.org'){
+        if(host==='hnrss.org') return mk('hackernews', raw.trim(), 'Hacker News');
+        const p = u.pathname;
+        if(p.includes('newest')) return mk('hackernews','https://hnrss.org/newest','HN · Récents');
+        if(p.includes('best'))   return mk('hackernews','https://hnrss.org/best','HN · Meilleurs');
+        if(p.includes('ask'))    return mk('hackernews','https://hnrss.org/ask','HN · Ask');
+        if(p.includes('show'))   return mk('hackernews','https://hnrss.org/show','HN · Show');
+        return mk('hackernews','https://hnrss.org/frontpage','Hacker News');
+      }
+
+      // ── GitHub Releases ──
+      if(host==='github.com'){
+        if(seg.length>=2 && !RESERVED_GH.has(seg[0]))
+          return mk('github','https://github.com/'+seg[0]+'/'+seg[1]+'/releases.atom', seg[0]+'/'+seg[1]);
+        if(seg.length===1 && !RESERVED_GH.has(seg[0]))
+          return mk('github','https://github.com/'+seg[0]+'.atom', seg[0]);
+        return null;
+      }
+
+      // ── Bluesky ──
+      if(host==='bsky.app' || host==='staging.bsky.app'){
+        if(seg[0]==='profile' && seg[1])
+          return mk('bluesky','https://public.api.bsky.app/xrpc/app.bsky.feed.getAuthorFeed?actor='+encodeURIComponent(seg[1])+'&limit=30','@'+seg[1]);
+        return null;
+      }
+
+      // ── Apple Podcasts → flux via lookup iTunes ──
+      if(host==='podcasts.apple.com' || host==='itunes.apple.com'){
+        const mid = raw.match(/\/id(\d+)/);
+        if(mid){
+          try{
+            const r = await fetch('https://itunes.apple.com/lookup?id='+mid[1],{signal:AbortSignal.timeout(6000)});
+            const d = await r.json();
+            const it = (d.results||[])[0];
+            if(it && it.feedUrl) return mk('podcast', it.feedUrl, it.collectionName||'Podcast');
+          }catch(e){}
+        }
+        return mk('podcast', null, 'Podcast');
+      }
+
+      // ── Mastodon : /@user (host inconnu) → /@user.rss ──
+      if(/^\/@[\w.-]+$/.test(path)){
+        return mk('mastodon', u.origin+path+'.rss', path.slice(1)+'@'+host);
+      }
+      if(seg[0]==='users' && seg[1] && /mastodon|mstdn|social|piaille|framapiaf/.test(host)){
+        return mk('mastodon', u.origin+'/users/'+seg[1]+'.rss', '@'+seg[1]+'@'+host);
+      }
+
+      // ── Hôtes de podcasts connus ──
+      if(/^(feeds?\.|rss\.)/.test(u.hostname) || /(megaphone\.fm|simplecast\.com|buzzsprout\.com|libsyn\.com|anchor\.fm|spreaker\.com|acast\.com|podbean\.com|transistor\.fm|captivate\.fm|redcircle\.com|fireside\.fm)/.test(host)){
+        return mk('podcast', raw.trim());
+      }
+
+      return null; // RSS/site classique : laisser le flux existant gérer
+    }
+
+    // Marque le type d'un flux dans feedMeta (depuis le pipeline de chargement)
+    let _refreshT = null;
+    function markType(feedUrl, type){
+      try{
+        const m = JSON.parse(localStorage.getItem('reader.feedMeta')||'{}');
+        if(!m[feedUrl]) m[feedUrl] = {};
+        if(m[feedUrl].type && m[feedUrl].type!=='rss' && m[feedUrl].type!=='site') return; // déjà typé
+        m[feedUrl].type = type;
+        localStorage.setItem('reader.feedMeta', JSON.stringify(m));
+        clearTimeout(_refreshT);
+        _refreshT = setTimeout(()=>{ try{ if(typeof render==='function') render(); }catch(e){} }, 1200);
+      }catch(e){}
+    }
+
+    // Badge dans la feuille d'ajout
+    function afShowBadge(det){
+      const el = $('afTypeBadge'); if(!el) return;
+      const note = det.feedUrl ? '' : ' · à vérifier';
+      el.style.background = det.color;
+      el.style.color = '#fff';
+      el.innerHTML = typeIcon(det.type) + '<span>'+esc(det.label)+'</span>'
+        + (det.name ? '<span class="aft-sub">'+esc(det.name)+'</span>' : '')
+        + (note ? '<span class="aft-sub">'+note+'</span>' : '');
+      el.style.display = 'flex';
+    }
+    function afHideBadge(){ const el=$('afTypeBadge'); if(el){ el.style.display='none'; el.innerHTML=''; } }
+
+    return { resolve, markType, typeIcon, typeMeta, afShowBadge, afHideBadge };
+  })();
+  window.BF_SOURCES = BF_SOURCES;
+
+  // ════════════════════════════════════════════════════════════════
+  //  2) BF_OPML — import / export
+  // ════════════════════════════════════════════════════════════════
+  const BF_OPML = (function(){
+    function _meta(){ try{ return JSON.parse(localStorage.getItem('reader.feedMeta')||'{}'); }catch(e){ return {}; } }
+
+    function buildOPML(){
+      const m = _meta();
+      const xe = s => String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
+      let body = '';
+      (folders||[]).forEach(f=>{
+        body += '    <outline text="'+xe(f.name)+'" title="'+xe(f.name)+'">\n';
+        (f.feeds||[]).forEach(url=>{
+          const md = m[url]||{};
+          const nm = md.name || (()=>{try{return new URL(url).hostname.replace(/^www\./,'');}catch(e){return url;}})();
+          body += '      <outline type="rss" text="'+xe(nm)+'" title="'+xe(nm)+'" xmlUrl="'+xe(url)+'"'
+                + (md.originalUrl?' htmlUrl="'+xe(md.originalUrl)+'"':'')
+                + (md.type&&md.type!=='rss'?' bfType="'+xe(md.type)+'"':'')+'/>\n';
+        });
+        body += '    </outline>\n';
+      });
+      return '<?xml version="1.0" encoding="UTF-8"?>\n<opml version="2.0">\n  <head>\n    <title>Briefeed — Abonnements</title>\n    <dateCreated>'+new Date().toUTCString()+'</dateCreated>\n  </head>\n  <body>\n'+body+'  </body>\n</opml>\n';
+    }
+
+    function exportFile(){
+      const blob = new Blob([buildOPML()],{type:'text/xml;charset=utf-8'});
+      const url  = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const d = new Date().toISOString().slice(0,10);
+      a.href = url; a.download = 'briefeed-'+d+'.opml';
+      document.body.appendChild(a); a.click();
+      setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 1500);
+      _result('Export réussi', (folders||[]).reduce((n,f)=>n+(f.feeds||[]).length,0)+' flux exportés dans un fichier OPML.');
+    }
+
+    function importText(text){
+      let doc; try{ doc = new DOMParser().parseFromString(text,'text/xml'); }catch(e){ _result('Échec','Fichier OPML illisible.'); return; }
+      if(doc.querySelector('parsererror')){ _result('Échec','Ce fichier n’est pas un OPML valide.'); return; }
+      const meta = _meta();
+      let added = 0, newFolders = 0;
+      const ensureFolder = name => {
+        name = (name||'Importés').trim() || 'Importés';
+        let f = folders.find(x=>x.name===name);
+        if(!f){ f={name,feeds:[],open:false}; folders.push(f); newFolders++; }
+        return f;
+      };
+      // Outlines de 1er niveau = dossiers ; sinon flux à la racine → "Importés"
+      const bodyEl = doc.querySelector('body') || doc.documentElement;
+      const topOutlines = Array.from(bodyEl.children).filter(n=>n.tagName && n.tagName.toLowerCase()==='outline');
+      const addFeedTo = (folder, ol) => {
+        const url = ol.getAttribute('xmlUrl') || ol.getAttribute('xmlurl');
+        if(!url) return;
+        try{ new URL(url); }catch(e){ return; }
+        folder.feeds = folder.feeds || [];
+        if(!folder.feeds.includes(url)){
+          folder.feeds.push(url); added++;
+          const nm = ol.getAttribute('text') || ol.getAttribute('title') || '';
+          meta[url] = Object.assign({}, meta[url], {
+            name: (meta[url]&&meta[url].name) || nm,
+            type: ol.getAttribute('bfType') || (meta[url]&&meta[url].type) || 'rss',
+            originalUrl: ol.getAttribute('htmlUrl') || (meta[url]&&meta[url].originalUrl) || ''
+          });
+        }
+      };
+      topOutlines.forEach(ol=>{
+        const kids = Array.from(ol.children).filter(n=>n.tagName && n.tagName.toLowerCase()==='outline');
+        const selfUrl = ol.getAttribute('xmlUrl') || ol.getAttribute('xmlurl');
+        if(selfUrl){ addFeedTo(ensureFolder('Importés'), ol); }
+        else {
+          const folder = ensureFolder(ol.getAttribute('text')||ol.getAttribute('title'));
+          // supporte l'imbrication sur 2 niveaux
+          const walk = node => Array.from(node.children).filter(n=>n.tagName&&n.tagName.toLowerCase()==='outline')
+            .forEach(c=>{ const cu=c.getAttribute('xmlUrl')||c.getAttribute('xmlurl'); if(cu) addFeedTo(folder,c); else walk(c); });
+          walk(ol);
+        }
+      });
+      try{ localStorage.setItem('reader.feedMeta', JSON.stringify(meta)); }catch(e){}
+      if(added){
+        if(typeof persist==='function') persist();
+        if(typeof render==='function') render();
+        if(typeof _syncRSSFeeds==='function') _syncRSSFeeds();
+        if(typeof loadAllFeeds==='function') loadAllFeeds(true);
+      }
+      _result(added?'Import réussi':'Rien à importer',
+        added ? (added+' flux ajoutés'+(newFolders?(' dans '+newFolders+' dossier'+(newFolders>1?'s':'')):'')+'.')
+              : 'Aucun nouveau flux trouvé (déjà abonné ?).');
+    }
+
+    function _onFile(input){
+      const file = input.files && input.files[0];
+      input.value = '';
+      if(!file) return;
+      const rd = new FileReader();
+      rd.onload = e => importText(String(e.target.result||''));
+      rd.readAsText(file);
+    }
+
+    function _result(title, msg){
+      bfSheetOpen(title, '<div class="bf-sub">'+esc(msg)+'</div><button class="bf-cta" onclick="bfSheetClose()">OK</button>');
+    }
+
+    function open(){
+      const feedCount = (folders||[]).reduce((n,f)=>n+(f.feeds||[]).length,0);
+      bfSheetOpen('Import / Export OPML',
+        '<div class="bf-sub">L’OPML est le format standard pour transférer vos abonnements entre lecteurs (Feedly, Inoreader, NetNewsWire…).</div>'
+        + '<button class="bf-big-btn" onclick="BF_OPML.pickFile()"><span class="bf-bi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span><span><span class="bf-bt">Importer un fichier OPML</span><span class="bf-bd">Ajouter des abonnements depuis un autre lecteur</span></span></button>'
+        + '<button class="bf-big-btn" onclick="BF_OPML.exportFile()"><span class="bf-bi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span><span><span class="bf-bt">Exporter mes abonnements</span><span class="bf-bd">'+feedCount+' flux → fichier .opml</span></span></button>');
+    }
+    function pickFile(){ const i=$('bfOpmlFile'); if(i) i.click(); }
+
+    return { open, exportFile, importText, pickFile, _onFile };
+  })();
+  window.BF_OPML = BF_OPML;
+  window.bfOpmlOpen = BF_OPML.open;
+
+  // ════════════════════════════════════════════════════════════════
+  //  3) BF_SMART — flux intelligents (sources + mots-clés)
+  // ════════════════════════════════════════════════════════════════
+  const BF_SMART = (function(){
+    const KEY = 'reader.smartfeeds';
+    function load(){ try{ return JSON.parse(localStorage.getItem(KEY)||'[]'); }catch(e){ return []; } }
+    function save(list){ try{ localStorage.setItem(KEY, JSON.stringify(list)); }catch(e){} }
+
+    function _articles(){ return (typeof _allArticles!=='undefined' && _allArticles) ? _allArticles : []; }
+
+    function run(sf){
+      const terms = (sf.terms||[]).map(t=>t.toLowerCase()).filter(Boolean);
+      const srcs  = new Set(sf.sources||[]);
+      const arts = _articles().filter(a=>{
+        if(srcs.size && !srcs.has(a.feedUrl||'')) return false;
+        if(!terms.length) return true;
+        const hay = ((a.title||'')+' '+(a.description||'')).toLowerCase();
+        return sf.match==='all' ? terms.every(t=>hay.includes(t)) : terms.some(t=>hay.includes(t));
+      }).sort((a,b)=>new Date(b.pubDate)-new Date(a.pubDate));
+      const sub = [
+        (sf.terms&&sf.terms.length)?(sf.match==='all'?'Tous : ':'Au moins un : ')+sf.terms.join(', '):null,
+        (sf.sources&&sf.sources.length)?(sf.sources.length+' source'+(sf.sources.length>1?'s':'')):null
+      ].filter(Boolean).join(' · ');
+      bfSheetClose();
+      bfListPageOpen({ title:sf.name, subtitle:sub||'Tous vos abonnements', articles:arts,
+        emptyMsg:'Aucun article ne correspond encore. Les résultats se rempliront à mesure que vos flux se chargent.' });
+    }
+    function runById(id){ const sf = load().find(x=>x.id===id); if(sf) run(sf); }
+
+    function del(id){ save(load().filter(x=>x.id!==id)); openList(); }
+
+    // Suggestions automatiques à partir des mots fréquents dans les titres
+    function _suggest(){
+      const cnt = {};
+      const STOP = new Set(['avec','pour','dans','plus','tout','tous','cette','leur','sans','être','fait','très','entre','vers','chez','contre','depuis','apple','google']);
+      _articles().slice(0,400).forEach(a=>{
+        (a.title||'').toLowerCase().replace(/[^a-zàâäéèêëîïôöùûüç0-9\s]/g,' ').split(/\s+/)
+          .forEach(w=>{ if(w.length>4 && !STOP.has(w)) cnt[w]=(cnt[w]||0)+1; });
+      });
+      return Object.entries(cnt).filter(([,n])=>n>=3).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([w])=>w);
+    }
+
+    function openList(){
+      const list = load();
+      const rows = list.length ? list.map(sf=>{
+        const sub = [(sf.terms||[]).join(', '), (sf.sources&&sf.sources.length)?(sf.sources.length+' src'):''].filter(Boolean).join(' · ');
+        return '<div class="bf-row">'
+          + '<div class="bf-ri" style="color:#0a84ff;background:rgba(10,132,255,.16)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h18"/><path d="M6 9h12"/><path d="M9 14h6"/><path d="M11 19h2"/></svg></div>'
+          + '<div class="bf-rm" onclick="BF_SMART.runById(\''+sf.id+'\')"><div class="bf-rn">'+esc(sf.name)+'</div><div class="bf-rs">'+esc(sub||'Tous les articles')+'</div></div>'
+          + '<button class="bf-rx" onclick="BF_SMART.del(\''+sf.id+'\')" aria-label="Supprimer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>'
+          + '</div>';
+      }).join('') : '<div class="bf-empty">Aucun flux intelligent.<br>Combinez mots-clés et sources pour créer une vue thématique automatique.</div>';
+
+      const sugg = _suggest();
+      const suggHtml = sugg.length ? ('<div style="font-family:var(--font-inter);font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px">Suggestions</div><div class="bf-chips">'
+        + sugg.map(w=>'<span class="bf-chip-sm" onclick="BF_SMART.quick(\''+esc(w).replace(/'/g,"")+'\')">'+esc(w)+'</span>').join('')+'</div>') : '';
+
+      bfSheetOpen('Flux intelligents',
+        '<div class="bf-sub">Un flux intelligent filtre automatiquement tous vos abonnements selon des mots-clés et des sources.</div>'
+        + rows + suggHtml
+        + '<button class="bf-cta" onclick="BF_SMART.openCreate()" style="margin-top:14px">+ Nouveau flux intelligent</button>');
+    }
+
+    function quick(word){
+      const sf = { id:'sf'+Date.now().toString(36), name:word.charAt(0).toUpperCase()+word.slice(1), terms:[word], sources:[], match:'any' };
+      const l = load(); l.unshift(sf); save(l);
+      run(sf);
+    }
+
+    let _formSources = new Set();
+    let _formMatch = 'any';
+    function openCreate(){
+      _formSources = new Set(); _formMatch = 'any';
+      // Liste des sources abonnées
+      const meta = (()=>{ try{ return JSON.parse(localStorage.getItem('reader.feedMeta')||'{}'); }catch(e){ return {}; } })();
+      const urls = []; const seen = new Set();
+      (folders||[]).forEach(f=>(f.feeds||[]).forEach(u=>{ if(!seen.has(u)){ seen.add(u); urls.push(u); } }));
+      const srcRows = urls.length ? urls.map(u=>{
+        const nm = (meta[u]&&meta[u].name) || (()=>{try{return new URL(u).hostname.replace(/^www\./,'');}catch(e){return u;}})();
+        const fav = (typeof getFavicon==='function')?getFavicon(u):'';
+        return '<div class="bf-src-row" data-url="'+escA(u)+'" onclick="BF_SMART._toggleSrc(this)"><img src="'+escA(fav)+'" alt="" onerror="this.style.opacity=\'.3\'"><span class="nm">'+esc(nm)+'</span><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></span></div>';
+      }).join('') : '<div class="bf-empty" style="padding:18px">Aucune source. Ajoutez d’abord des flux.</div>';
+
+      bfSheetOpen('Nouveau flux intelligent',
+        '<div class="bf-field"><label>Nom</label><input class="bf-input" id="bfSfName" placeholder="ex. Apple + IA" maxlength="40"></div>'
+        + '<div class="bf-field"><label>Mots-clés (séparés par des virgules)</label><input class="bf-input" id="bfSfTerms" placeholder="apple, intelligence artificielle" autocapitalize="none"></div>'
+        + '<div class="bf-field"><label>Correspondance</label><div class="bf-seg" id="bfSfSeg"><button class="on" onclick="BF_SMART._setMatch(\'any\',this)">Au moins un</button><button onclick="BF_SMART._setMatch(\'all\',this)">Tous</button></div></div>'
+        + '<div class="bf-field"><label>Limiter à des sources (optionnel)</label><div class="bf-src-list">'+srcRows+'</div></div>'
+        + '<button class="bf-cta" onclick="BF_SMART._submit()">Créer le flux</button>');
+      setTimeout(()=>{ const n=$('bfSfName'); if(n) n.focus(); }, 420);
+    }
+    function _toggleSrc(el){ const u=el.dataset.url; if(_formSources.has(u)){ _formSources.delete(u); el.classList.remove('on'); } else { _formSources.add(u); el.classList.add('on'); } }
+    function _setMatch(m, btn){ _formMatch=m; const seg=$('bfSfSeg'); if(seg) seg.querySelectorAll('button').forEach(b=>b.classList.toggle('on', b===btn)); }
+    function _submit(){
+      const name = ($('bfSfName')?.value||'').trim();
+      const terms = ($('bfSfTerms')?.value||'').split(',').map(s=>s.trim()).filter(Boolean);
+      if(!name && !terms.length){ const n=$('bfSfName'); if(n) n.focus(); return; }
+      if(!terms.length && !_formSources.size){ const t=$('bfSfTerms'); if(t) t.focus(); return; }
+      const sf = { id:'sf'+Date.now().toString(36), name:name||terms.join(' + '), terms, sources:[..._formSources], match:_formMatch };
+      const l = load(); l.unshift(sf); save(l);
+      run(sf);
+    }
+
+    return { openList, openCreate, runById, del, quick, _toggleSrc, _setMatch, _submit };
+  })();
+  window.BF_SMART = BF_SMART;
+  window.bfSmartOpenList = BF_SMART.openList;
+
+  // ════════════════════════════════════════════════════════════════
+  //  4) BF_TAGS — étiquettes par article
+  // ════════════════════════════════════════════════════════════════
+  const BF_TAGS = (function(){
+    const KEY = 'reader.tags';      // { link: [tag,...] }
+    const SNAP = 'reader.tagArts';  // { link: snapshot }
+    function _load(){ try{ return JSON.parse(localStorage.getItem(KEY)||'{}'); }catch(e){ return {}; } }
+    function _saveAll(o){ try{ localStorage.setItem(KEY, JSON.stringify(o)); }catch(e){} }
+    function _snaps(){ try{ return JSON.parse(localStorage.getItem(SNAP)||'{}'); }catch(e){ return {}; } }
+    function _saveSnaps(o){ try{ localStorage.setItem(SNAP, JSON.stringify(o)); }catch(e){} }
+
+    function get(link){ return _load()[link] || []; }
+
+    function add(link, tag, art){
+      tag = (tag||'').trim().replace(/\s+/g,' ').slice(0,24);
+      if(!link || !tag) return;
+      const all = _load();
+      const cur = all[link] || [];
+      if(!cur.some(t=>t.toLowerCase()===tag.toLowerCase())){ cur.push(tag); all[link]=cur; _saveAll(all); }
+      if(art){ const s=_snaps(); s[link]={link:art.link,title:art.title,source:art.source,pubDate:(art.pubDate instanceof Date?art.pubDate.toISOString():art.pubDate),imageUrl:art.imageUrl||null,feedUrl:art.feedUrl||null,audioUrl:art.audioUrl||null}; _saveSnaps(s); }
+    }
+    function remove(link, tag){
+      const all = _load();
+      if(all[link]){ all[link]=all[link].filter(t=>t!==tag); if(!all[link].length) delete all[link]; _saveAll(all); }
+    }
+    function all(){
+      const cnt = {}; const o = _load();
+      Object.values(o).forEach(arr=>arr.forEach(t=>{ cnt[t]=(cnt[t]||0)+1; }));
+      return Object.entries(cnt).sort((a,b)=>b[1]-a[1]);
+    }
+
+    // Barre d'étiquettes dans le modal article
+    let _cur = null;
+    function renderBar(a){
+      _cur = a;
+      const el = $('artModalTags'); if(!el) return;
+      const tags = get(a.link);
+      const chips = tags.map(t=>'<span class="bf-tag-chip">'+esc(t)+'<button onclick="BF_TAGS._rm(\''+encodeURIComponent(t)+'\')" aria-label="Retirer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></span>').join('');
+      el.innerHTML = chips + '<span class="bf-tag-add" onclick="BF_TAGS._showInput(this)"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Étiquette</span>';
+    }
+    function _rm(t){ if(!_cur) return; remove(_cur.link, decodeURIComponent(t)); renderBar(_cur); }
+    function _showInput(btn){
+      const inp = document.createElement('input');
+      inp.className='bf-tag-input'; inp.placeholder='Nom…'; inp.maxLength=24;
+      btn.replaceWith(inp); inp.focus();
+      const commit = () => { if(!_cur) return; const v=inp.value.trim(); if(v){ add(_cur.link, v, _cur); } renderBar(_cur); };
+      inp.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); commit(); } if(e.key==='Escape'){ if(_cur) renderBar(_cur); } });
+      inp.addEventListener('blur', commit);
+    }
+
+    // Parcourir une étiquette → page liste
+    function browse(tag){
+      const o = _load(); const snaps = _snaps();
+      const links = Object.keys(o).filter(l=>o[l].some(t=>t.toLowerCase()===tag.toLowerCase()));
+      const arts = links.map(l=>{
+        const live = (typeof _allArticles!=='undefined'?_allArticles:[]).find(a=>a.link===l);
+        return live || snaps[l];
+      }).filter(Boolean).sort((a,b)=>new Date(b.pubDate)-new Date(a.pubDate));
+      bfSheetClose();
+      bfListPageOpen({ title:'#'+tag, subtitle:arts.length+' article'+(arts.length>1?'s':'')+' étiqueté'+(arts.length>1?'s':''), articles:arts,
+        emptyMsg:'Aucun article avec cette étiquette.' });
+    }
+
+    function openList(){
+      const tags = all();
+      const chips = tags.length ? '<div class="bf-chips">'+tags.map(([t,n])=>'<span class="bf-chip-sm" onclick="BF_TAGS.browse(\''+encodeURIComponent(t)+'\')">'+esc(t)+'<span class="c">'+n+'</span></span>').join('')+'</div>'
+        : '<div class="bf-empty">Aucune étiquette.<br>Ouvrez un article puis touchez « + Étiquette » pour le classer.</div>';
+      bfSheetOpen('Étiquettes', '<div class="bf-sub">Classez les articles avec vos propres étiquettes, puis retrouvez-les ici.</div>'+chips);
+    }
+    function _browseEnc(t){ browse(decodeURIComponent(t)); }
+
+    return { get, add, remove, all, renderBar, browse:(t)=>browse(decodeURIComponent(t)), openList, _rm, _showInput };
+  })();
+  window.BF_TAGS = BF_TAGS;
+  window.bfTagsOpen = BF_TAGS.openList;
+
+  // Rafraîchir la sidebar pour afficher les pastilles de type (après définition des modules)
+  try{ if(typeof render==='function') render(); }catch(e){}
 })();
 </script>
 
