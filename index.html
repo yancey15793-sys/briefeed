@@ -2482,110 +2482,128 @@ button, .ob-btn, .ob-btn-ghost,
 #editionsHero .art-card .art-title{ font-size:22px; line-height:1.2; -webkit-line-clamp:4; }
 #editionsHero .art-card .art-source-row{ margin-top:14px; }
 /* ══════════════════════════════════════════════════════════
-   RAIL CATÉGORIES → SOURCES (vue Éditions)
-   Niveau 1 : chips de catégories. Tap → révèle les bulles
-   sources (niveau 2). Tap bulle → filtre l'édition.
+   SOURCE RAIL — Cover-flow 3D (partagé sur toutes les vues)
+   Barre compacte (toujours visible) + corps carrousel repliable.
+   Tap logo carte centrale → filtre global (4 vues).
    ══════════════════════════════════════════════════════════ */
-.ed-rail{ margin:2px 0 24px; }
+.srail{ margin:6px 0 22px; }
 
-/* — Niveau 1 : chips catégories — */
-.ed-rail-cats{
-  display:flex; gap:8px; overflow-x:auto;
-  padding:2px 2px 4px; margin:0 -2px;
-  scrollbar-width:none; -ms-overflow-style:none;
-  scroll-snap-type:x proximity;
-}
-.ed-rail-cats::-webkit-scrollbar{ display:none; }
-.edr-cat{
-  flex:0 0 auto; scroll-snap-align:start;
-  display:inline-flex; align-items:center; gap:7px;
-  height:38px; padding:0 15px; border-radius:999px;
-  background:rgba(255,255,255,.05);
-  border:1px solid rgba(255,255,255,.09);
+/* — Barre compacte — */
+.srail-bar{
+  display:flex; align-items:center; gap:10px;
+  padding:9px 10px 9px 14px; border-radius:15px;
+  background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.08);
   -webkit-backdrop-filter:blur(12px) saturate(140%);
   backdrop-filter:blur(12px) saturate(140%);
-  font-family:var(--font-inter); font-size:13px; font-weight:600;
-  letter-spacing:-.01em; color:var(--text); cursor:pointer;
-  white-space:nowrap; -webkit-tap-highlight-color:transparent;
-  transition:transform .34s cubic-bezier(.34,1.56,.64,1),
-             background .2s ease, border-color .2s ease, color .2s ease;
 }
-.edr-cat:active{ transform:scale(.94); transition:transform .07s ease-in; }
-.edr-cat-count{
-  font-family:var(--font-inter); font-size:11px; font-weight:700;
-  color:var(--text-muted); background:rgba(255,255,255,.07);
-  border-radius:999px; padding:1px 7px; min-width:20px; text-align:center;
-  transition:background .2s ease, color .2s ease;
+[data-theme="light"] .srail-bar{ background:rgba(0,0,0,.035); border-color:rgba(0,0,0,.07); }
+.srail-bar-main{
+  flex:1; min-width:0; display:flex; align-items:center; gap:9px;
+  border:none; background:none; cursor:pointer; padding:0; text-align:left;
+  -webkit-tap-highlight-color:transparent;
 }
-.edr-cat.active{
-  background:rgba(10,132,255,.16); border-color:rgba(10,132,255,.4); color:#0a84ff;
+.srail-bar-fav{
+  width:24px; height:24px; border-radius:50%; flex-shrink:0;
+  display:none; align-items:center; justify-content:center; overflow:hidden;
+  background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.1);
 }
-.edr-cat.active .edr-cat-count{ background:rgba(10,132,255,.2); color:#0a84ff; }
-[data-theme="light"] .edr-cat{ background:rgba(0,0,0,.04); border-color:rgba(0,0,0,.08); }
-[data-theme="light"] .edr-cat-count{ background:rgba(0,0,0,.06); }
-
-/* — Niveau 2 : panneau bulles (révélé via grid-template-rows) — */
-.ed-rail-bubbles{
-  display:grid; grid-template-rows:0fr;
-  transition:grid-template-rows .44s cubic-bezier(.32,.72,0,1);
-}
-.ed-rail-bubbles.open{ grid-template-rows:1fr; }
-.edr-bubbles-inner{ overflow:hidden; min-height:0; }
-.edr-bubbles-scroll{
-  display:flex; gap:15px; overflow-x:auto;
-  padding:16px 2px 4px; scrollbar-width:none;
-}
-.edr-bubbles-scroll::-webkit-scrollbar{ display:none; }
-.edr-bubble{
-  flex:0 0 auto; display:flex; flex-direction:column; align-items:center;
-  gap:8px; width:58px; cursor:pointer; -webkit-tap-highlight-color:transparent;
-  background:none; border:none; padding:0;
-  opacity:0; transform:translateY(8px);
-  animation:edrBubbleIn .42s cubic-bezier(.16,1,.3,1) forwards;
-}
-@keyframes edrBubbleIn{ to{ opacity:1; transform:translateY(0); } }
-.edr-bubble-ring{
-  width:54px; height:54px; border-radius:50%;
-  display:flex; align-items:center; justify-content:center;
-  background:rgba(255,255,255,.05);
-  border:1px solid rgba(255,255,255,.1);
-  box-shadow:0 4px 12px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.06);
-  overflow:visible; position:relative;
-  transition:transform .34s cubic-bezier(.34,1.56,.64,1), border-color .2s ease, box-shadow .2s ease;
-}
-.edr-bubble:active .edr-bubble-ring{ transform:scale(.9); transition:transform .07s ease-in; }
-.edr-bubble.active .edr-bubble-ring{
-  border-color:#0a84ff;
-  box-shadow:0 0 0 2px rgba(10,132,255,.55), 0 4px 12px rgba(0,0,0,.25);
-}
-.edr-bubble-ring img{ width:30px; height:30px; object-fit:contain; border-radius:7px; display:block; }
-.edr-bubble-dot{
-  position:absolute; right:1px; bottom:1px; width:12px; height:12px;
-  border-radius:50%; background:#0a84ff; border:2.5px solid var(--bg);
-}
-.edr-bubble-name{
-  font-family:var(--font-inter); font-size:10.5px; font-weight:600;
-  color:var(--text-muted); text-align:center; width:58px;
+.srail-bar-fav img{ width:15px; height:15px; object-fit:contain; border-radius:4px; }
+.srail.is-filtered .srail-bar-fav{ display:flex; }
+.srail-bar-label{
+  font-family:var(--font-inter); font-size:13.5px; font-weight:700;
+  letter-spacing:-.01em; color:var(--text);
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
 }
-.edr-bubble.active .edr-bubble-name{ color:#0a84ff; }
-[data-theme="light"] .edr-bubble-ring{ background:rgba(0,0,0,.04); border-color:rgba(0,0,0,.09); }
-
-/* — Barre de filtre actif — */
-.edr-filter-bar{
-  display:flex; align-items:center; gap:8px; margin:16px 0 0;
-  font-family:var(--font-inter); font-size:12.5px; color:var(--text-muted);
-}
-.edr-filter-clear{
-  margin-left:auto; display:inline-flex; align-items:center; gap:5px;
-  border:1px solid rgba(255,255,255,.09); background:rgba(255,255,255,.06);
-  color:var(--text); border-radius:999px; padding:6px 13px;
-  font-family:var(--font-inter); font-size:12px; font-weight:600;
+.srail.is-filtered .srail-bar-label{ color:#0a84ff; }
+.srail-bar-reset, .srail-bar-chev{
+  flex-shrink:0; width:32px; height:32px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  border:none; background:rgba(255,255,255,.06); color:var(--text-muted);
   cursor:pointer; -webkit-tap-highlight-color:transparent;
-  transition:transform .34s cubic-bezier(.34,1.56,.64,1), background .2s ease;
+  transition:transform .34s cubic-bezier(.34,1.56,.64,1), background .2s ease, color .2s ease;
 }
-.edr-filter-clear:active{ transform:scale(.93); transition:transform .07s ease-in; }
-[data-theme="light"] .edr-filter-clear{ border-color:rgba(0,0,0,.08); background:rgba(0,0,0,.05); }
+.srail-bar-reset:active, .srail-bar-chev:active{ transform:scale(.86); transition:transform .07s ease-in; }
+[data-theme="light"] .srail-bar-reset,[data-theme="light"] .srail-bar-chev{ background:rgba(0,0,0,.05); }
+.srail-bar-chev svg{ transition:transform .4s cubic-bezier(.34,1.56,.64,1); }
+.srail.is-open .srail-bar-chev{ background:rgba(10,132,255,.16); color:#0a84ff; }
+.srail.is-open .srail-bar-chev svg{ transform:rotate(180deg); }
+
+/* — Corps carrousel (repliable via grid-template-rows) — */
+.srail-body{
+  display:grid; grid-template-rows:0fr;
+  transition:grid-template-rows .5s cubic-bezier(.32,.72,0,1), opacity .35s ease;
+  opacity:0;
+}
+.srail.is-open .srail-body{ grid-template-rows:1fr; opacity:1; }
+.srail-body-inner{ overflow:hidden; min-height:0; }
+
+/* — Scène cover-flow — */
+.cf-stage{
+  position:relative; height:248px; margin:10px 0 0;
+  perspective:1150px;
+  display:flex; align-items:center; justify-content:center;
+  touch-action:pan-y; overflow:hidden;
+}
+.cf-track{ position:relative; width:210px; height:210px; transform-style:preserve-3d; }
+.cf-card{
+  position:absolute; inset:0; width:210px; height:210px;
+  border-radius:22px; padding:16px 16px 14px;
+  background:linear-gradient(155deg, rgba(255,255,255,.075), rgba(255,255,255,.025));
+  border:1px solid rgba(255,255,255,.12);
+  box-shadow:0 24px 50px -12px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.1);
+  -webkit-backdrop-filter:blur(16px) saturate(150%); backdrop-filter:blur(16px) saturate(150%);
+  display:flex; flex-direction:column;
+  transition:transform .55s cubic-bezier(.34,1.56,.64,1), opacity .4s ease;
+  cursor:pointer; will-change:transform; -webkit-tap-highlight-color:transparent;
+}
+[data-theme="light"] .cf-card{
+  background:linear-gradient(155deg, rgba(255,255,255,.85), rgba(255,255,255,.6));
+  border-color:rgba(255,255,255,.9);
+  box-shadow:0 24px 50px -12px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.9);
+}
+.cf-card-cat{
+  font-family:var(--font-title); font-size:21px; font-weight:700; letter-spacing:-.015em;
+  color:var(--text); margin-bottom:2px; line-height:1.1;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.cf-card-meta{
+  font-family:var(--font-inter); font-size:10px; font-weight:700;
+  color:var(--text-muted); letter-spacing:.05em; text-transform:uppercase; margin-bottom:14px;
+}
+.cf-logos{
+  display:grid; grid-template-columns:repeat(3,1fr); gap:13px 8px;
+  align-content:start; flex:1; overflow-y:auto; scrollbar-width:none;
+}
+.cf-logos::-webkit-scrollbar{ display:none; }
+.cf-logo{
+  display:flex; flex-direction:column; align-items:center; gap:5px;
+  background:none; border:none; padding:0; cursor:pointer; -webkit-tap-highlight-color:transparent;
+}
+.cf-logo-ring{
+  width:42px; height:42px; border-radius:50%;
+  background:rgba(255,255,255,.08); border:1.5px solid rgba(255,255,255,.12);
+  display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden;
+  box-shadow:0 2px 8px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.06);
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1), border-color .2s, box-shadow .2s;
+}
+[data-theme="light"] .cf-logo-ring{ background:rgba(0,0,0,.05); border-color:rgba(0,0,0,.1); }
+.cf-logo:active .cf-logo-ring{ transform:scale(.85); transition:transform .07s ease-in; }
+.cf-logo.sel .cf-logo-ring{ border-color:#0a84ff; box-shadow:0 0 0 2.5px rgba(10,132,255,.5), 0 2px 8px rgba(0,0,0,.3); }
+.cf-logo-ring img{ width:24px; height:24px; object-fit:contain; border-radius:5px; }
+.cf-logo-dot{ position:absolute; bottom:0; right:0; width:9px; height:9px; border-radius:50%; background:#0a84ff; border:1.5px solid #0b0b0c; }
+[data-theme="light"] .cf-logo-dot{ border-color:#fff; }
+.cf-logo-name{
+  font-family:var(--font-inter); font-size:8.5px; font-weight:600; color:var(--text-muted);
+  text-align:center; width:46px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.cf-logo.sel .cf-logo-name{ color:#0a84ff; }
+
+/* — Dots de pagination — */
+.cf-dots{ display:flex; gap:6px; justify-content:center; margin:14px 0 2px; }
+.cf-dot{ width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,.2); transition:all .35s cubic-bezier(.34,1.56,.64,1); }
+[data-theme="light"] .cf-dot{ background:rgba(0,0,0,.18); }
+.cf-dot.active{ width:20px; border-radius:99px; background:var(--accent); }
 
 /* ── Indicateur de synchro — pastille sobre centrée (style Feedly) ── */
 #refreshBadge{
@@ -4365,6 +4383,28 @@ body.focus-mode .focus-exit{ display:flex; }
       <!-- Label centré, toujours présent au-dessus de toutes les vues -->
       <h2 class="edition-label">Mon édition du jour</h2>
 
+      <!-- Source Rail — Cover-flow 3D (partagé sur TOUTES les vues) -->
+      <div id="srcRail" class="srail" hidden>
+        <div class="srail-bar" id="srailBar">
+          <button class="srail-bar-main" id="srailBarMain" type="button">
+            <span class="srail-bar-fav" id="srailBarFav"></span>
+            <span class="srail-bar-label" id="srailBarLabel">Parcourir mes sources</span>
+          </button>
+          <button class="srail-bar-reset" id="srailBarReset" type="button" hidden aria-label="Réinitialiser le filtre">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+          <button class="srail-bar-chev" id="srailBarChev" type="button" aria-label="Déplier">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+        </div>
+        <div class="srail-body" id="srailBody">
+          <div class="srail-body-inner">
+            <div class="cf-stage" id="cfStage"><div class="cf-track" id="cfTrack"></div></div>
+            <div class="cf-dots" id="cfDots"></div>
+          </div>
+        </div>
+      </div>
+
       <!-- ========== VUE ÉDITIONS (magazine) ========== -->
       <div class="view" data-view="editions">
 
@@ -4391,9 +4431,6 @@ body.focus-mode .focus-exit{ display:flex; }
             <div class="hello-card sk-card" style="animation:sk 1.4s .4s ease-in-out infinite alternate"></div>
           </div>
         </div>
-
-        <!-- Rail Catégories → Sources -->
-        <div id="editionsRail" class="ed-rail" hidden></div>
 
         <!-- Hero article du jour -->
         <div id="editionsHero"></div>
@@ -6999,117 +7036,225 @@ body.focus-mode .focus-exit{ display:flex; }
   // ── Tableau global — articles indexés (pas de JSON dans onclick) ──
   let _editionArts = [];
 
-  // ── Rail Catégories → Sources ─────────────────────────────────
-  let _edActiveCat  = null;   // catégorie déployée (bulles visibles)
-  let _edFilterUrl  = null;   // feedUrl filtrant l'édition (bulle active)
-  let _edRailBound  = false;  // délégation d'évènements attachée une fois
+  // ══════════════════════════════════════════════════════════════
+  //  SOURCE RAIL — Cover-flow 3D partagé + filtre global
+  //  Un seul filtre (_railFilterUrl) respecté par les 4 vues.
+  // ══════════════════════════════════════════════════════════════
+  let _railFilterUrl = null;
+  let _railActive    = 0;       // index de la carte catégorie centrée
+  let _railSig       = '';      // signature des catégories (rebuild si change)
+  let _railBound     = false;   // écouteurs attachés une fois
+  let _railCats      = [];      // [{name, feeds:[{name,url}]}]
+  try{ _railFilterUrl = localStorage.getItem('bf_rail_filter') || null; }catch(e){}
+  let _railOpen = true;
+  try{ const o = localStorage.getItem('bf_rail_open'); if(o !== null) _railOpen = (o === '1'); }catch(e){}
 
-  function _edUnreadCount(urls, artByUrl, hasRS){
+  // Filtre global appliqué par chaque vue
+  function _railApplyFilter(arts){
+    return _railFilterUrl ? arts.filter(a => (a.feedUrl || '') === _railFilterUrl) : arts;
+  }
+
+  // Construit la liste catégories → sources depuis les flux réels
+  function _railBuildCats(){
+    const feeds = (typeof _rssFeeds !== 'undefined') ? _rssFeeds : [];
+    const cats = [], map = {};
+    feeds.forEach(f => {
+      const c = f.category || 'Autres';
+      if(!map[c]){ map[c] = { name:c, feeds:[] }; cats.push(map[c]); }
+      map[c].feeds.push({ name:f.name, url:f.url });
+    });
+    return cats;
+  }
+
+  function _railUnread(url){
+    if(typeof window._RS === 'undefined') return 0;
     let n = 0;
-    urls.forEach(u => (artByUrl[u] || []).forEach(a => {
-      if(!hasRS || !window._RS.has(a.link)) n++;
-    }));
+    for(const a of _allArticles){ if((a.feedUrl||'') === url && !window._RS.has(a.link)) n++; }
     return n;
   }
 
-  function _renderEditionsRail(){
-    const rail = document.getElementById('editionsRail');
+  function _renderSrcRail(){
+    const rail = document.getElementById('srcRail');
     if(!rail) return;
-    const feeds = (typeof _rssFeeds !== 'undefined') ? _rssFeeds : [];
-    if(!feeds.length){ rail.hidden = true; return; }
-
-    // Regrouper les flux par catégorie (ordre d'apparition préservé)
-    const cats = [], catMap = {};
-    feeds.forEach(f => {
-      const c = f.category || 'Autres';
-      if(!catMap[c]){ catMap[c] = { name:c, feeds:[] }; cats.push(catMap[c]); }
-      catMap[c].feeds.push(f);
-    });
-    if(!cats.length){ rail.hidden = true; return; }
+    _railCats = _railBuildCats();
+    if(!_railCats.length){ rail.hidden = true; return; }
     rail.hidden = false;
 
-    // Index articles par flux pour le comptage non-lus
-    const artByUrl = {};
-    _allArticles.forEach(a => { const u = a.feedUrl || ''; (artByUrl[u] = artByUrl[u] || []).push(a); });
-    const hasRS = (typeof window._RS !== 'undefined');
-
-    // Réinitialiser si la catégorie/filtre actif n'existe plus
-    if(_edActiveCat && !catMap[_edActiveCat]) _edActiveCat = null;
-    if(_edFilterUrl && !feeds.some(f => f.url === _edFilterUrl)) _edFilterUrl = null;
-
-    // Niveau 1 — chips catégories
-    const catChips = cats.map(c => {
-      const cnt    = _edUnreadCount(c.feeds.map(f => f.url), artByUrl, hasRS);
-      const active = _edActiveCat === c.name;
-      return `<button class="edr-cat${active ? ' active' : ''}" data-cat="${escAttr(c.name)}">
-        <span>${escHtml(c.name)}</span>
-        ${cnt ? `<span class="edr-cat-count">${cnt > 99 ? '99+' : cnt}</span>` : ''}
-      </button>`;
-    }).join('');
-
-    // Niveau 2 — bulles sources de la catégorie déployée
-    let bubblesHtml = '';
-    if(_edActiveCat && catMap[_edActiveCat]){
-      bubblesHtml = `<div class="edr-bubbles-scroll">${
-        catMap[_edActiveCat].feeds.map((f, i) => {
-          const cnt    = _edUnreadCount([f.url], artByUrl, hasRS);
-          const active = _edFilterUrl === f.url;
-          return `<button class="edr-bubble${active ? ' active' : ''}" data-url="${escAttr(f.url)}" style="animation-delay:${(i * 0.035).toFixed(3)}s">
-            <span class="edr-bubble-ring">
-              <img src="${escAttr(getFavicon(f.url))}" alt="" onerror="this.style.opacity='.3'">
-              ${cnt ? '<span class="edr-bubble-dot"></span>' : ''}
-            </span>
-            <span class="edr-bubble-name">${escHtml(f.name)}</span>
-          </button>`;
-        }).join('')
-      }</div>`;
+    // Le filtre pointe-t-il encore vers un flux existant ?
+    if(_railFilterUrl && !_railCats.some(c => c.feeds.some(f => f.url === _railFilterUrl))){
+      _railFilterUrl = null;
+      try{ localStorage.removeItem('bf_rail_filter'); }catch(e){}
     }
 
-    // Barre de filtre actif
-    let filterBar = '';
-    if(_edFilterUrl){
-      const f = feeds.find(x => x.url === _edFilterUrl);
-      filterBar = `<div class="edr-filter-bar">
-        <span>Filtré sur <strong style="color:var(--text)">${escHtml(f ? f.name : 'source')}</strong></span>
-        <button class="edr-filter-clear" data-clear="1">Réinitialiser</button>
+    // Reconstruire les cartes seulement si la structure a changé
+    const sig = _railCats.map(c => c.name + ':' + c.feeds.map(f=>f.url).join(',')).join('|');
+    if(sig !== _railSig){
+      _railSig = sig;
+      if(_railActive >= _railCats.length) _railActive = 0;
+      _railBuildCards();
+    }
+    _railLayout();
+    _railSyncUI();
+    _railBindOnce();
+  }
+
+  function _railBuildCards(){
+    const track = document.getElementById('cfTrack');
+    const dots  = document.getElementById('cfDots');
+    if(!track) return;
+    track.innerHTML = _railCats.map((c, i) => {
+      const unread = c.feeds.reduce((s,f)=>s + (_railUnread(f.url) > 0 ? 1 : 0), 0);
+      const logos = c.feeds.map(f => {
+        const hasUnread = _railUnread(f.url) > 0;
+        return `<button class="cf-logo" data-url="${escAttr(f.url)}">
+          <span class="cf-logo-ring"><img src="${escAttr(getFavicon(f.url))}" alt="" onerror="this.style.opacity='.3'">${hasUnread ? '<span class="cf-logo-dot"></span>' : ''}</span>
+          <span class="cf-logo-name">${escHtml(f.name)}</span>
+        </button>`;
+      }).join('');
+      return `<div class="cf-card" data-idx="${i}">
+        <div class="cf-card-cat">${escHtml(c.name)}</div>
+        <div class="cf-card-meta">${c.feeds.length} source${c.feeds.length>1?'s':''}${unread?` · ${unread} active${unread>1?'s':''}`:''}</div>
+        <div class="cf-logos">${logos}</div>
       </div>`;
+    }).join('');
+    if(dots) dots.innerHTML = _railCats.map((_,i)=>`<span class="cf-dot${i===_railActive?' active':''}"></span>`).join('');
+  }
+
+  function _railLayout(){
+    const track = document.getElementById('cfTrack');
+    if(!track) return;
+    const cards = [...track.querySelectorAll('.cf-card')];
+    const n = cards.length;
+    if(_railActive < 0) _railActive = 0;
+    if(_railActive > n-1) _railActive = n-1;
+    cards.forEach((card,i)=>{
+      const off = i - _railActive, abs = Math.abs(off);
+      let tx, ry, tz, scale, op, z, pe;
+      if(off === 0){ tx=0; ry=0; tz=0; scale=1; op=1; z=10; pe='auto'; }
+      else {
+        const dir = off>0?1:-1;
+        tx = dir*(58 + (abs-1)*16);
+        ry = -dir*40;
+        tz = -90 - (abs-1)*40;
+        scale = Math.max(.62, .86 - (abs-1)*.12);
+        op = abs>2 ? 0 : (abs===2 ? .5 : .92);
+        z = 10-abs; pe = abs>2 ? 'none' : 'auto';
+      }
+      card.style.transform = `translateX(${tx}%) translateZ(${tz}px) rotateY(${ry}deg) scale(${scale})`;
+      card.style.opacity = op;
+      card.style.zIndex = z;
+      card.style.pointerEvents = pe;
+    });
+    const dots = document.querySelectorAll('#cfDots .cf-dot');
+    dots.forEach((d,i)=>d.classList.toggle('active', i===_railActive));
+  }
+
+  // Met à jour barre compacte, sélection logo, état déplié
+  function _railSyncUI(){
+    const rail = document.getElementById('srcRail');
+    if(!rail) return;
+    rail.classList.toggle('is-open', _railOpen);
+    rail.classList.toggle('is-filtered', !!_railFilterUrl);
+
+    // Sélection du logo filtré
+    rail.querySelectorAll('.cf-logo.sel').forEach(el=>el.classList.remove('sel'));
+    if(_railFilterUrl){
+      const sel = rail.querySelector(`.cf-logo[data-url="${(window.CSS&&CSS.escape)?CSS.escape(_railFilterUrl):_railFilterUrl}"]`);
+      if(sel) sel.classList.add('sel');
     }
 
-    rail.innerHTML =
-      `<div class="ed-rail-cats">${catChips}</div>
-       <div class="ed-rail-bubbles${_edActiveCat ? ' open' : ''}"><div class="edr-bubbles-inner">${bubblesHtml}</div></div>
-       ${filterBar}`;
-
-    _bindEditionsRail();
+    // Barre compacte
+    const fav   = document.getElementById('srailBarFav');
+    const label = document.getElementById('srailBarLabel');
+    const reset = document.getElementById('srailBarReset');
+    if(_railFilterUrl){
+      let name = _railFilterUrl;
+      for(const c of _railCats){ const f = c.feeds.find(x=>x.url===_railFilterUrl); if(f){ name = f.name; break; } }
+      if(label) label.textContent = name;
+      if(fav)   fav.innerHTML = `<img src="${escAttr(getFavicon(_railFilterUrl))}" alt="" onerror="this.style.opacity='.3'">`;
+      if(reset) reset.hidden = false;
+    } else {
+      if(label) label.textContent = 'Parcourir mes sources';
+      if(fav)   fav.innerHTML = '';
+      if(reset) reset.hidden = true;
+    }
   }
 
-  function _bindEditionsRail(){
-    if(_edRailBound) return;
-    const rail = document.getElementById('editionsRail');
-    if(!rail) return;
-    _edRailBound = true;
-    rail.addEventListener('click', e => {
-      const cat = e.target.closest('.edr-cat');
-      if(cat){ _edToggleCat(cat.dataset.cat); return; }
-      const bub = e.target.closest('.edr-bubble');
-      if(bub){ _edPickSource(bub.dataset.url); return; }
-      if(e.target.closest('.edr-filter-clear')){ _edClearFilter(); return; }
+  function _railGo(i){
+    const n = _railCats.length;
+    _railActive = Math.max(0, Math.min(n-1, i));
+    _railLayout();
+  }
+
+  function _railSetOpen(open){
+    _railOpen = open;
+    try{ localStorage.setItem('bf_rail_open', open ? '1' : '0'); }catch(e){}
+    _railSyncUI();
+    if(open) requestAnimationFrame(_railLayout);
+  }
+
+  function _railPickSource(url){
+    _railFilterUrl = (_railFilterUrl === url) ? null : url;
+    try{
+      if(_railFilterUrl) localStorage.setItem('bf_rail_filter', _railFilterUrl);
+      else localStorage.removeItem('bf_rail_filter');
+    }catch(e){}
+    _railSyncUI();
+    _renderCurrentView();   // applique le filtre à la vue active
+  }
+
+  function _railClearFilter(){
+    _railFilterUrl = null;
+    try{ localStorage.removeItem('bf_rail_filter'); }catch(e){}
+    _railSyncUI();
+    _renderCurrentView();
+  }
+
+  function _railBindOnce(){
+    if(_railBound) return;
+    _railBound = true;
+    const stage = document.getElementById('cfStage');
+    const track = document.getElementById('cfTrack');
+    const chev  = document.getElementById('srailBarChev');
+    const main  = document.getElementById('srailBarMain');
+    const reset = document.getElementById('srailBarReset');
+
+    let justDragged = false;
+
+    // Clic : carte de côté → centrer ; logo carte centrale → filtrer
+    if(track) track.addEventListener('click', e => {
+      if(justDragged){ justDragged = false; return; }   // ignore le clic post-glissement
+      const card = e.target.closest('.cf-card'); if(!card) return;
+      const idx = +card.dataset.idx;
+      if(idx !== _railActive){ _railGo(idx); return; }
+      const logo = e.target.closest('.cf-logo');
+      if(logo) _railPickSource(logo.dataset.url);
     });
-  }
 
-  function _edToggleCat(name){
-    _edActiveCat = (_edActiveCat === name) ? null : name;
-    _renderEditionsRail();
-  }
-  function _edPickSource(url){
-    _edFilterUrl = (_edFilterUrl === url) ? null : url;
-    _renderEditionsRail();
-    _renderEditions();
-  }
-  function _edClearFilter(){
-    _edFilterUrl = null;
-    _renderEditionsRail();
-    _renderEditions();
+    // Drag horizontal pour faire défiler le carrousel
+    let startX = null, startY = null, dragging = false;
+    if(stage){
+      stage.addEventListener('pointerdown', e => { startX=e.clientX; startY=e.clientY; dragging=false; });
+      stage.addEventListener('pointermove', e => {
+        if(startX===null) return;
+        if(Math.abs(e.clientX-startX) > 8 && Math.abs(e.clientX-startX) > Math.abs(e.clientY-startY)) dragging=true;
+      });
+      stage.addEventListener('pointerup', e => {
+        if(startX===null) return;
+        const dx = e.clientX-startX;
+        if(dragging){
+          justDragged = true;
+          if(Math.abs(dx) > 42) _railGo(_railActive + (dx<0?1:-1));
+          setTimeout(()=>{ justDragged = false; }, 60);
+        }
+        startX=null; startY=null;
+      });
+      stage.addEventListener('pointercancel', ()=>{ startX=null; startY=null; });
+    }
+
+    if(chev)  chev.addEventListener('click', ()=> _railSetOpen(!_railOpen));
+    if(main)  main.addEventListener('click', ()=>{ if(!_railOpen) _railSetOpen(true); });
+    if(reset) reset.addEventListener('click', e => { e.stopPropagation(); _railClearFilter(); });
   }
 
 
@@ -7352,15 +7497,14 @@ body.focus-mode .focus-exit{ display:flex; }
     const skel  = document.getElementById('editionsSkeleton');
     if(!hero||!grid) return;
     if(skel) skel.style.display='none';
-    _renderEditionsRail();
     if(!_allArticles.length){
       if(empty) empty.style.display = _rssFeeds.length ? 'none' : 'block';
       return;
     }
     if(empty) empty.style.display='none';
 
-    // Filtrage éventuel par source (bulle du rail catégories)
-    const pool    = _edFilterUrl ? _allArticles.filter(a => (a.feedUrl || '') === _edFilterUrl) : _allArticles;
+    // Filtrage éventuel par source (rail global)
+    const pool    = _railApplyFilter(_allArticles);
     const deduped = _dedup([...pool].sort((a,b)=>b.pubDate-a.pubDate));
     const best    = deduped.find(a=>a.imageUrl) || deduped[0];
     const rest    = deduped.filter(a=>a.link!==best?.link).slice(0,60);
@@ -7371,8 +7515,8 @@ body.focus-mode .focus-exit{ display:flex; }
 
     // Jitter fix : ne re-rendre que si le contenu a changé
     // (la clé inclut le filtre actif pour forcer le re-rendu au changement)
-    const heroKey = (best?.link || '') + '#' + (_edFilterUrl || '');
-    const gridKey = rest.slice(0,5).map(a=>a.link).join('|') + '#' + (_edFilterUrl || '');
+    const heroKey = (best?.link || '') + '#' + (_railFilterUrl || '');
+    const gridKey = rest.slice(0,5).map(a=>a.link).join('|') + '#' + (_railFilterUrl || '');
 
     if(hero.dataset.key === heroKey && grid.dataset.key === gridKey) return; // rien n'a changé
 
@@ -7463,6 +7607,7 @@ body.focus-mode .focus-exit{ display:flex; }
     // Fallback si une vue supprimée était en localStorage
     if(!order.includes(_currentView)){ _currentView='editions'; try{localStorage.setItem('bf_view','editions');}catch(e){} }
     views.forEach(v => { v.hidden = v.dataset.view !== _currentView; });
+    _renderSrcRail();   // rail partagé visible sur toutes les vues
     if(_currentView === 'editions')    _renderEditions();
     else if(_currentView === 'grille') _renderGrille();
     else if(_currentView === 'sequential') _renderSequential();
@@ -8150,7 +8295,7 @@ body.focus-mode .focus-exit{ display:flex; }
   function _renderGrille(){
     const wrap = document.getElementById('grilleGrid');
     if(!wrap) return;
-    const arts = typeof _allArticles !== 'undefined' ? _dedup([..._allArticles].sort((a,b)=>b.pubDate-a.pubDate)) : [];
+    const arts = typeof _allArticles !== 'undefined' ? _dedup(_railApplyFilter([..._allArticles]).sort((a,b)=>b.pubDate-a.pubDate)) : [];
     _grilleArts = arts.slice(0,60);
     if(!_grilleArts.length){
       wrap.innerHTML = '<div style="grid-column:1/-1;padding:60px 0;text-align:center;color:var(--text-muted);font-size:14px;font-family:var(--font-inter)">Aucun article disponible</div>';
@@ -8410,7 +8555,7 @@ body.focus-mode .focus-exit{ display:flex; }
     const list = document.getElementById('seqList');
     if(!list) return;
     const arts = typeof _allArticles !== 'undefined'
-      ? _dedup([..._allArticles].sort((a,b)=>b.pubDate-a.pubDate))
+      ? _dedup(_railApplyFilter([..._allArticles]).sort((a,b)=>b.pubDate-a.pubDate))
       : [];
     _seqArts = arts.slice(0, 30);   // Focus : 30 articles maximum
     if(!_seqArts.length){
@@ -8505,7 +8650,7 @@ body.focus-mode .focus-exit{ display:flex; }
   function _renderListe(){
     const wrap = document.getElementById('listeList');
     if(!wrap) return;
-    const arts = typeof _allArticles !== 'undefined' ? _dedup([..._allArticles].sort((a,b)=>b.pubDate-a.pubDate)) : [];
+    const arts = typeof _allArticles !== 'undefined' ? _dedup(_railApplyFilter([..._allArticles]).sort((a,b)=>b.pubDate-a.pubDate)) : [];
     _listeArts = arts.slice(0, 100);
     if(!_listeArts.length){
       wrap.innerHTML = '<div style="padding:60px 0;text-align:center;color:var(--text-muted);font-size:14px;font-family:var(--font-inter)">Aucun article disponible</div>';
