@@ -2481,6 +2481,112 @@ button, .ob-btn, .ob-btn-ghost,
 /* Hero plus grand */
 #editionsHero .art-card .art-title{ font-size:22px; line-height:1.2; -webkit-line-clamp:4; }
 #editionsHero .art-card .art-source-row{ margin-top:14px; }
+/* ══════════════════════════════════════════════════════════
+   RAIL CATÉGORIES → SOURCES (vue Éditions)
+   Niveau 1 : chips de catégories. Tap → révèle les bulles
+   sources (niveau 2). Tap bulle → filtre l'édition.
+   ══════════════════════════════════════════════════════════ */
+.ed-rail{ margin:2px 0 24px; }
+
+/* — Niveau 1 : chips catégories — */
+.ed-rail-cats{
+  display:flex; gap:8px; overflow-x:auto;
+  padding:2px 2px 4px; margin:0 -2px;
+  scrollbar-width:none; -ms-overflow-style:none;
+  scroll-snap-type:x proximity;
+}
+.ed-rail-cats::-webkit-scrollbar{ display:none; }
+.edr-cat{
+  flex:0 0 auto; scroll-snap-align:start;
+  display:inline-flex; align-items:center; gap:7px;
+  height:38px; padding:0 15px; border-radius:999px;
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.09);
+  -webkit-backdrop-filter:blur(12px) saturate(140%);
+  backdrop-filter:blur(12px) saturate(140%);
+  font-family:var(--font-inter); font-size:13px; font-weight:600;
+  letter-spacing:-.01em; color:var(--text); cursor:pointer;
+  white-space:nowrap; -webkit-tap-highlight-color:transparent;
+  transition:transform .34s cubic-bezier(.34,1.56,.64,1),
+             background .2s ease, border-color .2s ease, color .2s ease;
+}
+.edr-cat:active{ transform:scale(.94); transition:transform .07s ease-in; }
+.edr-cat-count{
+  font-family:var(--font-inter); font-size:11px; font-weight:700;
+  color:var(--text-muted); background:rgba(255,255,255,.07);
+  border-radius:999px; padding:1px 7px; min-width:20px; text-align:center;
+  transition:background .2s ease, color .2s ease;
+}
+.edr-cat.active{
+  background:rgba(10,132,255,.16); border-color:rgba(10,132,255,.4); color:#0a84ff;
+}
+.edr-cat.active .edr-cat-count{ background:rgba(10,132,255,.2); color:#0a84ff; }
+[data-theme="light"] .edr-cat{ background:rgba(0,0,0,.04); border-color:rgba(0,0,0,.08); }
+[data-theme="light"] .edr-cat-count{ background:rgba(0,0,0,.06); }
+
+/* — Niveau 2 : panneau bulles (révélé via grid-template-rows) — */
+.ed-rail-bubbles{
+  display:grid; grid-template-rows:0fr;
+  transition:grid-template-rows .44s cubic-bezier(.32,.72,0,1);
+}
+.ed-rail-bubbles.open{ grid-template-rows:1fr; }
+.edr-bubbles-inner{ overflow:hidden; min-height:0; }
+.edr-bubbles-scroll{
+  display:flex; gap:15px; overflow-x:auto;
+  padding:16px 2px 4px; scrollbar-width:none;
+}
+.edr-bubbles-scroll::-webkit-scrollbar{ display:none; }
+.edr-bubble{
+  flex:0 0 auto; display:flex; flex-direction:column; align-items:center;
+  gap:8px; width:58px; cursor:pointer; -webkit-tap-highlight-color:transparent;
+  background:none; border:none; padding:0;
+  opacity:0; transform:translateY(8px);
+  animation:edrBubbleIn .42s cubic-bezier(.16,1,.3,1) forwards;
+}
+@keyframes edrBubbleIn{ to{ opacity:1; transform:translateY(0); } }
+.edr-bubble-ring{
+  width:54px; height:54px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.1);
+  box-shadow:0 4px 12px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.06);
+  overflow:visible; position:relative;
+  transition:transform .34s cubic-bezier(.34,1.56,.64,1), border-color .2s ease, box-shadow .2s ease;
+}
+.edr-bubble:active .edr-bubble-ring{ transform:scale(.9); transition:transform .07s ease-in; }
+.edr-bubble.active .edr-bubble-ring{
+  border-color:#0a84ff;
+  box-shadow:0 0 0 2px rgba(10,132,255,.55), 0 4px 12px rgba(0,0,0,.25);
+}
+.edr-bubble-ring img{ width:30px; height:30px; object-fit:contain; border-radius:7px; display:block; }
+.edr-bubble-dot{
+  position:absolute; right:1px; bottom:1px; width:12px; height:12px;
+  border-radius:50%; background:#0a84ff; border:2.5px solid var(--bg);
+}
+.edr-bubble-name{
+  font-family:var(--font-inter); font-size:10.5px; font-weight:600;
+  color:var(--text-muted); text-align:center; width:58px;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.edr-bubble.active .edr-bubble-name{ color:#0a84ff; }
+[data-theme="light"] .edr-bubble-ring{ background:rgba(0,0,0,.04); border-color:rgba(0,0,0,.09); }
+
+/* — Barre de filtre actif — */
+.edr-filter-bar{
+  display:flex; align-items:center; gap:8px; margin:16px 0 0;
+  font-family:var(--font-inter); font-size:12.5px; color:var(--text-muted);
+}
+.edr-filter-clear{
+  margin-left:auto; display:inline-flex; align-items:center; gap:5px;
+  border:1px solid rgba(255,255,255,.09); background:rgba(255,255,255,.06);
+  color:var(--text); border-radius:999px; padding:6px 13px;
+  font-family:var(--font-inter); font-size:12px; font-weight:600;
+  cursor:pointer; -webkit-tap-highlight-color:transparent;
+  transition:transform .34s cubic-bezier(.34,1.56,.64,1), background .2s ease;
+}
+.edr-filter-clear:active{ transform:scale(.93); transition:transform .07s ease-in; }
+[data-theme="light"] .edr-filter-clear{ border-color:rgba(0,0,0,.08); background:rgba(0,0,0,.05); }
+
 /* ── Indicateur de synchro — pastille sobre centrée (style Feedly) ── */
 #refreshBadge{
   position:fixed; left:50%;
@@ -4285,6 +4391,9 @@ body.focus-mode .focus-exit{ display:flex; }
             <div class="hello-card sk-card" style="animation:sk 1.4s .4s ease-in-out infinite alternate"></div>
           </div>
         </div>
+
+        <!-- Rail Catégories → Sources -->
+        <div id="editionsRail" class="ed-rail" hidden></div>
 
         <!-- Hero article du jour -->
         <div id="editionsHero"></div>
@@ -6890,6 +6999,119 @@ body.focus-mode .focus-exit{ display:flex; }
   // ── Tableau global — articles indexés (pas de JSON dans onclick) ──
   let _editionArts = [];
 
+  // ── Rail Catégories → Sources ─────────────────────────────────
+  let _edActiveCat  = null;   // catégorie déployée (bulles visibles)
+  let _edFilterUrl  = null;   // feedUrl filtrant l'édition (bulle active)
+  let _edRailBound  = false;  // délégation d'évènements attachée une fois
+
+  function _edUnreadCount(urls, artByUrl, hasRS){
+    let n = 0;
+    urls.forEach(u => (artByUrl[u] || []).forEach(a => {
+      if(!hasRS || !window._RS.has(a.link)) n++;
+    }));
+    return n;
+  }
+
+  function _renderEditionsRail(){
+    const rail = document.getElementById('editionsRail');
+    if(!rail) return;
+    const feeds = (typeof _rssFeeds !== 'undefined') ? _rssFeeds : [];
+    if(!feeds.length){ rail.hidden = true; return; }
+
+    // Regrouper les flux par catégorie (ordre d'apparition préservé)
+    const cats = [], catMap = {};
+    feeds.forEach(f => {
+      const c = f.category || 'Autres';
+      if(!catMap[c]){ catMap[c] = { name:c, feeds:[] }; cats.push(catMap[c]); }
+      catMap[c].feeds.push(f);
+    });
+    if(!cats.length){ rail.hidden = true; return; }
+    rail.hidden = false;
+
+    // Index articles par flux pour le comptage non-lus
+    const artByUrl = {};
+    _allArticles.forEach(a => { const u = a.feedUrl || ''; (artByUrl[u] = artByUrl[u] || []).push(a); });
+    const hasRS = (typeof window._RS !== 'undefined');
+
+    // Réinitialiser si la catégorie/filtre actif n'existe plus
+    if(_edActiveCat && !catMap[_edActiveCat]) _edActiveCat = null;
+    if(_edFilterUrl && !feeds.some(f => f.url === _edFilterUrl)) _edFilterUrl = null;
+
+    // Niveau 1 — chips catégories
+    const catChips = cats.map(c => {
+      const cnt    = _edUnreadCount(c.feeds.map(f => f.url), artByUrl, hasRS);
+      const active = _edActiveCat === c.name;
+      return `<button class="edr-cat${active ? ' active' : ''}" data-cat="${escAttr(c.name)}">
+        <span>${escHtml(c.name)}</span>
+        ${cnt ? `<span class="edr-cat-count">${cnt > 99 ? '99+' : cnt}</span>` : ''}
+      </button>`;
+    }).join('');
+
+    // Niveau 2 — bulles sources de la catégorie déployée
+    let bubblesHtml = '';
+    if(_edActiveCat && catMap[_edActiveCat]){
+      bubblesHtml = `<div class="edr-bubbles-scroll">${
+        catMap[_edActiveCat].feeds.map((f, i) => {
+          const cnt    = _edUnreadCount([f.url], artByUrl, hasRS);
+          const active = _edFilterUrl === f.url;
+          return `<button class="edr-bubble${active ? ' active' : ''}" data-url="${escAttr(f.url)}" style="animation-delay:${(i * 0.035).toFixed(3)}s">
+            <span class="edr-bubble-ring">
+              <img src="${escAttr(getFavicon(f.url))}" alt="" onerror="this.style.opacity='.3'">
+              ${cnt ? '<span class="edr-bubble-dot"></span>' : ''}
+            </span>
+            <span class="edr-bubble-name">${escHtml(f.name)}</span>
+          </button>`;
+        }).join('')
+      }</div>`;
+    }
+
+    // Barre de filtre actif
+    let filterBar = '';
+    if(_edFilterUrl){
+      const f = feeds.find(x => x.url === _edFilterUrl);
+      filterBar = `<div class="edr-filter-bar">
+        <span>Filtré sur <strong style="color:var(--text)">${escHtml(f ? f.name : 'source')}</strong></span>
+        <button class="edr-filter-clear" data-clear="1">Réinitialiser</button>
+      </div>`;
+    }
+
+    rail.innerHTML =
+      `<div class="ed-rail-cats">${catChips}</div>
+       <div class="ed-rail-bubbles${_edActiveCat ? ' open' : ''}"><div class="edr-bubbles-inner">${bubblesHtml}</div></div>
+       ${filterBar}`;
+
+    _bindEditionsRail();
+  }
+
+  function _bindEditionsRail(){
+    if(_edRailBound) return;
+    const rail = document.getElementById('editionsRail');
+    if(!rail) return;
+    _edRailBound = true;
+    rail.addEventListener('click', e => {
+      const cat = e.target.closest('.edr-cat');
+      if(cat){ _edToggleCat(cat.dataset.cat); return; }
+      const bub = e.target.closest('.edr-bubble');
+      if(bub){ _edPickSource(bub.dataset.url); return; }
+      if(e.target.closest('.edr-filter-clear')){ _edClearFilter(); return; }
+    });
+  }
+
+  function _edToggleCat(name){
+    _edActiveCat = (_edActiveCat === name) ? null : name;
+    _renderEditionsRail();
+  }
+  function _edPickSource(url){
+    _edFilterUrl = (_edFilterUrl === url) ? null : url;
+    _renderEditionsRail();
+    _renderEditions();
+  }
+  function _edClearFilter(){
+    _edFilterUrl = null;
+    _renderEditionsRail();
+    _renderEditions();
+  }
+
 
   // ════════════════════════════════════════════════════════════════
   //  BRIEFEED SCORING ENGINE — v1.0
@@ -7130,13 +7352,16 @@ body.focus-mode .focus-exit{ display:flex; }
     const skel  = document.getElementById('editionsSkeleton');
     if(!hero||!grid) return;
     if(skel) skel.style.display='none';
+    _renderEditionsRail();
     if(!_allArticles.length){
       if(empty) empty.style.display = _rssFeeds.length ? 'none' : 'block';
       return;
     }
     if(empty) empty.style.display='none';
 
-    const deduped = _dedup([..._allArticles].sort((a,b)=>b.pubDate-a.pubDate));
+    // Filtrage éventuel par source (bulle du rail catégories)
+    const pool    = _edFilterUrl ? _allArticles.filter(a => (a.feedUrl || '') === _edFilterUrl) : _allArticles;
+    const deduped = _dedup([...pool].sort((a,b)=>b.pubDate-a.pubDate));
     const best    = deduped.find(a=>a.imageUrl) || deduped[0];
     const rest    = deduped.filter(a=>a.link!==best?.link).slice(0,60);
     _editionArts  = best ? [best,...rest] : rest;
@@ -7145,8 +7370,9 @@ body.focus-mode .focus-exit{ display:flex; }
     const gridHtml = rest.map((a,i)=>_artCardHtml(a, i+1, false, 'standard')).join('');
 
     // Jitter fix : ne re-rendre que si le contenu a changé
-    const heroKey = best?.link || '';
-    const gridKey = rest.slice(0,5).map(a=>a.link).join('|');
+    // (la clé inclut le filtre actif pour forcer le re-rendu au changement)
+    const heroKey = (best?.link || '') + '#' + (_edFilterUrl || '');
+    const gridKey = rest.slice(0,5).map(a=>a.link).join('|') + '#' + (_edFilterUrl || '');
 
     if(hero.dataset.key === heroKey && grid.dataset.key === gridKey) return; // rien n'a changé
 
