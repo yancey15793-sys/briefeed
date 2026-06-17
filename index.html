@@ -1818,46 +1818,294 @@ button, .ob-btn, .ob-btn-ghost,
 .grid2-fav{ width:16px; height:16px; border-radius:50%; overflow:hidden; flex-shrink:0; background:transparent; }
 .grid2-fav img{ width:100%; height:100%; object-fit:contain; border-radius:50%; display:block; }
 
-/* ── VUE SÉQUENTIELLE ────────────────────────────── */
-.seq-list{ display:flex; flex-direction:column; gap:0; padding-bottom:80px; }
-.seq-item{ display:flex; gap:14px; align-items:flex-start; padding:26px 0; border-bottom:1px solid var(--border); cursor:pointer; -webkit-tap-highlight-color:transparent; transition:background .15s; }
-.seq-item:active{ background:rgba(255,255,255,.03); }
-[data-theme="light"] .seq-item{ border-color:rgba(0,0,0,.08); }
-.seq-item:last-child{ border-bottom:none; }
-.seq-num{ font-family:var(--font-inter); font-size:22px; font-weight:800; color:rgba(255,255,255,.38); min-width:32px; text-align:right; flex-shrink:0; line-height:1; padding-top:3px; letter-spacing:-.03em; }
-[data-theme="light"] .seq-num{ color:rgba(0,0,0,.32); }
-.seq-body{ flex:1; min-width:0; }
-.seq-source{ font-family:var(--font-inter); font-size:10.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.04em; margin-bottom:5px; display:flex; align-items:center; gap:4px; }
-.seq-fav{ width:16px; height:16px; border-radius:50%; overflow:hidden; background:transparent; }
-.seq-fav img{ width:100%; height:100%; object-fit:contain; border-radius:50%; display:block; }
-.seq-title{ font-family:var(--font-title); font-size:17px; font-weight:700; line-height:1.28; color:var(--text); letter-spacing:-.01em; }
-.seq-thumb{ width:114px; height:76px; flex-shrink:0; border-radius:10px; overflow:hidden; background:#111; align-self:center; }
-.seq-thumb img{ width:100%; height:100%; object-fit:cover; }
 
-/* ── Séquentiel : mémoire de lecture (additif) ───────────── */
-.seq-item.is-read{ opacity:.4; }
-.seq-item.is-read .seq-title{ font-weight:600; color:var(--text-muted); }
-.seq-item.is-read .seq-num{ color:rgba(255,255,255,.16); }
-[data-theme="light"] .seq-item.is-read .seq-num{ color:rgba(0,0,0,.16); }
-.seq-item.is-read .seq-thumb{ filter:grayscale(1); }
+/* ══════════════════════════════════════════════════════════════════
+   FOCUS SÉQUENTIEL — Vue éditoriale Premium Minimalist
+   Philosophie : magazine éditorial numérique. Chaque article = une
+   séquence isolée. Zéro bruit. Lecture-plaisir.
+   ══════════════════════════════════════════════════════════════════ */
 
-/* ── Séquentiel : en-tête de progression / reprise ───────── */
-.seq-progress{ display:none; align-items:center; justify-content:space-between; gap:14px; padding:18px 0 16px; margin-bottom:2px; border-bottom:1px solid var(--border); }
+/* Container */
+.seq-list{
+  display:flex; flex-direction:column;
+  gap:0; padding:0 0 100px;
+}
+
+/* ── Tracker de progression (dots discrets) ──────────────── */
+.seq-progress{
+  display:none; flex-direction:column; gap:14px;
+  padding:24px 0 20px; margin-bottom:4px;
+}
 .seq-progress.show{ display:flex; }
-[data-theme="light"] .seq-progress{ border-color:rgba(0,0,0,.08); }
-.seq-progress-info{ flex:1; min-width:0; display:flex; flex-direction:column; gap:8px; }
-.seq-progress-label{ font-family:var(--font-inter); font-size:13.5px; font-weight:700; color:var(--text); letter-spacing:-.01em; display:flex; align-items:center; gap:6px; }
-.seq-progress-time{ font-family:var(--font-inter); font-size:11px; font-weight:600; color:var(--text-muted); letter-spacing:.01em; }
-.seq-progress-bar{ width:100%; height:4px; border-radius:99px; background:rgba(255,255,255,.08); overflow:hidden; }
-[data-theme="light"] .seq-progress-bar{ background:rgba(0,0,0,.08); }
-.seq-progress-fill{ height:100%; border-radius:99px; background:#0a84ff; width:0; transition:width .5s cubic-bezier(.32,.72,0,1); }
-.seq-progress.is-done .seq-progress-fill{ background:#34c759; }
-.seq-progress.is-done .seq-progress-label{ color:#34c759; }
-.seq-progress-actions{ display:flex; align-items:center; gap:8px; flex-shrink:0; }
-.seq-progress-action{ font-family:var(--font-inter); font-size:12.5px; font-weight:700; color:#0a84ff; background:rgba(10,132,255,.1); border:none; border-radius:99px; padding:9px 15px; cursor:pointer; -webkit-tap-highlight-color:transparent; white-space:nowrap; letter-spacing:-.01em; transition:transform .1s; }
-.seq-progress-action:active{ transform:scale(.95); }
-.seq-progress-ghost{ font-family:var(--font-inter); font-size:12.5px; font-weight:600; color:var(--text-muted); background:transparent; border:none; cursor:pointer; -webkit-tap-highlight-color:transparent; white-space:nowrap; padding:9px 3px; }
-.seq-progress-ghost:active{ opacity:.6; }
+.fos-track-top{
+  display:flex; align-items:flex-start; justify-content:space-between;
+}
+.fos-track-label{
+  font-family:var(--font-inter); font-size:10px; font-weight:700;
+  letter-spacing:.12em; text-transform:uppercase; color:rgba(255,255,255,.32);
+}
+.fos-track-sub{
+  font-family:var(--font-inter); font-size:12.5px; font-weight:700;
+  color:var(--text); letter-spacing:-.01em; margin-top:3px;
+}
+.fos-track-actions{ display:flex; gap:8px; flex-shrink:0; }
+.fos-track-btn{
+  font-family:var(--font-inter); font-size:12px; font-weight:700;
+  color:#0a84ff; background:rgba(10,132,255,.1);
+  border:none; border-radius:999px; padding:7px 14px;
+  cursor:pointer; -webkit-tap-highlight-color:transparent;
+  transition:transform .38s cubic-bezier(.34,1.56,.64,1);
+  white-space:nowrap;
+}
+.fos-track-btn:active{ transform:scale(.92); transition:transform .07s ease-in; }
+.fos-track-ghost{
+  font-family:var(--font-inter); font-size:12px; font-weight:600;
+  color:var(--text-muted); background:transparent; border:none;
+  cursor:pointer; -webkit-tap-highlight-color:transparent;
+  padding:7px 4px;
+}
+.fos-track-ghost:active{ opacity:.55; }
+.fos-track-done{
+  display:flex; align-items:center; gap:7px;
+  font-family:var(--font-inter); font-size:13px; font-weight:700;
+  color:#34c759; letter-spacing:-.01em;
+}
+/* Dots */
+.fos-dots-wrap{
+  display:flex; align-items:center; gap:5px;
+  overflow:hidden; flex-wrap:nowrap;
+}
+.fos-dot{
+  flex-shrink:0;
+  border-radius:50%;
+  background:rgba(255,255,255,.12);
+  transition:background .3s ease, transform .3s cubic-bezier(.34,1.56,.64,1);
+}
+.fos-dot.fos-read{ background:#0a84ff; }
+.fos-dot.fos-current{
+  background:#fff;
+  box-shadow:0 0 0 2px rgba(255,255,255,.22);
+  transform:scale(1.25);
+}
+/* Segment bar (fallback > 30 articles) */
+.fos-seg-bar{
+  width:100%; height:3px; border-radius:99px;
+  background:rgba(255,255,255,.1); overflow:hidden;
+}
+.fos-seg-fill{
+  height:100%; border-radius:99px; background:#0a84ff;
+  transition:width .5s cubic-bezier(.32,.72,0,1);
+}
+.seq-progress.is-done .fos-seg-fill{ background:#34c759; }
+
+/* ── Carte article (séquence) ────────────────────────────── */
+.fos-card{
+  background:rgba(255,255,255,.026);
+  border:1px solid rgba(255,255,255,.06);
+  /* Micro-ombre portée pour profondeur optique */
+  box-shadow:
+    0 2px 12px rgba(0,0,0,.18),
+    0 1px 3px rgba(0,0,0,.12),
+    inset 0 1px 0 rgba(255,255,255,.04);
+  border-radius:20px;
+  padding:22px 20px 18px;
+  margin:0 0 14px;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+  -webkit-user-select:none; user-select:none;
+  transition:
+    transform  .42s cubic-bezier(.34,1.56,.64,1),
+    box-shadow .3s ease,
+    opacity    .38s ease;
+  will-change:transform;
+}
+.fos-card:active{
+  transform:scale(.975);
+  box-shadow:0 1px 6px rgba(0,0,0,.14), 0 0px 2px rgba(0,0,0,.1), inset 0 1px 0 rgba(255,255,255,.03);
+  transition:transform .07s ease-in, box-shadow .07s ease-in;
+}
+.fos-card.is-read{
+  opacity:.38;
+  border-color:rgba(255,255,255,.04);
+  box-shadow:none;
+}
+/* Mode clair */
+[data-theme="light"] .fos-card{
+  background:rgba(0,0,0,.025);
+  border-color:rgba(0,0,0,.07);
+  box-shadow:0 2px 12px rgba(0,0,0,.06), 0 1px 3px rgba(0,0,0,.04), inset 0 1px 0 rgba(255,255,255,.7);
+}
+[data-theme="light"] .fos-card.is-read{ opacity:.32; }
+
+/* En-tête de carte */
+.fos-card-header{
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:14px;
+}
+.fos-source-row{
+  display:flex; align-items:center; gap:7px; flex:1; min-width:0;
+}
+.fos-fav{
+  width:18px; height:18px; border-radius:50%; overflow:hidden;
+  background:rgba(255,255,255,.06); flex-shrink:0;
+}
+.fos-fav img{ width:100%; height:100%; object-fit:contain; border-radius:50%; display:block; }
+.fos-source-name{
+  font-family:var(--font-inter); font-size:11px; font-weight:700;
+  color:rgba(255,255,255,.45); letter-spacing:.03em; text-transform:uppercase;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.fos-time{
+  font-family:var(--font-inter); font-size:11px; font-weight:500;
+  color:rgba(255,255,255,.28); letter-spacing:.01em; flex-shrink:0;
+}
+.fos-num{
+  font-family:var(--font-inter); font-size:13px; font-weight:800;
+  color:rgba(255,255,255,.18); letter-spacing:-.02em; flex-shrink:0;
+}
+[data-theme="light"] .fos-source-name{ color:rgba(0,0,0,.42); }
+[data-theme="light"] .fos-time{ color:rgba(0,0,0,.28); }
+[data-theme="light"] .fos-num{ color:rgba(0,0,0,.2); }
+
+/* Image hero */
+.fos-img-wrap{
+  width:100%; aspect-ratio:16/9; border-radius:13px; overflow:hidden;
+  background:#111; margin-bottom:16px;
+}
+.fos-img-wrap img{
+  width:100%; height:100%; object-fit:cover;
+  display:block;
+}
+
+/* Titre */
+.fos-title{
+  font-family:var(--font-title); /* DM Serif en mode Serif */
+  font-size:21px; font-weight:700; line-height:1.24;
+  color:var(--text); letter-spacing:-.015em;
+  margin:0 0 16px; padding-right:28px; /* clearance bouton partage */
+  display:block;
+}
+
+/* ── Bloc Intel (résumé) ─────────────────────────────────── */
+.fos-intel{
+  background:
+    linear-gradient(135deg, rgba(10,132,255,.08) 0%, rgba(10,132,255,.04) 100%);
+  border:1px solid rgba(10,132,255,.15);
+  border-radius:13px; padding:14px 16px 12px;
+  margin:0 0 14px;
+}
+.fos-intel-header{
+  display:flex; align-items:center; gap:7px; margin-bottom:10px;
+}
+.fos-intel-icon{
+  width:20px; height:20px; border-radius:6px;
+  background:linear-gradient(135deg,#0a84ff,#30d158);
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0;
+}
+.fos-intel-icon svg{ display:block; }
+.fos-intel-tag{
+  font-family:var(--font-inter); font-size:10px; font-weight:800;
+  letter-spacing:.1em; text-transform:uppercase; color:#0a84ff;
+}
+.fos-intel-list{
+  list-style:none; margin:0; padding:0;
+  display:flex; flex-direction:column; gap:6px;
+}
+.fos-intel-list li{
+  font-family:var(--font-inter); font-size:13px; font-weight:500;
+  line-height:1.48; color:rgba(255,255,255,.78);
+  padding-left:14px; position:relative;
+}
+.fos-intel-list li::before{
+  content:''; position:absolute; left:0; top:6px;
+  width:4px; height:4px; border-radius:50%;
+  background:linear-gradient(135deg,#0a84ff,#30d158);
+}
+[data-theme="light"] .fos-intel-list li{ color:rgba(0,0,0,.7); }
+[data-theme="light"] .fos-intel-list li::before{ background:#0a84ff; }
+
+/* ── Ligne de flottaison ─────────────────────────────────── */
+.fos-float{
+  border:none; border-top:1px solid rgba(255,255,255,.06);
+  margin:16px 0; padding:0;
+}
+[data-theme="light"] .fos-float{ border-top-color:rgba(0,0,0,.07); }
+
+/* ── Extrait éditorial ───────────────────────────────────── */
+.fos-excerpt{
+  font-family:var(--font-dm); /* Serif élégant */
+  font-size:14.5px; font-weight:400; line-height:1.7;
+  color:rgba(255,255,255,.56);
+  margin:0 0 16px;
+  display:-webkit-box; -webkit-line-clamp:4;
+  -webkit-box-orient:vertical; overflow:hidden;
+}
+[data-theme="light"] .fos-excerpt{ color:rgba(0,0,0,.5); }
+
+/* ── Footer actions ──────────────────────────────────────── */
+.fos-footer{
+  display:flex; align-items:center; gap:6px;
+  padding-top:14px; border-top:1px solid rgba(255,255,255,.05);
+  margin-top:2px;
+}
+[data-theme="light"] .fos-footer{ border-top-color:rgba(0,0,0,.06); }
+.fos-act{
+  display:inline-flex; align-items:center; gap:5px;
+  border:none; border-radius:999px;
+  padding:7px 13px; cursor:pointer;
+  font-family:var(--font-inter); font-size:12px; font-weight:700;
+  -webkit-tap-highlight-color:transparent;
+  transition:transform .38s cubic-bezier(.34,1.56,.64,1),
+             background .18s ease, color .18s ease;
+}
+.fos-act:active{ transform:scale(.9); transition:transform .07s ease-in; }
+.fos-act-read{
+  background:rgba(255,255,255,.06); color:rgba(255,255,255,.55);
+}
+.fos-act-read:hover{ background:rgba(255,255,255,.1); color:rgba(255,255,255,.9); }
+.fos-act-read.fos-done{
+  background:rgba(52,199,89,.12); color:#34c759;
+}
+.fos-act-fav{
+  background:rgba(255,255,255,.06); color:rgba(255,255,255,.55);
+}
+.fos-act-fav:hover{ background:rgba(255,255,255,.1); color:rgba(255,255,255,.9); }
+.fos-act-fav.fos-starred{
+  background:rgba(255,214,10,.1); color:#ffd60a;
+}
+.fos-act-share{
+  background:rgba(255,255,255,.06); color:rgba(255,255,255,.55);
+}
+.fos-act-share:hover{ background:rgba(255,255,255,.1); color:rgba(255,255,255,.9); }
+.fos-act-open{
+  margin-left:auto; flex-shrink:0;
+  background:rgba(10,132,255,.12); color:#0a84ff;
+}
+.fos-act-open:hover{ background:rgba(10,132,255,.2); }
+[data-theme="light"] .fos-act-read{ background:rgba(0,0,0,.05); color:rgba(0,0,0,.45); }
+[data-theme="light"] .fos-act-fav  { background:rgba(0,0,0,.05); color:rgba(0,0,0,.45); }
+[data-theme="light"] .fos-act-share{ background:rgba(0,0,0,.05); color:rgba(0,0,0,.45); }
+[data-theme="light"] .fos-act-open { background:rgba(10,132,255,.1); }
+
+/* ── Séparateur thématique ───────────────────────────────── */
+.fos-separator{
+  display:flex; align-items:center; gap:12px;
+  padding:8px 0 18px; margin:2px 0;
+}
+.fos-sep-line{
+  flex:1; height:1px;
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,.08), transparent);
+}
+[data-theme="light"] .fos-sep-line{
+  background:linear-gradient(90deg, transparent, rgba(0,0,0,.08), transparent);
+}
+.fos-sep-label{
+  font-family:var(--font-dm); font-size:12px; font-style:italic;
+  color:rgba(255,255,255,.28); white-space:nowrap; letter-spacing:.01em;
+  flex-shrink:0;
+}
+[data-theme="light"] .fos-sep-label{ color:rgba(0,0,0,.28); }
 
 /* ── PAGE DOSSIER ────────────────────────────────── */
 .folder-page{ position:fixed; inset:0; z-index:450; background:var(--bg); display:flex; flex-direction:column; transform:translateX(100%); transition:transform .38s cubic-bezier(.32,.72,0,1); }
@@ -7700,47 +7948,80 @@ body.focus-mode .focus-exit{ display:flex; }
     return t ? t.split(/\s+/).length : 0;
   }
 
-  // ── En-tête de progression : compteur, barre, temps restant ──
+  // ── Tracker de progression — dots discrets (Focus Séquentiel) ──
   function _seqRenderProgress(){
     const host = document.getElementById('seqProgress');
     if(!host) return;
     const total = _seqArts ? _seqArts.length : 0;
     if(!total){ host.className = 'seq-progress'; host.innerHTML = ''; return; }
-    let read = 0, mins = 0;
-    for(const a of _seqArts){
+
+    let read = 0, mins = 0, firstUnread = -1;
+    for(let i = 0; i < _seqArts.length; i++){
+      const a = _seqArts[i];
       if(_RS.has(a.link)) read++;
-      else mins += Math.max(1, Math.round(_seqWords(a) / 200));
+      else {
+        if(firstUnread < 0) firstUnread = i;
+        mins += Math.max(1, Math.round(_seqWords(a) / 200));
+      }
     }
-    const pct  = Math.round(read / total * 100);
+    const pct  = total ? Math.round(read / total * 100) : 0;
     const done = read >= total;
     host.className = 'seq-progress show' + (done ? ' is-done' : '');
-    const label = done
-      ? `<div class="seq-progress-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>Vous êtes à jour</div>`
-      : `<div class="seq-progress-label">${read} / ${total} lus</div>`;
-    const time = done ? '' : `<div class="seq-progress-time">~${mins} min de lecture restante</div>`;
-    const actions = done
-      ? ''
-      : `<div class="seq-progress-actions">
-           <button class="seq-progress-action" onclick="_seqResume()">Reprendre</button>
-           <button class="seq-progress-ghost" onclick="_seqMarkAllRead()">Tout lu</button>
+
+    // Dots (≤ 30 articles) ou barre segmentée (> 30)
+    const USE_DOTS = total <= 30;
+    let dotsHtml = '';
+    if(USE_DOTS){
+      const sz = total <= 15 ? 8 : total <= 22 ? 6 : 5;
+      const gap = total <= 15 ? 5 : 4;
+      dotsHtml = `<div class="fos-dots-wrap" style="gap:${gap}px">` +
+        _seqArts.map((a,i) => {
+          const isRead    = _RS.has(a.link);
+          const isCurrent = !isRead && (firstUnread === i);
+          const cls       = isRead ? 'fos-read' : (isCurrent ? 'fos-current' : '');
+          return `<div class="fos-dot${cls?' '+cls:''}" style="width:${sz}px;height:${sz}px"></div>`;
+        }).join('') + '</div>';
+    } else {
+      dotsHtml = `<div class="fos-seg-bar"><div class="fos-seg-fill" style="width:${pct}%"></div></div>`;
+    }
+
+    const topHtml = done
+      ? `<div class="fos-track-top">
+           <div class="fos-track-done">
+             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+             Édition terminée
+           </div>
+           <div class="fos-track-actions">
+             <button class="fos-track-ghost" onclick="_seqMarkAllRead()">Réinitialiser</button>
+           </div>
+         </div>`
+      : `<div class="fos-track-top">
+           <div>
+             <div class="fos-track-label">Focus Séquentiel</div>
+             <div class="fos-track-sub">${read} / ${total} lus${mins > 0 ? ` · ~${mins} min` : ''}</div>
+           </div>
+           <div class="fos-track-actions">
+             ${firstUnread > 0 ? `<button class="fos-track-btn" onclick="_seqResume()">Reprendre</button>` : ''}
+             <button class="fos-track-ghost" onclick="_seqMarkAllRead()">Tout lu</button>
+           </div>
          </div>`;
-    host.innerHTML =
-      `<div class="seq-progress-info">
-         ${label}
-         ${time}
-         <div class="seq-progress-bar"><div class="seq-progress-fill" style="width:${pct}%"></div></div>
-       </div>
-       ${actions}`;
+
+    host.innerHTML = topHtml + dotsHtml;
   }
 
   // ── Rafraîchir les états « lu » sans re-render (préserve le scroll) ──
   function _seqRefreshReadStates(){
     const list = document.getElementById('seqList');
     if(!list || !_seqArts || !_seqArts.length){ _seqRenderProgress(); return; }
-    list.querySelectorAll('.seq-item').forEach(el => {
+    list.querySelectorAll('.fos-card').forEach(el => {
       const i = +el.getAttribute('data-seq-idx');
       const a = _seqArts[i];
-      if(a) el.classList.toggle('is-read', _RS.has(a.link));
+      if(!a) return;
+      const isRead = _RS.has(a.link);
+      el.classList.toggle('is-read', isRead);
+      // Mettre à jour le bouton "Lu"
+      const btn = el.querySelector('.fos-act-read');
+      if(btn) btn.classList.toggle('fos-done', isRead);
     });
     _seqRenderProgress();
   }
@@ -7751,8 +8032,14 @@ body.focus-mode .focus-exit{ display:flex; }
     if(!list || !_seqArts || !_seqArts.length) return;
     let idx = _seqArts.findIndex(a => !_RS.has(a.link));
     if(idx < 0) idx = 0;
-    const el = list.querySelector('.seq-item[data-seq-idx="' + idx + '"]');
-    if(el) el.scrollIntoView({behavior:'smooth', block:'center'});
+    const el = list.querySelector('.fos-card[data-seq-idx="' + idx + '"]');
+    if(el){
+      const rowEl = document.querySelector('.row');
+      if(rowEl){
+        const offset = el.offsetTop - 100;
+        rowEl.scrollTo({ top: offset, behavior:'smooth' });
+      } else { el.scrollIntoView({behavior:'smooth', block:'center'}); }
+    }
   };
 
   // ── Tout marquer comme lu (vider le retard) ──
@@ -7762,48 +8049,184 @@ body.focus-mode .focus-exit{ display:flex; }
     _seqRefreshReadStates();
   };
 
+  // ── Helpers Focus Séquentiel ──────────────────────────────────
+
+  // Extrait 2-3 points clés depuis la description (pseudo-résumé Intel)
+  function _fosPoints(a){
+    const raw = (a.description || a.contentEncoded || '')
+      .replace(/<[^>]+>/g,' ').replace(/&(?:amp|lt|gt|quot|nbsp|apos);/g,' ')
+      .replace(/\s+/g,' ').trim();
+    if(raw.length < 40) return [a.title||''].filter(Boolean).slice(0,1);
+    const sents = raw.split(/\.\s+/).map(s=>s.trim()).filter(s=>s.length > 28);
+    return sents.length >= 2 ? sents.slice(0,3) : [raw.slice(0,180).trim()];
+  }
+
+  // Extrait éditorial (premier paragraphe nettoyé)
+  function _fosExcerpt(a){
+    const raw = (a.description || a.contentEncoded || '')
+      .replace(/<[^>]+>/g,' ').replace(/&(?:amp|lt|gt|quot|nbsp|apos);/g,' ')
+      .replace(/\s+/g,' ').trim();
+    return raw.length > 60 ? raw.slice(0,340) + '…' : '';
+  }
+
+  const _FOS_SEPS = [
+    '~ Suite de votre édition ~',
+    '~ À lire maintenant ~',
+    '~ Dans votre fil ~',
+    '~ Pour aller plus loin ~',
+    '~ L\'essentiel continue ~',
+  ];
+
+  function _fosCardHtml(a, i){
+    const fav     = getFavicon(a.feedUrl || a.link || '');
+    const isRead  = _RS.has(a.link);
+    const points  = _fosPoints(a);
+    const excerpt = _fosExcerpt(a);
+    const isFav   = typeof _favSet !== 'undefined' && _favSet.has && _favSet.has(a.link);
+
+    const imgHtml = a.imageUrl
+      ? `<div class="fos-img-wrap"><img src="${escAttr(a.imageUrl)}" alt="" decoding="async" loading="lazy" onerror="this.parentNode.style.display='none'"></div>`
+      : '';
+
+    const intelHtml = points.length
+      ? `<div class="fos-intel">
+           <div class="fos-intel-header">
+             <div class="fos-intel-icon">
+               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+             </div>
+             <span class="fos-intel-tag">Résumé Intel</span>
+           </div>
+           <ul class="fos-intel-list">${points.map(p=>`<li>${escHtml(p.slice(0,200))}</li>`).join('')}</ul>
+         </div>`
+      : '';
+
+    const excerptHtml = excerpt
+      ? `<hr class="fos-float"><p class="fos-excerpt">${escHtml(excerpt)}</p>`
+      : '';
+
+    return `<div class="fos-card${isRead?' is-read':''}" data-seq-idx="${i}">
+      <div class="fos-card-header">
+        <div class="fos-source-row">
+          <div class="fos-fav"><img src="${escAttr(fav)}" alt="" onerror="this.style.opacity='.3'"></div>
+          <span class="fos-source-name">${escHtml(a.source||'')}</span>
+          <span class="fos-time">${relTime(a.pubDate)}</span>
+        </div>
+        <span class="fos-num">${String(i+1).padStart(2,'0')}</span>
+      </div>
+      ${imgHtml}
+      <span class="fos-title" onclick="_seqOpen(${i})">${escHtml(a.title||'')}</span>
+      ${intelHtml}
+      ${excerptHtml}
+      <div class="fos-footer" onclick="event.stopPropagation()">
+        <button class="fos-act fos-act-read${isRead?' fos-done':''}" onclick="_fosMarkRead(${i},this)" aria-label="Marquer lu">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Lu
+        </button>
+        <button class="fos-act fos-act-fav${isFav?' fos-starred':''}" onclick="_fosFav(${i},this)" aria-label="Favoris">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="${isFav?'currentColor':'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </button>
+        <button class="fos-act fos-act-share" onclick="_fosShare(${i})" aria-label="Partager">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+        </button>
+        <button class="fos-act fos-act-open" onclick="_seqOpen(${i})" aria-label="Lire l'article">
+          Lire <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
+      </div>
+    </div>`;
+  }
+
   function _renderSequential(){
     const list = document.getElementById('seqList');
     if(!list) return;
-    const arts = typeof _allArticles !== 'undefined' ? _dedup([..._allArticles].sort((a,b)=>b.pubDate-a.pubDate)) : [];
-    _seqArts = arts.slice(0,80);
+    const arts = typeof _allArticles !== 'undefined'
+      ? _dedup([..._allArticles].sort((a,b)=>b.pubDate-a.pubDate))
+      : [];
+    _seqArts = arts.slice(0, 30);   // Focus : 30 articles maximum
     if(!_seqArts.length){
-      list.innerHTML = '<div style="padding:60px 0;text-align:center;color:var(--text-muted);font-size:14px;font-family:var(--font-inter)">Aucun article disponible</div>';
+      list.innerHTML = '<div style="padding:80px 0;text-align:center;color:var(--text-muted);font-size:14px;font-family:var(--font-inter)">Aucun article disponible.<br>Ajoutez des sources pour commencer.</div>';
       _seqRenderProgress();
       return;
     }
-    list.innerHTML = _seqArts.map((a,i)=>{
-      const fav = getFavicon(a.feedUrl||a.link||'');
-      const thumb = a.imageUrl
-        ? `<div class="seq-thumb"><img src="${escAttr(a.imageUrl)}" alt="" decoding="async" onerror="this.parentNode.style.display='none'"></div>`
-        : '';
-      const isRead = _RS.has(a.link);
-      return `<div class="seq-item${isRead?' is-read':''}" data-seq-idx="${i}" onclick="_seqOpen(${i})" style="position:relative">
-        <span class="seq-num">${String(i+1).padStart(2,'0')}</span>
-        <div class="seq-body">
-          <div class="seq-source">
-            <div class="seq-fav"><img src="${escAttr(fav)}" onerror="this.style.opacity='.3'"></div>
-            ${escHtml(a.source)} · ${relTime(a.pubDate)}
-          </div>
-          ${_titleWithShare(escHtml(a.title), a.link, a.title, 'seq-title')}
-        </div>
-        ${thumb}
-      </div>`;
-    }).join('');
 
-    // Progression (compteur + barre + temps) puis reprise automatique
-    // vers le premier article non-lu si l'on revient en cours de séquence.
+    let html = '';
+    let sepIdx = 0;
+    _seqArts.forEach((a, i) => {
+      // Séparateur thématique tous les 5 articles (sauf au début)
+      if(i > 0 && i % 5 === 0){
+        const label = _FOS_SEPS[sepIdx % _FOS_SEPS.length];
+        html += `<div class="fos-separator">
+          <div class="fos-sep-line"></div>
+          <span class="fos-sep-label">${label}</span>
+          <div class="fos-sep-line"></div>
+        </div>`;
+        sepIdx++;
+      }
+      html += _fosCardHtml(a, i);
+    });
+    list.innerHTML = html;
+
     _seqRenderProgress();
+
+    // Reprise automatique si session en cours
     const firstUnread = _seqArts.findIndex(a => !_RS.has(a.link));
     const readCount   = _seqArts.filter(a => _RS.has(a.link)).length;
     if(readCount > 0 && firstUnread > 0){
       requestAnimationFrame(()=> setTimeout(()=>{
-        const el = list.querySelector('.seq-item[data-seq-idx="' + firstUnread + '"]');
-        if(el) el.scrollIntoView({behavior:'smooth', block:'center'});
-      }, 140));
+        const el = list.querySelector('.fos-card[data-seq-idx="' + firstUnread + '"]');
+        if(el){
+          const rowEl = document.querySelector('.row');
+          if(rowEl) rowEl.scrollTo({ top: el.offsetTop - 100, behavior:'smooth' });
+        }
+      }, 160));
     }
   }
-  window._seqOpen = function(i){ const a=_seqArts[i]; if(a) _showArtModal(a); };
+
+  window._seqOpen = function(i){
+    const a = _seqArts[i];
+    if(!a) return;
+    _RS.mark(a.link);
+    _showArtModal(a);
+    // Mettre à jour l'état lu sans re-render
+    const el = document.querySelector('.fos-card[data-seq-idx="' + i + '"]');
+    if(el){
+      el.classList.add('is-read');
+      const btn = el.querySelector('.fos-act-read');
+      if(btn) btn.classList.add('fos-done');
+    }
+    _seqRenderProgress();
+  };
+
+  window._fosMarkRead = function(i, btn){
+    const a = _seqArts[i]; if(!a) return;
+    const card = btn.closest('.fos-card');
+    const wasRead = _RS.has(a.link);
+    if(wasRead){
+      // Dés-marquer (simple toggle d'UI, pas de suppression du store)
+      card && card.classList.remove('is-read');
+      btn.classList.remove('fos-done');
+    } else {
+      _RS.mark(a.link);
+      card && card.classList.add('is-read');
+      btn.classList.add('fos-done');
+    }
+    _seqRenderProgress();
+  };
+
+  window._fosFav = function(i, btn){
+    const a = _seqArts[i]; if(!a) return;
+    if(typeof _toggleFavori === 'function') _toggleFavori(a);
+    const starred = btn.classList.toggle('fos-starred');
+    const svg = btn.querySelector('svg');
+    if(svg) svg.setAttribute('fill', starred ? 'currentColor' : 'none');
+  };
+
+  window._fosShare = function(i){
+    const a = _seqArts[i]; if(!a) return;
+    if(navigator.share){
+      navigator.share({ title: a.title||'', url: a.link }).catch(()=>{});
+    } else {
+      try{ navigator.clipboard.writeText(a.link); }catch(e){}
+    }
+  };
 
   // ── VUE LISTE ─────────────────────────────────────────────────
   let _listeArts = [];
