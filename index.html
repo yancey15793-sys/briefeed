@@ -2490,12 +2490,23 @@ button, .ob-btn, .ob-btn-ghost,
 
 /* — Rangée 1 : chips catégories — */
 .srail-cats{
-  display:flex; gap:9px; overflow-x:auto;
+  display:flex; gap:9px; overflow-x:auto; position:relative; isolation:isolate;
   padding:4px 2px; scrollbar-width:none; -ms-overflow-style:none;
   scroll-snap-type:x proximity; -webkit-overflow-scrolling:touch;
   -webkit-mask-image:linear-gradient(90deg, transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%);
           mask-image:linear-gradient(90deg, transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%);
 }
+/* Sliding difference pill — active category indicator */
+.srail-pill{
+  position:absolute; top:4px; height:40px;
+  border-radius:999px; background:#fff;
+  mix-blend-mode:difference; pointer-events:none; z-index:2;
+  left:0; width:0; opacity:0;
+  transition:left .28s cubic-bezier(.34,1.56,.64,1),
+             width .28s cubic-bezier(.34,1.56,.64,1),
+             opacity .22s ease;
+}
+.srail-pill.vis{ opacity:1; }
 .srail-cats::-webkit-scrollbar{ display:none; }
 .sr-cat{
   flex:0 0 auto; scroll-snap-align:start;
@@ -2516,10 +2527,6 @@ button, .ob-btn, .ob-btn-ghost,
   transition:background .22s ease, color .22s ease;
 }
 [data-theme="light"] .sr-cat-count{ background:rgba(0,0,0,.06); }
-.sr-cat.open{
-  background:rgba(10,132,255,.16); border-color:rgba(10,132,255,.42); color:#0a84ff;
-}
-.sr-cat.open .sr-cat-count{ background:rgba(10,132,255,.22); color:#0a84ff; }
 .sr-cat.has-active{ border-color:rgba(10,132,255,.32); }
 .sr-cat-chev{
   width:13px; height:13px; flex:0 0 auto; opacity:.55;
@@ -7094,15 +7101,19 @@ body.focus-mode .focus-exit{ display:flex; }
   function _railBuildChips(){
     const cats = document.getElementById('srailCats');
     if(!cats) return;
-    cats.innerHTML = _railCats.map(c => {
-      let unread = 0;
-      c.feeds.forEach(f => { unread += _railUnread(f.url); });
-      return `<button class="sr-cat" type="button" data-cat="${escAttr(c.name)}">
-        <span>${escHtml(c.name)}</span>
-        ${unread ? `<span class="sr-cat-count">${unread > 99 ? '99+' : unread}</span>` : ''}
-        ${_CHEV_SVG}
-      </button>`;
-    }).join('');
+    cats.innerHTML = '<span class="srail-pill" id="srailPill" aria-hidden="true"></span>' +
+      _railCats.map(c => {
+        let unread = 0;
+        c.feeds.forEach(f => { unread += _railUnread(f.url); });
+        return `<button class="sr-cat" type="button" data-cat="${escAttr(c.name)}">
+          <span>${escHtml(c.name)}</span>
+          ${unread ? `<span class="sr-cat-count">${unread > 99 ? '99+' : unread}</span>` : ''}
+          ${_CHEV_SVG}
+        </button>`;
+      }).join('');
+    // next _railMovePill call should snap (no slide-in animation)
+    const pill = document.getElementById('srailPill');
+    if(pill) pill._snap = true;
   }
 
   // Rangée 2 — logos de la catégorie dépliée
@@ -7149,6 +7160,28 @@ body.focus-mode .focus-exit{ display:flex; }
     } else {
       if(foot) foot.classList.remove('vis');
     }
+    _railMovePill();
+  }
+
+  // Move the sliding difference-blend pill to the active chip
+  function _railMovePill(){
+    const pill = document.getElementById('srailPill');
+    const cats = document.getElementById('srailCats');
+    if(!pill || !cats) return;
+    const chip = cats.querySelector('.sr-cat.open');
+    if(!chip){ pill.classList.remove('vis'); return; }
+    if(pill._snap){
+      delete pill._snap;
+      pill.style.transition = 'none';
+      pill.style.left  = chip.offsetLeft + 'px';
+      pill.style.width = chip.offsetWidth + 'px';
+      pill.getBoundingClientRect(); // force layout flush
+      pill.style.transition = '';
+    } else {
+      pill.style.left  = chip.offsetLeft + 'px';
+      pill.style.width = chip.offsetWidth + 'px';
+    }
+    pill.classList.add('vis');
   }
 
   function _railToggleCat(name){
