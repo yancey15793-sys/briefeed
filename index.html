@@ -84,54 +84,99 @@ body{
   position:fixed; width:100%;
 }
 
-/* ── TOUCH UX — règles globales expert ──────────────────── */
-/* Supprimer le highlight bleu iOS sur TOUS les éléments interactifs */
+/* ══════════════════════════════════════════════════════════
+   TOUCH UX — Expert mobile. Zéro highlight, spring physics,
+   cibles 44px, pas de délai 300ms.
+   ══════════════════════════════════════════════════════════ */
+
+/* 1. Supprimer le highlight bleu iOS partout */
 a, button, [onclick], [role="button"],
 .art-card, .feed-item, .folder-head, .sb-item,
 .dc-theme-tile, .dc-feed-row, .vp-item,
-.seq-item, .list-item, .essentiel-card,
-.browse-hero-card, .grid2-card, .fav-item,
+.seq-item, .list-item, .grid2-card, .fav-item,
 .nav-item, .nav-capsule-left, .nav-capsule-right,
 .ob-btn, .ob-btn-ghost {
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
 }
-/* Désactiver la sélection de texte sur les éléments interactifs */
+
+/* 2. Pas de sélection de texte sur les surfaces tactiles */
 button, [onclick], .art-card, .feed-item,
-.seq-item, .list-item, .essentiel-card,
-.browse-hero-card, .grid2-card, .dc-theme-tile {
-  -webkit-user-select: none;
-  user-select: none;
+.seq-item, .list-item, .grid2-card, .dc-theme-tile {
+  -webkit-user-select: none; user-select: none;
 }
-/* Touch-action sur les scrollables — permet le scroll vertical seulement */
+
+/* 3. Scroll vertical propre, pas de dérive horizontale */
 .row, .feed-page-scroll, .folder-page-scroll,
 .sb-scroll, .dc-catalog-panel, .dc-detail-panel,
-.artModalBody, .ob-wrap {
-  touch-action: pan-y;
-}
-/* Cibles tactiles minimum 44px (Apple HIG) */
+.artModalBody, .ob-wrap { touch-action: pan-y; }
+
+/* 4. Éliminer le délai 300ms (Apple HIG) */
+button, a, [onclick] { touch-action: manipulation; }
+
+/* 5. Cibles tactiles minimum 44px */
 button, .ob-btn, .ob-btn-ghost,
 .art-toolbar-btn, .feed-props-btn,
 .folder-page-back, .feed-page-back,
 .menu-btn, .sb-close, .qpill-btn,
-.qpill-trigger, .chev-btn {
-  min-width: 44px; min-height: 44px;
+.qpill-trigger, .chev-btn { min-width:44px; min-height:44px; }
+
+/* ══════════════════════════════════════════════════════════
+   SPRING PHYSICS — Compression rapide (80ms ease-in) +
+   rebond élastique (420ms cubic-bezier(.34,1.56,.64,1)).
+   Le « .34,1.56 » est l'overshoot Apple SwiftUI spring.
+   ══════════════════════════════════════════════════════════ */
+
+/* -- Cartes articles (compression 3D légère) -------------- */
+.art-card, .grid2-card {
+  transition: transform .42s cubic-bezier(.34,1.56,.64,1),
+              opacity   .42s cubic-bezier(.34,1.56,.64,1);
+  will-change: transform;
 }
-/* Feedback tactile immédiat — scale au :active */
-.art-card:active          { opacity:.82; transition:opacity .1s; }
-.grid2-card:active        { opacity:.82; transition:opacity .1s; }
-.seq-item:active          { opacity:.7;  transition:opacity .1s; }
-.list-item:active         { opacity:.7;  transition:opacity .1s; }
-.essentiel-card:active    { opacity:.75; transition:opacity .1s; }
-.browse-hero-card:active  { opacity:.85; transition:opacity .1s; }
-.dc-theme-tile:active     { opacity:.8;  transition:opacity .12s; }
-.feed-item:active         { background:rgba(255,255,255,.06); transition:background .08s; }
-.sb-item:active           { background:rgba(255,255,255,.08); transition:background .08s; }
-.vp-item:active           { background:rgba(255,255,255,.06); transition:background .08s; }
+.art-card:active, .grid2-card:active {
+  transform: scale(.96);
+  opacity: .88;
+  transition: transform .08s ease-in, opacity .08s ease-in;
+}
+
+/* -- Items de liste (scale + décalage latéral micro) ------ */
+.seq-item, .list-item {
+  transition: transform .38s cubic-bezier(.34,1.56,.64,1),
+              opacity   .38s cubic-bezier(.34,1.56,.64,1);
+}
+.seq-item:active, .list-item:active {
+  transform: scale(.984) translateX(3px);
+  opacity: .72;
+  transition: transform .07s ease-in, opacity .07s ease-in;
+}
+
+/* -- Items sidebar & vue-picker (fond + scale simultanés) -- */
+.feed-item, .sb-item, .vp-item {
+  transition: background .22s ease,
+              transform  .38s cubic-bezier(.34,1.56,.64,1);
+}
+.feed-item:active  { background:rgba(255,255,255,.07); transform:scale(.982); transition:background .06s,transform .06s ease-in; }
+.sb-item:active    { background:rgba(255,255,255,.09); transform:scale(.982); transition:background .06s,transform .06s ease-in; }
+.vp-item:active    { background:rgba(255,255,255,.07); transform:scale(.982); transition:background .06s,transform .06s ease-in; }
 [data-theme="light"] .feed-item:active { background:rgba(0,0,0,.05); }
 [data-theme="light"] .sb-item:active   { background:rgba(0,0,0,.06); }
-/* Éviter le délai 300ms sur tous les boutons */
-button, a, [onclick] { touch-action: manipulation; }
+
+/* -- Tuiles découverte ------------------------------------- */
+.dc-theme-tile {
+  transition: transform .4s cubic-bezier(.34,1.56,.64,1), opacity .4s ease;
+}
+.dc-theme-tile:active {
+  transform: scale(.94);
+  opacity: .8;
+  transition: transform .07s ease-in, opacity .07s ease-in;
+}
+
+/* -- Boutons ronds flottants (menu, fermer, etc.) ---------- */
+.menu-btn, .sb-close, .sb-add, .sb-open-btn {
+  transition: transform .42s cubic-bezier(.34,1.56,.64,1),
+              background .18s ease;
+}
+/* Les :active existants gardent leur scale, le rebond est assuré par la base */
 
 /* Mode clair — overrides ciblés pour les surfaces sombres */
 [data-theme="light"] .sidebar{
@@ -322,7 +367,7 @@ button, a, [onclick] { touch-action: manipulation; }
   transition:transform .22s cubic-bezier(.34,1.56,.64,1), background .18s ease;
 }
 .menu-btn:hover{ background:#2c2c2e; }
-.menu-btn:active{ transform:scale(.86); background:#111113; }
+.menu-btn:active{ transform:scale(.84); background:#111113; transition:transform .07s ease-in, background .07s ease-in; }
 .menu-btn svg{ width:20px; height:20px; }
 [data-theme="light"] .menu-btn{
   background:#f2f2f7;
@@ -351,7 +396,7 @@ button, a, [onclick] { touch-action: manipulation; }
   transition:transform .22s cubic-bezier(.34,1.56,.64,1), background .18s, color .18s;
 }
 .sb-open-btn:hover{ background:#2c2c2e; color:rgba(255,255,255,.9); }
-.sb-open-btn:active{ transform:scale(.86); background:#111113; }
+.sb-open-btn:active{ transform:scale(.84); background:#111113; transition:transform .07s ease-in, background .07s ease-in; }
 .sb-open-btn svg{ width:14px; height:14px; }
 [data-theme="light"] .sb-open-btn{
   background:#f2f2f7;
@@ -367,10 +412,10 @@ button, a, [onclick] { touch-action: manipulation; }
 .sidebar-overlay{
   position:fixed; inset:0;
   background:rgba(0,0,0,.42);
-  -webkit-backdrop-filter:blur(10px) saturate(120%);
-  backdrop-filter:blur(10px) saturate(120%);
+  -webkit-backdrop-filter:blur(12px) saturate(130%);
+  backdrop-filter:blur(12px) saturate(130%);
   opacity:0; visibility:hidden;
-  transition:opacity .5s ease, visibility .5s ease;
+  transition:opacity .38s cubic-bezier(.4,0,.2,1), visibility .38s;
   z-index:80;
 }
 .sidebar-overlay.open{ opacity:1; visibility:visible; }
@@ -379,14 +424,18 @@ button, a, [onclick] { touch-action: manipulation; }
   position:fixed; top:0; left:0; bottom:0;
   width:320px; max-width:88vw;
   background:linear-gradient(180deg,#101011 0%,#070708 100%);
-  box-shadow:28px 0 70px -24px rgba(0,0,0,.85);   /* profondeur, sans bordure */
+  box-shadow:28px 0 70px -24px rgba(0,0,0,.85);
   display:flex; flex-direction:column;
-  font-family:var(--font-inter);                   /* Inter pour habiller la sidebar */
+  font-family:var(--font-inter);
   transform:translateX(-105%);
-  transition:transform .62s cubic-bezier(.16,1,.3,1);  /* ressort Motion */
+  /* Entrée spring, sortie rapide et nette */
+  transition:transform .52s cubic-bezier(.32,0,.67,0);
   z-index:90;
 }
-.sidebar.open{ transform:translateX(0); }
+.sidebar.open{
+  transform:translateX(0);
+  transition:transform .58s cubic-bezier(.16,1,.3,1);
+}
 
 /* Révélation en cascade des blocs à l'ouverture (effet Motion) */
 .sidebar .sb-header,
@@ -2222,7 +2271,7 @@ button, a, [onclick] { touch-action: manipulation; }
   transition:transform .18s cubic-bezier(.34,1.56,.64,1), opacity .14s;
   white-space:nowrap;
 }
-#newArtsPill button:active{ transform:scale(.91); opacity:.82; }
+#newArtsPill button:active{ transform:scale(.91); opacity:.82; transition:transform .07s ease-in, opacity .07s ease-in; }
 #newArtsPill button svg{ width:11px; height:11px; flex-shrink:0; }
 [data-theme="light"] #newArtsPill button{
   box-shadow:0 3px 12px rgba(255,60,50,.28), 0 1px 3px rgba(0,0,0,.1);
@@ -2727,8 +2776,11 @@ button, a, [onclick] { touch-action: manipulation; }
 /* Toolbar bas */
 .art-modal-toolbar{ position:sticky; bottom:0; left:0; right:0; z-index:5; display:flex; align-items:center; justify-content:flex-end; padding:10px 20px 14px; background:linear-gradient(transparent,var(--bg) 40%); }
 /* artModal — entrée animée */
-#artModal{ transform:translateY(32px); opacity:0; transition:transform .38s cubic-bezier(.25,1,.4,1), opacity .28s ease; }
-#artModal.art-open{ transform:none; opacity:1; }
+/* Entrée du modal : monte depuis le bas avec spring naturel */
+#artModal{ transform:translateY(48px) scale(.98); opacity:0; transition:transform .48s cubic-bezier(.16,1,.3,1), opacity .3s ease; }
+#artModal.art-open{ transform:translateY(0) scale(1); opacity:1; }
+/* Sortie : rapide et directe vers le bas */
+#artModal.art-closing{ transform:translateY(64px) scale(.97); opacity:0; transition:transform .28s cubic-bezier(.4,0,1,1), opacity .2s ease; }
 .art-toolbar-pill{ display:flex; align-items:center; gap:2px; background:rgba(255,255,255,.08); border-radius:999px; padding:4px; }
 [data-theme="light"] .art-toolbar-pill{ background:rgba(0,0,0,.07); }
 .art-toolbar-btn{ width:36px; height:36px; border:none; background:transparent; color:var(--text-muted); cursor:pointer; display:flex; align-items:center; justify-content:center; border-radius:50%; transition:background .15s,color .15s; -webkit-tap-highlight-color:transparent; }
@@ -3153,11 +3205,9 @@ body.focus-mode .focus-exit{ display:flex; }
               <a class="sub-link sub-link-sm" data-qtheme="light" onclick="qmenuSetTheme('light')">Clair</a>
               <div class="qmenu-sub-section-label" style="margin-top:10px">Vue</div>
               <a class="sub-link sub-link-sm" data-qview="editions"   onclick="qmenuSetView('editions')">Éditions</a>
-              <a class="sub-link sub-link-sm" data-qview="essentiel"  onclick="qmenuSetView('essentiel')">Essentiel</a>
               <a class="sub-link sub-link-sm" data-qview="liste"      onclick="qmenuSetView('liste')">Liste</a>
               <a class="sub-link sub-link-sm" data-qview="grille"     onclick="qmenuSetView('grille')">Grille</a>
               <a class="sub-link sub-link-sm" data-qview="sequential" onclick="qmenuSetView('sequential')">Séquentiel</a>
-              <a class="sub-link sub-link-sm" data-qview="browse"     onclick="qmenuSetView('browse')">Parcourir</a>
               <div class="qmenu-sub-section-label" style="margin-top:10px">Police</div>
               <a class="sub-link sub-link-sm" data-qfont="inter" onclick="qmenuSetFont('inter')" style="font-family:var(--font-inter)">Inter</a>
               <a class="sub-link sub-link-sm" data-qfont="geist" onclick="qmenuSetFont('geist')" style="font-family:var(--font-geist)">Geist</a>
@@ -3225,18 +3275,6 @@ body.focus-mode .focus-exit{ display:flex; }
 
     <div class="vp-divider"></div>
 
-    <div class="vp-item" data-vpview="essentiel" onclick="vpSelect('essentiel')">
-      <div class="vp-icon">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-        </svg>
-      </div>
-      <span class="vp-label">Essentiel</span>
-      <span class="vp-check"><svg viewBox="0 0 24 24" fill="none" stroke="#0a84ff" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-    </div>
-
-    <div class="vp-divider"></div>
-
     <div class="vp-item" data-vpview="liste" onclick="vpSelect('liste')">
       <div class="vp-icon">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
@@ -3284,20 +3322,6 @@ body.focus-mode .focus-exit{ display:flex; }
       <span class="vp-check"><svg viewBox="0 0 24 24" fill="none" stroke="#0a84ff" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></span>
     </div>
 
-    <div class="vp-divider"></div>
-
-    <div class="vp-item" data-vpview="browse" onclick="vpSelect('browse')">
-      <div class="vp-icon">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <path d="M12 20h9"/>
-          <path d="M3 4h18"/>
-          <path d="M3 9h12"/>
-          <path d="M3 14h7"/>
-        </svg>
-      </div>
-      <span class="vp-label">Parcourir</span>
-      <span class="vp-check"><svg viewBox="0 0 24 24" fill="none" stroke="#0a84ff" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-    </div>
 
       </div><!-- /view-picker-list -->
     </div><!-- /view-picker -->
@@ -3976,11 +4000,6 @@ body.focus-mode .focus-exit{ display:flex; }
 
       </div><!-- /vue éditions -->
 
-      <!-- ========== VUE ESSENTIEL ========== -->
-      <div class="view" data-view="essentiel" hidden>
-        <div class="essentiel-wrap" id="essentielList"></div>
-      </div><!-- /vue essentiel -->
-
       <!-- ========== VUE LISTE ========== -->
       <div class="view" data-view="liste" hidden>
         <div class="list-view" id="listeList"></div>
@@ -3996,13 +4015,6 @@ body.focus-mode .focus-exit{ display:flex; }
         <div class="seq-progress" id="seqProgress"></div>
         <div class="seq-list" id="seqList"></div>
       </div><!-- /vue séquentielle -->
-
-      <!-- ========== VUE PARCOURIR ========== -->
-      <div class="view" data-view="browse" hidden>
-      <section class="browse" id="browseSection">
-        <!-- généré dynamiquement par renderBrowseTimeline() -->
-      </section>
-      </div><!-- /vue parcourir -->
 
       <!-- ========== VUE FAVORIS ========== -->
       <div class="view" data-view="favoris" hidden>
@@ -4192,7 +4204,7 @@ body.focus-mode .focus-exit{ display:flex; }
 
   // ---- Bouton œil : cycle éditions → grille → séquentiel → parcourir ----
   const views = document.querySelectorAll('.view');
-  const order = ['editions', 'essentiel', 'liste', 'grille', 'sequential', 'browse'];
+  const order = ['editions', 'liste', 'grille', 'sequential'];
   let _currentView = (() => { try { const v = localStorage.getItem('bf_view'); return order.includes(v) ? v : 'editions'; } catch(e){ return 'editions'; } })();
   // Déclarés tôt pour éviter reference-before-declaration dans _switchView
   let _feedPageArts = [];
@@ -6928,13 +6940,13 @@ body.focus-mode .focus-exit{ display:flex; }
   // ── 14. loadAllFeeds — moteur principal ──────────────────────
   // ── Rendu de la vue courante (point unique) ───────────────
   function _renderCurrentView(){
+    // Fallback si une vue supprimée était en localStorage
+    if(!order.includes(_currentView)){ _currentView='editions'; try{localStorage.setItem('bf_view','editions');}catch(e){} }
     views.forEach(v => { v.hidden = v.dataset.view !== _currentView; });
     if(_currentView === 'editions')    _renderEditions();
-    else if(_currentView === 'browse') renderBrowseTimeline();
     else if(_currentView === 'grille') _renderGrille();
     else if(_currentView === 'sequential') _renderSequential();
     else if(_currentView === 'liste')  _renderListe();
-    else if(_currentView === 'essentiel') _renderEssentiel();
   }
 
   // Rendu stable : swap en place + préservation du défilement (zéro saut)
@@ -7030,7 +7042,7 @@ body.focus-mode .focus-exit{ display:flex; }
       if(skel) skel.style.display='none'; return;
     }
     _isLoading = true; _lastLoad = Date.now();
-    showBadge('', false);
+    // Badge silencieux pendant le fetch — n'apparaît qu'avec le résultat
     await new Promise(r=>setTimeout(r,80));
 
     const existingLinks = new Set(_allArticles.map(a=>a.link));
@@ -7453,12 +7465,11 @@ body.focus-mode .focus-exit{ display:flex; }
     if(modal && modal.style.display === 'flex' && !_artClosing){
       _artClosing = true;
       modal.classList.remove('art-open');
-      modal.style.transition = 'transform .32s cubic-bezier(.32,.72,0,1), opacity .26s ease';
-      modal.style.transform  = 'translateY(40px)';
-      modal.style.opacity    = '0';
+      modal.classList.add('art-closing');
       if(_artCloseTimer) clearTimeout(_artCloseTimer);
       _artCloseTimer = setTimeout(()=>{
         modal.style.display='none';
+        modal.classList.remove('art-closing');
         modal.style.transition=''; modal.style.transform=''; modal.style.opacity='';
         _artCloseTimer = null; _artClosing = false;
         unlockScroll();
@@ -7542,7 +7553,7 @@ body.focus-mode .focus-exit{ display:flex; }
     }
   }
   // ── Vue Favoris ───────────────────────────────────────────────
-  const _MAIN_VIEWS = ['editions','browse','themes'];
+  const _MAIN_VIEWS = ['editions','themes'];
   function _showMainViews(){
     document.querySelectorAll('.view').forEach(v=>{
       v.hidden = v.dataset.view !== _currentView;
@@ -8020,41 +8031,6 @@ body.focus-mode .focus-exit{ display:flex; }
           '</div>';
       }).join('') + '</div>';
       container.innerHTML = html;
-
-    } else if(view === 'browse'){
-      // Groupes de 7 : 1 hero + 6 grille, répétés sur tous les articles avec respiration
-      const CHUNK = 7;
-      let html = '';
-      for(let g = 0; g < arts.length; g += CHUNK){
-        const chunk = arts.slice(g, g + CHUNK);
-        // Choisir le hero : premier article avec image, sinon le premier
-        let hi = chunk.findIndex(a => a.imageUrl);
-        if(hi < 0) hi = 0;
-        const hero     = chunk[hi];
-        const heroReal = g + hi;
-        const heroImg  = hero.imageUrl ? "background:url('" + hero.imageUrl.replace(/'/g,"\\'") + "') center/cover no-repeat" : 'background:linear-gradient(135deg,rgba(10,132,255,.18),#0a0a0a)';
-        const heroFav  = getFavicon(hero.feedUrl||hero.link||'');
-
-        // Respiration entre groupes (pas de séparateur visuel, juste de l'air)
-        if(g > 0) html += '<div class="browse-group-spacer"></div>';
-
-        // Hero pleine largeur
-        html += '<div class="browse-hero-card" onclick="' + arrName + 'Open(' + heroReal + ')">';
-        html += '<div class="browse-hero-img" style="' + heroImg + '"></div>';
-        html += '<div class="browse-hero-body"><div class="browse-hero-source"><img src="' + escAttr(heroFav) + '" style="width:16px;height:16px;border-radius:50%;object-fit:contain;margin-right:6px;flex-shrink:0">' + escapeHtml(hero.source) + ' · ' + relTime(hero.pubDate) + '</div>';
-        html += '<div class="browse-hero-title">' + escapeHtml(hero.title) + '</div></div></div>';
-
-        // Grille : tous les articles du chunk sauf le hero
-        const gridItems = chunk.map(function(a, ci){ return { a: a, real: g + ci }; }).filter(function(_, ci){ return ci !== hi; });
-        if(gridItems.length){
-          html += '<div class="browse-folder-grid">' + gridItems.map(function(item){
-            var fav      = getFavicon(item.a.feedUrl||item.a.link||'');
-            var imgStyle = item.a.imageUrl ? "background:url('" + item.a.imageUrl.replace(/'/g,"\\'") + "') center/cover no-repeat" : 'background:linear-gradient(135deg,rgba(10,132,255,.12),#0a0a0a)';
-            return '<div class="grid2-card" onclick="' + arrName + 'Open(' + item.real + ')"><div class="grid2-img" style="' + imgStyle + '"></div><div class="grid2-title">' + escapeHtml(item.a.title) + '</div><div class="grid2-meta"><div class="grid2-fav"><img src="' + escAttr(fav) + '"></div><span>' + escapeHtml(item.a.source) + '</span><span style="margin-left:auto">' + relTime(item.a.pubDate) + '</span></div></div>';
-          }).join('') + '</div>';
-        }
-      }
-      container.innerHTML = html || '<div style="padding:60px 0;text-align:center;color:var(--text-muted);font-size:14px;font-family:var(--font-inter)">Aucun article.</div>';
 
     } else if(view === 'grille'){
       container.innerHTML = '<div class="grid2-wrap">' + arts.map(function(a,i){
