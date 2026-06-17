@@ -2350,11 +2350,37 @@ button, a, [onclick] { touch-action: manipulation; }
   font-weight:700; text-transform:uppercase;
   letter-spacing:-0.02em; line-height:1;
   color:var(--text); opacity:0.15;
-  transition:opacity .2s ease, transform .65s cubic-bezier(.34,1.56,.64,1);
-  transform-origin:center center; display:block; width:100%;
+  transition:opacity .2s ease;
+  display:block; width:100%;
+  overflow:hidden; position:relative;
 }
 .browse-folder-item.bf-open .browse-folder-name{ opacity:1; }
 .browse-folder-head:active .browse-folder-name{ opacity:.8; }
+
+/* ── Folder name : effet nav scroll ─────────────── */
+.bfn-director{
+  position:absolute; inset:0; z-index:2;
+  clip-path:inset(50% 0 0 0);          /* zone active = moitié basse par défaut */
+}
+.browse-folder-head:hover:not(:has(.bfn-director:hover)) .bfn-director{
+  clip-path:inset(100% 0 0 0);         /* survoler moitié haute → director invisible */
+}
+.bfn-inner{
+  display:block;
+  --bfn-color:var(--accent);
+  text-shadow:
+    0 -1lh var(--bfn-color),
+    0  1lh color-mix(in hsl, var(--bfn-color), transparent 60%);
+  transition:translate .22s ease-out;
+}
+/* Moitié haute → texte descend, ombre du haut apparaît */
+.browse-folder-head:hover:not(:has(.bfn-director:hover)) .bfn-inner{
+  translate:0 1lh; transition-delay:.04s;
+}
+/* Moitié basse → texte monte, ombre du bas apparaît */
+.bfn-director:hover ~ .bfn-inner{
+  translate:0 -1lh; transition-delay:.04s;
+}
 
 .browse-folder-meta{
   display:flex; align-items:center; gap:7px; justify-content:center;
@@ -4317,7 +4343,7 @@ body.focus-mode .focus-exit{ display:flex; }
 
       // ── En-tête centré cliquable ──
       html += `<div class="browse-folder-head" onclick="_bfToggle(${fi})">
-        <span class="browse-folder-name">${escapeHtml(folder.name)}</span>
+        <span class="browse-folder-name"><span class="bfn-director"></span><span class="bfn-inner">${escapeHtml(folder.name)}</span></span>
         <div class="browse-folder-meta">
           <span class="browse-folder-count">${artCount} article${artCount > 1 ? 's' : ''}</span>
           <div class="browse-folder-chevron">
