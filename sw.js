@@ -3,7 +3,7 @@
 // Cache-first pour l'app shell, network pour les flux
 // ═══════════════════════════════════════════════════
 
-const CACHE_NAME = 'briefeed-v1';
+const CACHE_NAME = 'briefeed-v2';
 
 // Ressources à mettre en cache au premier lancement
 const SHELL_ASSETS = [
