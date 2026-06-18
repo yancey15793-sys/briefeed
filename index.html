@@ -1587,7 +1587,7 @@ button, .ob-btn, .ob-btn-ghost,
 }
 .dc-search:focus{ border-color:var(--accent); }
 /* Grille 2 colonnes */
-.dc-theme-grid{ display:grid; grid-template-columns:1fr 1fr; gap:20px 14px; padding:18px 18px 50px; }
+.dc-theme-grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px 12px; padding:18px 18px 60px; }
 /* Tuile thème — vignette Apple Music (artwork + légende dessous) */
 .dc-theme-tile{
   position:relative; cursor:pointer; background:none; box-shadow:none;
@@ -1597,16 +1597,29 @@ button, .ob-btn, .ob-btn-ghost,
 .dc-theme-tile:hover{ transform:translateY(-3px); }
 .dc-theme-tile:active{ transform:scale(.97); }
 .dc-theme-tile-img{
-  position:relative; display:block; width:100%; aspect-ratio:1/1;
-  border-radius:16px; overflow:hidden;
+  position:relative; display:block; width:100%; aspect-ratio:3/4;
+  border-radius:18px; overflow:hidden;
   background-size:cover; background-position:center top;
-  box-shadow:0 8px 22px rgba(0,0,0,.34);
+  box-shadow:0 10px 28px rgba(0,0,0,.38);
 }
 [data-theme="light"] .dc-theme-tile-img{ box-shadow:0 8px 20px rgba(0,0,0,.15); }
+
+/* Découvrir tile — emoji layer centred over gradient artwork */
+.dc-theme-tile-icon{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  font-size:56px; line-height:1; pointer-events:none; z-index:1;
+  filter:drop-shadow(0 4px 14px rgba(0,0,0,.22));
+}
+/* Gradient overlay at bottom of tile for legibility */
+.dc-theme-tile-img::after{
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(transparent 45%, rgba(0,0,0,.18) 100%);
+  pointer-events:none;
+}
 .dc-theme-tile-body{ padding:10px 3px 2px; }
-.dc-theme-tile-name{ font-family:var(--font-inter); font-size:15.5px; font-weight:800; letter-spacing:-0.02em; color:var(--text); line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.dc-theme-tile-name{ font-family:var(--font-inter); font-size:15px; font-weight:800; letter-spacing:-0.025em; color:var(--text); line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .dc-theme-tile-desc{ font-family:var(--font-inter); font-size:11.5px; font-weight:500; color:var(--text-muted); margin-top:3px; line-height:1.35; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
-.dc-theme-tile-badge{ position:absolute; top:9px; right:9px; z-index:2; background:rgba(0,0,0,.5); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); border-radius:999px; padding:3px 9px; font-family:var(--font-inter); font-size:10px; font-weight:700; color:#fff; }
+.dc-theme-tile-badge{ position:absolute; top:11px; right:11px; z-index:2; background:rgba(0,0,0,.35); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-radius:999px; padding:4px 10px; font-family:var(--font-inter); font-size:10px; font-weight:700; color:#fff; letter-spacing:.02em; }
 /* Ligne flux */
 .dc-feed-list{ padding:6px 18px 60px; }
 .dc-feed-card{ border-bottom:1px solid var(--border); }
@@ -1614,18 +1627,25 @@ button, .ob-btn, .ob-btn-ghost,
 .dc-feed-card:last-child{ border-bottom:none; }
 .dc-feed-row{ display:flex; align-items:center; gap:13px; padding:13px 0 11px; }
 /* Aperçu : 5 derniers articles publiés du flux */
-.dc-feed-arts{ padding:0 0 13px 59px; display:flex; flex-direction:column; gap:1px; }
-.dc-art{ display:flex; align-items:baseline; gap:9px; padding:6px 8px 6px 0; cursor:pointer; -webkit-tap-highlight-color:transparent; border-radius:8px; transition:background .15s ease; }
-.dc-art:active{ background:rgba(127,127,127,.1); }
-.dc-art-dot{ flex:none; width:5px; height:5px; border-radius:50%; background:var(--accent); transform:translateY(-2px); opacity:.7; }
-.dc-art-title{ flex:1; min-width:0; font-family:var(--font-inter); font-size:13px; font-weight:600; letter-spacing:-.01em; color:var(--text); line-height:1.35; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; }
-.dc-art-time{ flex:none; font-family:var(--font-inter); font-size:10.5px; font-weight:600; color:var(--text-muted); font-variant-numeric:tabular-nums; }
-.dc-art-state{ font-family:var(--font-inter); font-size:12px; font-weight:500; color:var(--text-muted); padding:4px 0 2px; }
-.dc-art-skel{ height:11px; border-radius:6px; background:linear-gradient(90deg,rgba(127,127,127,.10),rgba(127,127,127,.18),rgba(127,127,127,.10)); background-size:200% 100%; animation:dcSkel 1.2s linear infinite; margin:7px 0; }
+.dc-feed-arts{ padding:0 0 16px 0; }
+.dc-arts-carousel{ display:flex; gap:10px; overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none; padding:4px 18px 6px 59px; -webkit-overflow-scrolling:touch; scroll-snap-type:x proximity; }
+.dc-arts-carousel::-webkit-scrollbar{ display:none; }
+/* Carte article dans le carrousel */
+.dc-art{ flex:none; width:148px; cursor:pointer; scroll-snap-align:start; -webkit-tap-highlight-color:transparent; }
+.dc-art:active{ opacity:.75; }
+.dc-art-img{ width:148px; height:96px; border-radius:10px; overflow:hidden; background:rgba(127,127,127,.12); flex-shrink:0; margin-bottom:7px; }
+.dc-art-img img{ width:100%; height:100%; object-fit:cover; display:block; transition:transform .5s cubic-bezier(.22,1,.36,1); }
+.dc-art:active .dc-art-img img{ transform:scale(1.04); }
+.dc-art-no-img{ width:148px; height:96px; border-radius:10px; background:rgba(127,127,127,.1); display:flex; align-items:center; justify-content:center; margin-bottom:7px; }
+.dc-art-no-img-dot{ width:24px; height:24px; border-radius:50%; background:var(--accent); opacity:.25; }
+.dc-art-title{ font-family:var(--font-inter); font-size:12px; font-weight:600; letter-spacing:-.01em; color:var(--text); line-height:1.35; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.dc-art-time{ font-family:var(--font-inter); font-size:10px; font-weight:500; color:var(--text-muted); margin-top:3px; font-variant-numeric:tabular-nums; }
+.dc-art-state{ font-family:var(--font-inter); font-size:12px; font-weight:500; color:var(--text-muted); padding:6px 18px 2px 59px; }
+.dc-art-skel{ height:96px; border-radius:10px; width:148px; flex:none; background:linear-gradient(90deg,rgba(127,127,127,.10),rgba(127,127,127,.18),rgba(127,127,127,.10)); background-size:200% 100%; animation:dcSkel 1.2s linear infinite; }
 @keyframes dcSkel{ from{ background-position:200% 0; } to{ background-position:-200% 0; } }
 .dc-feed-logo{ width:46px; height:46px; flex:none; border-radius:50%; position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; font-family:var(--font-inter); font-size:18px; font-weight:800; color:var(--text-muted); background:transparent; border:1.5px solid rgba(255,255,255,.1); flex-shrink:0; }
 [data-theme="light"] .dc-feed-logo{ border-color:rgba(0,0,0,.1); }
-.dc-feed-logo img{ position:absolute; inset:0; width:100%; height:100%; object-fit:contain; z-index:1; border-radius:50%; display:block; }
+.dc-feed-logo img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:1; border-radius:50%; display:block; }
 .dc-feed-info{ flex:1; min-width:0; }
 .dc-feed-row-name{ font-family:var(--font-inter); font-size:15px; font-weight:700; color:var(--text); letter-spacing:-0.01em; }
 .dc-feed-row-desc{ font-family:var(--font-inter); font-size:12px; font-weight:500; color:var(--text-muted); margin-top:2px; line-height:1.38; }
@@ -1925,6 +1945,47 @@ button, .ob-btn, .ob-btn-ghost,
   font-size:10.5px; font-weight:500; line-height:1.1;
   color:var(--text-muted); opacity:.72; margin-top:4px;
 }
+
+/* ── VUE ÉDITION — bannière décorative Samsung/Apple style ────────────────── */
+.edition-hero-banner{
+  width:100%; position:relative; overflow:hidden;
+  border-radius:18px; margin-bottom:28px;
+  min-height:140px; display:flex; align-items:flex-end;
+}
+.edition-hero-banner-bg{
+  position:absolute; inset:0;
+  background:var(--ehb-grad,linear-gradient(135deg,#0d47a1 0%,#42a5f5 100%));
+}
+.edition-hero-banner-noise{
+  position:absolute; inset:0; opacity:.05;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  background-size:200px 200px;
+}
+.edition-hero-orb1,.edition-hero-orb2,.edition-hero-orb3{
+  position:absolute; border-radius:50%; pointer-events:none; filter:blur(32px);
+}
+.edition-hero-orb1{ width:180px; height:180px; top:-50px; right:-10px; background:rgba(255,255,255,.2); }
+.edition-hero-orb2{ width:90px; height:90px; bottom:5px; right:70px; background:rgba(255,255,255,.14); }
+.edition-hero-orb3{ width:55px; height:55px; top:18px; right:130px; background:rgba(255,255,255,.1); }
+.edition-hero-content{
+  position:relative; z-index:2; padding:24px 22px 22px;
+  width:100%; max-width:72%;
+}
+.edition-hero-eyebrow{
+  font-family:var(--font-inter); font-size:10.5px; font-weight:700;
+  color:rgba(255,255,255,.7); text-transform:uppercase; letter-spacing:.08em;
+  margin-bottom:8px;
+}
+.edition-hero-title{
+  font-family:var(--font-inter); font-size:26px; font-weight:900;
+  letter-spacing:-.03em; color:#fff; line-height:1.1;
+  text-shadow:0 2px 10px rgba(0,0,0,.22);
+}
+.edition-hero-sub{
+  font-family:var(--font-inter); font-size:12.5px; font-weight:500;
+  color:rgba(255,255,255,.65); margin-top:5px; line-height:1.4;
+}
+
 .edl-tags{ display:flex; flex-wrap:wrap; gap:5px; margin-top:9px; }
 .edl-tag{
   display:inline-flex; align-items:center;
@@ -1971,9 +2032,9 @@ button, .ob-btn, .ob-btn-ghost,
   margin-bottom:6px; display:flex; align-items:center; gap:5px;
 }
 .seq-fav{ width:15px; height:15px; border-radius:50%; overflow:hidden; flex-shrink:0; background:transparent; }
-.seq-fav img{ width:100%; height:100%; object-fit:contain; border-radius:50%; display:block; }
+.seq-fav img{ width:100%; height:100%; object-fit:cover; border-radius:50%; display:block; }
 .seq-title{
-  font-family:var(--font-title); font-size:18px; font-weight:700;
+  font-family:var(--font-title); font-size:var(--seq-title-size,18px); font-weight:700;
   line-height:1.26; color:var(--text); letter-spacing:-.012em;
   display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;
 }
@@ -2006,6 +2067,81 @@ button, .ob-btn, .ob-btn-ghost,
 .folder-page-scroll{ flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
 .folder-page-scroll::-webkit-scrollbar{ display:none; }
 .folder-page-inner{ padding:16px 18px 90px; }
+
+/* ── FOLDER PAGE — héro décoratif + logos flottants ─────────────────────── */
+.folder-hero{
+  width:100%; position:relative; overflow:hidden; flex-shrink:0;
+  min-height:180px; display:flex; align-items:flex-end;
+  background:linear-gradient(145deg,#1a1a2e 0%,#16213e 100%);
+}
+.folder-hero-bg{
+  position:absolute; inset:0;
+  background-size:cover; background-position:center;
+  opacity:.9;
+}
+/* Noise texture overlay */
+.folder-hero-noise{
+  position:absolute; inset:0; opacity:.04;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  background-size:200px 200px;
+}
+.folder-hero-content{
+  position:relative; z-index:2; padding:28px 24px 24px;
+  width:100%;
+}
+.folder-hero-badge{
+  display:inline-flex; align-items:center; gap:6px;
+  background:rgba(255,255,255,.12); border-radius:999px;
+  padding:4px 12px; margin-bottom:12px;
+  font-family:var(--font-inter); font-size:10.5px; font-weight:700;
+  color:rgba(255,255,255,.8); letter-spacing:.06em; text-transform:uppercase;
+  backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+}
+[data-theme="light"] .folder-hero-badge{ background:rgba(0,0,0,.12); color:rgba(0,0,0,.6); }
+.folder-hero-title{
+  font-family:var(--font-inter); font-size:34px; font-weight:900;
+  letter-spacing:-.035em; color:#fff; line-height:1.1; margin-bottom:6px;
+  text-shadow:0 2px 12px rgba(0,0,0,.4);
+}
+.folder-hero-sub{
+  font-family:var(--font-inter); font-size:13.5px; font-weight:500;
+  color:rgba(255,255,255,.68); line-height:1.4; max-width:260px;
+}
+/* Orb décoratif — lumière douce en fond */
+.folder-hero-orb{
+  position:absolute; right:-30px; top:-30px; width:220px; height:220px;
+  border-radius:50%; opacity:.35; pointer-events:none; z-index:1;
+  filter:blur(40px);
+}
+/* Logos flottants (stacked circles) */
+.folder-logo-row{
+  display:flex; align-items:center; padding:20px 24px 4px;
+  gap:0; flex-shrink:0;
+}
+.folder-logo-bubble{
+  width:38px; height:38px; border-radius:50%; overflow:hidden; flex-shrink:0;
+  border:2.5px solid var(--bg); background:#333;
+  margin-left:-10px; position:relative;
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-inter); font-size:14px; font-weight:800; color:#fff;
+  box-shadow:0 2px 8px rgba(0,0,0,.28);
+  transition:transform .2s cubic-bezier(.34,1.56,.64,1);
+}
+.folder-logo-bubble:first-child{ margin-left:0; }
+.folder-logo-bubble:hover{ transform:translateY(-3px) scale(1.08); z-index:2; }
+.folder-logo-bubble img{
+  position:absolute; inset:0; width:100%; height:100%;
+  object-fit:cover; display:block; border-radius:50%;
+}
+.folder-logo-bubble-more{
+  background:rgba(127,127,127,.18);
+  font-size:10px; font-weight:700; color:var(--text-muted); letter-spacing:-.01em;
+}
+.folder-logo-row-count{
+  margin-left:12px; font-family:var(--font-inter); font-size:12px;
+  font-weight:600; color:var(--text-muted); letter-spacing:-.01em;
+}
+
 
 /* ── MENU 3 POINTS ───────────────────────────────── */
 .menu3-btn{ display:none; }
@@ -2944,7 +3080,7 @@ button, .ob-btn, .ob-btn-ghost,
 .feed-page-header{ display:flex; flex-direction:column; align-items:center; padding:32px 24px 24px; text-align:center; }
 .feed-page-fav{ position:relative; width:64px; height:64px; border-radius:50%; overflow:hidden; flex-shrink:0; background:transparent; border:1.5px solid rgba(255,255,255,.12); display:flex; align-items:center; justify-content:center; font-family:var(--font-inter); font-size:22px; font-weight:700; color:var(--text-muted); margin-bottom:16px; }
 [data-theme="light"] .feed-page-fav{ border-color:rgba(0,0,0,.1); }
-.feed-page-fav img{ position:absolute; inset:0; width:100%; height:100%; object-fit:contain; padding:7px; box-sizing:border-box; }
+.feed-page-fav img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
 .feed-page-title{ font-family:var(--font-inter); font-size:24px; font-weight:800; letter-spacing:-.03em; color:var(--text); text-align:center; }
 .feed-page-desc{ font-family:var(--font-inter); font-size:14px; font-weight:500; color:var(--text-muted); margin-top:8px; line-height:1.55; text-align:center; max-width:280px; }
 .feed-page-sep{ width:40px; height:2px; background:var(--accent); border-radius:2px; margin:16px auto 0; opacity:.7; }
@@ -3011,14 +3147,14 @@ button, .ob-btn, .ob-btn-ghost,
   box-shadow:inset 0 1px 0 rgba(255,255,255,.8);
 }
 .art-modal-source-fav{ width:28px; height:28px; border-radius:50%; overflow:hidden; background:transparent; flex-shrink:0; border:1px solid rgba(255,255,255,.1); }
-.art-modal-source-fav img{ width:100%; height:100%; object-fit:contain; border-radius:50%; display:block; }
+.art-modal-source-fav img{ width:100%; height:100%; object-fit:cover; border-radius:50%; display:block; }
 [data-theme="light"] .art-modal-source-fav{ border-color:rgba(0,0,0,.1); }
 .art-modal-source-name{ font-family:var(--font-inter); font-size:12px; font-weight:700; color:var(--text); text-transform:uppercase; letter-spacing:.04em; }
 /* Reader content */
 .art-reader-section{ position:relative; z-index:1; padding:4px 0 20px; }
 .art-reader-text{
   font-family:var(--font-title),Georgia,serif;
-  font-size:17px; line-height:1.72; color:var(--text);
+  font-size:var(--reader-font-size,17px); line-height:1.72; color:var(--text);
   letter-spacing:.008em;
 }
 [data-theme="light"] .art-reader-text{ color:#1a1a1a; }
@@ -4338,6 +4474,9 @@ body.focus-mode .focus-exit{ display:flex; }
             <div class="hello-card sk-card" style="animation:sk 1.4s .4s ease-in-out infinite alternate"></div>
           </div>
         </div>
+
+        <!-- Bannière décorative -->
+        <div id="editionBanner" style="padding:0 18px"></div>
 
         <!-- Hero article du jour -->
         <div id="editionsHero"></div>
@@ -5738,6 +5877,7 @@ body.focus-mode .focus-exit{ display:flex; }
     _qmenu.querySelectorAll('.qmenu-sort-item').forEach(el => el.classList.toggle('active', el.dataset.sort === sort));
     _qmenu.querySelectorAll('.qmenu-filter-item').forEach(el => el.classList.toggle('active', el.dataset.filter === filter));
     _qmenu.querySelectorAll('.qmenu-size-item').forEach(el => el.classList.toggle('active', el.dataset.size === size));
+    (()=>{ const sm2={sm:'15px',md:'17px',lg:'20px'},ss2={sm:'15px',md:'18px',lg:'21px'}; document.documentElement.style.setProperty('--reader-font-size',sm2[size]||'17px'); document.documentElement.style.setProperty('--seq-title-size',ss2[size]||'18px'); })();
     // Toggle opts
     const summariesOn = (typeof localStorage !== 'undefined' && localStorage.getItem('reader.opt.summaries') === '1');
     const imagesOn    = (typeof localStorage !== 'undefined' && localStorage.getItem('reader.opt.images') !== '0');
@@ -5833,9 +5973,12 @@ body.focus-mode .focus-exit{ display:flex; }
   window.qmenuSetSize = function(size){
     try{ localStorage.setItem('reader.textSize', size); }catch(e){}
     _qmenu.querySelectorAll('.qmenu-size-item').forEach(el => el.classList.toggle('active', el.dataset.size === size));
+    (()=>{ const sm2={sm:'15px',md:'17px',lg:'20px'},ss2={sm:'15px',md:'18px',lg:'21px'}; document.documentElement.style.setProperty('--reader-font-size',sm2[size]||'17px'); document.documentElement.style.setProperty('--seq-title-size',ss2[size]||'18px'); })();
     // Apply size to reader text
-    const sizeMap = { sm:'15px', md:'17px', lg:'20px' };
+    const sizeMap    = { sm:'15px', md:'17px', lg:'20px' };
+    const seqSizeMap = { sm:'15px', md:'18px', lg:'21px' };
     document.documentElement.style.setProperty('--reader-font-size', sizeMap[size] || '17px');
+    document.documentElement.style.setProperty('--seq-title-size', seqSizeMap[size] || '18px');
   };
 
   window.qmenuToggleOpt = function(opt){
@@ -6122,7 +6265,7 @@ body.focus-mode .focus-exit{ display:flex; }
 
   // Catalogue : 8 thèmes — flux ordonnés pour qu'aucune couleur identique ne se suive
   const DC_THEMES = [
-    { id:'actu', name:'Actualités', illus:'globe',
+    { id:'actu', name:'Actualités', illus:'globe', tileGrad:'linear-gradient(145deg,#0077b6 0%,#00b4d8 100%)', icon:'🌐',
       desc:'Information internationale, politique et société',
       feeds:[
         // bleu → rouge → sombre → orange → vert → rouge
@@ -6146,7 +6289,7 @@ body.focus-mode .focus-exit{ display:flex; }
         { name:'Washington Post World', domain:'washingtonpost.com', color:'#1a1a2e', url:'https://feeds.washingtonpost.com/rss/world', desc:'Le monde selon le WaPo' },
         { name:'NY Post', domain:'nypost.com', color:'#c8000a', url:'https://nypost.com/feed/', desc:'Actualité américaine directe' },
       ]},
-    { id:'geopolitique', name:'G\u00e9opolitique', illus:'geopolitique',
+    { id:'geopolitique', name:'G\u00e9opolitique', illus:'geopolitique', tileGrad:'linear-gradient(145deg,#6c3483 0%,#9b59b6 100%)', icon:'\u{1F30D}',
       desc:'Diplomatie, conflits et relations internationales',
       feeds:[
         { name:'Le Grand Continent',   domain:'legrandcontinent.eu',  color:'#1a2a5e', url:'https://legrandcontinent.eu/fr/feed/',                                    desc:'Revue de g\u00e9opolitique europ\u00e9enne de r\u00e9f\u00e9rence' },
@@ -6166,7 +6309,7 @@ body.focus-mode .focus-exit{ display:flex; }
         { name:'Reuters Africa', domain:'reutersbest.com', color:'#e87722', url:'https://reutersbest.com/region/africa/feed/', desc:'Afrique par Reuters Best' },
         { name:'WaPo World', domain:'washingtonpost.com', color:'#1a1a2e', url:'https://feeds.washingtonpost.com/rss/world?itid=lk_inline_manual_', desc:'Géopolitique Washington Post' },
       ]},
-    { id:'finance', name:'Finance', illus:'finance',
+    { id:'finance', name:'Finance', illus:'finance', tileGrad:'linear-gradient(145deg,#1e4d00 0%,#27ae60 100%)', icon:'📈',
       desc:'Marchés, économie mondiale et finance personnelle',
       feeds:[
         // bleu → sombre → rouge → orange → vert → bleu clair
@@ -6186,7 +6329,7 @@ body.focus-mode .focus-exit{ display:flex; }
         { name:'Forbes Innovation', domain:'forbes.com', color:'#c8000a', url:'https://www.forbes.com/innovation/feed2/', desc:'Innovation et business Forbes' },
         { name:'NY Post Business', domain:'nypost.com', color:'#c8000a', url:'https://nypost.com/business/feed/', desc:'Business à l\'américaine' },
       ]},
-    { id:'science', name:'Science', illus:'cosmos',
+    { id:'science', name:'Science', illus:'cosmos', tileGrad:'linear-gradient(145deg,#0d47a1 0%,#42a5f5 100%)', icon:'🔭',
       desc:'Espace, physique, biologie et grandes découvertes',
       feeds:[
         // rose → bleu → rouge → vert → sarcelle → sombre
@@ -6201,7 +6344,7 @@ body.focus-mode .focus-exit{ display:flex; }
         { name:'Nouvel Obs Sciences', domain:'nouvelobs.com', color:'#003f8e', url:'https://www.nouvelobs.com/sciences/rss.xml', desc:'Sciences et innovations' },
         { name:'NYT Space', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/Space.xml', desc:'Espace et astronomie NYT' },
       ]},
-    { id:'sante', name:'Santé', illus:'sante',
+    { id:'sante', name:'Santé', illus:'sante', tileGrad:'linear-gradient(145deg,#b71c1c 0%,#ef5350 100%)', icon:'❤️',
       desc:'Médecine, recherche et bien-être',
       feeds:[
         // rose → bleu → rouge → vert → sombre → violet
@@ -6216,7 +6359,7 @@ body.focus-mode .focus-exit{ display:flex; }
         { name:'Nouvel Obs Sante', domain:'nouvelobs.com', color:'#003f8e', url:'https://www.nouvelobs.com/sante/rss.xml', desc:'Sante et medecine' },
         { name:'NYT Health', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/svc/collections/v1/publish/https://www.nytimes.com/section/health/rss.xml', desc:'Santé et médecine NYT' },
       ]},
-    { id:'tech-ia', name:'Tech & IA', illus:'neural',
+    { id:'tech-ia', name:'Tech & IA', illus:'neural', tileGrad:'linear-gradient(145deg,#4a235a 0%,#a044ff 100%)', icon:'🤖',
       desc:'Intelligence artificielle, hardware et culture du code',
       feeds:[
         // rose → vert → orange → violet → sombre → rouge sombre
@@ -6238,7 +6381,7 @@ body.focus-mode .focus-exit{ display:flex; }
         { name:'Forbes Big Data', domain:'forbes.com', color:'#c8000a', url:'https://www.forbes.com/big-data/feed2/', desc:'Big Data et IA Forbes' },
         { name:'Forbes Cloud', domain:'forbes.com', color:'#c8000a', url:'https://www.forbes.com/cloud/feed2/', desc:'Cloud computing Forbes' },
       ]},
-    { id:'climat', name:'Climat & Éco', illus:'climat',
+    { id:'climat', name:'Climat & Éco', illus:'climat', tileGrad:'linear-gradient(145deg,#0b5345 0%,#1abc9c 100%)', icon:'🌱',
       desc:'Environnement, énergie verte et transition écologique',
       feeds:[
         // vert → sombre → bleu → vert foncé → rouge → gris-vert
@@ -6254,7 +6397,7 @@ body.focus-mode .focus-exit{ display:flex; }
         { name:'NYT Energy & Enviro', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/EnergyEnvironment.xml', desc:'Énergie et environnement NYT' },
         { name:'Reuters Énergie', domain:'reutersbest.com', color:'#e87722', url:'https://reutersbest.com/topic/commodities-energy/feed/', desc:'Énergie et matières premières' },
       ]},
-    { id:'startup', name:'Entrepreneuriat', illus:'entrepreneuriat',
+    { id:'startup', name:'Entrepreneuriat', illus:'entrepreneuriat', tileGrad:'linear-gradient(145deg,#7e4a00 0%,#f39c12 100%)', icon:'🚀',
       desc:'Startups, innovation et culture du business',
       feeds:[
         // orange → bleu → sombre → rouge → vert → gris
@@ -6268,7 +6411,7 @@ body.focus-mode .focus-exit{ display:flex; }
         { name:'JDN Decideurs', domain:'journaldunet.com', color:'#003fa3', url:'https://www.journaldunet.com/decideurs/rss/', desc:'Dirigeants et strategie' },
         { name:'PC Startups', domain:'presse-citron.net', color:'#f5a623', url:'https://www.presse-citron.net/category/startups/feed/', desc:'Startups et innovation' },
       ]},
-    { id:'crypto', name:'Crypto & Web3', illus:'crypto',
+    { id:'crypto', name:'Crypto & Web3', illus:'crypto', tileGrad:'linear-gradient(145deg,#5a3e00 0%,#f7931a 100%)', icon:'₿',
       desc:'Bitcoin, DeFi, blockchain et économie numérique',
       feeds:[
         // orange → sombre → rouge → gris → orange-vert → bleu
@@ -6281,7 +6424,7 @@ body.focus-mode .focus-exit{ display:flex; }
         { name:'PC Crypto', domain:'presse-citron.net', color:'#f5a623', url:'https://www.presse-citron.net/category/crypto-monnaies/feed/', desc:'Cryptomonnaies et blockchain' },
         { name:'01net Crypto', domain:'01net.com', color:'#003fa3', url:'https://www.01net.com/actualites/cryptomonnaie/feed/', desc:'Bitcoin et altcoins en francais' },
       ]},
-    { id:'nba', name:'NBA', illus:'basketball',
+    { id:'nba', name:'NBA', illus:'basketball', tileGrad:'linear-gradient(145deg,#6e2c00 0%,#e67e22 100%)', icon:'🏀',
       desc:'Basketball américain, analyses et coulisses de la ligue',
       feeds:[
         // rouge → orange → bleu → rouge → vert → bleu
@@ -6292,7 +6435,7 @@ body.focus-mode .focus-exit{ display:flex; }
         { name:'HoopsHype',         domain:'hoopshype.com',         color:'#1a5a1a', url:'https://hoopshype.com/feed/',                        desc:'Rumeurs, trades et contrats' },
         { name:'RealGM Basketball', domain:'realgm.com', color:'#0055a5', url:'https://basketball.realgm.com/rss/',                 desc:'Stats, transactions et draft' },
       ]},
-    { id:'football', name:'Football', illus:'soccer',
+    { id:'football', name:'Football', illus:'soccer', tileGrad:'linear-gradient(145deg,#0b5345 0%,#27ae60 100%)', icon:'⚽',
       desc:'Championnats européens, Ligue des Champions et transferts',
       feeds:[
         // bleu → rouge → vert → bleu → rouge → sombre
@@ -6305,7 +6448,7 @@ body.focus-mode .focus-exit{ display:flex; }
         { name:'Athletic Premier League', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/athletic/rss/premier-league/', desc:'The Athletic - Premier League' },
         { name:'Athletic Football', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/athletic/rss/football/', desc:'The Athletic - Football mondial' },
       ]},
-    { id:'sport-mondial', name:'Sport Mondial', illus:'podium',
+    { id:'sport-mondial', name:'Sport Mondial', illus:'podium', tileGrad:'linear-gradient(145deg,#7d6608 0%,#f1c40f 100%)', icon:'🏆',
       desc:'Athlétisme, tennis, F1 et multisports internationaux',
       feeds:[
         // bleu → rouge → orange → sombre → bleu clair
@@ -6319,7 +6462,7 @@ body.focus-mode .focus-exit{ display:flex; }
         { name:'Athletic Tennis', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/athletic/rss/tennis/', desc:'The Athletic - Tennis mondial' },
         { name:'Reuters Amériques', domain:'reutersbest.com', color:'#e87722', url:'https://reutersbest.com/region/americas/feed/', desc:'Sport et actu Amériques' },
       ]},
-    { id:'culture', name:'Culture', illus:'film',
+    { id:'culture', name:'Culture', illus:'film', tileGrad:'linear-gradient(145deg,#6c0070 0%,#e91e8c 100%)', icon:'🎬',
       desc:'Cinéma, musique, littérature et art de vivre',
       feeds:[
         // sombre → rouge → violet → rouge sombre → bleu → gris
@@ -6337,7 +6480,7 @@ body.focus-mode .focus-exit{ display:flex; }
         { name:'NYT Arts & Music', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/svc/collections/v1/publish/https://www.nytimes.com/section/arts/music/rss.xml', desc:'Musique NYT' },
         { name:'WaPo Arts', domain:'washingtonpost.com', color:'#1a1a2e', url:'https://feeds.washingtonpost.com/rss/entertainment', desc:'Arts et divertissement WaPo' },
       ]},
-    { id:'design', name:'Design & Créa', illus:'bauhaus',
+    { id:'design', name:'Design & Créa', illus:'bauhaus', tileGrad:'linear-gradient(145deg,#4a0080 0%,#a044ff 100%)', icon:'🎨',
       desc:'UX, typographie, culture visuelle et outils créatifs',
       feeds:[
         // orange → rouge → bleu → sombre → bleu clair → sarcelle
@@ -6348,7 +6491,7 @@ body.focus-mode .focus-exit{ display:flex; }
         { name:'A List Apart',      domain:'alistapart.com',        color:'#367eb6', url:'https://alistapart.com/main/feed/',                  desc:'Web design et bonnes pratiques' },
         { name:'Abduzeedo',         domain:'abduzeedo.com',         color:'#1a7a6a', url:'https://abduzeedo.com/rss.xml',                      desc:'Inspiration design et motion' },
       ]},
-    { id:'gastro', name:'Gastronomie', illus:'gastronomie',
+    { id:'gastro', name:'Gastronomie', illus:'gastronomie', tileGrad:'linear-gradient(145deg,#7b241c 0%,#e74c3c 100%)', icon:'🍽️',
       desc:'Cuisine, recettes et culture culinaire',
       feeds:[
         // sombre → rouge → orange → vert → jaune → bleu
@@ -6360,7 +6503,7 @@ body.focus-mode .focus-exit{ display:flex; }
         { name:'Saveur',            domain:'saveur.com',            color:'#1a3a6e', url:'https://www.saveur.com/feed/rss/',                   desc:'Voyages culinaires et recettes' },
         { name:'NYT Food', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/svc/collections/v1/publish/https://www.nytimes.com/section/food/rss.xml', desc:'Gastronomie et recettes NYT' },
       ]},
-    { id:'voyage', name:'Voyage', illus:'voyage',
+    { id:'voyage', name:'Voyage', illus:'voyage', tileGrad:'linear-gradient(145deg,#0e4d6e 0%,#00b4d8 100%)', icon:'✈️',
       desc:'Destinations, aventure et art de voyager',
       feeds:[
         // sombre → bleu → orange → vert → rouge → gris-bleu
@@ -6373,7 +6516,7 @@ body.focus-mode .focus-exit{ display:flex; }
         { name:'NYT Travel', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/travel.xml', desc:'Voyages et destinations NYT' },
         { name:'WaPo Lifestyle', domain:'washingtonpost.com', color:'#1a1a2e', url:'https://feeds.washingtonpost.com/rss/lifestyle', desc:'Lifestyle et voyages WaPo' },
       ]},
-    { id:'gaming', name:'Gaming', illus:'gaming',
+    { id:'gaming', name:'Gaming', illus:'gaming', tileGrad:'linear-gradient(145deg,#512e5f 0%,#9b59b6 100%)', icon:'🎮',
       desc:'Jeux vidéo, esport et culture geek',
       feeds:[
         // violet → rouge → gris → vert → bleu → orange
@@ -6400,8 +6543,12 @@ body.focus-mode .focus-exit{ display:flex; }
   }
 
   function dcRenderThemeTile(theme){
+    const grad = theme.tileGrad || 'linear-gradient(145deg,#1a1a2e 0%,#16213e 100%)';
+    const icon = theme.icon || '\u{1F4F0}';
     return `<div class="dc-theme-tile" onclick="dcOpenTheme('${theme.id}')">
-      <div class="dc-theme-tile-img" style="background-image:url('${dcSvgUrl(theme.illus)}');"></div>
+      <div class="dc-theme-tile-img" style="background:${grad}">
+        <div class="dc-theme-tile-icon">${icon}</div>
+      </div>
       <div class="dc-theme-tile-badge">${theme.feeds.length} flux</div>
       <div class="dc-theme-tile-body">
         <div class="dc-theme-tile-name">${escapeHtml(theme.name)}</div>
@@ -6435,8 +6582,11 @@ body.focus-mode .focus-exit{ display:flex; }
         onclick="dcToggleSub(this)">${subbed?'Abonné \u2713':'+ Suivre'}</button>
       </div>
       <div class="dc-feed-arts" id="dcfa-${idx}">
-        <div class="dc-art-skel" style="width:78%"></div>
-        <div class="dc-art-skel" style="width:62%"></div>
+        <div class="dc-arts-carousel">
+          <div class="dc-art-skel"></div>
+          <div class="dc-art-skel"></div>
+          <div class="dc-art-skel"></div>
+        </div>
       </div>
     </div>`;
   }
@@ -6458,13 +6608,17 @@ body.focus-mode .focus-exit{ display:flex; }
       return;
     }
     const safeUrl = String(feedUrl).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-    cont.innerHTML = arts.map((a,i)=>
-      `<div class="dc-art" onclick="_dcOpenArt('${safeUrl}',${i})">
-        <span class="dc-art-dot"></span>
-        <span class="dc-art-title">${escapeHtml(a.title||'')}</span>
-        <span class="dc-art-time">${relTime(a.pubDate)}</span>
-      </div>`
-    ).join('');
+    const cards = arts.map((a,i)=>{
+      const imgHtml = a.imageUrl
+        ? `<div class="dc-art-img"><img src="${escapeHtml(a.imageUrl)}" alt="" decoding="async" loading="lazy" onerror="this.parentNode.className='dc-art-no-img'"><span class="dc-art-no-img-dot" style="display:none"></span></div>`
+        : `<div class="dc-art-no-img"><span class="dc-art-no-img-dot"></span></div>`;
+      return `<div class="dc-art" onclick="_dcOpenArt('${safeUrl}',${i})">
+        ${imgHtml}
+        <div class="dc-art-title">${escapeHtml(a.title||'')}</div>
+        <div class="dc-art-time">${relTime(a.pubDate)}</div>
+      </div>`;
+    }).join('');
+    cont.innerHTML = `<div class="dc-arts-carousel">${cards}</div>`;
   }
 
   async function _dcLoadThemeArts(theme, token){
@@ -7479,7 +7633,44 @@ body.focus-mode .focus-exit{ display:flex; }
       return;
     }
     if(empty) empty.style.display='none';
-    // Hero retiré : la vue Édition est une liste « Ordered List » uniforme
+    // ── Bannière décorative home ────────────────────────────────────
+    const banner = document.getElementById('editionBanner');
+    if(banner && !banner.dataset.built){
+      banner.dataset.built = '1';
+      const today = new Date();
+      const jours  = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+      const mois   = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+      const dow    = jours[today.getDay()];
+      const dom    = today.getDate();
+      const mon    = mois[today.getMonth()];
+      // Gradient change each day-of-week
+      const grads = [
+        'linear-gradient(135deg,#0d47a1 0%,#42a5f5 100%)',
+        'linear-gradient(135deg,#4a0080 0%,#a044ff 100%)',
+        'linear-gradient(135deg,#0b5345 0%,#1abc9c 100%)',
+        'linear-gradient(135deg,#7b241c 0%,#e74c3c 100%)',
+        'linear-gradient(135deg,#7e4a00 0%,#f39c12 100%)',
+        'linear-gradient(135deg,#6c0070 0%,#e91e8c 100%)',
+        'linear-gradient(135deg,#0e4d6e 0%,#00b4d8 100%)',
+      ];
+      const grad = grads[today.getDay()];
+      const nameEl = document.getElementById('userName');
+      const uname  = (nameEl && nameEl.textContent.trim()) || '';
+      const srcCount = (typeof _rssFeeds !== 'undefined') ? _rssFeeds.length : 0;
+      banner.innerHTML = `<div class="edition-hero-banner">
+        <div class="edition-hero-banner-bg" style="background:${grad}"></div>
+        <div class="edition-hero-banner-noise"></div>
+        <div class="edition-hero-orb1"></div>
+        <div class="edition-hero-orb2"></div>
+        <div class="edition-hero-orb3"></div>
+        <div class="edition-hero-content">
+          <div class="edition-hero-eyebrow">${dow} ${dom} ${mon}</div>
+          <div class="edition-hero-title">Votre édition${uname ? ', ' + escHtml(uname) : ''}.</div>
+          ${srcCount > 0 ? '<div class="edition-hero-sub">' + srcCount + ' source' + (srcCount!==1?'s':'') + ' • Personnalisé pour vous</div>' : ''}
+        </div>
+      </div>`;
+    }
+    // Hero article retiré
     if(hero){ hero.innerHTML=''; hero.style.display='none'; }
 
     // Filtrage éventuel par source (rail global)
@@ -8983,12 +9174,65 @@ body.focus-mode .focus-exit{ display:flex; }
     return _FOLDER_WELCOME[key] || _FOLDER_WELCOME['default'];
   }
 
+  // Palette de gradients héro indexée sur le hash du nom du dossier
+  const _FOLDER_GRADS = [
+    ['#0d47a1','#42a5f5'], // bleu
+    ['#4a0080','#a044ff'], // violet
+    ['#0b5345','#1abc9c'], // vert teal
+    ['#7b241c','#e74c3c'], // rouge
+    ['#7e4a00','#f39c12'], // orange
+    ['#6c0070','#e91e8c'], // rose
+    ['#0e4d6e','#00b4d8'], // cyan
+    ['#5a3e00','#f7931a'], // ambre
+    ['#0b5345','#27ae60'], // vert
+    ['#512e5f','#9b59b6'], // aubergine
+  ];
+  function _folderGrad(name){
+    let h = 0; for(let i=0;i<(name||'').length;i++) h = (h*31+name.charCodeAt(i))&0xffff;
+    return _FOLDER_GRADS[h % _FOLDER_GRADS.length];
+  }
+
   function openFolderPage(folderIdx){
     const folder = folders[folderIdx];
     if(!folder) return;
-    document.getElementById('folderPageTitle').textContent = folder.name;
+
+    // ── Titre + subtitle ────────────────────────────────────────────
+    const titleEl = document.getElementById('folderPageTitle');
+    if(titleEl) titleEl.textContent = folder.name;
     const welcomeEl = document.getElementById('folderPageWelcome');
     if(welcomeEl) welcomeEl.textContent = _getFolderWelcome(folder.name);
+
+    // ── Héro décoratif (gradient + orbe lumineux) ───────────────────
+    const [c1, c2] = _folderGrad(folder.name);
+    const heroBg = document.getElementById('folderHeroBg');
+    if(heroBg) heroBg.style.background = `linear-gradient(145deg,${c1} 0%,${c2} 100%)`;
+    const heroOrb = document.getElementById('folderHeroOrb');
+    if(heroOrb){ heroOrb.style.background = c2; }
+    const badgeEl = document.getElementById('folderHeroBadge');
+    if(badgeEl){ const n = (folder.feeds||[]).length; badgeEl.textContent = n + ' source' + (n!==1?'s':''); }
+
+    // ── Logos flottants des sources ─────────────────────────────────
+    const logoRow = document.getElementById('folderLogoRow');
+    if(logoRow){
+      const feeds = folder.feeds || [];
+      const MAX = 7;
+      const shown = feeds.slice(0, MAX);
+      const rest  = feeds.length - shown.length;
+      logoRow.innerHTML = shown.map(url=>{
+        const db   = (typeof _FEED_DB!=='undefined' && _FEED_DB[url]) || {};
+        const domain = db.domain || (()=>{ try{ return new URL(url).hostname.replace(/^www\./,''); }catch(e){ return ''; } })();
+        const bg   = db.color || '#333';
+        const init = (db.name||domain||'?')[0].toUpperCase();
+        const fav  = domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=64` : '';
+        return `<div class="folder-logo-bubble" style="background:${bg}" title="${escHtml(db.name||domain)}">`
+          + (fav ? `<img src="${escAttr(fav)}" alt="" onerror="this.remove()">` : '')
+          + init + `</div>`;
+      }).join('')
+        + (rest>0 ? `<div class="folder-logo-bubble folder-logo-bubble-more">+${rest}</div>` : '')
+        + (feeds.length ? `<span class="folder-logo-row-count">${feeds.length} source${feeds.length!==1?'s':''}</span>` : '');
+    }
+
+    // ── Articles ────────────────────────────────────────────────────
     const feedUrls = new Set(folder.feeds||[]);
     const arts = typeof _allArticles !== 'undefined'
       ? _dedup([..._allArticles].filter(a=>feedUrls.has(a.feedUrl||'')).sort((a,b)=>b.pubDate-a.pubDate))
@@ -8996,7 +9240,7 @@ body.focus-mode .focus-exit{ display:flex; }
     _folderPageArts = arts;
     const content = document.getElementById('folderPageContent');
     _renderSubpageArts(_folderPageArts, _currentView, content, '_folderArt');
-    _stFold(true); // en haut avant l'animation d'entrée
+    _stFold(true);
     const page = document.getElementById('folderPage');
     page.style.display='flex';
     requestAnimationFrame(()=>page.classList.add('open'));
@@ -9508,17 +9752,25 @@ body.focus-mode .focus-exit{ display:flex; }
   </div>
 
   <div class="folder-page" id="folderPage">
-    <div class="folder-page-bar">
-      <button class="folder-page-back" onclick="closeFolderPage()" aria-label="Retour">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+    <div class="folder-page-bar" style="position:absolute;top:0;left:0;right:0;z-index:10;background:transparent;border:none">
+      <button class="folder-page-back" onclick="closeFolderPage()" aria-label="Retour" style="background:rgba(0,0,0,.35);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
     </div>
     <div class="folder-page-scroll">
-      <div class="folder-page-header">
-        <div class="folder-page-title" id="folderPageTitle"></div>
-        <div class="folder-page-welcome" id="folderPageWelcome"></div>
-        <div class="folder-page-sep"></div>
+      <!-- Héro décoratif -->
+      <div class="folder-hero" id="folderHero">
+        <div class="folder-hero-bg" id="folderHeroBg"></div>
+        <div class="folder-hero-noise"></div>
+        <div class="folder-hero-orb" id="folderHeroOrb"></div>
+        <div class="folder-hero-content">
+          <div class="folder-hero-badge" id="folderHeroBadge">Dossier</div>
+          <div class="folder-hero-title" id="folderPageTitle"></div>
+          <div class="folder-hero-sub" id="folderPageWelcome"></div>
+        </div>
       </div>
+      <!-- Logos flottants des sources -->
+      <div class="folder-logo-row" id="folderLogoRow"></div>
       <div class="folder-page-inner" id="folderPageContent"></div>
     </div>
   </div>
