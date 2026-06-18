@@ -1860,52 +1860,52 @@ button, .ob-btn, .ob-btn-ghost,
 
 
 /* ══════════════════════════════════════════════════════════════════
-   FOCUS SÉQUENTIEL — Liste éditoriale (style « Ordered List »)
-   1 colonne en mobile · 2 colonnes en écran large · apparition au scroll
+   APPARITION AU DÉFILEMENT — utilitaire générique (toutes les vues)
    ══════════════════════════════════════════════════════════════════ */
-
-.seq-list{ display:block; padding:13px 0 100px; }
-.seq-progress{ display:none; }
-
-.seq-ol{
-  display:grid; grid-template-columns:1fr;
-  gap:40px 22px; padding:0 2px;
-}
-@media (min-width:560px){
-  .seq-ol{ grid-template-columns:1fr 1fr; gap:30px 22px; }
-}
-
-/* — Carte article — */
-.seq-ol-item{
-  display:flex; flex-direction:column; align-items:flex-start;
-  gap:6px; cursor:pointer; -webkit-tap-highlight-color:transparent;
-  opacity:0; transform:translateY(22px);
-  transition:opacity .6s cubic-bezier(.22,1,.36,1),
-             transform .6s cubic-bezier(.22,1,.36,1);
+.reveal{
+  opacity:0; transform:translateY(20px);
+  transition:opacity .58s cubic-bezier(.22,1,.36,1),
+             transform .58s cubic-bezier(.22,1,.36,1);
   will-change:opacity, transform;
 }
-.seq-ol-item.in{ opacity:1; transform:none; }
-.seq-ol-item.is-read,
-.seq-ol-item.is-read.in{ opacity:.42; }
-.seq-ol-item:active{ transform:scale(.985); transition:transform .12s ease; }
+.reveal.in{ opacity:1; transform:none; }
+@media (prefers-reduced-motion:reduce){
+  .reveal{ opacity:1 !important; transform:none !important; transition:none; }
+}
 
-/* — Figure / image — */
-.seq-ol-fig{
+/* ══════════════════════════════════════════════════════════════════
+   VUE ÉDITION — Liste éditoriale (style « Ordered List »)
+   image · titre · sous-titre · date · mots-clés
+   1 colonne en mobile · 2 colonnes en écran large
+   ══════════════════════════════════════════════════════════════════ */
+.edl{
+  display:grid; grid-template-columns:1fr;
+  gap:40px 22px; padding:2px 0 10px;
+}
+@media (min-width:560px){
+  .edl{ grid-template-columns:1fr 1fr; gap:32px 22px; }
+}
+.edl-item{
+  display:flex; flex-direction:column; align-items:flex-start;
+  gap:6px; cursor:pointer; -webkit-tap-highlight-color:transparent;
+}
+.edl-item.is-read,
+.edl-item.is-read.in{ opacity:.42; }
+.edl-item:active{ transform:scale(.985); transition:transform .12s ease; }
+.edl-fig{
   width:100%; aspect-ratio:327.63 / 184.64;
   border-radius:12px; overflow:hidden;
   background:rgba(255,255,255,.05);
 }
-[data-theme="light"] .seq-ol-fig{ background:rgba(0,0,0,.04); }
-.seq-ol-fig img{
+[data-theme="light"] .edl-fig{ background:rgba(0,0,0,.04); }
+.edl-fig img{
   width:100%; height:100%; object-fit:cover; display:block;
   transition:transform .6s cubic-bezier(.22,1,.36,1);
 }
 @media (hover:hover) and (pointer:fine){
-  .seq-ol-item:hover .seq-ol-fig img{ transform:scale(1.045); }
+  .edl-item:hover .edl-fig img{ transform:scale(1.045); }
 }
-
-/* — Titre — */
-.seq-ol-title{
+.edl-title{
   font-family:var(--font-inter);
   font-size:20px; font-weight:600; line-height:1.24;
   letter-spacing:-.012em; color:var(--text);
@@ -1913,41 +1913,82 @@ button, .ob-btn, .ob-btn-ghost,
   display:-webkit-box; -webkit-line-clamp:3;
   -webkit-box-orient:vertical; overflow:hidden;
 }
-
-/* — Sous-titre — */
-.seq-ol-sub{
+.edl-sub{
   font-family:var(--font-inter);
   font-size:13px; font-weight:400; line-height:1.36;
   color:var(--text-muted); margin:0;
   display:-webkit-box; -webkit-line-clamp:2;
   -webkit-box-orient:vertical; overflow:hidden;
 }
-
-/* — Date — */
-.seq-ol-date{
+.edl-date{
   font-family:var(--font-inter);
   font-size:10.5px; font-weight:500; line-height:1.1;
   color:var(--text-muted); opacity:.72; margin-top:4px;
 }
-
-/* — Pastilles catégories (noires inversées) — */
-.seq-ol-tags{ display:flex; flex-wrap:wrap; gap:5px; margin-top:9px; }
-.seq-ol-tag{
+.edl-tags{ display:flex; flex-wrap:wrap; gap:5px; margin-top:9px; }
+.edl-tag{
   display:inline-flex; align-items:center;
   background:var(--text); color:var(--bg);
   border-radius:999px; padding:4px 8px;
   font-family:var(--font-inter); font-size:10.5px; font-weight:500;
   letter-spacing:.01em; white-space:nowrap;
 }
-
-/* — Réglages 2 colonnes (cartes plus compactes) — */
 @media (min-width:560px){
-  .seq-ol-fig{ border-radius:8px; }
-  .seq-ol-title{ font-size:14px; margin-top:5px; -webkit-line-clamp:2; }
-  .seq-ol-sub{ font-size:11px; }
-  .seq-ol-date{ font-size:9px; }
-  .seq-ol-tag{ font-size:9px; padding:3px 6px; }
+  .edl-fig{ border-radius:8px; }
+  .edl-title{ font-size:14px; margin-top:5px; -webkit-line-clamp:2; }
+  .edl-sub{ font-size:11px; }
+  .edl-date{ font-size:9px; }
+  .edl-tag{ font-size:9px; padding:3px 6px; }
 }
+
+/* ══════════════════════════════════════════════════════════════════
+   VUE SÉQUENTIEL — Liste numérotée éditoriale « wow »
+   grand numéro · source · titre · vignette
+   ══════════════════════════════════════════════════════════════════ */
+.seq-list{ display:flex; flex-direction:column; gap:0; padding:6px 0 90px; }
+.seq-progress{ display:none; }
+.seq-item{
+  display:flex; gap:16px; align-items:flex-start;
+  padding:24px 2px; border-bottom:1px solid var(--border);
+  cursor:pointer; -webkit-tap-highlight-color:transparent;
+}
+[data-theme="light"] .seq-item{ border-color:rgba(0,0,0,.08); }
+.seq-item:last-child{ border-bottom:none; }
+.seq-item:active{ transform:scale(.99); transition:transform .1s ease; }
+.seq-num{
+  font-family:var(--font-inter); font-weight:800;
+  font-size:30px; line-height:1; letter-spacing:-.04em;
+  min-width:42px; text-align:right; flex-shrink:0; padding-top:2px;
+  background:linear-gradient(180deg, var(--text) 0%, var(--text-muted) 130%);
+  -webkit-background-clip:text; background-clip:text;
+  -webkit-text-fill-color:transparent;
+  opacity:.85;
+}
+.seq-body{ flex:1; min-width:0; }
+.seq-source{
+  font-family:var(--font-inter); font-size:10.5px; font-weight:700;
+  color:var(--text-muted); text-transform:uppercase; letter-spacing:.05em;
+  margin-bottom:6px; display:flex; align-items:center; gap:5px;
+}
+.seq-fav{ width:15px; height:15px; border-radius:50%; overflow:hidden; flex-shrink:0; background:transparent; }
+.seq-fav img{ width:100%; height:100%; object-fit:contain; border-radius:50%; display:block; }
+.seq-title{
+  font-family:var(--font-title); font-size:18px; font-weight:700;
+  line-height:1.26; color:var(--text); letter-spacing:-.012em;
+  display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;
+}
+.seq-thumb{
+  width:104px; height:74px; flex-shrink:0; align-self:center;
+  border-radius:12px; overflow:hidden; background:#111;
+}
+.seq-thumb img{ width:100%; height:100%; object-fit:cover; display:block;
+  transition:transform .6s cubic-bezier(.22,1,.36,1); }
+@media (hover:hover) and (pointer:fine){
+  .seq-item:hover .seq-thumb img{ transform:scale(1.06); }
+}
+.seq-item.is-read{ opacity:.42; }
+.seq-item.is-read .seq-title{ font-weight:600; color:var(--text-muted); }
+.seq-item.is-read .seq-thumb{ filter:grayscale(1); }
 
 /* ── PAGE DOSSIER ────────────────────────────────── */
 .folder-page{ position:fixed; inset:0; z-index:450; background:var(--bg); display:flex; flex-direction:column; transform:translateX(100%); transition:transform .38s cubic-bezier(.32,.72,0,1); }
@@ -2291,60 +2332,46 @@ button, .ob-btn, .ob-btn-ghost,
    ══════════════════════════════════════════════════════════ */
 .srail{ align-self:stretch; width:100%; margin:8px 0 22px; }
 
-/* — Rangée 1 : chips catégories — */
+/* — Rangée 1 : chips catégories (style « difference nav ») — */
 .srail-cats{
-  display:flex; gap:9px; overflow-x:auto; position:relative;
+  display:flex; gap:2px; overflow-x:auto; position:relative; isolation:isolate;
   padding:4px 2px; scrollbar-width:none; -ms-overflow-style:none;
   scroll-snap-type:x proximity; -webkit-overflow-scrolling:touch;
+  background:var(--bg);   /* fond opaque requis pour le mix-blend difference */
   -webkit-mask-image:linear-gradient(90deg, transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%);
           mask-image:linear-gradient(90deg, transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%);
 }
-/* Sliding pill — active category indicator */
+/* Indicateur glissant — pastille blanche en mix-blend difference
+   (inverse le texte de la chip active, sans effet d'empilement). */
 .srail-pill{
   position:absolute; top:4px; height:32px;
-  border-radius:999px;
-  background:rgba(255,255,255,.13);
-  border:1px solid rgba(255,255,255,.22);
-  pointer-events:none; z-index:0;
+  border-radius:999px; background:#fff;
+  mix-blend-mode:difference; pointer-events:none; z-index:2;
   left:0; width:0; opacity:0;
-  transition:left .28s cubic-bezier(.34,1.56,.64,1),
-             width .28s cubic-bezier(.34,1.56,.64,1),
-             opacity .22s ease;
-}
-[data-theme="light"] .srail-pill{
-  background:rgba(0,0,0,.09);
-  border-color:rgba(0,0,0,.16);
+  transition:left .3s cubic-bezier(.34,1.4,.64,1),
+             width .3s cubic-bezier(.34,1.4,.64,1),
+             opacity .2s ease;
 }
 .srail-pill.vis{ opacity:1; }
 .srail-cats::-webkit-scrollbar{ display:none; }
 .sr-cat{
+  position:relative; z-index:1;
   flex:0 0 auto; scroll-snap-align:start;
   display:inline-flex; align-items:center; gap:6px;
-  height:32px; padding:0 13px; border-radius:999px;
-  background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.09);
-  -webkit-backdrop-filter:blur(12px) saturate(140%); backdrop-filter:blur(12px) saturate(140%);
+  height:32px; padding:0 14px; border-radius:999px;
+  background:transparent; border:none;
   font-family:var(--font-inter); font-size:12.5px; font-weight:600; letter-spacing:-.01em;
   color:var(--text); cursor:pointer; white-space:nowrap; -webkit-tap-highlight-color:transparent;
-  transition:transform .38s cubic-bezier(.34,1.56,.64,1), background .22s ease, border-color .22s ease, color .22s ease;
+  transition:transform .38s cubic-bezier(.34,1.56,.64,1);
 }
 .sr-cat:active{ transform:scale(.95); transition:transform .07s ease-in; }
-[data-theme="light"] .sr-cat{ background:rgba(0,0,0,.04); border-color:rgba(0,0,0,.08); }
+[data-theme="light"] .sr-cat{ background:transparent; border:none; }
 .sr-cat-count{
   font-family:var(--font-inter); font-size:10px; font-weight:700; line-height:1;
-  color:var(--text-muted); background:rgba(255,255,255,.07);
+  color:var(--text-muted); background:rgba(128,128,128,.22);
   border-radius:999px; padding:3px 6px; min-width:18px; text-align:center;
-  transition:background .22s ease, color .22s ease;
 }
-[data-theme="light"] .sr-cat-count{ background:rgba(0,0,0,.06); }
-.sr-cat.has-active{ border-color:rgba(10,132,255,.32); }
-.sr-cat.open{
-  background:rgba(255,255,255,.11);
-  border-color:rgba(255,255,255,.22);
-}
-[data-theme="light"] .sr-cat.open{
-  background:rgba(0,0,0,.08);
-  border-color:rgba(0,0,0,.16);
-}
+.sr-cat.has-active{ }
 .sr-cat-chev{
   width:11px; height:11px; flex:0 0 auto; opacity:.5; margin-right:-2px;
   transition:transform .4s cubic-bezier(.34,1.56,.64,1);
@@ -7445,41 +7472,36 @@ body.focus-mode .focus-exit{ display:flex; }
     const grid  = document.getElementById('editionsGrid');
     const empty = document.getElementById('editionsEmpty');
     const skel  = document.getElementById('editionsSkeleton');
-    if(!hero||!grid) return;
+    if(!grid) return;
     if(skel) skel.style.display='none';
     if(!_allArticles.length){
       if(empty) empty.style.display = _rssFeeds.length ? 'none' : 'block';
       return;
     }
     if(empty) empty.style.display='none';
+    // Hero retiré : la vue Édition est une liste « Ordered List » uniforme
+    if(hero){ hero.innerHTML=''; hero.style.display='none'; }
 
     // Filtrage éventuel par source (rail global)
     const pool    = _railApplyFilter(_allArticles);
     const deduped = _dedup([...pool].sort((a,b)=>b.pubDate-a.pubDate));
-    const best    = deduped.find(a=>a.imageUrl) || deduped[0];
-    const rest    = deduped.filter(a=>a.link!==best?.link).slice(0,60);
-    _editionArts  = best ? [best,...rest] : rest;
-
-    const heroHtml = best ? _artCardHtml(best, 0, true, 'hero') : '';
-    const gridHtml = rest.map((a,i)=>_artCardHtml(a, i+1, false, 'standard')).join('');
+    _editionArts  = deduped.slice(0, 60);
 
     // Jitter fix : ne re-rendre que si le contenu a changé
-    // (la clé inclut le filtre actif pour forcer le re-rendu au changement)
-    const heroKey = (best?.link || '') + '#' + (_railFilterUrl || '');
-    const gridKey = rest.slice(0,5).map(a=>a.link).join('|') + '#' + (_railFilterUrl || '');
+    const gridKey = _editionArts.slice(0,6).map(a=>a.link).join('|') + '#' + (_railFilterUrl || '');
+    if(grid.dataset.key === gridKey) return; // rien n'a changé
 
-    if(hero.dataset.key === heroKey && grid.dataset.key === gridKey) return; // rien n'a changé
-
-    const isFirst = !hero.dataset.key;
+    const isFirst = !grid.dataset.key;
     const rowEl   = document.querySelector('.row');
     const prevTop = rowEl ? rowEl.scrollTop : 0;
     requestAnimationFrame(()=>{
-      if(heroHtml) hero.innerHTML = heroHtml;
-      grid.innerHTML = gridHtml;
-      hero.dataset.key = heroKey;
+      grid.className = 'edl';
+      grid.style.fontFamily = '';
+      grid.innerHTML = _editionArts.map((a,i)=>_edlCardHtml(a, i)).join('');
       grid.dataset.key = gridKey;
       // Anti-saut : restaurer la position de défilement après réécriture du DOM
       if(rowEl && !isFirst && rowEl.scrollTop !== prevTop) rowEl.scrollTop = prevTop;
+      if(typeof window._revealObserve === 'function') _revealObserve(grid);
       // Activer le preload des images nouvellement rendues
       if(typeof window._obsImage === 'function') setTimeout(window._obsImage, 50);
     });
@@ -7547,7 +7569,11 @@ body.focus-mode .focus-exit{ display:flex; }
 
   window._openEditionArt = function(idx){
     const a = _editionArts[idx];
-    if(a) _showArtModal(a);
+    if(!a) return;
+    if(window._RS) _RS.mark(a.link);
+    _showArtModal(a);
+    const el = document.querySelector('.edl-item[data-edl-idx="' + idx + '"]');
+    if(el) el.classList.add('is-read');
   };
 
 
@@ -8257,7 +8283,7 @@ body.focus-mode .focus-exit{ display:flex; }
       const imgH = a.imageUrl
         ? `<div class="grid2-img"><img src="${escAttr(a.imageUrl)}" alt="" decoding="async" onerror="this.parentNode.style.background='#1a1a1a'"></div>`
         : `<div class="grid2-img" style="background:linear-gradient(135deg,rgba(10,132,255,.15),#0a0a0a)"></div>`;
-      return `<div class="grid2-card" onclick="_grilleOpen(${i})" style="position:relative">
+      return `<div class="grid2-card reveal" onclick="_grilleOpen(${i})" style="position:relative">
         ${imgH}
         ${_titleWithShare(escHtml(a.title), a.link, a.title, 'grid2-title')}
         <div class="grid2-meta">
@@ -8267,6 +8293,7 @@ body.focus-mode .focus-exit{ display:flex; }
         </div>
       </div>`;
     }).join('');
+    if(typeof window._revealObserve === 'function') _revealObserve(wrap);
   }
   window._grilleOpen = function(i){ const a=_grilleArts[i]; if(a) _showArtModal(a); };
 
@@ -8316,13 +8343,101 @@ body.focus-mode .focus-exit{ display:flex; }
     return t ? t.split(/\s+/).length : 0;
   }
 
-  // ── Vue éditoriale séquentielle (5 articles récents) ─────────────
+  // ── Vues Édition / Séquentiel — helpers partagés ──
+
+  // Apparition au défilement — observer générique (toutes les vues)
+  let _revealIO = null;
+  function _revealObserve(container){
+    if(!container) return;
+    const items = container.querySelectorAll('.reveal');
+    if(!items.length) return;
+    if(!('IntersectionObserver' in window)){ items.forEach(el=>el.classList.add('in')); return; }
+    if(_revealIO) _revealIO.disconnect();
+    _revealIO = new IntersectionObserver((entries, obs)=>{
+      entries.forEach(en=>{ if(en.isIntersecting){ en.target.classList.add('in'); obs.unobserve(en.target); } });
+    }, { rootMargin:'0px 0px -5% 0px', threshold:.05 });
+    items.forEach(el=>{
+      // Déjà défilé au-dessus de l'écran : révéler d'emblée (jamais masqué).
+      // Visible ou plus bas : animer à l'entrée dans le viewport.
+      if(el.getBoundingClientRect().bottom < 0) el.classList.add('in');
+      else _revealIO.observe(el);
+    });
+  }
+  window._revealObserve = _revealObserve;
+
+  // Date complète en français : « 15 mai 2026 »
+  function _seqDateStr(ts){
+    if(!ts) return '';
+    const d = new Date(ts); if(isNaN(d)) return '';
+    const months = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+    return d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
+  }
+
+  // Sous-titre éditorial (description nettoyée, repli sur la source)
+  function _edlSub(a){
+    const raw = (a.description || a.contentEncoded || '')
+      .replace(/<[^>]+>/g,' ').replace(/&(?:amp|lt|gt|quot|nbsp|apos);/g,' ')
+      .replace(/\s+/g,' ').trim();
+    return raw || (a.source || '');
+  }
+
+  // Mots-clés extraits de l'article (priorité au titre, noms propres)
+  const _KW_STOP = new Set(('le la les un une des de du au aux et ou à a en dans sur sous par pour avec sans ce cet cette ces son sa ses leur leurs notre nos votre vos mon ma mes ton ta tes qui que quoi dont où est sont été être avoir fait plus moins très bien mais donc car ne pas ni se si on il elle ils elles nous vous je tu me te lui comme aussi alors ainsi cela ceci tout tous toute toutes deux trois selon vers chez entre depuis pendant après avant face autour dès lors encore déjà non oui via per cet the a an of to in on for and or with this that these those is are was were be been it its their his her our your my as at by from into over under after before about against between during through what why when who which then than not no new news first last more most just out up down off').split(/\s+/));
+  function _extractKeywords(a, max){
+    max = max || 3;
+    const title = (a.title||'').replace(/[‘’′]/g, "'");
+    const desc  = (a.description||'').replace(/<[^>]+>/g,' ');
+    const cand = {};
+    const add = (w, score) => {
+      const lw = w.toLowerCase();
+      if(lw.length < 3 || _KW_STOP.has(lw)) return;
+      if(!cand[lw]) cand[lw] = { word:w, score:0 };
+      cand[lw].score += score;
+    };
+    const tokRe = /[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ'’\-]{2,}/g;
+    const tTok = title.match(tokRe) || [];
+    tTok.forEach((w, idx) => {
+      const proper = idx > 0 && /^[A-ZÀ-Ö]/.test(w);
+      let sc = proper ? 3 : 1.2;
+      sc += Math.min(w.length, 11) / 11;
+      add(w, sc);
+    });
+    (desc.match(tokRe) || []).slice(0, 80).forEach(w => add(w, 0.4));
+    let list = Object.values(cand).sort((x,y)=>y.score - x.score).map(o=>o.word);
+    list = list.slice(0, max).map(w => w.length > 16 ? w.slice(0,16) : w);
+    if(!list.length && a.source) list = [a.source];
+    return list;
+  }
+  window._extractKeywords = _extractKeywords;
+
+  // Carte « Ordered List » — vue Édition
+  function _edlCardHtml(a, i){
+    const isRead = _RS.has(a.link);
+    const fig = a.imageUrl
+      ? `<div class="edl-fig"><img src="${escAttr(a.imageUrl)}" alt="" decoding="async" loading="lazy" onerror="this.parentNode.style.visibility='hidden'"></div>`
+      : `<div class="edl-fig"></div>`;
+    const sub  = _edlSub(a);
+    const kws  = _extractKeywords(a, 3);
+    const tags = kws.length
+      ? `<div class="edl-tags">${kws.map(t=>`<span class="edl-tag">${escHtml(t)}</span>`).join('')}</div>`
+      : '';
+    return `<div class="edl-item reveal${isRead?' is-read':''}" data-edl-idx="${i}" onclick="_openEditionArt(${i})">
+      ${fig}
+      <div class="edl-title">${escHtml(a.title||'')}</div>
+      ${sub ? `<div class="edl-sub">${escHtml(sub.slice(0,150))}</div>` : ''}
+      <div class="edl-date">${escHtml(_seqDateStr(a.pubDate))}</div>
+      ${tags}
+    </div>`;
+  }
+  window._edlCardHtml = _edlCardHtml;
+
+  // Vue séquentielle — liste numérotée éditoriale
   function _seqRenderProgress(){ /* no-op */ }
 
   function _seqRefreshReadStates(){
     const list = document.getElementById('seqList');
     if(!list || !_seqArts || !_seqArts.length) return;
-    list.querySelectorAll('.seq-ol-item').forEach(el => {
+    list.querySelectorAll('.seq-item').forEach(el => {
       const i = +el.getAttribute('data-seq-idx');
       const a = _seqArts[i];
       if(a) el.classList.toggle('is-read', _RS.has(a.link));
@@ -8336,61 +8451,20 @@ body.focus-mode .focus-exit{ display:flex; }
     _seqRefreshReadStates();
   };
 
-  // Date compl\u00e8te en fran\u00e7ais : \u00ab 15 mai 2026 \u00bb
-  function _seqDateStr(ts){
-    if(!ts) return '';
-    const d = new Date(ts); if(isNaN(d)) return '';
-    const months = ['janvier','f\u00e9vrier','mars','avril','mai','juin','juillet','ao\u00fbt','septembre','octobre','novembre','d\u00e9cembre'];
-    return d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
-  }
-
-  // Sous-titre \u00e9ditorial (description nettoy\u00e9e, repli sur la source)
-  function _seqSub(a){
-    const raw = (a.description || a.contentEncoded || '')
-      .replace(/<[^>]+>/g,' ').replace(/&(?:amp|lt|gt|quot|nbsp|apos);/g,' ')
-      .replace(/\s+/g,' ').trim();
-    return raw || (a.source || '');
-  }
-
-  // Pastilles cat\u00e9gories : cat\u00e9gories RSS d\u00e9doublonn\u00e9es, repli sur la source
-  function _seqTags(a){
-    let t = Array.isArray(a.categories) ? a.categories.slice() : [];
-    t = t.map(x => (x||'').trim()).filter(Boolean);
-    const seen = new Set(), out = [];
-    for(const x of t){ const k = x.toLowerCase(); if(!seen.has(k)){ seen.add(k); out.push(x); } }
-    if(!out.length && a.source) out.push(a.source);
-    return out.slice(0, 3);
-  }
-
-  function _seqNewsItemHtml(a, i){
+  function _seqItemHtml(a, i){
     const isRead = _RS.has(a.link);
-    const figHtml = a.imageUrl
-      ? `<div class="seq-ol-fig"><img src="${escAttr(a.imageUrl)}" alt="" decoding="async" loading="lazy" onerror="this.parentNode.style.visibility='hidden'"></div>`
-      : `<div class="seq-ol-fig"></div>`;
-    const sub  = _seqSub(a);
-    const tags = _seqTags(a);
-    const tagsHtml = tags.length
-      ? `<div class="seq-ol-tags">${tags.map(t=>`<span class="seq-ol-tag">${escHtml(t.slice(0,22))}</span>`).join('')}</div>`
+    const fav = getFavicon(a.feedUrl||a.link||'');
+    const thumb = a.imageUrl
+      ? `<div class="seq-thumb"><img src="${escAttr(a.imageUrl)}" alt="" decoding="async" loading="lazy" onerror="this.parentNode.style.display='none'"></div>`
       : '';
-    return `<div class="seq-ol-item${isRead?' is-read':''}" data-seq-idx="${i}" onclick="_seqOpen(${i})">
-      ${figHtml}
-      <div class="seq-ol-title">${escHtml(a.title||'')}</div>
-      ${sub ? `<div class="seq-ol-sub">${escHtml(sub.slice(0,150))}</div>` : ''}
-      <div class="seq-ol-date">${escHtml(_seqDateStr(a.pubDate))}</div>
-      ${tagsHtml}
+    return `<div class="seq-item reveal${isRead?' is-read':''}" data-seq-idx="${i}" onclick="_seqOpen(${i})">
+      <span class="seq-num">${String(i+1).padStart(2,'0')}</span>
+      <div class="seq-body">
+        <div class="seq-source"><span class="seq-fav"><img src="${escAttr(fav)}" onerror="this.style.opacity='.3'"></span>${escHtml(a.source||'')} · ${relTime(a.pubDate)}</div>
+        <div class="seq-title">${escHtml(a.title||'')}</div>
+      </div>
+      ${thumb}
     </div>`;
-  }
-
-  // Apparition au d\u00e9filement (IntersectionObserver)
-  let _seqIO = null;
-  function _seqRevealObserve(list){
-    const items = list.querySelectorAll('.seq-ol-item');
-    if(!('IntersectionObserver' in window)){ items.forEach(el=>el.classList.add('in')); return; }
-    if(_seqIO) _seqIO.disconnect();
-    _seqIO = new IntersectionObserver((entries, obs)=>{
-      entries.forEach(en=>{ if(en.isIntersecting){ en.target.classList.add('in'); obs.unobserve(en.target); } });
-    }, { rootMargin:'0px 0px -6% 0px', threshold:.08 });
-    items.forEach(el=>_seqIO.observe(el));
   }
 
   function _renderSequential(){
@@ -8404,8 +8478,8 @@ body.focus-mode .focus-exit{ display:flex; }
       list.innerHTML = '<div style="padding:80px 0;text-align:center;color:var(--text-muted);font-size:14px;font-family:var(--font-inter)">Aucun article disponible.<br>Ajoutez des sources pour commencer.</div>';
       return;
     }
-    list.innerHTML = '<div class="seq-ol">' + _seqArts.map((a,i)=>_seqNewsItemHtml(a,i)).join('') + '</div>';
-    _seqRevealObserve(list);
+    list.innerHTML = _seqArts.map((a,i)=>_seqItemHtml(a,i)).join('');
+    _revealObserve(list);
   }
 
   window._seqOpen = function(i){
@@ -8413,7 +8487,7 @@ body.focus-mode .focus-exit{ display:flex; }
     if(!a) return;
     _RS.mark(a.link);
     _showArtModal(a);
-    const el = document.querySelector('.seq-ol-item[data-seq-idx="' + i + '"]');
+    const el = document.querySelector('.seq-item[data-seq-idx="' + i + '"]');
     if(el) el.classList.add('is-read');
   };
 
@@ -8433,7 +8507,7 @@ body.focus-mode .focus-exit{ display:flex; }
       const thumb = a.imageUrl
         ? `<div class="list-thumb"><img src="${escAttr(a.imageUrl)}" alt="" decoding="async" onerror="this.parentNode.className='list-thumb-empty'"></div>`
         : `<div class="list-thumb-empty"></div>`;
-      return `<div class="list-item" onclick="_listeOpen(${i})" style="position:relative">
+      return `<div class="list-item reveal" onclick="_listeOpen(${i})" style="position:relative">
         ${thumb}
         <div class="list-body">
           <div class="list-source"><div class="list-fav"><img src="${escAttr(fav)}" onerror="this.style.opacity='.3'"></div>${escHtml(a.source)} · ${relTime(a.pubDate)}</div>
@@ -8441,6 +8515,7 @@ body.focus-mode .focus-exit{ display:flex; }
         </div>
       </div>`;
     }).join('');
+    if(typeof window._revealObserve === 'function') _revealObserve(wrap);
   }
   window._listeOpen = function(i){ const a=_listeArts[i]; if(a) _showArtModal(a); };
 
