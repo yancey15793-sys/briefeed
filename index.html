@@ -1587,26 +1587,42 @@ button, .ob-btn, .ob-btn-ghost,
 }
 .dc-search:focus{ border-color:var(--accent); }
 /* Grille 2 colonnes */
-.dc-theme-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:16px 18px 50px; }
-/* Tuile thème */
+.dc-theme-grid{ display:grid; grid-template-columns:1fr 1fr; gap:20px 14px; padding:18px 18px 50px; }
+/* Tuile thème — vignette Apple Music (artwork + légende dessous) */
 .dc-theme-tile{
-  position:relative; border-radius:20px; overflow:hidden; height:230px;
-  cursor:pointer; background:#111; -webkit-tap-highlight-color:transparent;
-  transition:transform .4s cubic-bezier(.32,.72,0,1), box-shadow .3s;
-  box-shadow:0 5px 18px rgba(0,0,0,.32);
+  position:relative; cursor:pointer; background:none; box-shadow:none;
+  -webkit-tap-highlight-color:transparent;
+  transition:transform .4s cubic-bezier(.32,.72,0,1);
 }
-.dc-theme-tile:hover{ transform:translateY(-4px) scale(1.015); box-shadow:0 14px 34px rgba(0,0,0,.5); }
-.dc-theme-tile::before{ content:""; position:absolute; left:0; right:0; top:28%; bottom:0; background:linear-gradient(180deg,rgba(0,0,0,0) 0%,rgba(0,0,0,.92) 100%); z-index:1; }
-.dc-theme-tile-img{ position:absolute; inset:0; background-size:cover; background-position:center top; }
-.dc-theme-tile-body{ position:absolute; left:0; right:0; bottom:0; z-index:2; padding:14px 12px; }
-.dc-theme-tile-name{ font-family:var(--font-inter); font-size:16px; font-weight:800; letter-spacing:-0.02em; color:#fff; line-height:1.15; }
-.dc-theme-tile-desc{ font-family:var(--font-inter); font-size:10px; font-weight:500; color:rgba(255,255,255,.65); margin-top:4px; line-height:1.4; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
-.dc-theme-tile-badge{ position:absolute; top:10px; right:10px; z-index:2; background:rgba(0,0,0,.42); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); border-radius:999px; padding:3px 9px; font-family:var(--font-inter); font-size:10px; font-weight:700; color:rgba(255,255,255,.85); }
+.dc-theme-tile:hover{ transform:translateY(-3px); }
+.dc-theme-tile:active{ transform:scale(.97); }
+.dc-theme-tile-img{
+  position:relative; display:block; width:100%; aspect-ratio:1/1;
+  border-radius:16px; overflow:hidden;
+  background-size:cover; background-position:center top;
+  box-shadow:0 8px 22px rgba(0,0,0,.34);
+}
+[data-theme="light"] .dc-theme-tile-img{ box-shadow:0 8px 20px rgba(0,0,0,.15); }
+.dc-theme-tile-body{ padding:10px 3px 2px; }
+.dc-theme-tile-name{ font-family:var(--font-inter); font-size:15.5px; font-weight:800; letter-spacing:-0.02em; color:var(--text); line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.dc-theme-tile-desc{ font-family:var(--font-inter); font-size:11.5px; font-weight:500; color:var(--text-muted); margin-top:3px; line-height:1.35; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.dc-theme-tile-badge{ position:absolute; top:9px; right:9px; z-index:2; background:rgba(0,0,0,.5); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); border-radius:999px; padding:3px 9px; font-family:var(--font-inter); font-size:10px; font-weight:700; color:#fff; }
 /* Ligne flux */
 .dc-feed-list{ padding:6px 18px 60px; }
-.dc-feed-row{ display:flex; align-items:center; gap:13px; padding:13px 0; border-bottom:1px solid var(--border); }
-[data-theme="light"] .dc-feed-row{ border-bottom-color:rgba(0,0,0,.07); }
-.dc-feed-row:last-child{ border-bottom:none; }
+.dc-feed-card{ border-bottom:1px solid var(--border); }
+[data-theme="light"] .dc-feed-card{ border-bottom-color:rgba(0,0,0,.07); }
+.dc-feed-card:last-child{ border-bottom:none; }
+.dc-feed-row{ display:flex; align-items:center; gap:13px; padding:13px 0 11px; }
+/* Aperçu : 5 derniers articles publiés du flux */
+.dc-feed-arts{ padding:0 0 13px 59px; display:flex; flex-direction:column; gap:1px; }
+.dc-art{ display:flex; align-items:baseline; gap:9px; padding:6px 8px 6px 0; cursor:pointer; -webkit-tap-highlight-color:transparent; border-radius:8px; transition:background .15s ease; }
+.dc-art:active{ background:rgba(127,127,127,.1); }
+.dc-art-dot{ flex:none; width:5px; height:5px; border-radius:50%; background:var(--accent); transform:translateY(-2px); opacity:.7; }
+.dc-art-title{ flex:1; min-width:0; font-family:var(--font-inter); font-size:13px; font-weight:600; letter-spacing:-.01em; color:var(--text); line-height:1.35; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; }
+.dc-art-time{ flex:none; font-family:var(--font-inter); font-size:10.5px; font-weight:600; color:var(--text-muted); font-variant-numeric:tabular-nums; }
+.dc-art-state{ font-family:var(--font-inter); font-size:12px; font-weight:500; color:var(--text-muted); padding:4px 0 2px; }
+.dc-art-skel{ height:11px; border-radius:6px; background:linear-gradient(90deg,rgba(127,127,127,.10),rgba(127,127,127,.18),rgba(127,127,127,.10)); background-size:200% 100%; animation:dcSkel 1.2s linear infinite; margin:7px 0; }
+@keyframes dcSkel{ from{ background-position:200% 0; } to{ background-position:-200% 0; } }
 .dc-feed-logo{ width:46px; height:46px; flex:none; border-radius:50%; position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; font-family:var(--font-inter); font-size:18px; font-weight:800; color:var(--text-muted); background:transparent; border:1.5px solid rgba(255,255,255,.1); flex-shrink:0; }
 [data-theme="light"] .dc-feed-logo{ border-color:rgba(0,0,0,.1); }
 .dc-feed-logo img{ position:absolute; inset:0; width:100%; height:100%; object-fit:contain; z-index:1; border-radius:50%; display:block; }
@@ -2178,6 +2194,9 @@ button, .ob-btn, .ob-btn-ghost,
 .folder-page-title{ font-family:var(--font-inter); font-size:30px; font-weight:800; letter-spacing:-.03em; color:var(--text); text-align:center; }
 .folder-page-welcome{ font-family:var(--font-inter); font-size:14px; font-weight:500; color:var(--text-muted); margin-top:8px; line-height:1.55; text-align:center; max-width:280px; }
 .folder-page-sep{ width:40px; height:2px; background:var(--accent); border-radius:2px; margin:18px auto 0; opacity:.7; }
+.folder-page-illus{ width:118px; height:118px; margin:2px auto 20px; filter:drop-shadow(0 12px 26px rgba(0,0,0,.30)); animation:fpIllusIn .5s cubic-bezier(.34,1.56,.64,1); }
+.folder-page-illus svg{ width:100%; height:100%; display:block; }
+@keyframes fpIllusIn{ from{ opacity:0; transform:scale(.82) translateY(6px); } to{ opacity:1; transform:none; } }
 [data-theme="light"] .folder-page-bar{ border-color:rgba(0,0,0,.08); }
 .folder-page-back{ width:36px; height:36px; border:none; background:rgba(255,255,255,.08); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text); transition:background .15s; flex-shrink:0; }
 [data-theme="light"] .folder-page-back{ background:rgba(0,0,0,.06); }
@@ -6590,38 +6609,95 @@ body.focus-mode .focus-exit{ display:flex; }
     </div>`;
   }
 
-  function dcRenderFeedRow(feed, themeName){
+  function dcRenderFeedRow(feed, themeName, idx){
     const subKey = 'dc.sub.' + encodeURIComponent(feed.url);
     let subbed = false; try{ subbed = localStorage.getItem(subKey)==='1'; }catch(e){}
     const initial = feed.name.trim()[0].toUpperCase();
-    return `<div class="dc-feed-row">
-      <div class="dc-feed-logo" style="background:${feed.color}">
-        ${initial}
-        <img src="https://icon.horse/icon/${feed.domain}"
-             data-fb="https://www.google.com/s2/favicons?domain=${feed.domain}&sz=128"
-             onerror="if(this.dataset.fb){this.src=this.dataset.fb;delete this.dataset.fb}else{this.remove()}"
-             loading="lazy" alt="">
-      </div>
-      <div class="dc-feed-info">
-        <div class="dc-feed-row-name">${escapeHtml(feed.name)}</div>
-        <div class="dc-feed-row-desc">${escapeHtml(feed.desc)}</div>
-      </div>
+    return `<div class="dc-feed-card">
+      <div class="dc-feed-row">
+        <div class="dc-feed-logo" style="background:${feed.color}">
+          ${initial}
+          <img src="https://icon.horse/icon/${feed.domain}"
+               data-fb="https://www.google.com/s2/favicons?domain=${feed.domain}&sz=128"
+               onerror="if(this.dataset.fb){this.src=this.dataset.fb;delete this.dataset.fb}else{this.remove()}"
+               loading="lazy" alt="">
+        </div>
+        <div class="dc-feed-info">
+          <div class="dc-feed-row-name">${escapeHtml(feed.name)}</div>
+          <div class="dc-feed-row-desc">${escapeHtml(feed.desc)}</div>
+        </div>
       <button class="dc-sub-btn${subbed?' subbed':''}"
         data-feed-url="${escapeHtml(feed.url)}"
         data-feed-name="${escapeHtml(feed.name)}"
         data-feed-desc="${escapeHtml(feed.desc||'')}"
         data-theme="${escapeHtml(themeName)}"
         onclick="dcToggleSub(this)">${subbed?'Abonné \u2713':'+ Suivre'}</button>
+      </div>
+      <div class="dc-feed-arts" id="dcfa-${idx}">
+        <div class="dc-art-skel" style="width:78%"></div>
+        <div class="dc-art-skel" style="width:62%"></div>
+      </div>
     </div>`;
+  }
+
+  // ── Aperçu des 5 derniers articles par flux (chargement à la demande) ──
+  const _dcArtCache = {};
+  let _dcThemeToken = 0;
+
+  window._dcOpenArt = function(url, i){
+    const arr = _dcArtCache[url];
+    const a = arr && arr[i];
+    if(a && typeof _showArtModal === 'function') _showArtModal(a);
+  };
+
+  function _dcFillArts(cont, feedUrl, arts){
+    if(!cont) return;
+    if(!arts || !arts.length){
+      cont.innerHTML = '<div class="dc-art-state">Aucun article récent disponible.</div>';
+      return;
+    }
+    const safeUrl = String(feedUrl).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    cont.innerHTML = arts.map((a,i)=>
+      `<div class="dc-art" onclick="_dcOpenArt('${safeUrl}',${i})">
+        <span class="dc-art-dot"></span>
+        <span class="dc-art-title">${escapeHtml(a.title||'')}</span>
+        <span class="dc-art-time">${relTime(a.pubDate)}</span>
+      </div>`
+    ).join('');
+  }
+
+  async function _dcLoadThemeArts(theme, token){
+    const feeds = theme.feeds.slice();
+    let idx = 0;
+    const next = async()=>{
+      while(idx < feeds.length){
+        if(token !== _dcThemeToken) return;       // thème changé : on abandonne
+        const myIdx = idx++;
+        const f = feeds[myIdx];
+        let arts = _dcArtCache[f.url];
+        if(!arts){
+          try{
+            const r = await _loadSingleFeed({ url:f.url, name:f.name, slug:f.domain||f.url, domain:f.domain, color:f.color });
+            arts = (r||[]).slice().sort((a,b)=>b.pubDate-a.pubDate).slice(0,5);
+          }catch(e){ arts = []; }
+          _dcArtCache[f.url] = arts;
+        }
+        if(token !== _dcThemeToken) return;
+        _dcFillArts(document.getElementById('dcfa-'+myIdx), f.url, arts);
+      }
+    };
+    await Promise.all([next(), next(), next()]);   // 3 chargements parallèles max
   }
 
   window.dcOpenTheme = function(id){
     const theme = DC_THEMES.find(t=>t.id===id);
     if(!theme) return;
+    const token = ++_dcThemeToken;
     document.getElementById('dcDetailTitle').textContent = theme.name;
-    document.getElementById('dcFeedList').innerHTML = theme.feeds.map(f=>dcRenderFeedRow(f,theme.name)).join('');
+    document.getElementById('dcFeedList').innerHTML = theme.feeds.map((f,i)=>dcRenderFeedRow(f,theme.name,i)).join('');
     document.getElementById('dcCatalogPanel').classList.add('pushed');
     document.getElementById('dcDetailPanel').classList.add('visible');
+    _dcLoadThemeArts(theme, token);
   };
 
   function dcCloseTheme(){
@@ -8467,63 +8543,11 @@ body.focus-mode .focus-exit{ display:flex; }
 
   // ── Tracker de progression — dots discrets (Focus Séquentiel) ──
   function _seqRenderProgress(){
+    // Compteur de progression retiré — la vue séquentielle reste épurée.
     const host = document.getElementById('seqProgress');
     if(!host) return;
-    const total = _seqArts ? _seqArts.length : 0;
-    if(!total){ host.className = 'seq-progress'; host.innerHTML = ''; return; }
-
-    let read = 0, mins = 0, firstUnread = -1;
-    for(let i = 0; i < _seqArts.length; i++){
-      const a = _seqArts[i];
-      if(_RS.has(a.link)) read++;
-      else {
-        if(firstUnread < 0) firstUnread = i;
-        mins += Math.max(1, Math.round(_seqWords(a) / 200));
-      }
-    }
-    const pct  = total ? Math.round(read / total * 100) : 0;
-    const done = read >= total;
-    host.className = 'seq-progress show' + (done ? ' is-done' : '');
-
-    // Dots (≤ 30 articles) ou barre segmentée (> 30)
-    const USE_DOTS = total <= 30;
-    let dotsHtml = '';
-    if(USE_DOTS){
-      const sz = total <= 15 ? 8 : total <= 22 ? 6 : 5;
-      const gap = total <= 15 ? 5 : 4;
-      dotsHtml = `<div class="fos-dots-wrap" style="gap:${gap}px">` +
-        _seqArts.map((a,i) => {
-          const isRead    = _RS.has(a.link);
-          const isCurrent = !isRead && (firstUnread === i);
-          const cls       = isRead ? 'fos-read' : (isCurrent ? 'fos-current' : '');
-          return `<div class="fos-dot${cls?' '+cls:''}" style="width:${sz}px;height:${sz}px"></div>`;
-        }).join('') + '</div>';
-    } else {
-      dotsHtml = `<div class="fos-seg-bar"><div class="fos-seg-fill" style="width:${pct}%"></div></div>`;
-    }
-
-    const topHtml = done
-      ? `<div class="fos-track-top">
-           <div class="fos-track-done">
-             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-             Édition terminée
-           </div>
-           <div class="fos-track-actions">
-             <button class="fos-track-ghost" onclick="_seqMarkAllRead()">Réinitialiser</button>
-           </div>
-         </div>`
-      : `<div class="fos-track-top">
-           <div>
-             <div class="fos-track-label">Focus Séquentiel</div>
-             <div class="fos-track-sub">${read} / ${total} lus${mins > 0 ? ` · ~${mins} min` : ''}</div>
-           </div>
-           <div class="fos-track-actions">
-             ${firstUnread > 0 ? `<button class="fos-track-btn" onclick="_seqResume()">Reprendre</button>` : ''}
-             <button class="fos-track-ghost" onclick="_seqMarkAllRead()">Tout lu</button>
-           </div>
-         </div>`;
-
-    host.innerHTML = topHtml + dotsHtml;
+    host.className = 'seq-progress';
+    host.innerHTML = '';
   }
 
   // ── Rafraîchir les états « lu » sans re-render (préserve le scroll) ──
@@ -9236,10 +9260,56 @@ body.focus-mode .focus-exit{ display:flex; }
     return _FOLDER_WELCOME[key] || _FOLDER_WELCOME['default'];
   }
 
+  // ── Illustrations de dossier (stickers) — choisies selon le nom ──
+  function _fiFrame(inner){
+    return '<svg viewBox="0 0 200 200" fill="none" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">'
+      + '<rect x="8" y="8" width="184" height="184" rx="46" fill="#E4F6EA"/>'
+      + inner + '</svg>';
+  }
+  const _FI_MOTIFS = {
+    sport:'<g stroke="#0E7A47" stroke-width="7"><circle cx="124" cy="120" r="34" fill="#27C26C"/><path d="M124 86 V154 M90 120 H158 M101 96 Q124 120 101 144 M147 96 Q124 120 147 144" fill="none" stroke="#0B5C35" stroke-width="4"/><g transform="rotate(-28 76 84)"><ellipse cx="76" cy="84" rx="33" ry="20" fill="#B7E8C8"/><path d="M61 84 H91 M69 78 V90 M76 77 V91 M83 78 V90" stroke="#0E7A47" stroke-width="4"/></g></g>',
+    tech:'<g stroke="#0E7A47" stroke-width="7"><rect x="68" y="68" width="64" height="64" rx="14" fill="#27C26C"/><rect x="86" y="86" width="28" height="28" rx="6" fill="#0B5C35" stroke="none"/><g stroke-width="6"><path d="M84 68 V52 M100 68 V50 M116 68 V52 M84 132 V148 M100 132 V150 M116 132 V148 M68 84 H52 M68 100 H50 M68 116 H52 M132 84 H148 M132 100 H150 M132 116 H148"/></g></g>',
+    news:'<g stroke="#0E7A47" stroke-width="7"><rect x="56" y="62" width="86" height="82" rx="10" fill="#B7E8C8"/><rect x="142" y="80" width="26" height="64" rx="8" fill="#27C26C"/><g stroke="#0B5C35" stroke-width="6"><path d="M72 86 H126 M72 106 H110 M72 124 H120"/></g></g>',
+    finance:'<g><g stroke="#0E7A47" stroke-width="8" stroke-linecap="round"><path d="M70 140 V112 M100 140 V94 M130 140 V120"/></g><path d="M62 98 L94 72 L114 88 L150 56" fill="none" stroke="#0B5C35" stroke-width="7"/><path d="M128 56 H150 V78" fill="none" stroke="#0B5C35" stroke-width="7"/></g>',
+    science:'<g stroke="#0E7A47" stroke-width="6" fill="none"><circle cx="100" cy="100" r="13" fill="#27C26C" stroke="none"/><ellipse cx="100" cy="100" rx="48" ry="20"/><ellipse cx="100" cy="100" rx="48" ry="20" transform="rotate(60 100 100)"/><ellipse cx="100" cy="100" rx="48" ry="20" transform="rotate(120 100 100)"/></g>',
+    music:'<g><path d="M88 64 L142 52 V62 L88 74 Z" fill="#0E7A47" stroke="none"/><path d="M88 64 V130 M142 56 V122" fill="none" stroke="#0E7A47" stroke-width="7"/><circle cx="76" cy="132" r="16" fill="#27C26C" stroke="#0E7A47" stroke-width="6"/><circle cx="130" cy="124" r="16" fill="#27C26C" stroke="#0E7A47" stroke-width="6"/></g>',
+    cinema:'<g stroke="#0E7A47" stroke-width="6"><rect x="56" y="94" width="88" height="54" rx="9" fill="#B7E8C8"/><path d="M56 96 L150 78 L155 98 L61 116 Z" fill="#27C26C"/><path d="M80 84 L90 104 M106 80 L116 100 M132 76 L142 96" stroke="#0B5C35" stroke-width="5"/></g>',
+    gaming:'<g stroke="#0E7A47" stroke-width="7"><path d="M78 86 H122 Q150 86 156 116 Q160 142 140 142 Q130 142 124 132 H76 Q70 142 60 142 Q40 142 44 116 Q50 86 78 86 Z" fill="#27C26C"/><g stroke="#0B5C35" stroke-width="6" stroke-linecap="round"><path d="M72 106 V122 M64 114 H80"/></g><circle cx="128" cy="108" r="5" fill="#0B5C35" stroke="none"/><circle cx="140" cy="120" r="5" fill="#0B5C35" stroke="none"/></g>',
+    food:'<g stroke="#0E7A47" stroke-width="7" stroke-linecap="round"><circle cx="96" cy="104" r="40" fill="#B7E8C8"/><circle cx="96" cy="104" r="21" fill="none" stroke="#27C26C" stroke-width="6"/><path d="M150 62 V148" stroke="#0E7A47"/><path d="M150 62 Q138 64 138 84 Q138 96 150 96" fill="none" stroke="#27C26C" stroke-width="5"/></g>',
+    travel:'<g stroke="#0E7A47" stroke-width="7"><circle cx="100" cy="104" r="44" fill="#B7E8C8"/><path d="M100 104 L124 74 L114 114 L76 132 Z" fill="#27C26C" stroke="#0B5C35" stroke-width="5"/><circle cx="100" cy="104" r="5" fill="#0B5C35" stroke="none"/></g>',
+    health:'<g><path d="M100 148 C58 116 54 86 75 73 C92 62 100 80 100 80 C100 80 108 62 125 73 C146 86 142 116 100 148 Z" fill="#27C26C" stroke="#0E7A47" stroke-width="7"/><path d="M68 102 H88 L96 86 L106 118 L114 102 H134" fill="none" stroke="#0B5C35" stroke-width="5"/></g>',
+    art:'<g stroke="#0E7A47" stroke-width="7"><path d="M100 58 C142 58 154 90 142 112 C134 126 112 116 104 127 C98 135 104 146 90 146 C64 146 50 118 58 90 C65 70 80 58 100 58 Z" fill="#B7E8C8"/><circle cx="84" cy="86" r="6" fill="#27C26C" stroke="none"/><circle cx="110" cy="80" r="6" fill="#0B5C35" stroke="none"/><circle cx="122" cy="104" r="6" fill="#27C26C" stroke="none"/></g>',
+    nature:'<g stroke="#0E7A47" stroke-width="7"><circle cx="74" cy="76" r="16" fill="#27C26C" stroke="none"/><path d="M134 58 C100 62 80 92 84 134 C126 134 152 104 134 58 Z" fill="#B7E8C8"/><path d="M122 80 Q104 106 92 128" fill="none" stroke="#0B5C35" stroke-width="5"/></g>',
+    crypto:'<g stroke="#0E7A47" stroke-width="7"><circle cx="100" cy="102" r="44" fill="#27C26C"/><text x="100" y="124" text-anchor="middle" font-size="58" font-weight="800" fill="#0B5C35" stroke="none" font-family="Georgia">₿</text></g>',
+    default:'<g stroke="#0E7A47" stroke-width="7"><rect x="56" y="86" width="76" height="58" rx="13" fill="#B7E8C8"/><rect x="74" y="62" width="76" height="58" rx="13" fill="#27C26C"/><path d="M88 82 H138 M88 98 H124" stroke="#0B5C35" stroke-width="5"/></g>',
+  };
+  function _folderIllus(name){
+    const n = (name||'').toLowerCase();
+    const has = (...w)=>w.some(x=>n.includes(x));
+    let key = 'default';
+    if(has('crypto','bitcoin','blockchain','web3','nft','ether')) key='crypto';
+    else if(has('sport','foot','basket','tennis','rugby','nba','match','golf','ballon','vélo','velo','cyclis')) key='sport';
+    else if(has('tech','techno','numéri','numeri','digital','gadget','hardware','software','dev','ia ','intellig','robot')) key='tech';
+    else if(has('finance','éco','bourse','marché','marche','argent','invest','banqu','business','entrepr','startup')) key='finance';
+    else if(has('science','espace','cosmos','astro','physi','recherche','nasa','math','biolog')) key='science';
+    else if(has('musi','music','audio','chanson','rap','rock','jazz','concert')) key='music';
+    else if(has('ciné','cine','cinema','film','série','serie','télé','tele','movie','streaming')) key='cinema';
+    else if(has('jeu','gaming','game','console','esport','nintendo','playstation')) key='gaming';
+    else if(has('cuisin','food','gastro','recette','resto','manger','chef','vin ')) key='food';
+    else if(has('voyage','travel','tourism','évasion','evasion','destination','aventure')) key='travel';
+    else if(has('santé','sante','health','médec','medec','bien-être','bien etre','fitness','forme','sport-santé')) key='health';
+    else if(has('art','culture','design','mode','fashion','photo','peinture','déco','deco')) key='art';
+    else if(has('natur','climat','environ','écolo','ecolo','green','jardin','animal','planète','planete')) key='nature';
+    else if(has('actu','news','monde','info','journal','presse','politi','société','societe','géopo','geopo')) key='news';
+    return _fiFrame(_FI_MOTIFS[key] || _FI_MOTIFS.default);
+  }
+
   function openFolderPage(folderIdx){
     const folder = folders[folderIdx];
     if(!folder) return;
     document.getElementById('folderPageTitle').textContent = folder.name;
+    const illusEl = document.getElementById('folderPageIllus');
+    if(illusEl) illusEl.innerHTML = _folderIllus(folder.name);
     const welcomeEl = document.getElementById('folderPageWelcome');
     if(welcomeEl) welcomeEl.textContent = _getFolderWelcome(folder.name);
     const feedUrls = new Set(folder.feeds||[]);
@@ -9768,6 +9838,7 @@ body.focus-mode .focus-exit{ display:flex; }
     </div>
     <div class="folder-page-scroll">
       <div class="folder-page-header">
+        <div class="folder-page-illus" id="folderPageIllus"></div>
         <div class="folder-page-title" id="folderPageTitle"></div>
         <div class="folder-page-welcome" id="folderPageWelcome"></div>
         <div class="folder-page-sep"></div>
