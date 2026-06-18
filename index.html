@@ -2259,21 +2259,27 @@ button, .ob-btn, .ob-btn-ghost,
 
 /* — Rangée 1 : chips catégories — */
 .srail-cats{
-  display:flex; gap:9px; overflow-x:auto; position:relative; isolation:isolate;
+  display:flex; gap:9px; overflow-x:auto; position:relative;
   padding:4px 2px; scrollbar-width:none; -ms-overflow-style:none;
   scroll-snap-type:x proximity; -webkit-overflow-scrolling:touch;
   -webkit-mask-image:linear-gradient(90deg, transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%);
           mask-image:linear-gradient(90deg, transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%);
 }
-/* Sliding difference pill — active category indicator */
+/* Sliding pill — active category indicator */
 .srail-pill{
   position:absolute; top:4px; height:32px;
-  border-radius:999px; background:#fff;
-  mix-blend-mode:difference; pointer-events:none; z-index:2;
+  border-radius:999px;
+  background:rgba(255,255,255,.13);
+  border:1px solid rgba(255,255,255,.22);
+  pointer-events:none; z-index:0;
   left:0; width:0; opacity:0;
   transition:left .28s cubic-bezier(.34,1.56,.64,1),
              width .28s cubic-bezier(.34,1.56,.64,1),
              opacity .22s ease;
+}
+[data-theme="light"] .srail-pill{
+  background:rgba(0,0,0,.09);
+  border-color:rgba(0,0,0,.16);
 }
 .srail-pill.vis{ opacity:1; }
 .srail-cats::-webkit-scrollbar{ display:none; }
@@ -2297,6 +2303,14 @@ button, .ob-btn, .ob-btn-ghost,
 }
 [data-theme="light"] .sr-cat-count{ background:rgba(0,0,0,.06); }
 .sr-cat.has-active{ border-color:rgba(10,132,255,.32); }
+.sr-cat.open{
+  background:rgba(255,255,255,.11);
+  border-color:rgba(255,255,255,.22);
+}
+[data-theme="light"] .sr-cat.open{
+  background:rgba(0,0,0,.08);
+  border-color:rgba(0,0,0,.16);
+}
 .sr-cat-chev{
   width:11px; height:11px; flex:0 0 auto; opacity:.5; margin-right:-2px;
   transition:transform .4s cubic-bezier(.34,1.56,.64,1);
@@ -8320,7 +8334,7 @@ body.focus-mode .focus-exit{ display:flex; }
     const arts = typeof _allArticles !== 'undefined'
       ? _dedup(_railApplyFilter([..._allArticles]).sort((a,b)=>b.pubDate-a.pubDate))
       : [];
-    _seqArts = arts.slice(0, 5);
+    _seqArts = arts.slice(0, 100);
     if(!_seqArts.length){
       list.innerHTML = '<div style="padding:80px 0;text-align:center;color:var(--text-muted);font-size:14px;font-family:var(--font-inter)">Aucun article disponible.<br>Ajoutez des sources pour commencer.</div>';
       return;
