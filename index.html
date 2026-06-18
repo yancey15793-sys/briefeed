@@ -2504,7 +2504,93 @@ button, .ob-btn, .ob-btn-ghost,
 .art-card .art-title{ font-family:var(--font-title); font-size:17px; font-weight:700; line-height:1.28; letter-spacing:-.01em; color:var(--text); display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
 /* Hero plus grand */
 #editionsHero .art-card .art-title{ font-size:22px; line-height:1.2; -webkit-line-clamp:4; }
-#editionsHero .art-card .art-source-row{ margin-top:14px; }
+
+/* ══════════════════════════════════════════════════════════
+   CARTES PAPIER — surfaces blanches éditoriales (réf. magazine)
+   Style 1 « Paper » → Éditions · Séquentiel · Liste
+   Style 6 « Grid »  → Grille
+   Carte blanche posée sur le canevas : pop en sombre,
+   hairline + ombre douce en clair. Aucun JS modifié.
+   ══════════════════════════════════════════════════════════ */
+:root{
+  --paper:#ffffff; --paper-ink:#16171B; --paper-dek:#5C6066;
+  --paper-meta:#8E939A; --paper-line:#ECEDEF; --paper-soft:#F2F3F5;
+  --paper-shadow:0 1px 0 rgba(255,255,255,.04), 0 20px 44px -24px rgba(0,0,0,.92);
+  --paper-edge:1px solid transparent;
+}
+[data-theme="light"]{
+  --paper-shadow:0 12px 30px -18px rgba(0,0,0,.22);
+  --paper-edge:1px solid #E7E7EC;
+}
+
+/* ── ÉDITIONS — Style 1 « Paper » (image bleed + encre) ──── */
+#editionsGrid{ gap:30px; }
+.art-card{
+  background:var(--paper); border:var(--paper-edge);
+  border-radius:18px; overflow:hidden; box-shadow:var(--paper-shadow);
+}
+.art-card > .art-img-wrap,
+.art-card > div:first-child{ border-radius:0 !important; margin-bottom:0 !important; } /* image affleurante */
+.art-card .art-source-row{ margin:14px 17px 6px !important; }
+.art-card .art-title-row{ margin:0 17px 18px; }
+.art-card .art-source-name,
+.art-card .art-time{ color:var(--paper-meta) !important; }
+.art-card .art-title,
+.art-card .art-title span{ color:var(--paper-ink) !important; }
+
+/* ── GRILLE — Style 6 « Grid » (tuiles papier) ──────────── */
+.grid2-wrap{ gap:14px; }
+.grid2-card{
+  background:var(--paper); border:var(--paper-edge);
+  border-radius:14px; overflow:hidden; box-shadow:var(--paper-shadow);
+}
+.grid2-img{ border-radius:0 !important; margin-bottom:0 !important; }
+.grid2-card .art-title-row{ margin:11px 12px 4px; }
+.grid2-card > .grid2-title{ margin:11px 12px 4px !important; }
+.grid2-title{ color:var(--paper-ink) !important; margin-bottom:0 !important; }
+.grid2-meta{ color:var(--paper-meta) !important; margin:0 12px 13px !important; }
+
+/* ── SÉQUENTIEL — Style 1 « Paper » (carte fos en papier) ── */
+.fos-card{
+  background:var(--paper) !important; border:var(--paper-edge) !important;
+  box-shadow:var(--paper-shadow) !important; overflow:hidden;
+  -webkit-backdrop-filter:none !important; backdrop-filter:none !important;
+}
+.fos-card.is-read{ opacity:.4 !important; box-shadow:none !important; }
+.fos-img-wrap{ margin:-22px -20px 16px !important; border-radius:0 !important; }
+.fos-source-name, .fos-time{ color:var(--paper-meta) !important; }
+.fos-num{ color:#D7DADF !important; }
+.fos-title{ color:var(--paper-ink) !important; }
+.fos-excerpt{ color:var(--paper-dek) !important; }
+.fos-float, .fos-footer{ border-top-color:var(--paper-line) !important; }
+.fos-intel-list li{ color:#3C4047 !important; }
+.fos-act-read, .fos-act-fav, .fos-act-share{
+  background:var(--paper-soft) !important; color:#5C6066 !important;
+  border-color:#E6E7EA !important; box-shadow:none !important;
+}
+.fos-act-read.fos-done{ background:rgba(52,199,89,.14) !important; color:#34c759 !important; border-color:rgba(52,199,89,.28) !important; }
+.fos-act-fav.fos-starred{ background:rgba(255,214,10,.16) !important; color:#caa700 !important; border-color:rgba(255,214,10,.4) !important; }
+
+/* ── LISTE — Style 1 « Paper » condensé (rangées papier) ── */
+.list-view{ padding:4px 0 80px; }
+.list-item{
+  background:var(--paper) !important; border:var(--paper-edge);
+  border-radius:13px; box-shadow:var(--paper-shadow);
+  padding:11px !important; gap:13px !important;
+  margin-bottom:12px; border-bottom:none !important;
+}
+.list-item:active{ opacity:1 !important; transform:scale(.985); }
+.list-thumb, .list-thumb-empty{ width:104px !important; height:74px !important; border-radius:8px !important; }
+.list-source{ color:var(--paper-meta) !important; }
+.list-title{ color:var(--paper-ink) !important; }
+
+/* ── Bouton partage sur carte papier ────────────────────── */
+.art-card .art-share-btn,
+.grid2-card .art-share-btn,
+.list-item .art-share-btn{ color:#BCC0C6; }
+.art-card .art-share-btn:hover,
+.grid2-card .art-share-btn:hover,
+.list-item .art-share-btn:hover{ color:var(--paper-ink); }
 /* ══════════════════════════════════════════════════════════
    SOURCE RAIL — chips catégories → logos révélés (toutes vues)
    Masques de bord (zéro rognage) · révélation fluide ·
