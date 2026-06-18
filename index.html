@@ -1587,8 +1587,8 @@ button, .ob-btn, .ob-btn-ghost,
 }
 .dc-search:focus{ border-color:var(--accent); }
 /* Grille 2 colonnes */
-.dc-theme-grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px 12px; padding:18px 18px 60px; }
-/* Tuile thème — vignette Apple Music (artwork + légende dessous) */
+.dc-theme-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px 12px; padding:18px 18px 60px; }
+/* Tuile thème — carte paysage style Pinterest (image + titre superposé centré) */
 .dc-theme-tile{
   position:relative; cursor:pointer; background:none; box-shadow:none;
   -webkit-tap-highlight-color:transparent;
@@ -1597,29 +1597,33 @@ button, .ob-btn, .ob-btn-ghost,
 .dc-theme-tile:hover{ transform:translateY(-3px); }
 .dc-theme-tile:active{ transform:scale(.97); }
 .dc-theme-tile-img{
-  position:relative; display:block; width:100%; aspect-ratio:3/4;
-  border-radius:18px; overflow:hidden;
-  background-size:cover; background-position:center top;
-  box-shadow:0 10px 28px rgba(0,0,0,.38);
+  position:relative; display:flex; align-items:center; justify-content:center;
+  width:100%; aspect-ratio:16/10;
+  border-radius:16px; overflow:hidden;
+  background-size:cover; background-position:center;
+  box-shadow:0 6px 18px rgba(0,0,0,.32);
 }
-[data-theme="light"] .dc-theme-tile-img{ box-shadow:0 8px 20px rgba(0,0,0,.15); }
-
-/* Découvrir tile — emoji layer centred over gradient artwork */
+[data-theme="light"] .dc-theme-tile-img{ box-shadow:0 6px 16px rgba(0,0,0,.14); }
+/* Emoji décoratif — grand, légèrement décalé en filigrane */
 .dc-theme-tile-icon{
-  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-  font-size:56px; line-height:1; pointer-events:none; z-index:1;
-  filter:drop-shadow(0 4px 14px rgba(0,0,0,.22));
+  position:absolute; right:-8px; bottom:-14px; display:flex; align-items:center; justify-content:center;
+  font-size:84px; line-height:1; pointer-events:none; z-index:1; opacity:.32;
+  filter:drop-shadow(0 4px 14px rgba(0,0,0,.25)); transform:rotate(-8deg);
 }
-/* Gradient overlay at bottom of tile for legibility */
+/* Voile sombre pour la lisibilité du titre superposé */
 .dc-theme-tile-img::after{
-  content:''; position:absolute; inset:0;
-  background:linear-gradient(transparent 45%, rgba(0,0,0,.18) 100%);
+  content:''; position:absolute; inset:0; z-index:1;
+  background:linear-gradient(135deg, rgba(0,0,0,.28) 0%, rgba(0,0,0,.05) 55%, rgba(0,0,0,.34) 100%);
   pointer-events:none;
 }
-.dc-theme-tile-body{ padding:10px 3px 2px; }
-.dc-theme-tile-name{ font-family:var(--font-inter); font-size:15px; font-weight:800; letter-spacing:-0.025em; color:var(--text); line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.dc-theme-tile-desc{ font-family:var(--font-inter); font-size:11.5px; font-weight:500; color:var(--text-muted); margin-top:3px; line-height:1.35; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
-.dc-theme-tile-badge{ position:absolute; top:11px; right:11px; z-index:2; background:rgba(0,0,0,.35); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-radius:999px; padding:4px 10px; font-family:var(--font-inter); font-size:10px; font-weight:700; color:#fff; letter-spacing:.02em; }
+/* Titre superposé, centré, blanc — comme Pinterest */
+.dc-theme-tile-name{
+  position:relative; z-index:2; text-align:center; padding:0 12px;
+  font-family:var(--font-inter); font-size:18px; font-weight:800; letter-spacing:-0.025em;
+  color:#fff; line-height:1.16; text-shadow:0 2px 10px rgba(0,0,0,.45);
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+}
+.dc-theme-tile-badge{ position:absolute; top:9px; right:9px; z-index:3; background:rgba(0,0,0,.4); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-radius:999px; padding:4px 10px; font-family:var(--font-inter); font-size:9.5px; font-weight:700; color:#fff; letter-spacing:.02em; }
 /* Ligne flux */
 .dc-feed-list{ padding:6px 18px 60px; }
 .dc-feed-card{ border-bottom:1px solid var(--border); }
@@ -1946,45 +1950,6 @@ button, .ob-btn, .ob-btn-ghost,
   color:var(--text-muted); opacity:.72; margin-top:4px;
 }
 
-/* ── VUE ÉDITION — bannière décorative Samsung/Apple style ────────────────── */
-.edition-hero-banner{
-  width:100%; position:relative; overflow:hidden;
-  border-radius:18px; margin-bottom:28px;
-  min-height:140px; display:flex; align-items:flex-end;
-}
-.edition-hero-banner-bg{
-  position:absolute; inset:0;
-  background:var(--ehb-grad,linear-gradient(135deg,#0d47a1 0%,#42a5f5 100%));
-}
-.edition-hero-banner-noise{
-  position:absolute; inset:0; opacity:.05;
-  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
-  background-size:200px 200px;
-}
-.edition-hero-orb1,.edition-hero-orb2,.edition-hero-orb3{
-  position:absolute; border-radius:50%; pointer-events:none; filter:blur(32px);
-}
-.edition-hero-orb1{ width:180px; height:180px; top:-50px; right:-10px; background:rgba(255,255,255,.2); }
-.edition-hero-orb2{ width:90px; height:90px; bottom:5px; right:70px; background:rgba(255,255,255,.14); }
-.edition-hero-orb3{ width:55px; height:55px; top:18px; right:130px; background:rgba(255,255,255,.1); }
-.edition-hero-content{
-  position:relative; z-index:2; padding:24px 22px 22px;
-  width:100%; max-width:72%;
-}
-.edition-hero-eyebrow{
-  font-family:var(--font-inter); font-size:10.5px; font-weight:700;
-  color:rgba(255,255,255,.7); text-transform:uppercase; letter-spacing:.08em;
-  margin-bottom:8px;
-}
-.edition-hero-title{
-  font-family:var(--font-inter); font-size:26px; font-weight:900;
-  letter-spacing:-.03em; color:#fff; line-height:1.1;
-  text-shadow:0 2px 10px rgba(0,0,0,.22);
-}
-.edition-hero-sub{
-  font-family:var(--font-inter); font-size:12.5px; font-weight:500;
-  color:rgba(255,255,255,.65); margin-top:5px; line-height:1.4;
-}
 
 .edl-tags{ display:flex; flex-wrap:wrap; gap:5px; margin-top:9px; }
 .edl-tag{
@@ -4475,9 +4440,6 @@ body.focus-mode .focus-exit{ display:flex; }
           </div>
         </div>
 
-        <!-- Bannière décorative -->
-        <div id="editionBanner" style="padding:0 18px"></div>
-
         <!-- Hero article du jour -->
         <div id="editionsHero"></div>
 
@@ -6545,14 +6507,11 @@ body.focus-mode .focus-exit{ display:flex; }
   function dcRenderThemeTile(theme){
     const grad = theme.tileGrad || 'linear-gradient(145deg,#1a1a2e 0%,#16213e 100%)';
     const icon = theme.icon || '\u{1F4F0}';
-    return `<div class="dc-theme-tile" onclick="dcOpenTheme('${theme.id}')">
+    return `<div class="dc-theme-tile" data-desc="${escapeHtml(theme.desc||'')}" onclick="dcOpenTheme('${theme.id}')">
       <div class="dc-theme-tile-img" style="background:${grad}">
         <div class="dc-theme-tile-icon">${icon}</div>
-      </div>
-      <div class="dc-theme-tile-badge">${theme.feeds.length} flux</div>
-      <div class="dc-theme-tile-body">
+        <div class="dc-theme-tile-badge">${theme.feeds.length} flux</div>
         <div class="dc-theme-tile-name">${escapeHtml(theme.name)}</div>
-        <div class="dc-theme-tile-desc">${escapeHtml(theme.desc)}</div>
       </div>
     </div>`;
   }
@@ -6701,7 +6660,7 @@ body.focus-mode .focus-exit{ display:flex; }
     const q = this.value.trim().toLowerCase();
     document.querySelectorAll('.dc-theme-tile').forEach(tile=>{
       const n = (tile.querySelector('.dc-theme-tile-name')?.textContent||'').toLowerCase();
-      const d = (tile.querySelector('.dc-theme-tile-desc')?.textContent||'').toLowerCase();
+      const d = (tile.dataset.desc||'').toLowerCase();
       tile.style.display = !q || n.includes(q) || d.includes(q) ? '' : 'none';
     });
   });
@@ -6738,12 +6697,10 @@ body.focus-mode .focus-exit{ display:flex; }
   ];
 
   function pcRenderThemeTile(theme){
-    return `<div class="dc-theme-tile" onclick="pcOpenTheme('${theme.id}')">
-      <div class="dc-theme-tile-img" style="background-image:url('${dcSvgUrl(theme.illus)}');"></div>
-      <div class="dc-theme-tile-badge">${theme.count} balados</div>
-      <div class="dc-theme-tile-body">
+    return `<div class="dc-theme-tile" data-desc="${escapeHtml(theme.desc||'')}" onclick="pcOpenTheme('${theme.id}')">
+      <div class="dc-theme-tile-img" style="background-image:url('${dcSvgUrl(theme.illus)}');">
+        <div class="dc-theme-tile-badge">${theme.count} balados</div>
         <div class="dc-theme-tile-name">${escapeHtml(theme.name)}</div>
-        <div class="dc-theme-tile-desc">${escapeHtml(theme.desc)}</div>
       </div>
     </div>`;
   }
@@ -6781,7 +6738,7 @@ body.focus-mode .focus-exit{ display:flex; }
     const q = this.value.trim().toLowerCase();
     document.querySelectorAll('#pcThemeGrid .dc-theme-tile').forEach(tile=>{
       const n = (tile.querySelector('.dc-theme-tile-name')?.textContent||'').toLowerCase();
-      const d = (tile.querySelector('.dc-theme-tile-desc')?.textContent||'').toLowerCase();
+      const d = (tile.dataset.desc||'').toLowerCase();
       tile.style.display = !q || n.includes(q) || d.includes(q) ? '' : 'none';
     });
   });
@@ -7633,44 +7590,7 @@ body.focus-mode .focus-exit{ display:flex; }
       return;
     }
     if(empty) empty.style.display='none';
-    // ── Bannière décorative home ────────────────────────────────────
-    const banner = document.getElementById('editionBanner');
-    if(banner && !banner.dataset.built){
-      banner.dataset.built = '1';
-      const today = new Date();
-      const jours  = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
-      const mois   = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
-      const dow    = jours[today.getDay()];
-      const dom    = today.getDate();
-      const mon    = mois[today.getMonth()];
-      // Gradient change each day-of-week
-      const grads = [
-        'linear-gradient(135deg,#0d47a1 0%,#42a5f5 100%)',
-        'linear-gradient(135deg,#4a0080 0%,#a044ff 100%)',
-        'linear-gradient(135deg,#0b5345 0%,#1abc9c 100%)',
-        'linear-gradient(135deg,#7b241c 0%,#e74c3c 100%)',
-        'linear-gradient(135deg,#7e4a00 0%,#f39c12 100%)',
-        'linear-gradient(135deg,#6c0070 0%,#e91e8c 100%)',
-        'linear-gradient(135deg,#0e4d6e 0%,#00b4d8 100%)',
-      ];
-      const grad = grads[today.getDay()];
-      const nameEl = document.getElementById('userName');
-      const uname  = (nameEl && nameEl.textContent.trim()) || '';
-      const srcCount = (typeof _rssFeeds !== 'undefined') ? _rssFeeds.length : 0;
-      banner.innerHTML = `<div class="edition-hero-banner">
-        <div class="edition-hero-banner-bg" style="background:${grad}"></div>
-        <div class="edition-hero-banner-noise"></div>
-        <div class="edition-hero-orb1"></div>
-        <div class="edition-hero-orb2"></div>
-        <div class="edition-hero-orb3"></div>
-        <div class="edition-hero-content">
-          <div class="edition-hero-eyebrow">${dow} ${dom} ${mon}</div>
-          <div class="edition-hero-title">Votre édition${uname ? ', ' + escHtml(uname) : ''}.</div>
-          ${srcCount > 0 ? '<div class="edition-hero-sub">' + srcCount + ' source' + (srcCount!==1?'s':'') + ' • Personnalisé pour vous</div>' : ''}
-        </div>
-      </div>`;
-    }
-    // Hero article retiré
+    // Hero article retiré : la vue Édition est une liste « Ordered List » uniforme
     if(hero){ hero.innerHTML=''; hero.style.display='none'; }
 
     // Filtrage éventuel par source (rail global)
