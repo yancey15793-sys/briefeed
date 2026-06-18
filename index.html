@@ -578,29 +578,27 @@ button, .ob-btn, .ob-btn-ghost,
 
 /* Flux intelligents — lignes dans la sidebar */
 .smart-item{
-  display:flex; align-items:center; gap:10px;
-  padding:9px 12px; border-radius:10px; cursor:pointer; color:var(--text);
-  -webkit-tap-highlight-color:transparent;
-  transition:background .16s ease, transform .22s cubic-bezier(.34,1.56,.64,1);
+  position:relative;
+  display:flex; align-items:center; gap:12px;
+  padding:8px 12px; border-radius:10px; cursor:pointer;
+  color:var(--text-muted); -webkit-tap-highlight-color:transparent;
+  transition:background .18s ease, color .18s ease, transform .22s cubic-bezier(.34,1.56,.64,1);
 }
-.smart-item:active{ transform:scale(.97); background:rgba(127,127,127,.12); }
-.smart-item .si-ic{
-  width:26px; height:26px; flex:none; border-radius:8px;
-  display:flex; align-items:center; justify-content:center;
-  background:rgba(10,132,255,.16); color:#0a84ff;
-}
-.smart-item .si-ic svg{ width:15px; height:15px; }
+.smart-item:hover{ background:#141414; color:var(--text); }
+.smart-item:active{ transform:scale(.982); background:rgba(255,255,255,.09); }
+[data-theme="light"] .smart-item:hover{ background:rgba(0,0,0,.04); color:var(--text); }
+[data-theme="light"] .smart-item:active{ background:rgba(0,0,0,.07); }
+.smart-item svg{ width:16px; height:16px; flex:none; opacity:.6; }
+.smart-item:hover svg{ opacity:1; }
 .smart-item .si-label{
-  flex:1; min-width:0; font-size:15px; font-weight:700; letter-spacing:-.02em;
+  flex:1; min-width:0; font-size:15px; font-weight:600; letter-spacing:-.01em;
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
 }
-.smart-item .si-count{ font-size:12px; font-weight:700; color:#666; font-variant-numeric:tabular-nums; }
-.smart-item .si-del{
-  opacity:0; border:0; background:transparent; color:var(--text-muted);
-  cursor:pointer; padding:2px; flex:none; transition:opacity .2s ease;
+.smart-item .si-count{
+  font-size:11px; font-weight:700; color:#666;
+  font-variant-numeric:tabular-nums;
+  background:rgba(127,127,127,.1); border-radius:99px; padding:2px 7px;
 }
-.smart-item .si-del svg{ width:14px; height:14px; }
-.smart-item:hover .si-del{ opacity:1; }
 
 /* Dossiers — accordéon fluide */
 .folder{ border-radius:10px; overflow:hidden; }
@@ -3813,7 +3811,7 @@ body.focus-mode .focus-exit{ display:flex; }
       <div id="folderList"></div>
 
       <!-- Flux intelligents (règles automatiques) -->
-      <div class="sb-section" id="smartSection" hidden>
+      <div class="sb-section" id="smartSection">
         <span>Flux intelligents</span>
         <div class="sb-section-actions">
           <button class="sb-add" id="addSmartTop" aria-label="Nouveau flux intelligent" onclick="BF_SMART.openCreate()">
@@ -3950,7 +3948,24 @@ body.focus-mode .focus-exit{ display:flex; }
       <!-- Onglet Abonné : abonnements podcast (vide pour l'instant) -->
       <div class="pc-pane" id="pcPaneAbonne" hidden>
         <div class="pc-empty">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1h3zM3 19a2 2 0 0 0 2 2h1a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1H3z"/></svg>
+          <svg viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="width:100px;height:100px;opacity:.18;margin-bottom:8px" aria-hidden="true">
+            <!-- Microphone capsule -->
+            <rect x="40" y="8" width="40" height="58" rx="20" stroke-width="1.8"/>
+            <!-- Microphone body lines -->
+            <line x1="50" y1="28" x2="70" y2="28" stroke-width="1"/>
+            <line x1="47" y1="37" x2="73" y2="37" stroke-width="1"/>
+            <line x1="50" y1="46" x2="70" y2="46" stroke-width="1"/>
+            <!-- Stand arm -->
+            <path d="M60 66 L60 98" stroke-width="2"/>
+            <!-- Stand base -->
+            <line x1="36" y1="98" x2="84" y2="98" stroke-width="2.2"/>
+            <!-- Ondes sonores gauche -->
+            <path d="M30 22 C20 34 20 52 30 64" stroke-width="1.6" opacity=".55"/>
+            <path d="M20 14 C6 30 6 56 20 72" stroke-width="1.4" opacity=".3"/>
+            <!-- Ondes sonores droite -->
+            <path d="M90 22 C100 34 100 52 90 64" stroke-width="1.6" opacity=".55"/>
+            <path d="M100 14 C114 30 114 56 100 72" stroke-width="1.4" opacity=".3"/>
+          </svg>
           <div class="pc-empty-title">Aucun abonnement</div>
           <div class="pc-empty-sub">Abonnez-vous depuis l'onglet Découvrir pour retrouver vos balados ici.</div>
         </div>
@@ -4139,6 +4154,19 @@ body.focus-mode .focus-exit{ display:flex; }
                 <div class="sp-item">
                   <div class="sp-info"><span class="sp-label">Compteur dans le favicon <span class="pp-help" title="Intégrer le compteur dans le favicon">?</span></span><span class="sp-desc">Intégrer le compteur non lu dans le favicon plutôt que dans le titre de l'onglet.</span></div>
                   <label class="sp-toggle"><input type="checkbox" checked id="spFavicon"><span class="sp-track"><span class="sp-thumb"></span></span></label>
+                </div>
+              </div>
+            </div>
+            <div class="pp-section" id="ppDedupeSection">
+              <div class="sp-section-label">Filtre anti-doublons</div>
+              <div class="sp-card">
+                <div class="sp-item sp-item-col">
+                  <div class="sp-info"><span class="sp-label">Déduplication des articles</span><span class="sp-desc">Masque les articles en double provenant de sources différentes pour une lecture plus claire.</span></div>
+                  <select class="sp-select" id="spDedupeMode" onchange="if(window.BF_SMART)BF_SMART._setDedupe(this.value)">
+                    <option value="fuzzy">Titres similaires (recommandé)</option>
+                    <option value="exact">Titres identiques seulement</option>
+                    <option value="off">Désactivé</option>
+                  </select>
                 </div>
               </div>
             </div>
@@ -4441,9 +4469,38 @@ body.focus-mode .focus-exit{ display:flex; }
         <!-- État vide / chargement — Option A « Éditorial centré » -->
         <div id="editionsEmpty" style="display:none;padding:44px 8px 0;">
           <div style="display:flex;flex-direction:column;align-items:center;text-align:center;max-width:320px;margin:0 auto;">
-            <div style="width:54px;height:54px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;margin-bottom:24px;color:var(--text-muted);">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1" fill="currentColor" stroke="none"/></svg>
-            </div>
+            <svg viewBox="0 0 200 118" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="width:200px;height:auto;margin-bottom:28px;opacity:.18" aria-hidden="true">
+              <!-- Sources flux (gauche) -->
+              <circle cx="14" cy="18" r="3.5" fill="currentColor" stroke="none"/>
+              <circle cx="14" cy="36" r="3" fill="currentColor" stroke="none" opacity=".7"/>
+              <circle cx="14" cy="52" r="4" fill="currentColor" stroke="none"/>
+              <circle cx="14" cy="68" r="3" fill="currentColor" stroke="none" opacity=".7"/>
+              <circle cx="14" cy="86" r="3.5" fill="currentColor" stroke="none"/>
+              <!-- Lignes de flux convergentes -->
+              <path d="M18 18 C54 18 64 52 96 52" stroke-width="1.4" opacity=".5"/>
+              <path d="M17 36 C52 36 64 52 96 52" stroke-width="1.4" opacity=".65"/>
+              <path d="M18 52 L96 52" stroke-width="1.8"/>
+              <path d="M17 68 C52 68 64 52 96 52" stroke-width="1.4" opacity=".65"/>
+              <path d="M18 86 C54 86 64 52 96 52" stroke-width="1.4" opacity=".5"/>
+              <!-- Nœud central (lentille Briefeed) -->
+              <circle cx="96" cy="52" r="13" stroke-width="1.6"/>
+              <circle cx="96" cy="52" r="4.5" fill="currentColor" stroke="none"/>
+              <!-- Trait de sortie -->
+              <line x1="109" y1="44" x2="126" y2="33" stroke-width="1.4"/>
+              <line x1="109" y1="52" x2="126" y2="52" stroke-width="1.8"/>
+              <line x1="109" y1="60" x2="126" y2="71" stroke-width="1.4"/>
+              <!-- Cartes article (droite) -->
+              <rect x="126" y="24" width="60" height="18" rx="4" stroke-width="1.4"/>
+              <rect x="126" y="43" width="60" height="18" rx="4" stroke-width="1.8"/>
+              <rect x="126" y="62" width="60" height="18" rx="4" stroke-width="1.4"/>
+              <!-- Lignes texte dans les cartes -->
+              <line x1="134" y1="31" x2="178" y2="31" stroke-width="1" opacity=".5"/>
+              <line x1="134" y1="37" x2="164" y2="37" stroke-width="1" opacity=".5"/>
+              <line x1="134" y1="50" x2="178" y2="50" stroke-width="1.2" opacity=".6"/>
+              <line x1="134" y1="56" x2="158" y2="56" stroke-width="1.2" opacity=".6"/>
+              <line x1="134" y1="69" x2="178" y2="69" stroke-width="1" opacity=".5"/>
+              <line x1="134" y1="75" x2="168" y2="75" stroke-width="1" opacity=".5"/>
+            </svg>
             <div style="font-family: -apple-system; font-size: 30px; line-height: 1.12; letter-spacing: -.01em; color: var(--text); text-wrap: balance; font-weight: 700">Composez votre édition.</div>
             <div style="margin-top: 14px; font-family: -apple-system; font-size: 13.5px; line-height: 1.55; color: var(--text-muted)">Choisissez quelques sources pour générer votre première édition du jour.</div>
             <button onclick="document.getElementById('navDiscover').click()" style="margin-top: 30px; width: 100%; height: 50px; border: none; border-radius: 90px; background: #0a84ff; color: #fff; font-family: system-ui; font-size: 13px; font-weight: 500; letter-spacing: .04em; text-transform: uppercase; cursor: pointer; -webkit-tap-highlight-color: transparent">Découvrir des sources</button>
@@ -10588,20 +10645,22 @@ body.focus-mode .focus-exit{ display:flex; }
     const ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h18"/><path d="M6 9h12"/><path d="M9 14h6"/><path d="M11 19h2"/></svg>';
     const ICON_X = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>';
     function renderSidebar(){
-      const sec  = $('smartSection');
       const host = $('smartList');
       if(!host) return;
       const list = load();
-      if(sec) sec.hidden = !list.length;
       host.innerHTML = list.map(sf=>{
         let n = 0; try{ n = _filter(sf).length; }catch(e){}
         return '<div class="smart-item" onclick="BF_SMART.runById(\''+sf.id+'\')">'
-          + '<span class="si-ic">'+ICON+'</span>'
+          + ICON
           + '<span class="si-label">'+esc(sf.name)+'</span>'
           + (n?'<span class="si-count">'+n+'</span>':'')
-          + '<button class="si-del" aria-label="Supprimer" onclick="event.stopPropagation();BF_SMART.del(\''+sf.id+'\')">'+ICON_X+'</button>'
           + '</div>';
       }).join('');
+      // Sync dedupe select if prefs page is open
+      try{
+        const sel=$('spDedupeMode');
+        if(sel){const m=(JSON.parse(localStorage.getItem('reader.dedupe')||'{}')).mode;sel.value=(m==='off'||m==='exact'||m==='fuzzy')?m:'fuzzy';}
+      }catch(e){}
     }
 
     // Suggestions automatiques à partir des mots fréquents dans les titres
@@ -10663,8 +10722,7 @@ body.focus-mode .focus-exit{ display:flex; }
         + sugg.map(w=>'<span class="bf-chip-sm" onclick="BF_SMART.quick(\''+esc(w).replace(/'/g,"")+'\')">'+esc(w)+'</span>').join('')+'</div>') : '';
 
       bfSheetOpen('Flux intelligents',
-        _ddCard()
-        + '<div class="bf-sub">Un flux intelligent applique des règles (titre, source, auteur…) pour rassembler automatiquement les articles qui vous intéressent.</div>'
+        '<div class="bf-sub">Un flux intelligent applique des règles (titre, source, auteur…) pour rassembler automatiquement les articles qui vous intéressent.</div>'
         + rows + suggHtml
         + '<button class="bf-cta" onclick="BF_SMART.openCreate()" style="margin-top:14px">+ Nouveau flux intelligent</button>');
     }
@@ -10775,6 +10833,21 @@ body.focus-mode .focus-exit{ display:flex; }
   window.BF_SMART = BF_SMART;
   window.bfSmartOpenList = BF_SMART.openList;
   try{ BF_SMART.renderSidebar(); }catch(e){}
+
+  // Sync dedupe select quand la page prefs s'ouvre (enchaîne l'existant)
+  (function(){
+    const _prev = window.__renderPrefsContent;
+    window.__renderPrefsContent = function(){
+      if(_prev) _prev();
+      try{
+        const sel=$('spDedupeMode');
+        if(sel){
+          const m=(JSON.parse(localStorage.getItem('reader.dedupe')||'{}')).mode;
+          sel.value=(m==='off'||m==='exact'||m==='fuzzy')?m:'fuzzy';
+        }
+      }catch(e){}
+    };
+  })();
 
   // ════════════════════════════════════════════════════════════════
   //  4) BF_TAGS — étiquettes par article
