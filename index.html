@@ -1860,331 +1860,60 @@ button, .ob-btn, .ob-btn-ghost,
 
 
 /* ══════════════════════════════════════════════════════════════════
-   FOCUS SÉQUENTIEL — Vue éditoriale Premium Minimalist
-   Philosophie : magazine éditorial numérique. Chaque article = une
-   séquence isolée. Zéro bruit. Lecture-plaisir.
+   FOCUS SÉQUENTIEL — Vue éditoriale (5 articles récents)
    ══════════════════════════════════════════════════════════════════ */
 
-/* Container */
-.seq-list{
-  display:flex; flex-direction:column;
-  gap:0; padding:0 0 100px;
-}
+.seq-list{ display:flex; flex-direction:column; gap:0; padding:0 0 100px; }
+.seq-progress{ display:none; }
 
-/* ── Tracker de progression (dots discrets) ──────────────── */
-.seq-progress{
-  display:none; flex-direction:column; gap:14px;
-  padding:24px 0 20px; margin-bottom:4px;
+/* ── Liste éditoriale ──────────────────────────────────── */
+.seq-ed-item{
+  display:flex; align-items:flex-start; gap:14px;
+  padding:18px 20px; border-bottom:1px solid rgba(255,255,255,.07);
+  cursor:pointer; -webkit-tap-highlight-color:transparent;
+  transition:opacity .25s ease;
 }
-.seq-progress.show{ display:flex; }
-.fos-track-top{
-  display:flex; align-items:flex-start; justify-content:space-between;
-}
-.fos-track-label{
+.seq-ed-item:last-child{ border-bottom:none; }
+.seq-ed-item.is-read{ opacity:.36; }
+[data-theme="light"] .seq-ed-item{ border-bottom-color:rgba(0,0,0,.07); }
+.seq-ed-date{
+  width:44px; flex-shrink:0; padding-top:3px;
   font-family:var(--font-inter); font-size:10px; font-weight:700;
-  letter-spacing:.12em; text-transform:uppercase; color:rgba(255,255,255,.32);
+  color:rgba(255,255,255,.30); text-transform:uppercase;
+  letter-spacing:.04em; line-height:1.4; white-space:nowrap;
 }
-.fos-track-sub{
-  font-family:var(--font-inter); font-size:12.5px; font-weight:700;
-  color:var(--text); letter-spacing:-.01em; margin-top:3px;
+[data-theme="light"] .seq-ed-date{ color:rgba(0,0,0,.28); }
+.seq-ed-thumb{
+  width:90px; height:68px; flex-shrink:0;
+  border-radius:10px; overflow:hidden;
+  background:rgba(255,255,255,.05);
 }
-.fos-track-actions{ display:flex; gap:8px; flex-shrink:0; }
-.fos-track-btn{
-  font-family:var(--font-inter); font-size:12px; font-weight:700;
-  color:#0a84ff; background:rgba(10,132,255,.1);
-  border:none; border-radius:999px; padding:7px 14px;
-  cursor:pointer; -webkit-tap-highlight-color:transparent;
-  transition:transform .38s cubic-bezier(.34,1.56,.64,1);
-  white-space:nowrap;
-}
-.fos-track-btn:active{ transform:scale(.92); transition:transform .07s ease-in; }
-.fos-track-ghost{
-  font-family:var(--font-inter); font-size:12px; font-weight:600;
-  color:var(--text-muted); background:transparent; border:none;
-  cursor:pointer; -webkit-tap-highlight-color:transparent;
-  padding:7px 4px;
-}
-.fos-track-ghost:active{ opacity:.55; }
-.fos-track-done{
-  display:flex; align-items:center; gap:7px;
-  font-family:var(--font-inter); font-size:13px; font-weight:700;
-  color:#34c759; letter-spacing:-.01em;
-}
-/* Dots */
-.fos-dots-wrap{
-  display:flex; align-items:center; gap:5px;
-  overflow:hidden; flex-wrap:nowrap;
-}
-.fos-dot{
-  flex-shrink:0;
-  border-radius:50%;
-  background:rgba(255,255,255,.12);
-  transition:background .3s ease, transform .3s cubic-bezier(.34,1.56,.64,1);
-}
-.fos-dot.fos-read{ background:#0a84ff; }
-.fos-dot.fos-current{
-  background:#fff;
-  box-shadow:0 0 0 2px rgba(255,255,255,.22);
-  transform:scale(1.25);
-}
-/* Segment bar (fallback > 30 articles) */
-.fos-seg-bar{
-  width:100%; height:3px; border-radius:99px;
-  background:rgba(255,255,255,.1); overflow:hidden;
-}
-.fos-seg-fill{
-  height:100%; border-radius:99px; background:#0a84ff;
-  transition:width .5s cubic-bezier(.32,.72,0,1);
-}
-.seq-progress.is-done .fos-seg-fill{ background:#34c759; }
-
-/* ── Carte article (séquence) ────────────────────────────── */
-.fos-card{
-  background:rgba(255,255,255,.06);
-  border:1px solid rgba(255,255,255,.13);
-  -webkit-backdrop-filter:blur(20px) saturate(150%);
-  backdrop-filter:blur(20px) saturate(150%);
-  box-shadow:
-    0 24px 40px -8px rgba(0,0,0,.5),
-    0 4px 16px rgba(0,0,0,.22),
-    inset 1px 1px 0 0 rgba(255,255,255,.1);
-  border-radius:20px;
-  padding:22px 20px 18px;
-  margin:0 0 14px;
-  cursor:pointer;
-  -webkit-tap-highlight-color:transparent;
-  -webkit-user-select:none; user-select:none;
-  transition:
-    transform    .42s cubic-bezier(.34,1.56,.64,1),
-    box-shadow   .4s ease,
-    background   .4s ease,
-    border-color .4s ease,
-    opacity      .38s ease;
-  will-change:transform;
-}
-/* Survol (pointeur fin) — élévation « Zoom Ombre » premium.
-   Gaté @media hover pour ne jamais coller sur écran tactile. */
-@media (hover:hover) and (pointer:fine){
-  .fos-card:not(.is-read):hover{
-    transform:translateY(-8px) scale(1.02);
-    box-shadow:
-      0 32px 60px -10px rgba(0,0,0,.65),
-      inset 1px 1px 0 0 rgba(255,255,255,.2);
-    background:rgba(255,255,255,.09);
-    border-color:rgba(255,255,255,.25);
-  }
-  [data-theme="light"] .fos-card:not(.is-read):hover{
-    box-shadow:
-      0 32px 60px -10px rgba(0,0,0,.18),
-      inset 0 1px 0 rgba(255,255,255,.95);
-    background:rgba(255,255,255,.85);
-    border-color:#fff;
-  }
-}
-.fos-card:active{
-  transform:scale(.975);
-  box-shadow:0 8px 20px -4px rgba(0,0,0,.4), 0 2px 6px rgba(0,0,0,.14), inset 1px 1px 0 0 rgba(255,255,255,.07);
-  transition:transform .07s ease-in, box-shadow .07s ease-in;
-}
-.fos-card.is-read{
-  opacity:.36;
-  border-color:rgba(255,255,255,.06);
-  box-shadow:none;
-  -webkit-backdrop-filter:blur(8px);
-  backdrop-filter:blur(8px);
-}
-/* Mode clair */
-[data-theme="light"] .fos-card{
-  background:rgba(255,255,255,.72);
-  border-color:rgba(255,255,255,.9);
-  -webkit-backdrop-filter:blur(20px) saturate(140%);
-  backdrop-filter:blur(20px) saturate(140%);
-  box-shadow:0 24px 40px -8px rgba(0,0,0,.12), 0 4px 16px rgba(0,0,0,.06), inset 0 1px 0 rgba(255,255,255,.8);
-}
-[data-theme="light"] .fos-card.is-read{ opacity:.32; }
-
-/* En-tête de carte */
-.fos-card-header{
-  display:flex; align-items:center; justify-content:space-between;
-  margin-bottom:14px;
-}
-.fos-source-row{
-  display:flex; align-items:center; gap:7px; flex:1; min-width:0;
-}
-.fos-fav{
-  width:18px; height:18px; border-radius:50%; overflow:hidden;
-  background:rgba(255,255,255,.06); flex-shrink:0;
-}
-.fos-fav img{ width:100%; height:100%; object-fit:contain; border-radius:50%; display:block; }
-.fos-source-name{
-  font-family:var(--font-inter); font-size:11px; font-weight:700;
-  color:rgba(255,255,255,.45); letter-spacing:.03em; text-transform:uppercase;
-  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-}
-.fos-time{
-  font-family:var(--font-inter); font-size:11px; font-weight:500;
-  color:rgba(255,255,255,.28); letter-spacing:.01em; flex-shrink:0;
-}
-.fos-num{
-  font-family:var(--font-inter); font-size:13px; font-weight:800;
-  color:rgba(255,255,255,.18); letter-spacing:-.02em; flex-shrink:0;
-}
-[data-theme="light"] .fos-source-name{ color:rgba(0,0,0,.42); }
-[data-theme="light"] .fos-time{ color:rgba(0,0,0,.28); }
-[data-theme="light"] .fos-num{ color:rgba(0,0,0,.2); }
-
-/* Image hero */
-.fos-img-wrap{
-  width:100%; aspect-ratio:16/9; border-radius:13px; overflow:hidden;
-  background:#111; margin-bottom:16px;
-}
-.fos-img-wrap img{
-  width:100%; height:100%; object-fit:cover;
-  display:block;
-}
-
-/* Titre */
-.fos-title{
-  font-family:var(--font-title); /* DM Serif en mode Serif */
-  font-size:21px; font-weight:700; line-height:1.24;
-  color:var(--text); letter-spacing:-.015em;
-  margin:0 0 16px; padding-right:28px; /* clearance bouton partage */
-  display:block;
-}
-
-/* ── Bloc Intel (résumé) ─────────────────────────────────── */
-.fos-intel{
-  background:
-    linear-gradient(135deg, rgba(10,132,255,.1) 0%, rgba(10,132,255,.05) 100%);
-  border:1px solid rgba(10,132,255,.22);
-  -webkit-backdrop-filter:blur(12px) saturate(130%);
-  backdrop-filter:blur(12px) saturate(130%);
-  box-shadow:
-    0 6px 20px -4px rgba(0,0,0,.28),
-    inset 1px 1px 0 0 rgba(255,255,255,.06);
-  border-radius:13px; padding:14px 16px 12px;
-  margin:0 0 14px;
-}
-.fos-intel-header{
-  display:flex; align-items:center; gap:7px; margin-bottom:10px;
-}
-.fos-intel-icon{
-  width:20px; height:20px; border-radius:6px;
-  background:linear-gradient(135deg,#0a84ff,#30d158);
-  display:flex; align-items:center; justify-content:center;
-  flex-shrink:0;
-}
-.fos-intel-icon svg{ display:block; }
-.fos-intel-tag{
-  display:inline-block; padding:.3em .75em;
-  border-radius:50px;
-  background:rgba(10,132,255,.1); border:1px solid rgba(10,132,255,.25);
-  -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px);
-  font-family:var(--font-inter); font-size:10px; font-weight:800;
-  letter-spacing:.1em; text-transform:uppercase; color:#0a84ff;
-}
-.fos-intel-list{
-  list-style:none; margin:0; padding:0;
-  display:flex; flex-direction:column; gap:6px;
-}
-.fos-intel-list li{
-  font-family:var(--font-inter); font-size:13px; font-weight:500;
-  line-height:1.48; color:rgba(255,255,255,.78);
-  padding-left:14px; position:relative;
-}
-.fos-intel-list li::before{
-  content:''; position:absolute; left:0; top:6px;
-  width:4px; height:4px; border-radius:50%;
-  background:linear-gradient(135deg,#0a84ff,#30d158);
-}
-[data-theme="light"] .fos-intel-list li{ color:rgba(0,0,0,.7); }
-[data-theme="light"] .fos-intel-list li::before{ background:#0a84ff; }
-
-/* ── Ligne de flottaison ─────────────────────────────────── */
-.fos-float{
-  border:none; border-top:1px solid rgba(255,255,255,.06);
-  margin:16px 0; padding:0;
-}
-[data-theme="light"] .fos-float{ border-top-color:rgba(0,0,0,.07); }
-
-/* ── Extrait éditorial ───────────────────────────────────── */
-.fos-excerpt{
-  font-family:var(--font-dm); /* Serif élégant */
-  font-size:14.5px; font-weight:400; line-height:1.7;
-  color:rgba(255,255,255,.56);
-  margin:0 0 16px;
-  display:-webkit-box; -webkit-line-clamp:4;
+.seq-ed-thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+.seq-ed-body{ flex:1; min-width:0; padding-top:1px; }
+.seq-ed-title{
+  font-family:var(--font-title);
+  font-size:15.5px; font-weight:700; line-height:1.27;
+  color:var(--text); margin:0 0 5px;
+  display:-webkit-box; -webkit-line-clamp:3;
   -webkit-box-orient:vertical; overflow:hidden;
 }
-[data-theme="light"] .fos-excerpt{ color:rgba(0,0,0,.5); }
-
-/* ── Footer actions ──────────────────────────────────────── */
-.fos-footer{
-  display:flex; align-items:center; gap:6px;
-  padding-top:14px; border-top:1px solid rgba(255,255,255,.05);
-  margin-top:2px;
+.seq-ed-excerpt{
+  font-family:var(--font-inter);
+  font-size:12px; font-weight:400; line-height:1.52;
+  color:rgba(255,255,255,.38); margin:0 0 8px;
+  display:-webkit-box; -webkit-line-clamp:2;
+  -webkit-box-orient:vertical; overflow:hidden;
 }
-[data-theme="light"] .fos-footer{ border-top-color:rgba(0,0,0,.06); }
-.fos-act{
+[data-theme="light"] .seq-ed-excerpt{ color:rgba(0,0,0,.4); }
+.seq-ed-lire{
   display:inline-flex; align-items:center; gap:5px;
-  border:1px solid rgba(255,255,255,.1);
-  border-radius:999px;
-  padding:7px 13px; cursor:pointer;
-  -webkit-backdrop-filter:blur(8px) saturate(130%);
-  backdrop-filter:blur(8px) saturate(130%);
-  box-shadow:inset 1px 1px 0 0 rgba(255,255,255,.08);
-  font-family:var(--font-inter); font-size:12px; font-weight:700;
+  font-family:var(--font-inter); font-size:11px; font-weight:700;
+  color:var(--text); background:none; border:none; padding:0;
+  cursor:pointer; letter-spacing:.01em; opacity:.55;
   -webkit-tap-highlight-color:transparent;
-  transition:transform .38s cubic-bezier(.34,1.56,.64,1),
-             background .18s ease, color .18s ease, border-color .18s ease;
 }
-.fos-act:active{ transform:scale(.9); transition:transform .07s ease-in; }
-.fos-act-read{
-  background:rgba(255,255,255,.06); color:rgba(255,255,255,.6);
-}
-.fos-act-read:hover{ background:rgba(255,255,255,.12); color:#fff; border-color:rgba(255,255,255,.18); }
-.fos-act-read.fos-done{
-  background:rgba(52,199,89,.14); color:#34c759; border-color:rgba(52,199,89,.28);
-}
-.fos-act-fav{
-  background:rgba(255,255,255,.06); color:rgba(255,255,255,.6);
-}
-.fos-act-fav:hover{ background:rgba(255,255,255,.12); color:#fff; border-color:rgba(255,255,255,.18); }
-.fos-act-fav.fos-starred{
-  background:rgba(255,214,10,.12); color:#ffd60a; border-color:rgba(255,214,10,.25);
-}
-.fos-act-share{
-  background:rgba(255,255,255,.06); color:rgba(255,255,255,.6);
-}
-.fos-act-share:hover{ background:rgba(255,255,255,.12); color:#fff; border-color:rgba(255,255,255,.18); }
-.fos-act-open{
-  margin-left:auto; flex-shrink:0;
-  background:rgba(10,132,255,.14); color:#0a84ff; border-color:rgba(10,132,255,.28);
-}
-.fos-act-open:hover{ background:rgba(10,132,255,.22); border-color:rgba(10,132,255,.38); }
-[data-theme="light"] .fos-act-read{ background:rgba(0,0,0,.05); color:rgba(0,0,0,.5); border-color:rgba(0,0,0,.1); }
-[data-theme="light"] .fos-act-fav  { background:rgba(0,0,0,.05); color:rgba(0,0,0,.5); border-color:rgba(0,0,0,.1); }
-[data-theme="light"] .fos-act-share{ background:rgba(0,0,0,.05); color:rgba(0,0,0,.5); border-color:rgba(0,0,0,.1); }
-[data-theme="light"] .fos-act-open { background:rgba(10,132,255,.1); border-color:rgba(10,132,255,.2); }
 
-/* ── Séparateur thématique ───────────────────────────────── */
-.fos-separator{
-  display:flex; align-items:center; gap:12px;
-  padding:8px 0 18px; margin:2px 0;
-}
-.fos-sep-line{
-  flex:1; height:1px;
-  background:linear-gradient(90deg, transparent, rgba(255,255,255,.08), transparent);
-}
-[data-theme="light"] .fos-sep-line{
-  background:linear-gradient(90deg, transparent, rgba(0,0,0,.08), transparent);
-}
-.fos-sep-label{
-  font-family:var(--font-dm); font-size:12px; font-style:italic;
-  color:rgba(255,255,255,.28); white-space:nowrap; letter-spacing:.01em;
-  flex-shrink:0;
-}
-[data-theme="light"] .fos-sep-label{ color:rgba(0,0,0,.28); }
+/* ── PAGE DOSSIER"] .fos-sep-label{ color:rgba(0,0,0,.28); }
 
 /* ── PAGE DOSSIER ────────────────────────────────── */
 .folder-page{ position:fixed; inset:0; z-index:450; background:var(--bg); display:flex; flex-direction:column; transform:translateX(100%); transition:transform .38s cubic-bezier(.32,.72,0,1); }
@@ -2194,9 +1923,6 @@ button, .ob-btn, .ob-btn-ghost,
 .folder-page-title{ font-family:var(--font-inter); font-size:30px; font-weight:800; letter-spacing:-.03em; color:var(--text); text-align:center; }
 .folder-page-welcome{ font-family:var(--font-inter); font-size:14px; font-weight:500; color:var(--text-muted); margin-top:8px; line-height:1.55; text-align:center; max-width:280px; }
 .folder-page-sep{ width:40px; height:2px; background:var(--accent); border-radius:2px; margin:18px auto 0; opacity:.7; }
-.folder-page-illus{ width:118px; height:118px; margin:2px auto 20px; filter:drop-shadow(0 12px 26px rgba(0,0,0,.30)); animation:fpIllusIn .5s cubic-bezier(.34,1.56,.64,1); }
-.folder-page-illus svg{ width:100%; height:100%; display:block; }
-@keyframes fpIllusIn{ from{ opacity:0; transform:scale(.82) translateY(6px); } to{ opacity:1; transform:none; } }
 [data-theme="light"] .folder-page-bar{ border-color:rgba(0,0,0,.08); }
 .folder-page-back{ width:36px; height:36px; border:none; background:rgba(255,255,255,.08); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text); transition:background .15s; flex-shrink:0; }
 [data-theme="light"] .folder-page-back{ background:rgba(0,0,0,.06); }
@@ -8541,136 +8267,49 @@ body.focus-mode .focus-exit{ display:flex; }
     return t ? t.split(/\s+/).length : 0;
   }
 
-  // ── Tracker de progression — dots discrets (Focus Séquentiel) ──
-  function _seqRenderProgress(){
-    // Compteur de progression retiré — la vue séquentielle reste épurée.
-    const host = document.getElementById('seqProgress');
-    if(!host) return;
-    host.className = 'seq-progress';
-    host.innerHTML = '';
-  }
+  // ── Vue éditoriale séquentielle (5 articles récents) ─────────────
+  function _seqRenderProgress(){ /* no-op */ }
 
-  // ── Rafraîchir les états « lu » sans re-render (préserve le scroll) ──
   function _seqRefreshReadStates(){
     const list = document.getElementById('seqList');
-    if(!list || !_seqArts || !_seqArts.length){ _seqRenderProgress(); return; }
-    list.querySelectorAll('.fos-card').forEach(el => {
+    if(!list || !_seqArts || !_seqArts.length) return;
+    list.querySelectorAll('.seq-ed-item').forEach(el => {
       const i = +el.getAttribute('data-seq-idx');
       const a = _seqArts[i];
-      if(!a) return;
-      const isRead = _RS.has(a.link);
-      el.classList.toggle('is-read', isRead);
-      // Mettre à jour le bouton "Lu"
-      const btn = el.querySelector('.fos-act-read');
-      if(btn) btn.classList.toggle('fos-done', isRead);
+      if(a) el.classList.toggle('is-read', _RS.has(a.link));
     });
-    _seqRenderProgress();
   }
 
-  // ── Reprendre : défiler jusqu'au premier article non-lu ──
-  window._seqResume = function(){
-    const list = document.getElementById('seqList');
-    if(!list || !_seqArts || !_seqArts.length) return;
-    let idx = _seqArts.findIndex(a => !_RS.has(a.link));
-    if(idx < 0) idx = 0;
-    const el = list.querySelector('.fos-card[data-seq-idx="' + idx + '"]');
-    if(el){
-      const rowEl = document.querySelector('.row');
-      if(rowEl){
-        const offset = el.offsetTop - 100;
-        rowEl.scrollTo({ top: offset, behavior:'smooth' });
-      } else { el.scrollIntoView({behavior:'smooth', block:'center'}); }
-    }
-  };
-
-  // ── Tout marquer comme lu (vider le retard) ──
+  window._seqResume = function(){};
   window._seqMarkAllRead = function(){
     if(!_seqArts || !_seqArts.length) return;
     _RS.markMany(_seqArts.map(a => a.link));
     _seqRefreshReadStates();
   };
 
-  // ── Helpers Focus Séquentiel ──────────────────────────────────
-
-  // Extrait 2-3 points clés depuis la description (pseudo-résumé Intel)
-  function _fosPoints(a){
-    const raw = (a.description || a.contentEncoded || '')
-      .replace(/<[^>]+>/g,' ').replace(/&(?:amp|lt|gt|quot|nbsp|apos);/g,' ')
-      .replace(/\s+/g,' ').trim();
-    if(raw.length < 40) return [a.title||''].filter(Boolean).slice(0,1);
-    const sents = raw.split(/\.\s+/).map(s=>s.trim()).filter(s=>s.length > 28);
-    return sents.length >= 2 ? sents.slice(0,3) : [raw.slice(0,180).trim()];
+  function _seqDateStr(ts){
+    if(!ts) return '';
+    const d = new Date(ts);
+    const months = ['jan','f\u00e9v','mar','avr','mai','juin','juil','ao\u00fb','sep','oct','nov','d\u00e9c'];
+    return d.getDate() + ' ' + months[d.getMonth()];
   }
 
-  // Extrait éditorial (premier paragraphe nettoyé)
-  function _fosExcerpt(a){
-    const raw = (a.description || a.contentEncoded || '')
+  function _seqNewsItemHtml(a, i){
+    const isRead = _RS.has(a.link);
+    const rawText = (a.description || a.contentEncoded || '')
       .replace(/<[^>]+>/g,' ').replace(/&(?:amp|lt|gt|quot|nbsp|apos);/g,' ')
       .replace(/\s+/g,' ').trim();
-    return raw.length > 60 ? raw.slice(0,340) + '…' : '';
-  }
-
-  const _FOS_SEPS = [
-    '~ Suite de votre édition ~',
-    '~ À lire maintenant ~',
-    '~ Dans votre fil ~',
-    '~ Pour aller plus loin ~',
-    '~ L\'essentiel continue ~',
-  ];
-
-  function _fosCardHtml(a, i){
-    const fav     = getFavicon(a.feedUrl || a.link || '');
-    const isRead  = _RS.has(a.link);
-    const points  = _fosPoints(a);
-    const excerpt = _fosExcerpt(a);
-    const isFav   = typeof _favSet !== 'undefined' && _favSet.has && _favSet.has(a.link);
-
-    const imgHtml = a.imageUrl
-      ? `<div class="fos-img-wrap"><img src="${escAttr(a.imageUrl)}" alt="" decoding="async" loading="lazy" onerror="this.parentNode.style.display='none'"></div>`
-      : '';
-
-    const intelHtml = points.length
-      ? `<div class="fos-intel">
-           <div class="fos-intel-header">
-             <div class="fos-intel-icon">
-               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-             </div>
-             <span class="fos-intel-tag">Résumé Intel</span>
-           </div>
-           <ul class="fos-intel-list">${points.map(p=>`<li>${escHtml(p.slice(0,200))}</li>`).join('')}</ul>
-         </div>`
-      : '';
-
-    const excerptHtml = excerpt
-      ? `<hr class="fos-float"><p class="fos-excerpt">${escHtml(excerpt)}</p>`
-      : '';
-
-    return `<div class="fos-card${isRead?' is-read':''}" data-seq-idx="${i}">
-      <div class="fos-card-header">
-        <div class="fos-source-row">
-          <div class="fos-fav"><img src="${escAttr(fav)}" alt="" onerror="this.style.opacity='.3'"></div>
-          <span class="fos-source-name">${escHtml(a.source||'')}</span>
-          <span class="fos-time">${relTime(a.pubDate)}</span>
-        </div>
-        <span class="fos-num">${String(i+1).padStart(2,'0')}</span>
-      </div>
-      ${imgHtml}
-      <span class="fos-title" onclick="_seqOpen(${i})">${escHtml(a.title||'')}</span>
-      ${intelHtml}
-      ${excerptHtml}
-      <div class="fos-footer" onclick="event.stopPropagation()">
-        <button class="fos-act fos-act-read${isRead?' fos-done':''}" onclick="_fosMarkRead(${i},this)" aria-label="Marquer lu">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Lu
-        </button>
-        <button class="fos-act fos-act-fav${isFav?' fos-starred':''}" onclick="_fosFav(${i},this)" aria-label="Favoris">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="${isFav?'currentColor':'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-        </button>
-        <button class="fos-act fos-act-share" onclick="_fosShare(${i})" aria-label="Partager">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-        </button>
-        <button class="fos-act fos-act-open" onclick="_seqOpen(${i})" aria-label="Lire l'article">
-          Lire <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-        </button>
+    const excerptShort = rawText.length > 60 ? rawText.slice(0,160) + '\u2026' : '';
+    const thumbHtml = a.imageUrl
+      ? `<div class="seq-ed-thumb"><img src="${escAttr(a.imageUrl)}" alt="" decoding="async" loading="lazy" onerror="this.parentNode.style.display='none'"></div>`
+      : '<div class="seq-ed-thumb" style="display:none"></div>';
+    return `<div class="seq-ed-item${isRead?' is-read':''}" data-seq-idx="${i}" onclick="_seqOpen(${i})">
+      <div class="seq-ed-date">${escHtml(_seqDateStr(a.pubDate))}</div>
+      ${thumbHtml}
+      <div class="seq-ed-body">
+        <div class="seq-ed-title">${escHtml(a.title||'')}</div>
+        ${excerptShort ? `<div class="seq-ed-excerpt">${escHtml(excerptShort)}</div>` : ''}
+        <button class="seq-ed-lire" onclick="event.stopPropagation();_seqOpen(${i})">Lire <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
       </div>
     </div>`;
   }
@@ -8681,44 +8320,12 @@ body.focus-mode .focus-exit{ display:flex; }
     const arts = typeof _allArticles !== 'undefined'
       ? _dedup(_railApplyFilter([..._allArticles]).sort((a,b)=>b.pubDate-a.pubDate))
       : [];
-    _seqArts = arts.slice(0, 30);   // Focus : 30 articles maximum
+    _seqArts = arts.slice(0, 5);
     if(!_seqArts.length){
       list.innerHTML = '<div style="padding:80px 0;text-align:center;color:var(--text-muted);font-size:14px;font-family:var(--font-inter)">Aucun article disponible.<br>Ajoutez des sources pour commencer.</div>';
-      _seqRenderProgress();
       return;
     }
-
-    let html = '';
-    let sepIdx = 0;
-    _seqArts.forEach((a, i) => {
-      // Séparateur thématique tous les 5 articles (sauf au début)
-      if(i > 0 && i % 5 === 0){
-        const label = _FOS_SEPS[sepIdx % _FOS_SEPS.length];
-        html += `<div class="fos-separator">
-          <div class="fos-sep-line"></div>
-          <span class="fos-sep-label">${label}</span>
-          <div class="fos-sep-line"></div>
-        </div>`;
-        sepIdx++;
-      }
-      html += _fosCardHtml(a, i);
-    });
-    list.innerHTML = html;
-
-    _seqRenderProgress();
-
-    // Reprise automatique si session en cours
-    const firstUnread = _seqArts.findIndex(a => !_RS.has(a.link));
-    const readCount   = _seqArts.filter(a => _RS.has(a.link)).length;
-    if(readCount > 0 && firstUnread > 0){
-      requestAnimationFrame(()=> setTimeout(()=>{
-        const el = list.querySelector('.fos-card[data-seq-idx="' + firstUnread + '"]');
-        if(el){
-          const rowEl = document.querySelector('.row');
-          if(rowEl) rowEl.scrollTo({ top: el.offsetTop - 100, behavior:'smooth' });
-        }
-      }, 160));
-    }
+    list.innerHTML = '<div class="seq-ed-list">' + _seqArts.map((a,i)=>_seqNewsItemHtml(a,i)).join('') + '</div>';
   }
 
   window._seqOpen = function(i){
@@ -8726,47 +8333,8 @@ body.focus-mode .focus-exit{ display:flex; }
     if(!a) return;
     _RS.mark(a.link);
     _showArtModal(a);
-    // Mettre à jour l'état lu sans re-render
-    const el = document.querySelector('.fos-card[data-seq-idx="' + i + '"]');
-    if(el){
-      el.classList.add('is-read');
-      const btn = el.querySelector('.fos-act-read');
-      if(btn) btn.classList.add('fos-done');
-    }
-    _seqRenderProgress();
-  };
-
-  window._fosMarkRead = function(i, btn){
-    const a = _seqArts[i]; if(!a) return;
-    const card = btn.closest('.fos-card');
-    const wasRead = _RS.has(a.link);
-    if(wasRead){
-      // Dés-marquer (simple toggle d'UI, pas de suppression du store)
-      card && card.classList.remove('is-read');
-      btn.classList.remove('fos-done');
-    } else {
-      _RS.mark(a.link);
-      card && card.classList.add('is-read');
-      btn.classList.add('fos-done');
-    }
-    _seqRenderProgress();
-  };
-
-  window._fosFav = function(i, btn){
-    const a = _seqArts[i]; if(!a) return;
-    if(typeof _toggleFavori === 'function') _toggleFavori(a);
-    const starred = btn.classList.toggle('fos-starred');
-    const svg = btn.querySelector('svg');
-    if(svg) svg.setAttribute('fill', starred ? 'currentColor' : 'none');
-  };
-
-  window._fosShare = function(i){
-    const a = _seqArts[i]; if(!a) return;
-    if(navigator.share){
-      navigator.share({ title: a.title||'', url: a.link }).catch(()=>{});
-    } else {
-      try{ navigator.clipboard.writeText(a.link); }catch(e){}
-    }
+    const el = document.querySelector('.seq-ed-item[data-seq-idx="' + i + '"]');
+    if(el) el.classList.add('is-read');
   };
 
   // ── VUE LISTE ─────────────────────────────────────────────────
@@ -9260,56 +8828,10 @@ body.focus-mode .focus-exit{ display:flex; }
     return _FOLDER_WELCOME[key] || _FOLDER_WELCOME['default'];
   }
 
-  // ── Illustrations de dossier (stickers) — choisies selon le nom ──
-  function _fiFrame(inner){
-    return '<svg viewBox="0 0 200 200" fill="none" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">'
-      + '<rect x="8" y="8" width="184" height="184" rx="46" fill="#E4F6EA"/>'
-      + inner + '</svg>';
-  }
-  const _FI_MOTIFS = {
-    sport:'<g stroke="#0E7A47" stroke-width="7"><circle cx="124" cy="120" r="34" fill="#27C26C"/><path d="M124 86 V154 M90 120 H158 M101 96 Q124 120 101 144 M147 96 Q124 120 147 144" fill="none" stroke="#0B5C35" stroke-width="4"/><g transform="rotate(-28 76 84)"><ellipse cx="76" cy="84" rx="33" ry="20" fill="#B7E8C8"/><path d="M61 84 H91 M69 78 V90 M76 77 V91 M83 78 V90" stroke="#0E7A47" stroke-width="4"/></g></g>',
-    tech:'<g stroke="#0E7A47" stroke-width="7"><rect x="68" y="68" width="64" height="64" rx="14" fill="#27C26C"/><rect x="86" y="86" width="28" height="28" rx="6" fill="#0B5C35" stroke="none"/><g stroke-width="6"><path d="M84 68 V52 M100 68 V50 M116 68 V52 M84 132 V148 M100 132 V150 M116 132 V148 M68 84 H52 M68 100 H50 M68 116 H52 M132 84 H148 M132 100 H150 M132 116 H148"/></g></g>',
-    news:'<g stroke="#0E7A47" stroke-width="7"><rect x="56" y="62" width="86" height="82" rx="10" fill="#B7E8C8"/><rect x="142" y="80" width="26" height="64" rx="8" fill="#27C26C"/><g stroke="#0B5C35" stroke-width="6"><path d="M72 86 H126 M72 106 H110 M72 124 H120"/></g></g>',
-    finance:'<g><g stroke="#0E7A47" stroke-width="8" stroke-linecap="round"><path d="M70 140 V112 M100 140 V94 M130 140 V120"/></g><path d="M62 98 L94 72 L114 88 L150 56" fill="none" stroke="#0B5C35" stroke-width="7"/><path d="M128 56 H150 V78" fill="none" stroke="#0B5C35" stroke-width="7"/></g>',
-    science:'<g stroke="#0E7A47" stroke-width="6" fill="none"><circle cx="100" cy="100" r="13" fill="#27C26C" stroke="none"/><ellipse cx="100" cy="100" rx="48" ry="20"/><ellipse cx="100" cy="100" rx="48" ry="20" transform="rotate(60 100 100)"/><ellipse cx="100" cy="100" rx="48" ry="20" transform="rotate(120 100 100)"/></g>',
-    music:'<g><path d="M88 64 L142 52 V62 L88 74 Z" fill="#0E7A47" stroke="none"/><path d="M88 64 V130 M142 56 V122" fill="none" stroke="#0E7A47" stroke-width="7"/><circle cx="76" cy="132" r="16" fill="#27C26C" stroke="#0E7A47" stroke-width="6"/><circle cx="130" cy="124" r="16" fill="#27C26C" stroke="#0E7A47" stroke-width="6"/></g>',
-    cinema:'<g stroke="#0E7A47" stroke-width="6"><rect x="56" y="94" width="88" height="54" rx="9" fill="#B7E8C8"/><path d="M56 96 L150 78 L155 98 L61 116 Z" fill="#27C26C"/><path d="M80 84 L90 104 M106 80 L116 100 M132 76 L142 96" stroke="#0B5C35" stroke-width="5"/></g>',
-    gaming:'<g stroke="#0E7A47" stroke-width="7"><path d="M78 86 H122 Q150 86 156 116 Q160 142 140 142 Q130 142 124 132 H76 Q70 142 60 142 Q40 142 44 116 Q50 86 78 86 Z" fill="#27C26C"/><g stroke="#0B5C35" stroke-width="6" stroke-linecap="round"><path d="M72 106 V122 M64 114 H80"/></g><circle cx="128" cy="108" r="5" fill="#0B5C35" stroke="none"/><circle cx="140" cy="120" r="5" fill="#0B5C35" stroke="none"/></g>',
-    food:'<g stroke="#0E7A47" stroke-width="7" stroke-linecap="round"><circle cx="96" cy="104" r="40" fill="#B7E8C8"/><circle cx="96" cy="104" r="21" fill="none" stroke="#27C26C" stroke-width="6"/><path d="M150 62 V148" stroke="#0E7A47"/><path d="M150 62 Q138 64 138 84 Q138 96 150 96" fill="none" stroke="#27C26C" stroke-width="5"/></g>',
-    travel:'<g stroke="#0E7A47" stroke-width="7"><circle cx="100" cy="104" r="44" fill="#B7E8C8"/><path d="M100 104 L124 74 L114 114 L76 132 Z" fill="#27C26C" stroke="#0B5C35" stroke-width="5"/><circle cx="100" cy="104" r="5" fill="#0B5C35" stroke="none"/></g>',
-    health:'<g><path d="M100 148 C58 116 54 86 75 73 C92 62 100 80 100 80 C100 80 108 62 125 73 C146 86 142 116 100 148 Z" fill="#27C26C" stroke="#0E7A47" stroke-width="7"/><path d="M68 102 H88 L96 86 L106 118 L114 102 H134" fill="none" stroke="#0B5C35" stroke-width="5"/></g>',
-    art:'<g stroke="#0E7A47" stroke-width="7"><path d="M100 58 C142 58 154 90 142 112 C134 126 112 116 104 127 C98 135 104 146 90 146 C64 146 50 118 58 90 C65 70 80 58 100 58 Z" fill="#B7E8C8"/><circle cx="84" cy="86" r="6" fill="#27C26C" stroke="none"/><circle cx="110" cy="80" r="6" fill="#0B5C35" stroke="none"/><circle cx="122" cy="104" r="6" fill="#27C26C" stroke="none"/></g>',
-    nature:'<g stroke="#0E7A47" stroke-width="7"><circle cx="74" cy="76" r="16" fill="#27C26C" stroke="none"/><path d="M134 58 C100 62 80 92 84 134 C126 134 152 104 134 58 Z" fill="#B7E8C8"/><path d="M122 80 Q104 106 92 128" fill="none" stroke="#0B5C35" stroke-width="5"/></g>',
-    crypto:'<g stroke="#0E7A47" stroke-width="7"><circle cx="100" cy="102" r="44" fill="#27C26C"/><text x="100" y="124" text-anchor="middle" font-size="58" font-weight="800" fill="#0B5C35" stroke="none" font-family="Georgia">₿</text></g>',
-    default:'<g stroke="#0E7A47" stroke-width="7"><rect x="56" y="86" width="76" height="58" rx="13" fill="#B7E8C8"/><rect x="74" y="62" width="76" height="58" rx="13" fill="#27C26C"/><path d="M88 82 H138 M88 98 H124" stroke="#0B5C35" stroke-width="5"/></g>',
-  };
-  function _folderIllus(name){
-    const n = (name||'').toLowerCase();
-    const has = (...w)=>w.some(x=>n.includes(x));
-    let key = 'default';
-    if(has('crypto','bitcoin','blockchain','web3','nft','ether')) key='crypto';
-    else if(has('sport','foot','basket','tennis','rugby','nba','match','golf','ballon','vélo','velo','cyclis')) key='sport';
-    else if(has('tech','techno','numéri','numeri','digital','gadget','hardware','software','dev','ia ','intellig','robot')) key='tech';
-    else if(has('finance','éco','bourse','marché','marche','argent','invest','banqu','business','entrepr','startup')) key='finance';
-    else if(has('science','espace','cosmos','astro','physi','recherche','nasa','math','biolog')) key='science';
-    else if(has('musi','music','audio','chanson','rap','rock','jazz','concert')) key='music';
-    else if(has('ciné','cine','cinema','film','série','serie','télé','tele','movie','streaming')) key='cinema';
-    else if(has('jeu','gaming','game','console','esport','nintendo','playstation')) key='gaming';
-    else if(has('cuisin','food','gastro','recette','resto','manger','chef','vin ')) key='food';
-    else if(has('voyage','travel','tourism','évasion','evasion','destination','aventure')) key='travel';
-    else if(has('santé','sante','health','médec','medec','bien-être','bien etre','fitness','forme','sport-santé')) key='health';
-    else if(has('art','culture','design','mode','fashion','photo','peinture','déco','deco')) key='art';
-    else if(has('natur','climat','environ','écolo','ecolo','green','jardin','animal','planète','planete')) key='nature';
-    else if(has('actu','news','monde','info','journal','presse','politi','société','societe','géopo','geopo')) key='news';
-    return _fiFrame(_FI_MOTIFS[key] || _FI_MOTIFS.default);
-  }
-
   function openFolderPage(folderIdx){
     const folder = folders[folderIdx];
     if(!folder) return;
     document.getElementById('folderPageTitle').textContent = folder.name;
-    const illusEl = document.getElementById('folderPageIllus');
-    if(illusEl) illusEl.innerHTML = _folderIllus(folder.name);
     const welcomeEl = document.getElementById('folderPageWelcome');
     if(welcomeEl) welcomeEl.textContent = _getFolderWelcome(folder.name);
     const feedUrls = new Set(folder.feeds||[]);
@@ -9838,7 +9360,6 @@ body.focus-mode .focus-exit{ display:flex; }
     </div>
     <div class="folder-page-scroll">
       <div class="folder-page-header">
-        <div class="folder-page-illus" id="folderPageIllus"></div>
         <div class="folder-page-title" id="folderPageTitle"></div>
         <div class="folder-page-welcome" id="folderPageWelcome"></div>
         <div class="folder-page-sep"></div>
