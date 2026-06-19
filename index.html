@@ -4297,7 +4297,59 @@ body.focus-mode .focus-exit{ display:flex; }
 
     const allArts = (typeof _allArticles !== 'undefined') ? _allArticles : [];
 
-    let html = '';
+    // ── Segment intelligent par période (au-dessus des dossiers) ──
+    const _bpStart = new Date(); _bpStart.setHours(0,0,0,0);
+    const _bpDayMs   = _bpStart.getTime();
+    const _bpWeekMs  = _bpDayMs - 6*86400000;     // 7 jours glissants (aujourd'hui + 6)
+    const _bpMonthMs = _bpDayMs - 29*86400000;    // ~30 jours
+    const _bpAt = a => (a.pubDate instanceof Date ? a.pubDate.getTime() : new Date(a.pubDate||0).getTime());
+    const _bpSorted = _dedup([...allArts].sort((a,b)=>b.pubDate - a.pubDate));
+    const _bpDay   = _bpSorted.filter(a => _bpAt(a) >= _bpDayMs);
+    const _bpWeek  = _bpSorted.filter(a => { const t=_bpAt(a); return t < _bpDayMs  && t >= _bpWeekMs;  });
+    const _bpMonth = _bpSorted.filter(a => { const t=_bpAt(a); return t < _bpWeekMs && t >= _bpMonthMs; });
+    window._bfPeriodBuckets = { day:_bpDay, week:_bpWeek, month:_bpMonth };
+
+    const _bpRow = (a) => {
+      const idx  = _browseArts.length; _browseArts.push(a);
+      const fav  = typeof getFavicon === 'function' ? getFavicon(a.feedUrl || a.link || '') : '';
+      const time = typeof relTime === 'function' ? relTime(a.pubDate) : '';
+      const thumb = a.imageUrl
+        ? `<img class="bp-row-thumb" src="${escAttr(a.imageUrl)}" alt="" loading="lazy" onerror="this.remove()">`
+        : '';
+      return `<div class="bp-row" onclick="_openBrowseArt(${idx})">
+        <div class="bp-row-tx">
+          <div class="bp-row-src"><img src="${escAttr(fav)}" alt="" onerror="this.style.opacity='.3'">${escapeHtml(a.source||'')} · ${time}</div>
+          <div class="bp-row-ti">${escapeHtml(a.title||'')}</div>
+        </div>${thumb}
+      </div>`;
+    };
+    const _bpSection = (key, label, list) => {
+      const shown = list.slice(0, 6);
+      const rows  = shown.length ? shown.map(_bpRow).join('') : '<div class="bp-empty">Rien pour cette période.</div>';
+      const more  = list.length > shown.length
+        ? `<button class="bp-all" onclick="event.stopPropagation();_bfPeriodAll('${key}')"><span>Voir les ${list.length} articles</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></button>`
+        : '';
+      const handler = key === 'day' ? '_bfPeriodDay(this)' : '_bfPeriodToggle(this)';
+      return `<div class="browse-year bp-item" data-period="${key}">
+        <div class="browse-year-head" onclick="${handler}">
+          <span class="browse-year-label">${label}</span>
+          <span class="browse-year-line"></span>
+          <span class="bp-count">${list.length}</span>
+          <span class="bp-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+        </div>
+        <div class="bp-panel"><div class="bp-panel-inner">${rows}${more}</div></div>
+      </div>`;
+    };
+    let periodsHtml = '';
+    if(_bpDay.length || _bpWeek.length || _bpMonth.length){
+      periodsHtml = '<div class="browse-periods" id="browsePeriods">'
+        + _bpSection('day',   "Aujourd'hui",   _bpDay)
+        + _bpSection('week',  'Cette semaine', _bpWeek)
+        + _bpSection('month', 'Ce mois',       _bpMonth)
+        + '</div>';
+    }
+
+    let html = periodsHtml;
     folders.forEach((folder, fi) => {
       const feedUrls = new Set(folder.feeds || []);
       const arts = _dedup([...allArts]
@@ -4384,6 +4436,7 @@ body.focus-mode .focus-exit{ display:flex; }
       return;
     }
     section.innerHTML = html;
+    if(typeof window._obsReveal === 'function') window._obsReveal(section);
   }
 
   // Toggle accordéon single-open
@@ -4404,6 +4457,30 @@ body.focus-mode .focus-exit{ display:flex; }
     folders.splice(i, 1); persist(); render(); renderBrowseTimeline();
   };
   window._browseOpenFolder = function(i){ openFolderPage(i); };
+
+  // ── Segment intelligent par période (Aujourd'hui / Cette semaine / Ce mois) ──
+  // Aujourd'hui s'ouvre au 1er tap ; un 2e tap révèle les autres tranches.
+  window._bfPeriodDay = function(head){
+    const seg = document.getElementById('browsePeriods'); if(!seg) return;
+    const item = head.closest('.bp-item'); if(!item) return;
+    if(!seg.classList.contains('bp-revealed')){
+      if(item.classList.contains('open')) seg.classList.add('bp-revealed'); // 2e tap → afficher semaine + mois
+      else item.classList.add('open');                                      // 1er tap → ouvrir Aujourd'hui
+    } else {
+      item.classList.toggle('open');
+    }
+  };
+  window._bfPeriodToggle = function(head){
+    const item = head.closest('.bp-item'); if(item) item.classList.toggle('open');
+  };
+  window._bfPeriodAll = function(key){
+    const arts = (window._bfPeriodBuckets || {})[key] || [];
+    const titles = { day:"Aujourd'hui", week:'Cette semaine', month:'Ce mois' };
+    if(typeof bfListPageOpen === 'function'){
+      bfListPageOpen({ title:titles[key] || '', subtitle:arts.length+' article'+(arts.length>1?'s':''),
+        articles:arts, emptyMsg:'Aucun article pour cette période.' });
+    }
+  };
 
   const nameEl = document.getElementById('userName');
   const KEY = 'reader.userName';
@@ -6803,6 +6880,7 @@ body.focus-mode .focus-exit{ display:flex; }
       }
       // Activer le preload des images nouvellement rendues
       if(typeof window._obsImage === 'function') setTimeout(window._obsImage, 50);
+      if(typeof window._obsReveal === 'function') window._obsReveal();
     });
   }
 
@@ -7589,6 +7667,7 @@ body.focus-mode .focus-exit{ display:flex; }
         </div>
       </div>`;
     }).join('');
+    if(typeof window._obsReveal === 'function') window._obsReveal(wrap);
   }
   window._grilleOpen = function(i){ const a=_grilleArts[i]; if(a) _showArtModal(a); };
 
@@ -7728,6 +7807,7 @@ body.focus-mode .focus-exit{ display:flex; }
         ${thumb}
       </div>`;
     }).join('');
+    if(typeof window._obsReveal === 'function') window._obsReveal(list);
 
     // Progression (compteur + barre + temps) puis reprise automatique
     // vers le premier article non-lu si l'on revient en cours de séquence.
@@ -7767,6 +7847,7 @@ body.focus-mode .focus-exit{ display:flex; }
         </div>
       </div>`;
     }).join('');
+    if(typeof window._obsReveal === 'function') window._obsReveal(wrap);
   }
   window._listeOpen = function(i){ const a=_listeArts[i]; if(a) _showArtModal(a); };
 
@@ -8550,6 +8631,33 @@ body.focus-mode .focus-exit{ display:flex; }
     window._obsImage();
   })();
 
+  // ── EFFET DE DÉFILEMENT — révélation progressive des cartes au scroll ───
+  (function _initScrollReveal(){
+    const SEL = '.art-card, .grid2-card, .seq-item, .list-item, .browse-folder-item, .bp-row';
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if(!('IntersectionObserver' in window) || reduce){
+      window._obsReveal = function(){}; // pas d'animation : contenu visible par défaut
+      return;
+    }
+    const io = new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { root:null, rootMargin:'0px 0px -6% 0px', threshold:0.04 });
+
+    window._obsReveal = function(container){
+      container = container || document;
+      const vh = window.innerHeight || document.documentElement.clientHeight || 800;
+      container.querySelectorAll(SEL).forEach(el=>{
+        if(el.classList.contains('bf-reveal')) return;   // déjà pris en charge
+        el.classList.add('bf-reveal');
+        // Déjà visible au premier rendu → afficher sans animation d'entrée (pas de flash)
+        if(el.getBoundingClientRect().top < vh*0.94){ el.classList.add('in'); }
+        else { io.observe(el); }
+      });
+    };
+    if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ()=>window._obsReveal());
+    else window._obsReveal();
+  })();
+
   // ── Service Worker ────────────────────────────────────────────
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -9118,6 +9226,55 @@ body.focus-mode .focus-exit{ display:flex; }
   .bf-art-ti{font-family:var(--font-title);font-size:17px;font-weight:700;line-height:1.28;color:var(--text);letter-spacing:-.01em;}
   .bf-art-me{font-family:var(--font-inter);font-size:12px;color:var(--text-muted);margin-top:7px;}
   .bf-art-im{width:96px;height:96px;flex:none;border-radius:13px;object-fit:cover;background:rgba(127,127,127,.1);}
+
+  /* ── Effet de défilement : révélation progressive des cartes ── */
+  .bf-reveal{ opacity:0; transform:translateY(16px);
+    transition:opacity .55s cubic-bezier(.16,1,.3,1), transform .6s cubic-bezier(.16,1,.3,1); will-change:opacity,transform; }
+  .bf-reveal.in{ opacity:1; transform:none; }
+  @media (prefers-reduced-motion:reduce){
+    .bf-reveal{ transition:none; opacity:1; transform:none; }
+  }
+
+  /* ── Parcourir : segment intelligent par période ── */
+  .browse-periods{ display:flex; flex-direction:column; gap:0; margin:2px 0 20px; }
+  .browse-periods .browse-year{ display:block; margin:0; }
+  .browse-year-head{ display:flex; align-items:baseline; gap:12px; cursor:pointer;
+    padding:13px 0 12px; -webkit-tap-highlight-color:transparent; user-select:none; }
+  .browse-year-head:active .browse-year-label{ opacity:.7; }
+  .browse-periods .bp-count{ font-family:var(--font-inter); font-size:12px; font-weight:700;
+    color:var(--text-muted); font-variant-numeric:tabular-nums; margin-left:auto; align-self:center; }
+  .browse-periods .bp-chevron{ display:flex; color:var(--text-muted); align-self:center;
+    transition:transform .32s cubic-bezier(.16,1,.3,1); }
+  .browse-periods .bp-chevron svg{ width:13px; height:13px; }
+  .browse-periods .bp-item.open .bp-chevron{ transform:rotate(90deg); }
+  .bp-item[data-period="week"], .bp-item[data-period="month"]{
+    max-height:0; opacity:0; overflow:hidden; transform:translateY(-6px);
+    transition:max-height .55s cubic-bezier(.16,1,.3,1), opacity .4s ease, transform .5s cubic-bezier(.16,1,.3,1); }
+  .browse-periods.bp-revealed .bp-item[data-period="week"],
+  .browse-periods.bp-revealed .bp-item[data-period="month"]{
+    max-height:3200px; opacity:1; transform:none; }
+  .bp-panel{ display:grid; grid-template-rows:0fr;
+    transition:grid-template-rows .45s cubic-bezier(.16,1,.3,1); }
+  .bp-item.open .bp-panel{ grid-template-rows:1fr; }
+  .bp-panel-inner{ overflow:hidden; min-height:0; }
+  .bp-row{ display:flex; gap:13px; align-items:flex-start; padding:13px 0;
+    border-bottom:1px solid var(--border); cursor:pointer; -webkit-tap-highlight-color:transparent; }
+  .bp-row:active{ opacity:.7; }
+  .bp-row-tx{ flex:1; min-width:0; }
+  .bp-row-src{ display:flex; align-items:center; gap:7px; font-family:var(--font-inter);
+    font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase;
+    letter-spacing:.03em; margin-bottom:5px; }
+  .bp-row-src img{ width:15px; height:15px; border-radius:50%; flex:none; }
+  .bp-row-ti{ font-family:var(--font-title); font-size:16px; font-weight:700; line-height:1.28;
+    color:var(--text); letter-spacing:-.01em;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .bp-row-thumb{ width:78px; height:78px; flex:none; border-radius:11px; object-fit:cover;
+    background:rgba(127,127,127,.1); }
+  .bp-empty{ font-family:var(--font-inter); font-size:13px; color:var(--text-muted); padding:14px 0 16px; }
+  .bp-all{ display:flex; align-items:center; gap:6px; margin:4px 0 2px; padding:11px 0;
+    background:none; border:0; color:#0a84ff; font-family:var(--font-inter); font-size:13.5px;
+    font-weight:650; letter-spacing:-.01em; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+  .bp-all svg{ width:11px; height:11px; }
 </style>
 
 <!-- Feuille générique -->
