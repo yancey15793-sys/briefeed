@@ -1912,11 +1912,11 @@ button, .ob-btn, .ob-btn-ghost,
 .edl-item{
   display:flex; flex-direction:column; align-items:flex-start;
   gap:6px; cursor:pointer; -webkit-tap-highlight-color:transparent;
-  padding-top:28px;
-  border-top:1px solid rgba(255,255,255,.07);
+  padding-top:40px; padding-bottom:4px;
+  border-top:1px solid rgba(255,255,255,.09);
 }
 .edl-item:first-child{ border-top:none; padding-top:0; }
-[data-theme="light"] .edl-item{ border-top-color:rgba(0,0,0,.07); }
+[data-theme="light"] .edl-item{ border-top-color:rgba(0,0,0,.09); }
 .edl-item.is-read,
 .edl-item.is-read.in{ opacity:.42; }
 .edl-item:active{ transform:scale(.985); transition:transform .12s ease; }
@@ -7152,6 +7152,7 @@ body.focus-mode .focus-exit{ display:flex; }
   let _railOpenCat   = null;    // nom de la catégorie dépliée (ou null)
   let _railSig       = '';      // signature des catégories (rebuild si change)
   let _railBound     = false;   // écouteurs attachés une fois
+  let _railInstant   = false;   // true → prochain _renderEditions sans animation
   let _railCats      = [];      // [{name, feeds:[{name,url}]}]
   try{ _railFilterUrl = localStorage.getItem('bf_rail_filter') || null; }catch(e){}
 
@@ -7320,6 +7321,7 @@ body.focus-mode .focus-exit{ display:flex; }
       }
     }
     _railSyncUI();
+    _railInstant = true;
     _renderCurrentView();   // applique le filtre à la vue active
   }
 
@@ -7329,6 +7331,7 @@ body.focus-mode .focus-exit{ display:flex; }
     const bubbles = document.getElementById('srailBubbles');
     if(bubbles) bubbles.querySelectorAll('.sr-src.sel').forEach(el=>el.classList.remove('sel'));
     _railSyncUI();
+    _railInstant = true;
     _renderCurrentView();
   }
 
@@ -7608,17 +7611,25 @@ body.focus-mode .focus-exit{ display:flex; }
     const isFirst = !grid.dataset.key;
     const rowEl   = document.querySelector('.row');
     const prevTop = rowEl ? rowEl.scrollTop : 0;
-    requestAnimationFrame(()=>{
+    const instant = _railInstant;
+    _railInstant  = false;
+
+    const doRender = ()=>{
       grid.className = 'edl';
       grid.style.fontFamily = '';
       grid.innerHTML = _editionArts.map((a,i)=>_edlCardHtml(a, i)).join('');
       grid.dataset.key = gridKey;
-      // Anti-saut : restaurer la position de défilement après réécriture du DOM
       if(rowEl && !isFirst && rowEl.scrollTop !== prevTop) rowEl.scrollTop = prevTop;
-      if(typeof window._revealObserve === 'function') _revealObserve(grid);
-      // Activer le preload des images nouvellement rendues
+      if(instant){
+        // Filtre pill : affichage immédiat, pas d'animation révélation
+        grid.querySelectorAll('.reveal').forEach(el=>el.classList.add('in'));
+      } else {
+        if(typeof window._revealObserve === 'function') _revealObserve(grid);
+      }
       if(typeof window._obsImage === 'function') setTimeout(window._obsImage, 50);
-    });
+    };
+
+    if(instant) doRender(); else requestAnimationFrame(doRender);
   }
 
   function _artCardHtml(a, idx, isHero, tier){
