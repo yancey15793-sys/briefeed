@@ -1887,9 +1887,9 @@ button, .ob-btn, .ob-btn-ghost,
    APPARITION AU DÉFILEMENT — utilitaire générique (toutes les vues)
    ══════════════════════════════════════════════════════════════════ */
 .reveal{
-  opacity:0; transform:translateY(20px);
-  transition:opacity .58s cubic-bezier(.22,1,.36,1),
-             transform .58s cubic-bezier(.22,1,.36,1);
+  opacity:0; transform:translateY(24px) scale(.984);
+  transition:opacity .62s cubic-bezier(.22,1,.36,1),
+             transform .62s cubic-bezier(.22,1,.36,1);
   will-change:opacity, transform;
 }
 .reveal.in{ opacity:1; transform:none; }
@@ -8670,8 +8670,20 @@ body.focus-mode .focus-exit{ display:flex; }
     if(!('IntersectionObserver' in window)){ items.forEach(el=>el.classList.add('in')); return; }
     if(_revealIO) _revealIO.disconnect();
     _revealIO = new IntersectionObserver((entries, obs)=>{
-      entries.forEach(en=>{ if(en.isIntersecting){ en.target.classList.add('in'); obs.unobserve(en.target); } });
-    }, { rootMargin:'0px 0px -5% 0px', threshold:.05 });
+      // Cascade : les items entrant dans le même lot se révèlent l'un après l'autre (haut → bas)
+      const incoming = entries.filter(en=>en.isIntersecting)
+                              .sort((a,b)=>a.boundingClientRect.top - b.boundingClientRect.top);
+      incoming.forEach((en, i)=>{
+        const el = en.target;
+        const d = Math.min(i * 55, 330);  // décalage progressif, plafonné
+        if(d){
+          el.style.transitionDelay = d + 'ms';
+          el.addEventListener('transitionend', ()=>{ el.style.transitionDelay = ''; }, { once:true });
+        }
+        el.classList.add('in');
+        obs.unobserve(el);
+      });
+    }, { rootMargin:'0px 0px -8% 0px', threshold:.08 });
     items.forEach(el=>{
       // Déjà défilé au-dessus de l'écran : révéler d'emblée (jamais masqué).
       // Visible ou plus bas : animer à l'entrée dans le viewport.
