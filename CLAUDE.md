@@ -57,11 +57,10 @@ Direction : éditorial, premium, dark-mode.
 - Swipe engine custom avec historique de vélocité glissant (rolling velocity history)
 
 ### Statut exact
+<!-- À COMPLÉTER PAR TOI OU CLAUDE CODE EN FIN DE SESSION -->
 - Dernière chose faite :
-  1. **Segment intelligent Browse** : groupement par période (Aujourd'hui / Cette semaine / Ce mois) ajouté au-dessus des carousels de dossiers dans la vue Parcourir. Seul "Aujourd'hui" est visible par défaut ; un deuxième appui sur le segment révèle les autres périodes via accordéon CSS (`grid-template-rows: 0fr → 1fr`). Handlers : `_bfPeriodDay`, `_bfPeriodToggle`, `_bfPeriodAll`.
-  2. **Effet de défilement progressif** : fade + slide-up via `IntersectionObserver` (`window._obsReveal`) appliqué sur toutes les 5 vues principales (Éditions, Grille, Séquentiel, Liste, Parcourir). Classe `.bf-reveal` + `.in`. Respecte `prefers-reduced-motion`.
-- Bloquant actuel / bug en cours : aucun connu.
-- Prochaine étape prévue : affinage visuel des bulles logos flottantes par dossier dans Browse.
+- Bloquant actuel / bug en cours :
+- Prochaine étape prévue :
 
 ---
 
