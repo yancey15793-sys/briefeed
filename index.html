@@ -2470,13 +2470,53 @@ button, .ob-btn, .ob-btn-ghost,
 }
 .sbar-seg-btn.active .sbar-seg-n{ background:rgba(0,0,0,.16); color:var(--bg); }
 
+/* — Catégories : onglets avec tiret animé (style « Sunday ») — */
+.sbar-cats{
+  display:flex; gap:4px; overflow-x:auto; padding:2px 2px 0;
+  scrollbar-width:none; -ms-overflow-style:none; -webkit-overflow-scrolling:touch;
+  scroll-snap-type:x proximity;
+  -webkit-mask-image:linear-gradient(90deg, transparent 0, #000 12px, #000 calc(100% - 12px), transparent 100%);
+          mask-image:linear-gradient(90deg, transparent 0, #000 12px, #000 calc(100% - 12px), transparent 100%);
+}
+.sbar-cats::-webkit-scrollbar{ display:none; }
+.sbar-cat{
+  flex:0 0 auto; scroll-snap-align:start; position:relative;
+  display:inline-flex; flex-direction:column; align-items:center; gap:6px;
+  padding:6px 4px 8px; border:none; background:none; cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.sbar-cat-label{
+  font-family:var(--font-inter); font-size:14px; font-weight:600; letter-spacing:-.02em;
+  color:var(--text-muted); white-space:nowrap;
+  transition:color .3s var(--sunday-ease, cubic-bezier(.19,1,.22,1));
+}
+.sbar-cat.sel .sbar-cat-label{ color:var(--text); font-weight:700; }
+/* Le tiret « Sunday » — s'allonge sous l'onglet actif */
+.sbar-cat-dash{
+  width:9px; height:3px; border-radius:2px; background:#3a3a3c;
+  transition:width .42s var(--sunday-ease, cubic-bezier(.19,1,.22,1)),
+             background .3s ease;
+}
+[data-theme="light"] .sbar-cat-dash{ background:#d1d1d6; }
+.sbar-cat.sel .sbar-cat-dash{ width:22px; background:#0a84ff; }
+
+/* — Sources : panneau révélé en accordéon (grid-rows) au changement de catégorie — */
+.sbar-srcs-wrap{
+  display:grid; grid-template-rows:1fr;
+  transition:grid-template-rows .44s var(--sunday-ease, cubic-bezier(.32,.72,0,1));
+}
+.sbar-srcs-wrap.collapsed{ grid-template-rows:0fr; }
+.sbar-srcs-inner{ overflow:hidden; min-height:0; }
+
 /* — Sources à plat : avatars, un tap = filtre — */
 .sbar-srcs{
-  display:flex; gap:14px; overflow-x:auto; padding:2px 2px 4px;
+  display:flex; gap:14px; overflow-x:auto; padding:6px 2px 4px;
   scrollbar-width:none; -ms-overflow-style:none; -webkit-overflow-scrolling:touch;
+  scroll-snap-type:x proximity;
   -webkit-mask-image:linear-gradient(90deg, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
           mask-image:linear-gradient(90deg, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
 }
+.sbar-src{ scroll-snap-align:start; }
 .sbar-srcs::-webkit-scrollbar{ display:none; }
 .sbar-src{
   flex:0 0 auto; width:54px;
@@ -4337,7 +4377,7 @@ body.focus-mode .focus-exit{ display:flex; }
       <!-- Label centré, toujours présent au-dessus de toutes les vues -->
       <h2 class="edition-label">Mon magazine du jour</h2>
 
-      <!-- Smart Bar — filtres intelligents + sources à plat (partagé sur TOUTES les vues) -->
+      <!-- Smart Bar — segment intelligent + catégories (tiret animé) + sources (accordéon) -->
       <div id="smartBar" class="sbar" hidden>
         <div class="sbar-seg" id="sbarSeg">
           <span class="sbar-seg-pill" id="sbarSegPill" aria-hidden="true"></span>
@@ -4345,7 +4385,8 @@ body.focus-mode .focus-exit{ display:flex; }
           <button class="sbar-seg-btn" type="button" data-mode="unread">Non lus <span class="sbar-seg-n"></span></button>
           <button class="sbar-seg-btn" type="button" data-mode="today">Aujourd'hui <span class="sbar-seg-n"></span></button>
         </div>
-        <div class="sbar-srcs" id="sbarSrcs"></div>
+        <div class="sbar-cats" id="sbarCats"></div>
+        <div class="sbar-srcs-wrap" id="sbarSrcsWrap"><div class="sbar-srcs-inner"><div class="sbar-srcs" id="sbarSrcs"></div></div></div>
       </div>
 
       <!-- ========== VUE ÉDITIONS (magazine) ========== -->
@@ -7103,24 +7144,50 @@ body.focus-mode .focus-exit{ display:flex; }
   let _editionArts = [];
 
   // ══════════════════════════════════════════════════════════════
-  //  SMART BAR — filtres intelligents + sources à plat (toutes vues)
-  //  · Segment : Tout / Non lus / Aujourd'hui  (empilable au filtre source)
-  //  · Sources : avatars à plat, un seul tap = filtre instantané
+  //  SMART BAR (A+C) — deux niveaux façon Apple Music + tiret « Sunday »
+  //  · Segment : Tout / Non lus / Aujourd'hui  (mode intelligent, empilable)
+  //  · Catégories : onglets (= dossiers) avec tiret animé
+  //  · Sources : avatars de la catégorie active, révélés en accordéon,
+  //    un seul tap = filtre instantané
   //  _railApplyFilter() reste l'API commune respectée par les 4 vues.
   // ══════════════════════════════════════════════════════════════
   let _railFilterUrl = null;     // source active (ou null)
+  let _smartCat      = null;     // catégorie (= dossier) active (ou null = Tout)
   let _smartMode     = 'all';    // 'all' | 'unread' | 'today'
   let _railBound     = false;    // écouteurs attachés une fois
   let _railInstant   = false;    // true → prochain rendu sans animation
   try{ _railFilterUrl = localStorage.getItem('bf_rail_filter') || null; }catch(e){}
+  try{ _smartCat = localStorage.getItem('bf_smart_cat') || null; }catch(e){}
   try{ _smartMode = localStorage.getItem('bf_smart_mode') || 'all'; }catch(e){}
 
   function _smartTodayMs(){ const d = new Date(); d.setHours(0,0,0,0); return d.getTime(); }
 
-  // Filtre global appliqué par chaque vue (source + mode intelligent, empilés)
+  // Catégories (dossiers) dans l'ordre, avec leurs sources
+  function _smartCatMap(){
+    const feeds = (typeof _rssFeeds !== 'undefined') ? _rssFeeds : [];
+    const order = [], map = {};
+    feeds.forEach(f => {
+      const c = f.category || 'Autres';
+      if(!map[c]){ map[c] = []; order.push(c); }
+      if(!map[c].some(s => s.url === f.url)) map[c].push({ name:f.name, url:f.url });
+    });
+    return { order, map };
+  }
+  // URLs appartenant à une catégorie
+  function _smartCatUrls(cat){
+    const { map } = _smartCatMap();
+    return new Set((map[cat] || []).map(s => s.url));
+  }
+
+  // Filtre global appliqué par chaque vue (source > catégorie, + mode, empilés)
   function _railApplyFilter(arts){
     let out = arts;
-    if(_railFilterUrl) out = out.filter(a => (a.feedUrl || '') === _railFilterUrl);
+    if(_railFilterUrl){
+      out = out.filter(a => (a.feedUrl || '') === _railFilterUrl);
+    } else if(_smartCat){
+      const urls = _smartCatUrls(_smartCat);
+      out = out.filter(a => urls.has(a.feedUrl || ''));
+    }
     if(_smartMode === 'unread' && window._RS){
       out = out.filter(a => !window._RS.has(a.link));
     } else if(_smartMode === 'today'){
@@ -7137,22 +7204,30 @@ body.focus-mode .focus-exit{ display:flex; }
     return n;
   }
 
-  // Sources réelles (dédupliquées), triées par non-lus décroissant → les plus actives à gauche
+  // Sources à afficher dans la rangée : celles de la catégorie active (ou toutes),
+  // triées par non-lus décroissant → les plus actives à gauche
   function _smartSources(){
-    const feeds = (typeof _rssFeeds !== 'undefined') ? _rssFeeds : [];
-    const seen = {}, list = [];
-    feeds.forEach(f => {
-      if(seen[f.url]) return; seen[f.url] = 1;
-      list.push({ name:f.name, url:f.url, unread:_railUnread(f.url) });
-    });
-    list.sort((a,b) => b.unread - a.unread || a.name.localeCompare(b.name));
-    return list;
+    const { map } = _smartCatMap();
+    let raw;
+    if(_smartCat && map[_smartCat]){
+      raw = map[_smartCat];
+    } else {
+      const seen = {}; raw = [];
+      Object.keys(map).forEach(c => map[c].forEach(s => { if(!seen[s.url]){ seen[s.url]=1; raw.push(s); } }));
+    }
+    return raw.map(s => ({ name:s.name, url:s.url, unread:_railUnread(s.url) }))
+              .sort((a,b) => b.unread - a.unread || a.name.localeCompare(b.name));
   }
 
-  // Compteurs des segments — calculés sur le pool filtré par source uniquement
+  // Compteurs des segments — sur le pool filtré par source/catégorie (pas par mode)
   function _smartCounts(){
     let pool = _allArticles || [];
-    if(_railFilterUrl) pool = pool.filter(a => (a.feedUrl||'') === _railFilterUrl);
+    if(_railFilterUrl){
+      pool = pool.filter(a => (a.feedUrl||'') === _railFilterUrl);
+    } else if(_smartCat){
+      const urls = _smartCatUrls(_smartCat);
+      pool = pool.filter(a => urls.has(a.feedUrl||''));
+    }
     pool = (typeof _dedup === 'function') ? _dedup([...pool]) : pool;
     const ms = _smartTodayMs();
     let unread = 0, today = 0;
@@ -7168,11 +7243,17 @@ body.focus-mode .focus-exit{ display:flex; }
   function _renderSrcRail(){
     const bar = document.getElementById('smartBar');
     if(!bar) return;
-    const sources = _smartSources();
-    if(!sources.length){ bar.hidden = true; return; }
+    const { order } = _smartCatMap();
+    if(!order.length){ bar.hidden = true; return; }
     bar.hidden = false;
 
-    // Le filtre pointe-t-il encore vers une source existante ?
+    // La catégorie active existe-t-elle encore ?
+    if(_smartCat && !order.includes(_smartCat)){
+      _smartCat = null;
+      try{ localStorage.removeItem('bf_smart_cat'); }catch(e){}
+    }
+    const sources = _smartSources();
+    // La source active appartient-elle encore à la sélection ?
     if(_railFilterUrl && !sources.some(s => s.url === _railFilterUrl)){
       _railFilterUrl = null;
       try{ localStorage.removeItem('bf_rail_filter'); }catch(e){}
@@ -7191,7 +7272,21 @@ body.focus-mode .focus-exit{ display:flex; }
       _smartMovePill();
     }
 
-    // Sources à plat (préserve le défilement horizontal)
+    // Onglets catégories (tiret « Sunday ») — « Tout » en tête
+    const cats = document.getElementById('sbarCats');
+    if(cats){
+      const prevLeft = cats.scrollLeft;
+      let html = `<button class="sbar-cat${_smartCat ? '' : ' sel'}" type="button" data-cat="">
+        <span class="sbar-cat-label">Tout</span><span class="sbar-cat-dash"></span>
+      </button>`;
+      html += order.map(c => `<button class="sbar-cat${_smartCat === c ? ' sel' : ''}" type="button" data-cat="${escAttr(c)}">
+        <span class="sbar-cat-label">${escHtml(c)}</span><span class="sbar-cat-dash"></span>
+      </button>`).join('');
+      cats.innerHTML = html;
+      cats.scrollLeft = prevLeft;
+    }
+
+    // Sources de la catégorie active (préserve le défilement horizontal)
     const srcs = document.getElementById('sbarSrcs');
     if(srcs){
       const prevLeft = srcs.scrollLeft;
@@ -7225,11 +7320,35 @@ body.focus-mode .focus-exit{ display:flex; }
     pill.classList.add('vis');
   }
 
+  // Petit « accordéon » : rejoue la révélation grid-rows de la rangée sources
+  function _smartRevealSrcs(){
+    const wrap = document.getElementById('sbarSrcsWrap');
+    if(!wrap) return;
+    wrap.classList.add('collapsed');
+    requestAnimationFrame(()=>{ requestAnimationFrame(()=>{ wrap.classList.remove('collapsed'); }); });
+  }
+
   // Sélection d'un mode intelligent — rendu instantané
   function _smartSetMode(mode){
     if(_smartMode === mode) return;
     _smartMode = mode;
     try{ localStorage.setItem('bf_smart_mode', mode); }catch(e){}
+    _railInstant = true;
+    _renderCurrentView();
+  }
+
+  // Sélection d'une catégorie (cat='' = Tout) — révèle ses sources + filtre instantané
+  function _smartPickCat(cat){
+    const next = cat || null;
+    if(_smartCat === next) return;
+    _smartCat = next;
+    _railFilterUrl = null;   // changer de catégorie remet la source à « Toutes »
+    try{
+      if(_smartCat) localStorage.setItem('bf_smart_cat', _smartCat);
+      else localStorage.removeItem('bf_smart_cat');
+      localStorage.removeItem('bf_rail_filter');
+    }catch(e){}
+    _smartRevealSrcs();
     _railInstant = true;
     _renderCurrentView();
   }
@@ -7251,16 +7370,21 @@ body.focus-mode .focus-exit{ display:flex; }
   }
 
   // Alias conservé pour les appels externes éventuels
-  function _railClearFilter(){ _smartPickSource(''); }
+  function _railClearFilter(){ _smartCat = null; _smartPickSource(''); }
 
   function _smartBindOnce(){
     if(_railBound) return;
     _railBound = true;
     const seg  = document.getElementById('sbarSeg');
+    const cats = document.getElementById('sbarCats');
     const srcs = document.getElementById('sbarSrcs');
     if(seg) seg.addEventListener('click', e => {
       const b = e.target.closest('.sbar-seg-btn');
       if(b) _smartSetMode(b.dataset.mode);
+    });
+    if(cats) cats.addEventListener('click', e => {
+      const b = e.target.closest('.sbar-cat');
+      if(b) _smartPickCat(b.dataset.cat);
     });
     if(srcs) srcs.addEventListener('click', e => {
       const b = e.target.closest('.sbar-src');
@@ -7521,7 +7645,7 @@ body.focus-mode .focus-exit{ display:flex; }
     _editionArts  = deduped.slice(0, 60);
 
     // Jitter fix : ne re-rendre que si le contenu a changé
-    const gridKey = _editionArts.slice(0,6).map(a=>a.link).join('|') + '#' + (_railFilterUrl || '') + '#' + _smartMode + '#' + _editionArts.length;
+    const gridKey = _editionArts.slice(0,6).map(a=>a.link).join('|') + '#' + (_railFilterUrl || '') + '#' + (_smartCat || '') + '#' + _smartMode + '#' + _editionArts.length;
     if(grid.dataset.key === gridKey) return; // rien n'a changé
 
     const isFirst = !grid.dataset.key;
