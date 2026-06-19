@@ -2442,7 +2442,11 @@ button, .ob-btn, .ob-btn-ghost,
   position:relative; display:flex; gap:0; padding:3px; isolation:isolate;
   background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.07);
   border-radius:999px;
+  overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none; -webkit-overflow-scrolling:touch;
+  -webkit-mask-image:linear-gradient(90deg, #000 80%, transparent 100%);
+          mask-image:linear-gradient(90deg, #000 80%, transparent 100%);
 }
+.sbar-seg::-webkit-scrollbar{ display:none; }
 [data-theme="light"] .sbar-seg{ background:rgba(0,0,0,.04); border-color:rgba(0,0,0,.06); }
 .sbar-seg-pill{
   position:absolute; top:3px; bottom:3px; left:0; width:0;
@@ -2454,9 +2458,9 @@ button, .ob-btn, .ob-btn-ghost,
 }
 .sbar-seg-pill.vis{ opacity:1; }
 .sbar-seg-btn{
-  position:relative; z-index:1; flex:1 1 0;
+  position:relative; z-index:1; flex:0 0 auto;
   display:inline-flex; align-items:center; justify-content:center; gap:5px;
-  height:33px; border:none; background:none; cursor:pointer;
+  height:33px; padding:0 13px; border:none; background:none; cursor:pointer;
   font-family:var(--font-inter); font-size:12.5px; font-weight:600; letter-spacing:-.012em;
   color:var(--text-muted); white-space:nowrap; -webkit-tap-highlight-color:transparent;
   transition:color .26s ease;
@@ -4384,6 +4388,9 @@ body.focus-mode .focus-exit{ display:flex; }
           <button class="sbar-seg-btn" type="button" data-mode="all">Tout <span class="sbar-seg-n"></span></button>
           <button class="sbar-seg-btn" type="button" data-mode="unread">Non lus <span class="sbar-seg-n"></span></button>
           <button class="sbar-seg-btn" type="button" data-mode="today">Aujourd'hui <span class="sbar-seg-n"></span></button>
+          <button class="sbar-seg-btn" type="button" data-mode="3days">3 jours <span class="sbar-seg-n"></span></button>
+          <button class="sbar-seg-btn" type="button" data-mode="week">Semaine <span class="sbar-seg-n"></span></button>
+          <button class="sbar-seg-btn" type="button" data-mode="month">Mois <span class="sbar-seg-n"></span></button>
         </div>
         <div class="sbar-cats" id="sbarCats"></div>
         <div class="sbar-srcs-wrap" id="sbarSrcsWrap"><div class="sbar-srcs-inner"><div class="sbar-srcs" id="sbarSrcs"></div></div></div>
@@ -7153,7 +7160,7 @@ body.focus-mode .focus-exit{ display:flex; }
   // ══════════════════════════════════════════════════════════════
   let _railFilterUrl = null;     // source active (ou null)
   let _smartCat      = null;     // catégorie (= dossier) active (ou null = Tout)
-  let _smartMode     = 'all';    // 'all' | 'unread' | 'today'
+  let _smartMode     = 'all';    // 'all' | 'unread' | 'today' | '3days' | 'week' | 'month'
   let _railBound     = false;    // écouteurs attachés une fois
   let _railInstant   = false;    // true → prochain rendu sans animation
   try{ _railFilterUrl = localStorage.getItem('bf_rail_filter') || null; }catch(e){}
@@ -7161,6 +7168,14 @@ body.focus-mode .focus-exit{ display:flex; }
   try{ _smartMode = localStorage.getItem('bf_smart_mode') || 'all'; }catch(e){}
 
   function _smartTodayMs(){ const d = new Date(); d.setHours(0,0,0,0); return d.getTime(); }
+  function _smartModeMs(mode){
+    const d = new Date();
+    if(mode === 'today'){ d.setHours(0,0,0,0); return d.getTime(); }
+    if(mode === '3days'){ d.setDate(d.getDate()-2); d.setHours(0,0,0,0); return d.getTime(); }
+    if(mode === 'week'){  d.setDate(d.getDate()-6); d.setHours(0,0,0,0); return d.getTime(); }
+    if(mode === 'month'){ d.setDate(1); d.setHours(0,0,0,0); return d.getTime(); }
+    return 0;
+  }
 
   // Catégories (dossiers) dans l'ordre, avec leurs sources
   function _smartCatMap(){
@@ -7190,9 +7205,9 @@ body.focus-mode .focus-exit{ display:flex; }
     }
     if(_smartMode === 'unread' && window._RS){
       out = out.filter(a => !window._RS.has(a.link));
-    } else if(_smartMode === 'today'){
-      const ms = _smartTodayMs();
-      out = out.filter(a => (a.pubDate || 0) >= ms);
+    } else if(_smartMode !== 'all'){
+      const ms = _smartModeMs(_smartMode);
+      if(ms) out = out.filter(a => (a.pubDate || 0) >= ms);
     }
     return out;
   }
@@ -7229,13 +7244,20 @@ body.focus-mode .focus-exit{ display:flex; }
       pool = pool.filter(a => urls.has(a.feedUrl||''));
     }
     pool = (typeof _dedup === 'function') ? _dedup([...pool]) : pool;
-    const ms = _smartTodayMs();
-    let unread = 0, today = 0;
+    const msToday = _smartModeMs('today');
+    const ms3days = _smartModeMs('3days');
+    const msWeek  = _smartModeMs('week');
+    const msMonth = _smartModeMs('month');
+    let unread = 0, today = 0, d3 = 0, week = 0, month = 0;
     for(const a of pool){
+      const pub = a.pubDate || 0;
       if(window._RS && !window._RS.has(a.link)) unread++;
-      if((a.pubDate||0) >= ms) today++;
+      if(pub >= msToday) today++;
+      if(pub >= ms3days) d3++;
+      if(pub >= msWeek)  week++;
+      if(pub >= msMonth) month++;
     }
-    return { all: pool.length, unread, today };
+    return { all: pool.length, unread, today, '3days': d3, week, month };
   }
 
   const _GRID_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.6"/><rect x="14" y="3" width="7" height="7" rx="1.6"/><rect x="3" y="14" width="7" height="7" rx="1.6"/><rect x="14" y="14" width="7" height="7" rx="1.6"/></svg>';
@@ -7309,7 +7331,7 @@ body.focus-mode .focus-exit{ display:flex; }
   }
 
   // Pastille glissante du segment (sur le bouton actif)
-  function _smartMovePill(){
+  function _smartMovePill(scroll){
     const seg  = document.getElementById('sbarSeg');
     const pill = document.getElementById('sbarSegPill');
     if(!seg || !pill) return;
@@ -7318,6 +7340,7 @@ body.focus-mode .focus-exit{ display:flex; }
     pill.style.transform = `translateX(${btn.offsetLeft - 3}px)`;
     pill.style.width = btn.offsetWidth + 'px';
     pill.classList.add('vis');
+    if(scroll) btn.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' });
   }
 
   // Petit « accordéon » : rejoue la révélation grid-rows de la rangée sources
@@ -7333,6 +7356,12 @@ body.focus-mode .focus-exit{ display:flex; }
     if(_smartMode === mode) return;
     _smartMode = mode;
     try{ localStorage.setItem('bf_smart_mode', mode); }catch(e){}
+    // Met à jour le segment visuellement avant le rendu pour que la pastille scroll
+    const seg = document.getElementById('sbarSeg');
+    if(seg){
+      seg.querySelectorAll('.sbar-seg-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+      _smartMovePill(true);
+    }
     _railInstant = true;
     _renderCurrentView();
   }
