@@ -2668,6 +2668,41 @@ button, .ob-btn, .ob-btn-ghost,
 .fav-header{ display:flex; align-items:baseline; justify-content:space-between; padding:20px 18px 12px; }
 .fav-header-title{ font-family:var(--font-inter); font-size:26px; font-weight:800; letter-spacing:-.03em; color:var(--text); }
 .fav-clear-btn{ font-family:var(--font-inter); font-size:13px; font-weight:600; color:#0a84ff; background:none; border:none; cursor:pointer; padding:4px 0; -webkit-tap-highlight-color:transparent; }
+/* — Bar déployable Favoris : Tous → Lecture → Non lus / Déjà lus (pill glissante) — */
+.favbar{
+  position:relative; display:inline-flex; align-items:center; gap:0; isolation:isolate;
+  margin:0 18px 14px; padding:3px; border-radius:999px;
+  background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.07);
+}
+[data-theme="light"] .favbar{ background:rgba(0,0,0,.04); border-color:rgba(0,0,0,.06); }
+.favbar-pill{
+  position:absolute; top:3px; bottom:3px; left:0; width:0;
+  border-radius:999px; background:var(--text); z-index:0; opacity:0;
+  transition:transform .4s cubic-bezier(.34,1.4,.64,1),
+             width .4s cubic-bezier(.34,1.4,.64,1), opacity .2s ease;
+}
+.favbar-pill.vis{ opacity:1; }
+.favbar-tab{
+  position:relative; z-index:1; flex:0 0 auto;
+  display:inline-flex; flex-direction:column; align-items:center; justify-content:center;
+  height:36px; padding:0 18px; border:none; background:none; cursor:pointer;
+  font-family:var(--font-inter); font-size:13px; font-weight:600; letter-spacing:-.012em;
+  color:var(--text-muted); white-space:nowrap; -webkit-tap-highlight-color:transparent;
+  transition:color .26s ease;
+}
+.favbar-tab.active{ color:var(--bg); }
+.favbar-sub{ font-size:9.5px; font-weight:600; opacity:.5; margin-top:1px; letter-spacing:.02em; }
+.favbar-n{ display:inline-block; margin-left:5px; font-size:10px; font-weight:700; opacity:.65; }
+.favbar-group{ display:inline-flex; align-items:center; }
+.favbar-label{ display:inline-flex; }
+.favbar-hidden{
+  display:inline-flex; align-items:center; overflow:hidden;
+  max-width:0; opacity:0;
+  transition:max-width .4s cubic-bezier(.34,1.4,.64,1), opacity .3s ease;
+}
+.favbar-group.open .favbar-label{ display:none; }
+.favbar-group.open .favbar-hidden{ max-width:320px; opacity:1; }
+.fav-item.is-read{ opacity:.5; }
 .fav-empty{ display:flex; flex-direction:column; align-items:center; justify-content:center; padding:80px 32px; text-align:center; gap:12px; }
 .fav-empty-icon{ opacity:.2; }
 .fav-empty-title{ font-family:var(--font-inter); font-size:17px; font-weight:700; color:var(--text); }
@@ -8524,6 +8559,11 @@ body.focus-mode .focus-exit{ display:flex; }
   }
 
   let _favArts = [];
+  let _favView = [];                 // sous-ensemble affiché selon le filtre
+  let _favFilter = 'all';            // 'all' | 'unread' | 'read'
+  let _favBound = false;
+  try{ _favFilter = localStorage.getItem('bf_fav_filter') || 'all'; }catch(e){}
+  const _favIsRead = a => !!(window._RS && window._RS.has(a.link));
   function _renderFavoris(){
     const container = document.getElementById('favorisList');
     if(!container) return;
@@ -8537,14 +8577,88 @@ body.focus-mode .focus-exit{ display:flex; }
       </div>`;
       return;
     }
+    // Squelette persistant (en-tête + bar déployable + hôte des items) — construit une seule fois
+    if(!document.getElementById('favBar')){
+      const header = `<div class="fav-header"><span class="fav-header-title">Favoris</span><button class="fav-clear-btn" onclick="_clearFavoris()">Tout effacer</button></div>`;
+      container.innerHTML = header + _favBarHTML() + `<div id="favItems"></div>`;
+    }
+    _favSyncBar(_favCounts());
+    _favRenderItems();
+    _favBindOnce();
+  }
+
+  // Compteurs par état de lecture
+  function _favCounts(){
+    let unread = 0, read = 0;
+    for(const a of _favArts){ _favIsRead(a) ? read++ : unread++; }
+    return { all:_favArts.length, unread, read };
+  }
+
+  // Markup du bar déployable
+  function _favBarHTML(){
+    const open = (_favFilter === 'unread' || _favFilter === 'read');
+    const act = f => _favFilter === f ? ' active' : '';
+    return `<div class="favbar" id="favBar">
+      <span class="favbar-pill" id="favBarPill" aria-hidden="true"></span>
+      <button class="favbar-tab${act('all')}" type="button" data-fav="all">Tous<span class="favbar-n" data-n="all"></span></button>
+      <div class="favbar-group${open ? ' open' : ''}" id="favBarGroup">
+        <button class="favbar-tab favbar-label" type="button" data-fav="read-init">Lecture<span class="favbar-sub">Non lus · Lus</span></button>
+        <div class="favbar-hidden">
+          <button class="favbar-tab${act('unread')}" type="button" data-fav="unread">Non lus<span class="favbar-n" data-n="unread"></span></button>
+          <button class="favbar-tab${act('read')}" type="button" data-fav="read">Déjà lus<span class="favbar-n" data-n="read"></span></button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  // Synchronise classes actives, ouverture du tiroir, compteurs et pastille glissante
+  function _favSyncBar(counts){
+    const bar = document.getElementById('favBar');
+    if(!bar) return;
+    const group = document.getElementById('favBarGroup');
+    if(group) group.classList.toggle('open', _favFilter === 'unread' || _favFilter === 'read');
+    bar.querySelectorAll('.favbar-tab').forEach(t => t.classList.toggle('active', t.dataset.fav === _favFilter));
+    bar.querySelectorAll('.favbar-n').forEach(n => { n.textContent = counts[n.dataset.n] != null ? counts[n.dataset.n] : ''; });
+    requestAnimationFrame(_favMovePill);
+  }
+
+  // Pastille positionnée sur l'onglet actif (ignorée si caché dans un tiroir fermé)
+  function _favMovePill(){
+    const bar = document.getElementById('favBar'), pill = document.getElementById('favBarPill');
+    if(!bar || !pill) return;
+    const act = bar.querySelector('.favbar-tab.active');
+    const group = document.getElementById('favBarGroup');
+    if(!act || (act.closest('.favbar-hidden') && group && !group.classList.contains('open'))){
+      pill.classList.remove('vis'); return;
+    }
+    const r = act.getBoundingClientRect(), br = bar.getBoundingClientRect();
+    pill.style.transform = `translateX(${r.left - br.left}px)`;
+    pill.style.width = r.width + 'px';
+    pill.classList.add('vis');
+  }
+
+  // Liste filtrée selon l'état actif
+  function _favVisible(){
+    if(_favFilter === 'unread') return _favArts.filter(a => !_favIsRead(a));
+    if(_favFilter === 'read')   return _favArts.filter(a =>  _favIsRead(a));
+    return _favArts;
+  }
+
+  function _favRenderItems(){
+    const host = document.getElementById('favItems');
+    if(!host) return;
+    _favView = _favVisible();
+    if(!_favView.length){
+      host.innerHTML = `<div class="fav-filter-empty" style="padding:42px 24px;text-align:center;color:var(--text-muted);font-family:var(--font-inter);font-size:13.5px">Aucun favori dans ce filtre.</div>`;
+      return;
+    }
     const DEL = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
-    const header = `<div class="fav-header"><span class="fav-header-title">Favoris</span><button class="fav-clear-btn" onclick="_clearFavoris()">Tout effacer</button></div>`;
-    const items = _favArts.map((a,i)=>{
+    host.innerHTML = _favView.map((a,i)=>{
       const fav = getFavicon(a.feedUrl||a.link||'');
       const thumb = a.imageUrl
         ? `<div class="fav-thumb" onclick="_openFavArt(${i})"><img src="${escAttr(a.imageUrl)}" alt="" onerror="this.parentNode.className='fav-thumb-empty'"></div>`
         : `<div class="fav-thumb-empty" onclick="_openFavArt(${i})"></div>`;
-      return `<div class="fav-item">
+      return `<div class="fav-item reveal${_favIsRead(a)?' is-read':''}">
         ${thumb}
         <div class="fav-meta" onclick="_openFavArt(${i})">
           <div class="fav-source-row">
@@ -8557,10 +8671,32 @@ body.focus-mode .focus-exit{ display:flex; }
         <button class="fav-del" onclick="_removeFavori('${escAttr(a.link)}')" aria-label="Retirer">${DEL}</button>
       </div>`;
     }).join('');
-    container.innerHTML = header + items;
+    if(typeof window._revealObserve === 'function') _revealObserve(host);
   }
 
-  window._openFavArt = function(i){ const a=_favArts[i]; if(a) _showArtModal(a); };
+  // Change le filtre (et déploie/replie le tiroir en conséquence)
+  function _favSetFilter(f){
+    _favFilter = f;
+    try{ localStorage.setItem('bf_fav_filter', f); }catch(e){}
+    _favSyncBar(_favCounts());
+    _favRenderItems();
+  }
+
+  function _favBindOnce(){
+    if(_favBound) return;
+    _favBound = true;
+    const container = document.getElementById('favorisList');
+    if(!container) return;
+    container.addEventListener('click', e => {
+      const t = e.target.closest('.favbar-tab');
+      if(!t) return;
+      const f = t.dataset.fav;
+      if(f === 'read-init'){ _favSetFilter('unread'); return; }   // appui sur « Lecture » → déploie, défaut Non lus
+      if(f === 'all' || f === 'unread' || f === 'read') _favSetFilter(f);
+    });
+  }
+
+  window._openFavArt = function(i){ const a=_favView[i]; if(a) _showArtModal(a); };
   window._removeFavori = function(link){
     let list = _getReadLater().filter(a=>a.link!==link);
     _saveReadLater(list);
