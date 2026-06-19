@@ -1912,7 +1912,7 @@ button, .ob-btn, .ob-btn-ghost,
 .edl-item{
   display:flex; flex-direction:column; align-items:flex-start;
   gap:6px; cursor:pointer; -webkit-tap-highlight-color:transparent;
-  padding-top:30px; padding-bottom:2px;
+  padding-top:36px; padding-bottom:6px;
   border-top:1px solid rgba(255,255,255,.08);
 }
 .edl-item:first-child{ border-top:none; padding-top:0; }
@@ -1979,7 +1979,7 @@ button, .ob-btn, .ob-btn-ghost,
 .seq-progress{ display:none; }
 .seq-item{
   display:flex; gap:16px; align-items:flex-start;
-  padding:24px 2px; border-bottom:1px solid var(--border);
+  padding:30px 2px; border-bottom:1px solid var(--border);
   cursor:pointer; -webkit-tap-highlight-color:transparent;
 }
 [data-theme="light"] .seq-item{ border-color:rgba(0,0,0,.08); }
@@ -2977,7 +2977,7 @@ button, .ob-btn, .ob-btn-ghost,
 [data-theme="light"] .subpage-view-btn{ background:rgba(0,0,0,.06); }
 /* Vue liste (défaut des sous-pages) */
 .list-view{ display:flex; flex-direction:column; padding-bottom:80px; }
-.list-item{ display:flex; align-items:center; gap:14px; padding:22px 0; border-bottom:1px solid var(--border); cursor:pointer; -webkit-tap-highlight-color:transparent; }
+.list-item{ display:flex; align-items:center; gap:14px; padding:30px 0; border-bottom:1px solid var(--border); cursor:pointer; -webkit-tap-highlight-color:transparent; }
 .list-item:last-child{ border-bottom:none; }
 .list-item:active{ opacity:.7; }
 [data-theme="light"] .list-item{ border-color:rgba(0,0,0,.08); }
@@ -3535,7 +3535,7 @@ body.focus-mode .focus-exit{ display:flex; }
               <a class="sub-link sub-link-sm" data-qtheme="dark"  onclick="qmenuSetTheme('dark')">Sombre</a>
               <a class="sub-link sub-link-sm" data-qtheme="light" onclick="qmenuSetTheme('light')">Clair</a>
               <div class="qmenu-sub-section-label" style="margin-top:10px">Vue</div>
-              <a class="sub-link sub-link-sm" data-qview="editions"   onclick="qmenuSetView('editions')">Éditions</a>
+              <a class="sub-link sub-link-sm" data-qview="editions"   onclick="qmenuSetView('editions')">Magazine</a>
               <a class="sub-link sub-link-sm" data-qview="liste"      onclick="qmenuSetView('liste')">Liste</a>
               <a class="sub-link sub-link-sm" data-qview="grille"     onclick="qmenuSetView('grille')">Grille</a>
               <a class="sub-link sub-link-sm" data-qview="sequential" onclick="qmenuSetView('sequential')">Séquentiel</a>
@@ -3600,7 +3600,7 @@ body.focus-mode .focus-exit{ display:flex; }
           <rect x="13" y="16" width="8" height="5" rx="1.5"/>
         </svg>
       </div>
-      <span class="vp-label">Éditions</span>
+      <span class="vp-label">Magazine</span>
       <span class="vp-check"><svg viewBox="0 0 24 24" fill="none" stroke="#0a84ff" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></span>
     </div>
 
@@ -4335,7 +4335,7 @@ body.focus-mode .focus-exit{ display:flex; }
     <div class="column">
 
       <!-- Label centré, toujours présent au-dessus de toutes les vues -->
-      <h2 class="edition-label">Mon édition du jour</h2>
+      <h2 class="edition-label">Mon magazine du jour</h2>
 
       <!-- Smart Bar — filtres intelligents + sources à plat (partagé sur TOUTES les vues) -->
       <div id="smartBar" class="sbar" hidden>
@@ -9649,7 +9649,7 @@ body.focus-mode .focus-exit{ display:flex; }
       <div class="menu3-section">
         <div class="menu3-label">Vue</div>
         <div class="menu3-chips" id="menu3ViewChips">
-          <div class="menu3-chip active" data-view="editions" onclick="menu3SetView('editions')">Éditions</div>
+          <div class="menu3-chip active" data-view="editions" onclick="menu3SetView('editions')">Magazine</div>
           <div class="menu3-chip" data-view="grille" onclick="menu3SetView('grille')">Grille</div>
           <div class="menu3-chip" data-view="sequential" onclick="menu3SetView('sequential')">Séquentiel</div>
           <div class="menu3-chip" data-view="browse" onclick="menu3SetView('browse')">Parcourir</div>
