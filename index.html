@@ -2427,6 +2427,91 @@ button, .ob-btn, .ob-btn-ghost,
 #editionsHero .art-card .art-title{ font-size:22px; line-height:1.2; -webkit-line-clamp:4; }
 
 /* ══════════════════════════════════════════════════════════
+   SPOTLIGHT À LA UNE — carte hero Édition
+   Halo radial derrière la vignette · typo deux tons
+   ══════════════════════════════════════════════════════════ */
+.ed-spotlight{
+  position:relative; margin:4px 0 28px;
+  border-radius:20px; overflow:hidden;
+  background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.07);
+  cursor:pointer; -webkit-tap-highlight-color:transparent;
+  transition:transform .18s cubic-bezier(.34,1.56,.64,1);
+}
+.ed-spotlight:active{ transform:scale(.975); }
+.ed-spotlight-halo{
+  position:absolute; top:0; left:50%; transform:translateX(-50%);
+  width:340px; height:260px;
+  border-radius:50%; z-index:0; pointer-events:none;
+  filter:blur(54px); opacity:.55;
+  background:radial-gradient(ellipse at 50% 30%, #3a8eff 0%, #a259ff 50%, transparent 80%);
+}
+.ed-spotlight-fig{
+  position:relative; z-index:1;
+  width:100%; aspect-ratio:16/9; overflow:hidden;
+  border-radius:20px 20px 0 0;
+}
+.ed-spotlight-fig img{
+  width:100%; height:100%; object-fit:cover; display:block;
+  transition:transform .65s cubic-bezier(.22,1,.36,1);
+}
+.ed-spotlight:active .ed-spotlight-fig img{ transform:scale(1.035); }
+.ed-spotlight-fig-placeholder{
+  width:100%; aspect-ratio:16/9;
+  background:linear-gradient(135deg,rgba(58,142,255,.18),rgba(162,89,255,.12));
+  border-radius:20px 20px 0 0;
+}
+.ed-spotlight-body{
+  position:relative; z-index:1;
+  padding:14px 16px 18px;
+}
+.ed-spotlight-meta{
+  display:flex; align-items:center; gap:7px; margin-bottom:10px;
+}
+.ed-spotlight-pill{
+  font-family:var(--font-inter); font-size:10px; font-weight:700;
+  letter-spacing:.08em; text-transform:uppercase;
+  background:linear-gradient(90deg,#3a8eff,#a259ff);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.ed-spotlight-fav{
+  width:16px; height:16px; border-radius:50%; overflow:hidden; flex-shrink:0;
+  background:rgba(255,255,255,.08);
+}
+.ed-spotlight-fav img{ width:100%; height:100%; object-fit:cover; display:block; border-radius:50%; }
+.ed-spotlight-source{
+  font-family:var(--font-inter); font-size:11px; font-weight:600;
+  color:rgba(255,255,255,.48); letter-spacing:.01em;
+}
+.ed-spotlight-time{
+  margin-left:auto;
+  font-family:var(--font-inter); font-size:10.5px; font-weight:500;
+  color:rgba(255,255,255,.32);
+}
+.ed-spotlight-title{
+  font-family:var(--font-inter); font-size:21px; font-weight:800;
+  line-height:1.22; letter-spacing:-.022em;
+}
+.ed-spotlight-title-a{
+  color:#fff;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+}
+.ed-spotlight-title-b{
+  color:rgba(255,255,255,.38);
+  display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden;
+  margin-top:3px; font-weight:600; font-size:17px;
+}
+[data-theme="light"] .ed-spotlight{
+  background:rgba(0,0,0,.03);
+  border-color:rgba(0,0,0,.08);
+}
+[data-theme="light"] .ed-spotlight-source{ color:rgba(0,0,0,.45); }
+[data-theme="light"] .ed-spotlight-time{ color:rgba(0,0,0,.3); }
+[data-theme="light"] .ed-spotlight-title-a{ color:#111; }
+[data-theme="light"] .ed-spotlight-title-b{ color:rgba(0,0,0,.38); }
+
+/* ══════════════════════════════════════════════════════════
    SOURCE RAIL — chips catégories → logos révélés (toutes vues)
    Masques de bord (zéro rognage) · révélation fluide ·
    filtre global (4 vues). Calibré iPhone 17 (colonne 341px).
@@ -7590,8 +7675,6 @@ body.focus-mode .focus-exit{ display:flex; }
       return;
     }
     if(empty) empty.style.display='none';
-    // Hero article retiré : la vue Édition est une liste « Ordered List » uniforme
-    if(hero){ hero.innerHTML=''; hero.style.display='none'; }
 
     // Filtrage éventuel par source (rail global)
     const pool    = _railApplyFilter(_allArticles);
@@ -7605,10 +7688,49 @@ body.focus-mode .focus-exit{ display:flex; }
     const isFirst = !grid.dataset.key;
     const rowEl   = document.querySelector('.row');
     const prevTop = rowEl ? rowEl.scrollTop : 0;
+
+    // ── Spotlight À la une ────────────────────────────────
+    if(hero){
+      const sp = _editionArts[0];
+      if(sp){
+        const spFav  = getFavicon(sp.feedUrl||sp.link||'');
+        const spTime = relTime(sp.pubDate);
+        // Découper le titre en deux parties : accroche (≤6 mots en blanc) + suite (en gris)
+        const words  = (sp.title||'').split(' ');
+        const cutAt  = Math.min(6, Math.ceil(words.length * .45));
+        const partA  = words.slice(0, cutAt).join(' ');
+        const partB  = words.slice(cutAt).join(' ');
+        const figHtml = sp.imageUrl
+          ? `<div class="ed-spotlight-fig"><img src="${escAttr(sp.imageUrl)}" alt="" decoding="async" onerror="this.parentNode.className='ed-spotlight-fig-placeholder'"></div>`
+          : `<div class="ed-spotlight-fig-placeholder"></div>`;
+        hero.innerHTML = `<div class="ed-spotlight" onclick="_openEditionArt(0)">
+          <div class="ed-spotlight-halo"></div>
+          ${figHtml}
+          <div class="ed-spotlight-body">
+            <div class="ed-spotlight-meta">
+              <span class="ed-spotlight-pill">À la une</span>
+              <span class="ed-spotlight-fav"><img src="${escAttr(spFav)}" alt="" onerror="this.style.opacity='.3'"></span>
+              <span class="ed-spotlight-source">${escHtml(sp.source||'')}</span>
+              <span class="ed-spotlight-time">${spTime}</span>
+            </div>
+            <div class="ed-spotlight-title">
+              <div class="ed-spotlight-title-a">${escHtml(partA)}</div>
+              ${partB ? `<div class="ed-spotlight-title-b">${escHtml(partB)}</div>` : ''}
+            </div>
+          </div>
+        </div>`;
+        hero.style.display = '';
+      } else {
+        hero.innerHTML = '';
+        hero.style.display = 'none';
+      }
+    }
+
     requestAnimationFrame(()=>{
       grid.className = 'edl';
       grid.style.fontFamily = '';
-      grid.innerHTML = _editionArts.map((a,i)=>_edlCardHtml(a, i)).join('');
+      // Skip index 0 — already shown in spotlight
+      grid.innerHTML = _editionArts.slice(1).map((a,i)=>_edlCardHtml(a, i+1)).join('');
       grid.dataset.key = gridKey;
       // Anti-saut : restaurer la position de défilement après réécriture du DOM
       if(rowEl && !isFirst && rowEl.scrollTop !== prevTop) rowEl.scrollTop = prevTop;
@@ -7683,8 +7805,13 @@ body.focus-mode .focus-exit{ display:flex; }
     if(!a) return;
     if(window._RS) _RS.mark(a.link);
     _showArtModal(a);
-    const el = document.querySelector('.edl-item[data-edl-idx="' + idx + '"]');
-    if(el) el.classList.add('is-read');
+    if(idx === 0){
+      const sp = document.querySelector('.ed-spotlight');
+      if(sp) sp.style.opacity = '.42';
+    } else {
+      const el = document.querySelector('.edl-item[data-edl-idx="' + idx + '"]');
+      if(el) el.classList.add('is-read');
+    }
   };
 
 
