@@ -2668,7 +2668,7 @@ button, .ob-btn, .ob-btn-ghost,
 .fav-header{ display:flex; align-items:baseline; justify-content:space-between; padding:20px 18px 12px; }
 .fav-header-title{ font-family:var(--font-inter); font-size:26px; font-weight:800; letter-spacing:-.03em; color:var(--text); }
 .fav-clear-btn{ font-family:var(--font-inter); font-size:13px; font-weight:600; color:#0a84ff; background:none; border:none; cursor:pointer; padding:4px 0; -webkit-tap-highlight-color:transparent; }
-/* — Bar déployable Favoris : Tous → Lecture → Non lus / Déjà lus (pill glissante) — */
+/* — Pill bar Favoris : Tous / Non lus / Déjà lus — */
 .favbar{
   position:relative; display:inline-flex; align-items:center; gap:0; isolation:isolate;
   margin:0 18px 14px; padding:3px; border-radius:999px;
@@ -2676,7 +2676,7 @@ button, .ob-btn, .ob-btn-ghost,
 }
 [data-theme="light"] .favbar{ background:rgba(0,0,0,.04); border-color:rgba(0,0,0,.06); }
 .favbar-pill{
-  position:absolute; top:3px; bottom:3px; left:0; width:0;
+  position:absolute; top:3px; bottom:3px; left:3px; width:0;
   border-radius:999px; background:var(--text); z-index:0; opacity:0;
   transition:transform .4s cubic-bezier(.34,1.4,.64,1),
              width .4s cubic-bezier(.34,1.4,.64,1), opacity .2s ease;
@@ -2684,24 +2684,15 @@ button, .ob-btn, .ob-btn-ghost,
 .favbar-pill.vis{ opacity:1; }
 .favbar-tab{
   position:relative; z-index:1; flex:0 0 auto;
-  display:inline-flex; flex-direction:column; align-items:center; justify-content:center;
+  display:inline-flex; align-items:center; justify-content:center;
   height:36px; padding:0 18px; border:none; background:none; cursor:pointer;
   font-family:var(--font-inter); font-size:13px; font-weight:600; letter-spacing:-.012em;
   color:var(--text-muted); white-space:nowrap; -webkit-tap-highlight-color:transparent;
   transition:color .26s ease;
 }
 .favbar-tab.active{ color:var(--bg); }
-.favbar-sub{ font-size:9.5px; font-weight:600; opacity:.5; margin-top:1px; letter-spacing:.02em; }
-.favbar-n{ display:inline-block; margin-left:5px; font-size:10px; font-weight:700; opacity:.65; }
-.favbar-group{ display:inline-flex; align-items:center; }
-.favbar-label{ display:inline-flex; }
-.favbar-hidden{
-  display:inline-flex; align-items:center; overflow:hidden;
-  max-width:0; opacity:0;
-  transition:max-width .4s cubic-bezier(.34,1.4,.64,1), opacity .3s ease;
-}
-.favbar-group.open .favbar-label{ display:none; }
-.favbar-group.open .favbar-hidden{ max-width:320px; opacity:1; }
+[data-theme="light"] .favbar-tab.active{ color:#fff; }
+.favbar-n{ display:inline-block; margin-left:5px; font-size:10px; font-weight:700; opacity:.55; }
 .fav-item.is-read{ opacity:.5; }
 .fav-empty{ display:flex; flex-direction:column; align-items:center; justify-content:center; padding:80px 32px; text-align:center; gap:12px; }
 .fav-empty-icon{ opacity:.2; }
@@ -8594,45 +8585,34 @@ body.focus-mode .focus-exit{ display:flex; }
     return { all:_favArts.length, unread, read };
   }
 
-  // Markup du bar déployable
+  // Markup pill bar Favoris (flat 3 onglets)
   function _favBarHTML(){
-    const open = (_favFilter === 'unread' || _favFilter === 'read');
     const act = f => _favFilter === f ? ' active' : '';
     return `<div class="favbar" id="favBar">
       <span class="favbar-pill" id="favBarPill" aria-hidden="true"></span>
       <button class="favbar-tab${act('all')}" type="button" data-fav="all">Tous<span class="favbar-n" data-n="all"></span></button>
-      <div class="favbar-group${open ? ' open' : ''}" id="favBarGroup">
-        <button class="favbar-tab favbar-label" type="button" data-fav="read-init">Lecture<span class="favbar-sub">Non lus · Lus</span></button>
-        <div class="favbar-hidden">
-          <button class="favbar-tab${act('unread')}" type="button" data-fav="unread">Non lus<span class="favbar-n" data-n="unread"></span></button>
-          <button class="favbar-tab${act('read')}" type="button" data-fav="read">Déjà lus<span class="favbar-n" data-n="read"></span></button>
-        </div>
-      </div>
+      <button class="favbar-tab${act('unread')}" type="button" data-fav="unread">Non lus<span class="favbar-n" data-n="unread"></span></button>
+      <button class="favbar-tab${act('read')}" type="button" data-fav="read">Déjà lus<span class="favbar-n" data-n="read"></span></button>
     </div>`;
   }
 
-  // Synchronise classes actives, ouverture du tiroir, compteurs et pastille glissante
+  // Synchronise classes actives, compteurs et pastille glissante
   function _favSyncBar(counts){
     const bar = document.getElementById('favBar');
     if(!bar) return;
-    const group = document.getElementById('favBarGroup');
-    if(group) group.classList.toggle('open', _favFilter === 'unread' || _favFilter === 'read');
     bar.querySelectorAll('.favbar-tab').forEach(t => t.classList.toggle('active', t.dataset.fav === _favFilter));
     bar.querySelectorAll('.favbar-n').forEach(n => { n.textContent = counts[n.dataset.n] != null ? counts[n.dataset.n] : ''; });
     requestAnimationFrame(_favMovePill);
   }
 
-  // Pastille positionnée sur l'onglet actif (ignorée si caché dans un tiroir fermé)
+  // Pastille glissante positionnée sur l'onglet actif
   function _favMovePill(){
     const bar = document.getElementById('favBar'), pill = document.getElementById('favBarPill');
     if(!bar || !pill) return;
     const act = bar.querySelector('.favbar-tab.active');
-    const group = document.getElementById('favBarGroup');
-    if(!act || (act.closest('.favbar-hidden') && group && !group.classList.contains('open'))){
-      pill.classList.remove('vis'); return;
-    }
+    if(!act){ pill.classList.remove('vis'); return; }
     const r = act.getBoundingClientRect(), br = bar.getBoundingClientRect();
-    pill.style.transform = `translateX(${r.left - br.left}px)`;
+    pill.style.transform = `translateX(${r.left - br.left - 3}px)`;
     pill.style.width = r.width + 'px';
     pill.classList.add('vis');
   }
@@ -8691,7 +8671,6 @@ body.focus-mode .focus-exit{ display:flex; }
       const t = e.target.closest('.favbar-tab');
       if(!t) return;
       const f = t.dataset.fav;
-      if(f === 'read-init'){ _favSetFilter('unread'); return; }   // appui sur « Lecture » → déploie, défaut Non lus
       if(f === 'all' || f === 'unread' || f === 'read') _favSetFilter(f);
     });
   }
