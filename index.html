@@ -2474,6 +2474,26 @@ button, .ob-btn, .ob-btn-ghost,
 }
 .sbar-seg-btn.active .sbar-seg-n{ background:rgba(0,0,0,.16); color:var(--bg); }
 
+/* — Groupe temporel : « Aujourd'hui » qui déploie 3 jours / Semaine / Mois — */
+.sbar-seg-temporal{ display:flex; align-items:center; }
+.sbar-seg-today{ position:relative; }
+.sbar-seg-today::after{
+  content:""; position:absolute; right:5px; top:50%; width:4px; height:4px;
+  border-right:1.4px solid currentColor; border-bottom:1.4px solid currentColor;
+  transform:translateY(-65%) rotate(45deg); opacity:.5;
+  transition:transform .42s cubic-bezier(.34,1.4,.64,1), opacity .26s ease;
+  pointer-events:none;
+}
+.sbar-seg-today.active::after{ opacity:.7; }
+.sbar-seg.temporal-open .sbar-seg-today{ padding-right:18px; }
+.sbar-seg.temporal-open .sbar-seg-today::after{ transform:translateY(-35%) rotate(-135deg); }
+.sbar-seg-more{
+  display:flex; align-items:center; overflow:hidden;
+  max-width:0; opacity:0;
+  transition:max-width .42s cubic-bezier(.34,1.4,.64,1), opacity .3s ease;
+}
+.sbar-seg.temporal-open .sbar-seg-more{ max-width:340px; opacity:1; }
+
 /* — Catégories : onglets avec tiret animé (style « Sunday ») — */
 .sbar-cats{
   display:flex; gap:4px; overflow-x:auto; padding:2px 2px 0;
@@ -4387,10 +4407,14 @@ body.focus-mode .focus-exit{ display:flex; }
           <span class="sbar-seg-pill" id="sbarSegPill" aria-hidden="true"></span>
           <button class="sbar-seg-btn" type="button" data-mode="all">Tout <span class="sbar-seg-n"></span></button>
           <button class="sbar-seg-btn" type="button" data-mode="unread">Non lus <span class="sbar-seg-n"></span></button>
-          <button class="sbar-seg-btn" type="button" data-mode="today">Aujourd'hui <span class="sbar-seg-n"></span></button>
-          <button class="sbar-seg-btn" type="button" data-mode="3days">3 jours <span class="sbar-seg-n"></span></button>
-          <button class="sbar-seg-btn" type="button" data-mode="week">Semaine <span class="sbar-seg-n"></span></button>
-          <button class="sbar-seg-btn" type="button" data-mode="month">Mois <span class="sbar-seg-n"></span></button>
+          <div class="sbar-seg-temporal" id="sbarTemporal">
+            <button class="sbar-seg-btn sbar-seg-today" type="button" data-mode="today">Aujourd'hui <span class="sbar-seg-n"></span></button>
+            <div class="sbar-seg-more" id="sbarSegMore">
+              <button class="sbar-seg-btn" type="button" data-mode="3days">3 jours <span class="sbar-seg-n"></span></button>
+              <button class="sbar-seg-btn" type="button" data-mode="week">Semaine <span class="sbar-seg-n"></span></button>
+              <button class="sbar-seg-btn" type="button" data-mode="month">Mois <span class="sbar-seg-n"></span></button>
+            </div>
+          </div>
         </div>
         <div class="sbar-cats" id="sbarCats"></div>
         <div class="sbar-srcs-wrap" id="sbarSrcsWrap"><div class="sbar-srcs-inner"><div class="sbar-srcs" id="sbarSrcs"></div></div></div>
@@ -7243,6 +7267,8 @@ body.focus-mode .focus-exit{ display:flex; }
   try{ _railFilterUrl = localStorage.getItem('bf_rail_filter') || null; }catch(e){}
   try{ _smartCat = localStorage.getItem('bf_smart_cat') || null; }catch(e){}
   try{ _smartMode = localStorage.getItem('bf_smart_mode') || 'all'; }catch(e){}
+  const _smartTemporalExtras = ['3days','week','month'];  // modes cachés derrière « Aujourd'hui »
+  let _smartTemporalOpen = _smartTemporalExtras.includes(_smartMode);  // panneau déployé au chargement si besoin
 
   function _smartTodayMs(){ const d = new Date(); d.setHours(0,0,0,0); return d.getTime(); }
   function _smartModeMs(mode){
@@ -7362,6 +7388,8 @@ body.focus-mode .focus-exit{ display:flex; }
     const counts = _smartCounts();
     const seg = document.getElementById('sbarSeg');
     if(seg){
+      if(_smartTemporalExtras.includes(_smartMode)) _smartTemporalOpen = true;
+      seg.classList.toggle('temporal-open', _smartTemporalOpen);
       seg.querySelectorAll('.sbar-seg-btn').forEach(btn => {
         const m = btn.dataset.mode;
         btn.classList.toggle('active', m === _smartMode);
@@ -7436,11 +7464,24 @@ body.focus-mode .focus-exit{ display:flex; }
     // Met à jour le segment visuellement avant le rendu pour que la pastille scroll
     const seg = document.getElementById('sbarSeg');
     if(seg){
+      // Repli auto sur « Tout » / « Non lus » ; déploiement sur un mode temporel avancé
+      if(mode === 'all' || mode === 'unread') _smartTemporalOpen = false;
+      else if(_smartTemporalExtras.includes(mode)) _smartTemporalOpen = true;
+      seg.classList.toggle('temporal-open', _smartTemporalOpen);
       seg.querySelectorAll('.sbar-seg-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
       _smartMovePill(true);
     }
     _railInstant = true;
     _renderCurrentView();
+  }
+
+  // Ouvre/ferme le tiroir temporel (3 jours / Semaine / Mois) derrière « Aujourd'hui »
+  function _smartToggleTemporal(force){
+    const seg = document.getElementById('sbarSeg');
+    if(!seg) return;
+    _smartTemporalOpen = (force === undefined) ? !_smartTemporalOpen : !!force;
+    seg.classList.toggle('temporal-open', _smartTemporalOpen);
+    requestAnimationFrame(() => _smartMovePill(true));
   }
 
   // Sélection d'une catégorie (cat='' = Tout) — révèle ses sources + filtre instantané
@@ -7486,7 +7527,11 @@ body.focus-mode .focus-exit{ display:flex; }
     const srcs = document.getElementById('sbarSrcs');
     if(seg) seg.addEventListener('click', e => {
       const b = e.target.closest('.sbar-seg-btn');
-      if(b) _smartSetMode(b.dataset.mode);
+      if(!b) return;
+      const mode = b.dataset.mode;
+      // Second appui sur « Aujourd'hui » (déjà actif) : déploie / replie le tiroir temporel
+      if(mode === 'today' && _smartMode === 'today'){ _smartToggleTemporal(); return; }
+      _smartSetMode(mode);
     });
     if(cats) cats.addEventListener('click', e => {
       const b = e.target.closest('.sbar-cat');
