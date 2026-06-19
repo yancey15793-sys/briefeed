@@ -84,54 +84,99 @@ body{
   position:fixed; width:100%;
 }
 
-/* ── TOUCH UX — règles globales expert ──────────────────── */
-/* Supprimer le highlight bleu iOS sur TOUS les éléments interactifs */
+/* ══════════════════════════════════════════════════════════
+   TOUCH UX — Expert mobile. Zéro highlight, spring physics,
+   cibles 44px, pas de délai 300ms.
+   ══════════════════════════════════════════════════════════ */
+
+/* 1. Supprimer le highlight bleu iOS partout */
 a, button, [onclick], [role="button"],
 .art-card, .feed-item, .folder-head, .sb-item,
 .dc-theme-tile, .dc-feed-row, .vp-item,
-.seq-item, .list-item, .essentiel-card,
-.browse-hero-card, .grid2-card, .fav-item,
+.seq-item, .list-item, .grid2-card, .fav-item,
 .nav-item, .nav-capsule-left, .nav-capsule-right,
 .ob-btn, .ob-btn-ghost {
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
 }
-/* Désactiver la sélection de texte sur les éléments interactifs */
+
+/* 2. Pas de sélection de texte sur les surfaces tactiles */
 button, [onclick], .art-card, .feed-item,
-.seq-item, .list-item, .essentiel-card,
-.browse-hero-card, .grid2-card, .dc-theme-tile {
-  -webkit-user-select: none;
-  user-select: none;
+.seq-item, .list-item, .grid2-card, .dc-theme-tile {
+  -webkit-user-select: none; user-select: none;
 }
-/* Touch-action sur les scrollables — permet le scroll vertical seulement */
+
+/* 3. Scroll vertical propre, pas de dérive horizontale */
 .row, .feed-page-scroll, .folder-page-scroll,
 .sb-scroll, .dc-catalog-panel, .dc-detail-panel,
-.artModalBody, .ob-wrap {
-  touch-action: pan-y;
-}
-/* Cibles tactiles minimum 44px (Apple HIG) */
+.artModalBody, .ob-wrap { touch-action: pan-y; }
+
+/* 4. Éliminer le délai 300ms (Apple HIG) */
+button, a, [onclick] { touch-action: manipulation; }
+
+/* 5. Cibles tactiles minimum 44px */
 button, .ob-btn, .ob-btn-ghost,
 .art-toolbar-btn, .feed-props-btn,
 .folder-page-back, .feed-page-back,
 .menu-btn, .sb-close, .qpill-btn,
-.qpill-trigger, .chev-btn {
-  min-width: 44px; min-height: 44px;
+.qpill-trigger, .chev-btn { min-width:44px; min-height:44px; }
+
+/* ══════════════════════════════════════════════════════════
+   SPRING PHYSICS — Compression rapide (80ms ease-in) +
+   rebond élastique (420ms cubic-bezier(.34,1.56,.64,1)).
+   Le « .34,1.56 » est l'overshoot Apple SwiftUI spring.
+   ══════════════════════════════════════════════════════════ */
+
+/* -- Cartes articles (compression 3D légère) -------------- */
+.art-card, .grid2-card {
+  transition: transform .42s cubic-bezier(.34,1.56,.64,1),
+              opacity   .42s cubic-bezier(.34,1.56,.64,1);
+  will-change: transform;
 }
-/* Feedback tactile immédiat — scale au :active */
-.art-card:active          { opacity:.82; transition:opacity .1s; }
-.grid2-card:active        { opacity:.82; transition:opacity .1s; }
-.seq-item:active          { opacity:.7;  transition:opacity .1s; }
-.list-item:active         { opacity:.7;  transition:opacity .1s; }
-.essentiel-card:active    { opacity:.75; transition:opacity .1s; }
-.browse-hero-card:active  { opacity:.85; transition:opacity .1s; }
-.dc-theme-tile:active     { opacity:.8;  transition:opacity .12s; }
-.feed-item:active         { background:rgba(255,255,255,.06); transition:background .08s; }
-.sb-item:active           { background:rgba(255,255,255,.08); transition:background .08s; }
-.vp-item:active           { background:rgba(255,255,255,.06); transition:background .08s; }
+.art-card:active, .grid2-card:active {
+  transform: scale(.96);
+  opacity: .88;
+  transition: transform .08s ease-in, opacity .08s ease-in;
+}
+
+/* -- Items de liste (scale + décalage latéral micro) ------ */
+.seq-item, .list-item {
+  transition: transform .38s cubic-bezier(.34,1.56,.64,1),
+              opacity   .38s cubic-bezier(.34,1.56,.64,1);
+}
+.seq-item:active, .list-item:active {
+  transform: scale(.984) translateX(3px);
+  opacity: .72;
+  transition: transform .07s ease-in, opacity .07s ease-in;
+}
+
+/* -- Items sidebar & vue-picker (fond + scale simultanés) -- */
+.feed-item, .sb-item, .vp-item {
+  transition: background .22s ease,
+              transform  .38s cubic-bezier(.34,1.56,.64,1);
+}
+.feed-item:active  { background:rgba(255,255,255,.07); transform:scale(.982); transition:background .06s,transform .06s ease-in; }
+.sb-item:active    { background:rgba(255,255,255,.09); transform:scale(.982); transition:background .06s,transform .06s ease-in; }
+.vp-item:active    { background:rgba(255,255,255,.07); transform:scale(.982); transition:background .06s,transform .06s ease-in; }
 [data-theme="light"] .feed-item:active { background:rgba(0,0,0,.05); }
 [data-theme="light"] .sb-item:active   { background:rgba(0,0,0,.06); }
-/* Éviter le délai 300ms sur tous les boutons */
-button, a, [onclick] { touch-action: manipulation; }
+
+/* -- Tuiles découverte ------------------------------------- */
+.dc-theme-tile {
+  transition: transform .4s cubic-bezier(.34,1.56,.64,1), opacity .4s ease;
+}
+.dc-theme-tile:active {
+  transform: scale(.94);
+  opacity: .8;
+  transition: transform .07s ease-in, opacity .07s ease-in;
+}
+
+/* -- Boutons ronds flottants (menu, fermer, etc.) ---------- */
+.menu-btn, .sb-close, .sb-add, .sb-open-btn {
+  transition: transform .42s cubic-bezier(.34,1.56,.64,1),
+              background .18s ease;
+}
+/* Les :active existants gardent leur scale, le rebond est assuré par la base */
 
 /* Mode clair — overrides ciblés pour les surfaces sombres */
 [data-theme="light"] .sidebar{
@@ -195,13 +240,15 @@ button, a, [onclick] { touch-action: manipulation; }
   backdrop-filter:blur(20px) saturate(180%);
   align-self:stretch;
   text-align:center;
-  padding:max(env(safe-area-inset-top,18px),18px) 28px 14px;
+  /* padding latéral = clearance des boutons flottants (sidebar 44px + marge) */
+  padding:max(env(safe-area-inset-top,18px),18px) 66px 14px;
   border-bottom:1px solid rgba(255,255,255,.06);
 }
 [data-theme="light"] .welcome{ border-bottom-color:rgba(0,0,0,.06); }
 .welcome-title{
-  font-weight:800; font-size:38px; line-height:1.06;
+  font-weight:800; font-size:clamp(28px,8.2vw,38px); line-height:1.06;
   letter-spacing:-0.03em; color:var(--text);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
 }
 .welcome-title .name{
   outline:none; cursor:text;
@@ -320,7 +367,7 @@ button, a, [onclick] { touch-action: manipulation; }
   transition:transform .22s cubic-bezier(.34,1.56,.64,1), background .18s ease;
 }
 .menu-btn:hover{ background:#2c2c2e; }
-.menu-btn:active{ transform:scale(.86); background:#111113; }
+.menu-btn:active{ transform:scale(.84); background:#111113; transition:transform .07s ease-in, background .07s ease-in; }
 .menu-btn svg{ width:20px; height:20px; }
 [data-theme="light"] .menu-btn{
   background:#f2f2f7;
@@ -349,7 +396,7 @@ button, a, [onclick] { touch-action: manipulation; }
   transition:transform .22s cubic-bezier(.34,1.56,.64,1), background .18s, color .18s;
 }
 .sb-open-btn:hover{ background:#2c2c2e; color:rgba(255,255,255,.9); }
-.sb-open-btn:active{ transform:scale(.86); background:#111113; }
+.sb-open-btn:active{ transform:scale(.84); background:#111113; transition:transform .07s ease-in, background .07s ease-in; }
 .sb-open-btn svg{ width:14px; height:14px; }
 [data-theme="light"] .sb-open-btn{
   background:#f2f2f7;
@@ -365,10 +412,10 @@ button, a, [onclick] { touch-action: manipulation; }
 .sidebar-overlay{
   position:fixed; inset:0;
   background:rgba(0,0,0,.42);
-  -webkit-backdrop-filter:blur(10px) saturate(120%);
-  backdrop-filter:blur(10px) saturate(120%);
+  -webkit-backdrop-filter:blur(12px) saturate(130%);
+  backdrop-filter:blur(12px) saturate(130%);
   opacity:0; visibility:hidden;
-  transition:opacity .5s ease, visibility .5s ease;
+  transition:opacity .38s cubic-bezier(.4,0,.2,1), visibility .38s;
   z-index:80;
 }
 .sidebar-overlay.open{ opacity:1; visibility:visible; }
@@ -377,14 +424,18 @@ button, a, [onclick] { touch-action: manipulation; }
   position:fixed; top:0; left:0; bottom:0;
   width:320px; max-width:88vw;
   background:linear-gradient(180deg,#101011 0%,#070708 100%);
-  box-shadow:28px 0 70px -24px rgba(0,0,0,.85);   /* profondeur, sans bordure */
+  box-shadow:28px 0 70px -24px rgba(0,0,0,.85);
   display:flex; flex-direction:column;
-  font-family:var(--font-inter);                   /* Inter pour habiller la sidebar */
+  font-family:var(--font-inter);
   transform:translateX(-105%);
-  transition:transform .62s cubic-bezier(.16,1,.3,1);  /* ressort Motion */
+  /* Entrée spring, sortie rapide et nette */
+  transition:transform .52s cubic-bezier(.32,0,.67,0);
   z-index:90;
 }
-.sidebar.open{ transform:translateX(0); }
+.sidebar.open{
+  transform:translateX(0);
+  transition:transform .58s cubic-bezier(.16,1,.3,1);
+}
 
 /* Révélation en cascade des blocs à l'ouverture (effet Motion) */
 .sidebar .sb-header,
@@ -523,6 +574,30 @@ button, a, [onclick] { touch-action: manipulation; }
 /* État vide */
 .sb-empty{
   padding:10px 12px; font-size:12.5px; line-height:1.5; color:#666;
+}
+
+/* Flux intelligents — lignes dans la sidebar */
+.smart-item{
+  position:relative;
+  display:flex; align-items:center; gap:12px;
+  padding:8px 12px; border-radius:10px; cursor:pointer;
+  color:var(--text-muted); -webkit-tap-highlight-color:transparent;
+  transition:background .18s ease, color .18s ease, transform .22s cubic-bezier(.34,1.56,.64,1);
+}
+.smart-item:hover{ background:#141414; color:var(--text); }
+.smart-item:active{ transform:scale(.982); background:rgba(255,255,255,.09); }
+[data-theme="light"] .smart-item:hover{ background:rgba(0,0,0,.04); color:var(--text); }
+[data-theme="light"] .smart-item:active{ background:rgba(0,0,0,.07); }
+.smart-item svg{ width:16px; height:16px; flex:none; opacity:.6; }
+.smart-item:hover svg{ opacity:1; }
+.smart-item .si-label{
+  flex:1; min-width:0; font-size:15px; font-weight:600; letter-spacing:-.01em;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.smart-item .si-count{
+  font-size:11px; font-weight:700; color:#666;
+  font-variant-numeric:tabular-nums;
+  background:rgba(127,127,127,.1); border-radius:99px; padding:2px 7px;
 }
 
 /* Dossiers — accordéon fluide */
@@ -1512,29 +1587,69 @@ button, a, [onclick] { touch-action: manipulation; }
 }
 .dc-search:focus{ border-color:var(--accent); }
 /* Grille 2 colonnes */
-.dc-theme-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:16px 18px 50px; }
-/* Tuile thème */
+.dc-theme-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px 12px; padding:18px 18px 60px; }
+/* Tuile thème — carte paysage style Pinterest (image + titre superposé centré) */
 .dc-theme-tile{
-  position:relative; border-radius:20px; overflow:hidden; height:230px;
-  cursor:pointer; background:#111; -webkit-tap-highlight-color:transparent;
-  transition:transform .4s cubic-bezier(.32,.72,0,1), box-shadow .3s;
-  box-shadow:0 5px 18px rgba(0,0,0,.32);
+  position:relative; cursor:pointer; background:none; box-shadow:none;
+  -webkit-tap-highlight-color:transparent;
+  transition:transform .4s cubic-bezier(.32,.72,0,1);
 }
-.dc-theme-tile:hover{ transform:translateY(-4px) scale(1.015); box-shadow:0 14px 34px rgba(0,0,0,.5); }
-.dc-theme-tile::before{ content:""; position:absolute; left:0; right:0; top:28%; bottom:0; background:linear-gradient(180deg,rgba(0,0,0,0) 0%,rgba(0,0,0,.92) 100%); z-index:1; }
-.dc-theme-tile-img{ position:absolute; inset:0; background-size:cover; background-position:center top; }
-.dc-theme-tile-body{ position:absolute; left:0; right:0; bottom:0; z-index:2; padding:14px 12px; }
-.dc-theme-tile-name{ font-family:var(--font-inter); font-size:16px; font-weight:800; letter-spacing:-0.02em; color:#fff; line-height:1.15; }
-.dc-theme-tile-desc{ font-family:var(--font-inter); font-size:10px; font-weight:500; color:rgba(255,255,255,.65); margin-top:4px; line-height:1.4; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
-.dc-theme-tile-badge{ position:absolute; top:10px; right:10px; z-index:2; background:rgba(0,0,0,.42); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); border-radius:999px; padding:3px 9px; font-family:var(--font-inter); font-size:10px; font-weight:700; color:rgba(255,255,255,.85); }
+.dc-theme-tile:hover{ transform:translateY(-3px); }
+.dc-theme-tile:active{ transform:scale(.97); }
+.dc-theme-tile-img{
+  position:relative; display:flex; align-items:center; justify-content:center;
+  width:100%; aspect-ratio:16/10;
+  border-radius:16px; overflow:hidden;
+  background-size:cover; background-position:center;
+  box-shadow:0 6px 18px rgba(0,0,0,.32);
+}
+[data-theme="light"] .dc-theme-tile-img{ box-shadow:0 6px 16px rgba(0,0,0,.14); }
+/* Emoji décoratif — grand, légèrement décalé en filigrane */
+.dc-theme-tile-icon{
+  position:absolute; right:-8px; bottom:-14px; display:flex; align-items:center; justify-content:center;
+  font-size:84px; line-height:1; pointer-events:none; z-index:1; opacity:.32;
+  filter:drop-shadow(0 4px 14px rgba(0,0,0,.25)); transform:rotate(-8deg);
+}
+/* Voile sombre pour la lisibilité du titre superposé */
+.dc-theme-tile-img::after{
+  content:''; position:absolute; inset:0; z-index:1;
+  background:linear-gradient(135deg, rgba(0,0,0,.28) 0%, rgba(0,0,0,.05) 55%, rgba(0,0,0,.34) 100%);
+  pointer-events:none;
+}
+/* Titre superposé, centré, blanc — comme Pinterest */
+.dc-theme-tile-name{
+  position:relative; z-index:2; text-align:center; padding:0 12px;
+  font-family:var(--font-inter); font-size:18px; font-weight:800; letter-spacing:-0.025em;
+  color:#fff; line-height:1.16; text-shadow:0 2px 10px rgba(0,0,0,.45);
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+}
+.dc-theme-tile-badge{ position:absolute; top:9px; right:9px; z-index:3; background:rgba(0,0,0,.4); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-radius:999px; padding:4px 10px; font-family:var(--font-inter); font-size:9.5px; font-weight:700; color:#fff; letter-spacing:.02em; }
 /* Ligne flux */
 .dc-feed-list{ padding:6px 18px 60px; }
-.dc-feed-row{ display:flex; align-items:center; gap:13px; padding:13px 0; border-bottom:1px solid var(--border); }
-[data-theme="light"] .dc-feed-row{ border-bottom-color:rgba(0,0,0,.07); }
-.dc-feed-row:last-child{ border-bottom:none; }
+.dc-feed-card{ border-bottom:1px solid var(--border); }
+[data-theme="light"] .dc-feed-card{ border-bottom-color:rgba(0,0,0,.07); }
+.dc-feed-card:last-child{ border-bottom:none; }
+.dc-feed-row{ display:flex; align-items:center; gap:13px; padding:13px 0 11px; }
+/* Aperçu : 5 derniers articles publiés du flux */
+.dc-feed-arts{ padding:0 0 16px 0; }
+.dc-arts-carousel{ display:flex; gap:10px; overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none; padding:4px 18px 6px 59px; -webkit-overflow-scrolling:touch; scroll-snap-type:x proximity; }
+.dc-arts-carousel::-webkit-scrollbar{ display:none; }
+/* Carte article dans le carrousel */
+.dc-art{ flex:none; width:148px; cursor:pointer; scroll-snap-align:start; -webkit-tap-highlight-color:transparent; }
+.dc-art:active{ opacity:.75; }
+.dc-art-img{ width:148px; height:96px; border-radius:10px; overflow:hidden; background:rgba(127,127,127,.12); flex-shrink:0; margin-bottom:7px; }
+.dc-art-img img{ width:100%; height:100%; object-fit:cover; display:block; transition:transform .5s cubic-bezier(.22,1,.36,1); }
+.dc-art:active .dc-art-img img{ transform:scale(1.04); }
+.dc-art-no-img{ width:148px; height:96px; border-radius:10px; background:rgba(127,127,127,.1); display:flex; align-items:center; justify-content:center; margin-bottom:7px; }
+.dc-art-no-img-dot{ width:24px; height:24px; border-radius:50%; background:var(--accent); opacity:.25; }
+.dc-art-title{ font-family:var(--font-inter); font-size:12px; font-weight:600; letter-spacing:-.01em; color:var(--text); line-height:1.35; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.dc-art-time{ font-family:var(--font-inter); font-size:10px; font-weight:500; color:var(--text-muted); margin-top:3px; font-variant-numeric:tabular-nums; }
+.dc-art-state{ font-family:var(--font-inter); font-size:12px; font-weight:500; color:var(--text-muted); padding:6px 18px 2px 59px; }
+.dc-art-skel{ height:96px; border-radius:10px; width:148px; flex:none; background:linear-gradient(90deg,rgba(127,127,127,.10),rgba(127,127,127,.18),rgba(127,127,127,.10)); background-size:200% 100%; animation:dcSkel 1.2s linear infinite; }
+@keyframes dcSkel{ from{ background-position:200% 0; } to{ background-position:-200% 0; } }
 .dc-feed-logo{ width:46px; height:46px; flex:none; border-radius:50%; position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; font-family:var(--font-inter); font-size:18px; font-weight:800; color:var(--text-muted); background:transparent; border:1.5px solid rgba(255,255,255,.1); flex-shrink:0; }
 [data-theme="light"] .dc-feed-logo{ border-color:rgba(0,0,0,.1); }
-.dc-feed-logo img{ position:absolute; inset:0; width:100%; height:100%; object-fit:contain; z-index:1; border-radius:50%; display:block; }
+.dc-feed-logo img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:1; border-radius:50%; display:block; }
 .dc-feed-info{ flex:1; min-width:0; }
 .dc-feed-row-name{ font-family:var(--font-inter); font-size:15px; font-weight:700; color:var(--text); letter-spacing:-0.01em; }
 .dc-feed-row-desc{ font-family:var(--font-inter); font-size:12px; font-weight:500; color:var(--text-muted); margin-top:2px; line-height:1.38; }
@@ -1767,46 +1882,143 @@ button, a, [onclick] { touch-action: manipulation; }
 .grid2-fav{ width:16px; height:16px; border-radius:50%; overflow:hidden; flex-shrink:0; background:transparent; }
 .grid2-fav img{ width:100%; height:100%; object-fit:contain; border-radius:50%; display:block; }
 
-/* ── VUE SÉQUENTIELLE ────────────────────────────── */
-.seq-list{ display:flex; flex-direction:column; gap:0; padding-bottom:80px; }
-.seq-item{ display:flex; gap:14px; align-items:flex-start; padding:26px 0; border-bottom:1px solid var(--border); cursor:pointer; -webkit-tap-highlight-color:transparent; transition:background .15s; }
-.seq-item:active{ background:rgba(255,255,255,.03); }
+
+/* ══════════════════════════════════════════════════════════════════
+   APPARITION AU DÉFILEMENT — utilitaire générique (toutes les vues)
+   ══════════════════════════════════════════════════════════════════ */
+.reveal{
+  opacity:0; transform:translateY(24px) scale(.984);
+  transition:opacity .62s cubic-bezier(.22,1,.36,1),
+             transform .62s cubic-bezier(.22,1,.36,1);
+  will-change:opacity, transform;
+}
+.reveal.in{ opacity:1; transform:none; }
+@media (prefers-reduced-motion:reduce){
+  .reveal{ opacity:1 !important; transform:none !important; transition:none; }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   VUE ÉDITION — Liste éditoriale (style « Ordered List »)
+   image · titre · sous-titre · date · mots-clés
+   1 colonne en mobile · 2 colonnes en écran large
+   ══════════════════════════════════════════════════════════════════ */
+.edl{
+  display:grid; grid-template-columns:1fr;
+  gap:0; padding:2px 0 10px;
+}
+@media (min-width:560px){
+  .edl{ grid-template-columns:1fr 1fr; gap:0 22px; }
+}
+.edl-item{
+  display:flex; flex-direction:column; align-items:flex-start;
+  gap:6px; cursor:pointer; -webkit-tap-highlight-color:transparent;
+  padding-top:36px; padding-bottom:6px;
+  border-top:1px solid rgba(255,255,255,.08);
+}
+.edl-item:first-child{ border-top:none; padding-top:0; }
+[data-theme="light"] .edl-item{ border-top-color:rgba(0,0,0,.09); }
+.edl-item.is-read,
+.edl-item.is-read.in{ opacity:.42; }
+.edl-item:active{ transform:scale(.985); transition:transform .12s ease; }
+.edl-fig{
+  width:100%; aspect-ratio:327.63 / 184.64;
+  border-radius:12px; overflow:hidden;
+  background:rgba(255,255,255,.05);
+}
+[data-theme="light"] .edl-fig{ background:rgba(0,0,0,.04); }
+.edl-fig img{
+  width:100%; height:100%; object-fit:cover; display:block;
+  transition:transform .6s cubic-bezier(.22,1,.36,1);
+}
+@media (hover:hover) and (pointer:fine){
+  .edl-item:hover .edl-fig img{ transform:scale(1.045); }
+}
+.edl-title{
+  font-family:var(--font-inter);
+  font-size:20px; font-weight:600; line-height:1.24;
+  letter-spacing:-.012em; color:var(--text);
+  margin:6px 0 0;
+  display:-webkit-box; -webkit-line-clamp:3;
+  -webkit-box-orient:vertical; overflow:hidden;
+}
+.edl-sub{
+  font-family:var(--font-inter);
+  font-size:13px; font-weight:400; line-height:1.36;
+  color:var(--text-muted); margin:0;
+  display:-webkit-box; -webkit-line-clamp:2;
+  -webkit-box-orient:vertical; overflow:hidden;
+}
+.edl-date{
+  font-family:var(--font-inter);
+  font-size:10.5px; font-weight:500; line-height:1.1;
+  color:var(--text-muted); opacity:.72; margin-top:4px;
+}
+
+
+.edl-tags{ display:flex; flex-wrap:wrap; gap:5px; margin-top:9px; }
+.edl-tag{
+  display:inline-flex; align-items:center;
+  background:var(--text); color:var(--bg);
+  border-radius:999px; padding:4px 8px;
+  font-family:var(--font-inter); font-size:10.5px; font-weight:500;
+  letter-spacing:.01em; white-space:nowrap;
+}
+@media (min-width:560px){
+  .edl-fig{ border-radius:8px; }
+  .edl-title{ font-size:14px; margin-top:5px; -webkit-line-clamp:2; }
+  .edl-sub{ font-size:11px; }
+  .edl-date{ font-size:9px; }
+  .edl-tag{ font-size:9px; padding:3px 6px; }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   VUE SÉQUENTIEL — Liste numérotée éditoriale « wow »
+   grand numéro · source · titre · vignette
+   ══════════════════════════════════════════════════════════════════ */
+.seq-list{ display:flex; flex-direction:column; gap:0; padding:6px 0 90px; }
+.seq-progress{ display:none; }
+.seq-item{
+  display:flex; gap:16px; align-items:flex-start;
+  padding:30px 2px; border-bottom:1px solid var(--border);
+  cursor:pointer; -webkit-tap-highlight-color:transparent;
+}
 [data-theme="light"] .seq-item{ border-color:rgba(0,0,0,.08); }
 .seq-item:last-child{ border-bottom:none; }
-.seq-num{ font-family:var(--font-inter); font-size:22px; font-weight:800; color:rgba(255,255,255,.38); min-width:32px; text-align:right; flex-shrink:0; line-height:1; padding-top:3px; letter-spacing:-.03em; }
-[data-theme="light"] .seq-num{ color:rgba(0,0,0,.32); }
+.seq-item:active{ transform:scale(.99); transition:transform .1s ease; }
+.seq-num{
+  font-family:var(--font-inter); font-weight:800;
+  font-size:30px; line-height:1; letter-spacing:-.04em;
+  min-width:42px; text-align:right; flex-shrink:0; padding-top:2px;
+  background:linear-gradient(180deg, var(--text) 0%, var(--text-muted) 130%);
+  -webkit-background-clip:text; background-clip:text;
+  -webkit-text-fill-color:transparent;
+  opacity:.85;
+}
 .seq-body{ flex:1; min-width:0; }
-.seq-source{ font-family:var(--font-inter); font-size:10.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.04em; margin-bottom:5px; display:flex; align-items:center; gap:4px; }
-.seq-fav{ width:16px; height:16px; border-radius:50%; overflow:hidden; background:transparent; }
-.seq-fav img{ width:100%; height:100%; object-fit:contain; border-radius:50%; display:block; }
-.seq-title{ font-family:var(--font-title); font-size:17px; font-weight:700; line-height:1.28; color:var(--text); letter-spacing:-.01em; }
-.seq-thumb{ width:114px; height:76px; flex-shrink:0; border-radius:10px; overflow:hidden; background:#111; align-self:center; }
-.seq-thumb img{ width:100%; height:100%; object-fit:cover; }
-
-/* ── Séquentiel : mémoire de lecture (additif) ───────────── */
-.seq-item.is-read{ opacity:.4; }
+.seq-source{
+  font-family:var(--font-inter); font-size:10.5px; font-weight:700;
+  color:var(--text-muted); text-transform:uppercase; letter-spacing:.05em;
+  margin-bottom:6px; display:flex; align-items:center; gap:5px;
+}
+.seq-fav{ width:15px; height:15px; border-radius:50%; overflow:hidden; flex-shrink:0; background:transparent; }
+.seq-fav img{ width:100%; height:100%; object-fit:cover; border-radius:50%; display:block; }
+.seq-title{
+  font-family:var(--font-title); font-size:var(--seq-title-size,18px); font-weight:700;
+  line-height:1.26; color:var(--text); letter-spacing:-.012em;
+  display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;
+}
+.seq-thumb{
+  width:104px; height:74px; flex-shrink:0; align-self:center;
+  border-radius:12px; overflow:hidden; background:#111;
+}
+.seq-thumb img{ width:100%; height:100%; object-fit:cover; display:block;
+  transition:transform .6s cubic-bezier(.22,1,.36,1); }
+@media (hover:hover) and (pointer:fine){
+  .seq-item:hover .seq-thumb img{ transform:scale(1.06); }
+}
+.seq-item.is-read{ opacity:.42; }
 .seq-item.is-read .seq-title{ font-weight:600; color:var(--text-muted); }
-.seq-item.is-read .seq-num{ color:rgba(255,255,255,.16); }
-[data-theme="light"] .seq-item.is-read .seq-num{ color:rgba(0,0,0,.16); }
 .seq-item.is-read .seq-thumb{ filter:grayscale(1); }
-
-/* ── Séquentiel : en-tête de progression / reprise ───────── */
-.seq-progress{ display:none; align-items:center; justify-content:space-between; gap:14px; padding:18px 0 16px; margin-bottom:2px; border-bottom:1px solid var(--border); }
-.seq-progress.show{ display:flex; }
-[data-theme="light"] .seq-progress{ border-color:rgba(0,0,0,.08); }
-.seq-progress-info{ flex:1; min-width:0; display:flex; flex-direction:column; gap:8px; }
-.seq-progress-label{ font-family:var(--font-inter); font-size:13.5px; font-weight:700; color:var(--text); letter-spacing:-.01em; display:flex; align-items:center; gap:6px; }
-.seq-progress-time{ font-family:var(--font-inter); font-size:11px; font-weight:600; color:var(--text-muted); letter-spacing:.01em; }
-.seq-progress-bar{ width:100%; height:4px; border-radius:99px; background:rgba(255,255,255,.08); overflow:hidden; }
-[data-theme="light"] .seq-progress-bar{ background:rgba(0,0,0,.08); }
-.seq-progress-fill{ height:100%; border-radius:99px; background:#0a84ff; width:0; transition:width .5s cubic-bezier(.32,.72,0,1); }
-.seq-progress.is-done .seq-progress-fill{ background:#34c759; }
-.seq-progress.is-done .seq-progress-label{ color:#34c759; }
-.seq-progress-actions{ display:flex; align-items:center; gap:8px; flex-shrink:0; }
-.seq-progress-action{ font-family:var(--font-inter); font-size:12.5px; font-weight:700; color:#0a84ff; background:rgba(10,132,255,.1); border:none; border-radius:99px; padding:9px 15px; cursor:pointer; -webkit-tap-highlight-color:transparent; white-space:nowrap; letter-spacing:-.01em; transition:transform .1s; }
-.seq-progress-action:active{ transform:scale(.95); }
-.seq-progress-ghost{ font-family:var(--font-inter); font-size:12.5px; font-weight:600; color:var(--text-muted); background:transparent; border:none; cursor:pointer; -webkit-tap-highlight-color:transparent; white-space:nowrap; padding:9px 3px; }
-.seq-progress-ghost:active{ opacity:.6; }
 
 /* ── PAGE DOSSIER ────────────────────────────────── */
 .folder-page{ position:fixed; inset:0; z-index:450; background:var(--bg); display:flex; flex-direction:column; transform:translateX(100%); transition:transform .38s cubic-bezier(.32,.72,0,1); }
@@ -1824,6 +2036,81 @@ button, a, [onclick] { touch-action: manipulation; }
 .folder-page-scroll{ flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
 .folder-page-scroll::-webkit-scrollbar{ display:none; }
 .folder-page-inner{ padding:16px 18px 90px; }
+
+/* ── FOLDER PAGE — héro décoratif + logos flottants ─────────────────────── */
+.folder-hero{
+  width:100%; position:relative; overflow:hidden; flex-shrink:0;
+  min-height:180px; display:flex; align-items:flex-end;
+  background:linear-gradient(145deg,#1a1a2e 0%,#16213e 100%);
+}
+.folder-hero-bg{
+  position:absolute; inset:0;
+  background-size:cover; background-position:center;
+  opacity:.9;
+}
+/* Noise texture overlay */
+.folder-hero-noise{
+  position:absolute; inset:0; opacity:.04;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  background-size:200px 200px;
+}
+.folder-hero-content{
+  position:relative; z-index:2; padding:28px 24px 24px;
+  width:100%;
+}
+.folder-hero-badge{
+  display:inline-flex; align-items:center; gap:6px;
+  background:rgba(255,255,255,.12); border-radius:999px;
+  padding:4px 12px; margin-bottom:12px;
+  font-family:var(--font-inter); font-size:10.5px; font-weight:700;
+  color:rgba(255,255,255,.8); letter-spacing:.06em; text-transform:uppercase;
+  backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+}
+[data-theme="light"] .folder-hero-badge{ background:rgba(0,0,0,.12); color:rgba(0,0,0,.6); }
+.folder-hero-title{
+  font-family:var(--font-inter); font-size:34px; font-weight:900;
+  letter-spacing:-.035em; color:#fff; line-height:1.1; margin-bottom:6px;
+  text-shadow:0 2px 12px rgba(0,0,0,.4);
+}
+.folder-hero-sub{
+  font-family:var(--font-inter); font-size:13.5px; font-weight:500;
+  color:rgba(255,255,255,.68); line-height:1.4; max-width:260px;
+}
+/* Orb décoratif — lumière douce en fond */
+.folder-hero-orb{
+  position:absolute; right:-30px; top:-30px; width:220px; height:220px;
+  border-radius:50%; opacity:.35; pointer-events:none; z-index:1;
+  filter:blur(40px);
+}
+/* Logos flottants (stacked circles) */
+.folder-logo-row{
+  display:flex; align-items:center; padding:20px 24px 4px;
+  gap:0; flex-shrink:0;
+}
+.folder-logo-bubble{
+  width:38px; height:38px; border-radius:50%; overflow:hidden; flex-shrink:0;
+  border:2.5px solid var(--bg); background:#333;
+  margin-left:-10px; position:relative;
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-inter); font-size:14px; font-weight:800; color:#fff;
+  box-shadow:0 2px 8px rgba(0,0,0,.28);
+  transition:transform .2s cubic-bezier(.34,1.56,.64,1);
+}
+.folder-logo-bubble:first-child{ margin-left:0; }
+.folder-logo-bubble:hover{ transform:translateY(-3px) scale(1.08); z-index:2; }
+.folder-logo-bubble img{
+  position:absolute; inset:0; width:100%; height:100%;
+  object-fit:cover; display:block; border-radius:50%;
+}
+.folder-logo-bubble-more{
+  background:rgba(127,127,127,.18);
+  font-size:10px; font-weight:700; color:var(--text-muted); letter-spacing:-.01em;
+}
+.folder-logo-row-count{
+  margin-left:12px; font-family:var(--font-inter); font-size:12px;
+  font-weight:600; color:var(--text-muted); letter-spacing:-.01em;
+}
+
 
 /* ── MENU 3 POINTS ───────────────────────────────── */
 .menu3-btn{ display:none; }
@@ -2142,32 +2429,210 @@ button, a, [onclick] { touch-action: manipulation; }
 .art-card .art-title{ font-family:var(--font-title); font-size:17px; font-weight:700; line-height:1.28; letter-spacing:-.01em; color:var(--text); display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
 /* Hero plus grand */
 #editionsHero .art-card .art-title{ font-size:22px; line-height:1.2; -webkit-line-clamp:4; }
-#editionsHero .art-card .art-source-row{ margin-top:14px; }
-/* Indicateur de refresh */
-/* Indicateur de synchro — ligne fine en haut, discrète */
+
+/* ══════════════════════════════════════════════════════════
+   SMART BAR — filtres intelligents + sources à plat (toutes vues)
+   Segment Tout/Non lus/Aujourd'hui (empilable) · un tap = instantané
+   ══════════════════════════════════════════════════════════ */
+.sbar{ align-self:stretch; width:100%; margin:6px 0 18px; display:flex; flex-direction:column; gap:15px; }
+.sbar[hidden]{ display:none; }
+
+/* — Segment de filtres intelligents (pastille glissante) — */
+.sbar-seg{
+  position:relative; display:flex; gap:0; padding:3px; isolation:isolate;
+  background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.07);
+  border-radius:999px;
+  overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none; -webkit-overflow-scrolling:touch;
+  -webkit-mask-image:linear-gradient(90deg, #000 80%, transparent 100%);
+          mask-image:linear-gradient(90deg, #000 80%, transparent 100%);
+}
+.sbar-seg::-webkit-scrollbar{ display:none; }
+[data-theme="light"] .sbar-seg{ background:rgba(0,0,0,.04); border-color:rgba(0,0,0,.06); }
+.sbar-seg-pill{
+  position:absolute; top:3px; bottom:3px; left:0; width:0;
+  border-radius:999px; background:var(--text);
+  z-index:0; opacity:0;
+  transition:transform .34s cubic-bezier(.34,1.4,.64,1),
+             width .34s cubic-bezier(.34,1.4,.64,1),
+             opacity .2s ease;
+}
+.sbar-seg-pill.vis{ opacity:1; }
+.sbar-seg-btn{
+  position:relative; z-index:1; flex:0 0 auto;
+  display:inline-flex; align-items:center; justify-content:center; gap:5px;
+  height:33px; padding:0 13px; border:none; background:none; cursor:pointer;
+  font-family:var(--font-inter); font-size:12.5px; font-weight:600; letter-spacing:-.012em;
+  color:var(--text-muted); white-space:nowrap; -webkit-tap-highlight-color:transparent;
+  transition:color .26s ease;
+}
+.sbar-seg-btn.active{ color:var(--bg); }
+.sbar-seg-n{
+  font-family:var(--font-inter); font-size:10px; font-weight:700; line-height:1;
+  padding:2px 5px; border-radius:999px; min-width:15px; text-align:center;
+  background:rgba(128,128,128,.22); color:var(--text-muted);
+  transition:background .26s ease, color .26s ease;
+}
+.sbar-seg-btn.active .sbar-seg-n{ background:rgba(0,0,0,.16); color:var(--bg); }
+
+/* — Groupe temporel : « Aujourd'hui » qui déploie 3 jours / Semaine / Mois — */
+.sbar-seg-temporal{ display:flex; align-items:center; }
+.sbar-seg-today{ position:relative; }
+.sbar-seg-today::after{
+  content:""; position:absolute; right:5px; top:50%; width:4px; height:4px;
+  border-right:1.4px solid currentColor; border-bottom:1.4px solid currentColor;
+  transform:translateY(-65%) rotate(45deg); opacity:.5;
+  transition:transform .42s cubic-bezier(.34,1.4,.64,1), opacity .26s ease;
+  pointer-events:none;
+}
+.sbar-seg-today.active::after{ opacity:.7; }
+.sbar-seg.temporal-open .sbar-seg-today{ padding-right:18px; }
+.sbar-seg.temporal-open .sbar-seg-today::after{ transform:translateY(-35%) rotate(-135deg); }
+.sbar-seg-more{
+  display:flex; align-items:center; overflow:hidden;
+  max-width:0; opacity:0;
+  transition:max-width .42s cubic-bezier(.34,1.4,.64,1), opacity .3s ease;
+}
+.sbar-seg.temporal-open .sbar-seg-more{ max-width:340px; opacity:1; }
+
+/* — Catégories : onglets avec tiret animé (style « Sunday ») — */
+.sbar-cats{
+  display:flex; gap:4px; overflow-x:auto; padding:2px 2px 0;
+  scrollbar-width:none; -ms-overflow-style:none; -webkit-overflow-scrolling:touch;
+  scroll-snap-type:x proximity;
+  -webkit-mask-image:linear-gradient(90deg, transparent 0, #000 12px, #000 calc(100% - 12px), transparent 100%);
+          mask-image:linear-gradient(90deg, transparent 0, #000 12px, #000 calc(100% - 12px), transparent 100%);
+}
+.sbar-cats::-webkit-scrollbar{ display:none; }
+.sbar-cat{
+  flex:0 0 auto; scroll-snap-align:start; position:relative;
+  display:inline-flex; flex-direction:column; align-items:center; gap:6px;
+  padding:6px 4px 8px; border:none; background:none; cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.sbar-cat-label{
+  font-family:var(--font-inter); font-size:14px; font-weight:600; letter-spacing:-.02em;
+  color:var(--text-muted); white-space:nowrap;
+  transition:color .3s var(--sunday-ease, cubic-bezier(.19,1,.22,1));
+}
+.sbar-cat.sel .sbar-cat-label{ color:var(--text); font-weight:700; }
+/* Le tiret « Sunday » — s'allonge sous l'onglet actif */
+.sbar-cat-dash{
+  width:9px; height:3px; border-radius:2px; background:#3a3a3c;
+  transition:width .42s var(--sunday-ease, cubic-bezier(.19,1,.22,1)),
+             background .3s ease;
+}
+[data-theme="light"] .sbar-cat-dash{ background:#d1d1d6; }
+.sbar-cat.sel .sbar-cat-dash{ width:22px; background:#0a84ff; }
+
+/* — Sources : panneau révélé en accordéon (grid-rows) au changement de catégorie — */
+.sbar-srcs-wrap{
+  display:grid; grid-template-rows:1fr;
+  transition:grid-template-rows .44s var(--sunday-ease, cubic-bezier(.32,.72,0,1));
+}
+.sbar-srcs-wrap.collapsed{ grid-template-rows:0fr; }
+.sbar-srcs-inner{ overflow:hidden; min-height:0; }
+
+/* — Sources à plat : avatars, un tap = filtre — */
+.sbar-srcs{
+  display:flex; gap:14px; overflow-x:auto; padding:6px 2px 4px;
+  scrollbar-width:none; -ms-overflow-style:none; -webkit-overflow-scrolling:touch;
+  scroll-snap-type:x proximity;
+  -webkit-mask-image:linear-gradient(90deg, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
+          mask-image:linear-gradient(90deg, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
+}
+.sbar-src{ scroll-snap-align:start; }
+.sbar-srcs::-webkit-scrollbar{ display:none; }
+.sbar-src{
+  flex:0 0 auto; width:54px;
+  display:flex; flex-direction:column; align-items:center; gap:7px;
+  border:none; background:none; padding:0; cursor:pointer; -webkit-tap-highlight-color:transparent;
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1);
+}
+.sbar-src:active{ transform:scale(.9); transition:transform .07s ease-in; }
+.sbar-src-av{
+  width:52px; height:52px; border-radius:50%; position:relative; overflow:visible;
+  background:rgba(255,255,255,.06); box-shadow:inset 0 0 0 1px rgba(255,255,255,.09);
+  display:flex; align-items:center; justify-content:center;
+  transition:box-shadow .26s ease;
+}
+[data-theme="light"] .sbar-src-av{ background:rgba(0,0,0,.04); box-shadow:inset 0 0 0 1px rgba(0,0,0,.08); }
+.sbar-src-av img{
+  width:100%; height:100%; object-fit:cover; border-radius:50%; display:block;
+}
+.sbar-src.sel .sbar-src-av{
+  box-shadow:0 0 0 2px var(--bg), 0 0 0 4px #0a84ff, 0 4px 13px rgba(10,132,255,.3);
+}
+.sbar-src-dot{
+  position:absolute; top:-1px; right:-1px; width:13px; height:13px; z-index:2;
+  border-radius:50%; background:#0a84ff; border:2.5px solid var(--bg);
+}
+.sbar-src-name{
+  font-family:var(--font-inter); font-size:10.5px; font-weight:600;
+  color:var(--text-muted); text-align:center; width:54px;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  transition:color .22s ease;
+}
+.sbar-src.sel .sbar-src-name{ color:#0a84ff; font-weight:700; }
+/* « Toutes » — pastille de remise à zéro */
+.sbar-all-av{ color:var(--text-muted); }
+.sbar-all-av svg{ width:21px; height:21px; }
+.sbar-src.sbar-src-all.sel .sbar-all-av{
+  background:var(--text); color:var(--bg); box-shadow:none;
+}
+.sbar-src.sbar-src-all.sel .sbar-src-name{ color:var(--text); }
+
+
+/* ── Indicateur de synchro — pastille sobre centrée (style Feedly) ── */
 #refreshBadge{
-  position:fixed; top:0; left:0; right:0; z-index:9999;
-  height:2px; background:transparent;
-  pointer-events:none; opacity:0;
-  transition:opacity .4s ease;
+  position:fixed; left:50%;
+  top:calc(max(env(safe-area-inset-top,0px),14px) + 60px);
+  transform:translateX(-50%) translateY(-12px) scale(.96);
+  z-index:60; display:flex; align-items:center; gap:8px;
+  padding:8px 15px; border-radius:999px;
+  background:rgba(28,28,30,.86);
+  -webkit-backdrop-filter:blur(22px) saturate(180%);
+  backdrop-filter:blur(22px) saturate(180%);
+  border:1px solid rgba(255,255,255,.08);
+  box-shadow:0 8px 28px rgba(0,0,0,.32), 0 1px 3px rgba(0,0,0,.2);
+  font-family:var(--font-inter); font-size:12.5px; font-weight:600; letter-spacing:-.01em;
+  color:var(--text);
+  opacity:0; pointer-events:none;
+  transition:opacity .26s ease, transform .34s cubic-bezier(.34,1.56,.64,1);
 }
-#refreshBadge::after{
-  content:''; position:absolute; top:0; left:-100%; width:60%;
-  height:100%;
-  background:linear-gradient(90deg, transparent, #0a84ff, transparent);
-  animation:none;
+[data-theme="light"] #refreshBadge{
+  background:rgba(255,255,255,.86); border-color:rgba(0,0,0,.06);
+  box-shadow:0 8px 28px rgba(0,0,0,.12), 0 1px 3px rgba(0,0,0,.06);
 }
-@keyframes syncSlide{
-  0%  { left:-60%; }
-  100%{ left:110%; }
+#refreshBadge.vis, #refreshBadge.ok{
+  opacity:1; transform:translateX(-50%) translateY(0) scale(1);
 }
-#refreshBadge.vis{ opacity:1; }
-#refreshBadge.vis::after{ animation:syncSlide 1.4s ease-in-out infinite; }
-#refreshBadge.ok{
-  height:3px; opacity:1;
-  background:linear-gradient(90deg, transparent 0%, #34c759 40%, transparent 100%);
+#refreshBadge.ok{ color:#34c759; }
+.rb-spin{
+  width:13px; height:13px; border-radius:50%; flex-shrink:0;
+  border:2px solid rgba(140,140,145,.3); border-top-color:#0a84ff;
+  animation:rbspin .7s linear infinite;
 }
-#refreshBadge.ok::after{ animation:none; }
+.rb-check{ width:14px; height:14px; flex-shrink:0; }
+@keyframes rbspin{ to{ transform:rotate(360deg); } }
+
+/* ── Pull-to-refresh — pastille « tirez / relâchez » ───────────────── */
+.ptr-pill{
+  display:flex; align-items:center; gap:7px;
+  background:rgba(28,28,30,.9);
+  -webkit-backdrop-filter:blur(16px) saturate(180%);
+  backdrop-filter:blur(16px) saturate(180%);
+  border:1px solid rgba(255,255,255,.08);
+  padding:7px 15px; border-radius:999px;
+  font-family:var(--font-inter); font-size:12px; font-weight:600;
+  color:rgba(255,255,255,.85); white-space:nowrap;
+  box-shadow:0 6px 20px rgba(0,0,0,.3);
+}
+[data-theme="light"] .ptr-pill{
+  background:rgba(255,255,255,.9); border-color:rgba(0,0,0,.06);
+  color:rgba(0,0,0,.7); box-shadow:0 6px 20px rgba(0,0,0,.12);
+}
+.ptr-arrow{ transition:transform .3s cubic-bezier(.34,1.56,.64,1); }
+#ptrIndicator.ptr-armed .ptr-arrow{ transform:rotate(180deg); color:#0a84ff; }
 
 /* ── NEW ARTICLES PILL — style Inoreader ─────────────────── */
 #newArtsPill{
@@ -2194,7 +2659,7 @@ button, a, [onclick] { touch-action: manipulation; }
   transition:transform .18s cubic-bezier(.34,1.56,.64,1), opacity .14s;
   white-space:nowrap;
 }
-#newArtsPill button:active{ transform:scale(.91); opacity:.82; }
+#newArtsPill button:active{ transform:scale(.91); opacity:.82; transition:transform .07s ease-in, opacity .07s ease-in; }
 #newArtsPill button svg{ width:11px; height:11px; flex-shrink:0; }
 [data-theme="light"] #newArtsPill button{
   box-shadow:0 3px 12px rgba(255,60,50,.28), 0 1px 3px rgba(0,0,0,.1);
@@ -2203,6 +2668,41 @@ button, a, [onclick] { touch-action: manipulation; }
 .fav-header{ display:flex; align-items:baseline; justify-content:space-between; padding:20px 18px 12px; }
 .fav-header-title{ font-family:var(--font-inter); font-size:26px; font-weight:800; letter-spacing:-.03em; color:var(--text); }
 .fav-clear-btn{ font-family:var(--font-inter); font-size:13px; font-weight:600; color:#0a84ff; background:none; border:none; cursor:pointer; padding:4px 0; -webkit-tap-highlight-color:transparent; }
+/* — Bar déployable Favoris : Tous → Lecture → Non lus / Déjà lus (pill glissante) — */
+.favbar{
+  position:relative; display:inline-flex; align-items:center; gap:0; isolation:isolate;
+  margin:0 18px 14px; padding:3px; border-radius:999px;
+  background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.07);
+}
+[data-theme="light"] .favbar{ background:rgba(0,0,0,.04); border-color:rgba(0,0,0,.06); }
+.favbar-pill{
+  position:absolute; top:3px; bottom:3px; left:0; width:0;
+  border-radius:999px; background:var(--text); z-index:0; opacity:0;
+  transition:transform .4s cubic-bezier(.34,1.4,.64,1),
+             width .4s cubic-bezier(.34,1.4,.64,1), opacity .2s ease;
+}
+.favbar-pill.vis{ opacity:1; }
+.favbar-tab{
+  position:relative; z-index:1; flex:0 0 auto;
+  display:inline-flex; flex-direction:column; align-items:center; justify-content:center;
+  height:36px; padding:0 18px; border:none; background:none; cursor:pointer;
+  font-family:var(--font-inter); font-size:13px; font-weight:600; letter-spacing:-.012em;
+  color:var(--text-muted); white-space:nowrap; -webkit-tap-highlight-color:transparent;
+  transition:color .26s ease;
+}
+.favbar-tab.active{ color:var(--bg); }
+.favbar-sub{ font-size:9.5px; font-weight:600; opacity:.5; margin-top:1px; letter-spacing:.02em; }
+.favbar-n{ display:inline-block; margin-left:5px; font-size:10px; font-weight:700; opacity:.65; }
+.favbar-group{ display:inline-flex; align-items:center; }
+.favbar-label{ display:inline-flex; }
+.favbar-hidden{
+  display:inline-flex; align-items:center; overflow:hidden;
+  max-width:0; opacity:0;
+  transition:max-width .4s cubic-bezier(.34,1.4,.64,1), opacity .3s ease;
+}
+.favbar-group.open .favbar-label{ display:none; }
+.favbar-group.open .favbar-hidden{ max-width:320px; opacity:1; }
+.fav-item.is-read{ opacity:.5; }
 .fav-empty{ display:flex; flex-direction:column; align-items:center; justify-content:center; padding:80px 32px; text-align:center; gap:12px; }
 .fav-empty-icon{ opacity:.2; }
 .fav-empty-title{ font-family:var(--font-inter); font-size:17px; font-weight:700; color:var(--text); }
@@ -2350,11 +2850,37 @@ button, a, [onclick] { touch-action: manipulation; }
   font-weight:700; text-transform:uppercase;
   letter-spacing:-0.02em; line-height:1;
   color:var(--text); opacity:0.15;
-  transition:opacity .2s ease, transform .65s cubic-bezier(.34,1.56,.64,1);
-  transform-origin:center center; display:block; width:100%;
+  transition:opacity .2s ease;
+  display:block; width:100%;
+  overflow:hidden; position:relative;
 }
 .browse-folder-item.bf-open .browse-folder-name{ opacity:1; }
 .browse-folder-head:active .browse-folder-name{ opacity:.8; }
+
+/* ── Folder name : effet nav scroll ─────────────── */
+.bfn-director{
+  position:absolute; inset:0; z-index:2;
+  clip-path:inset(50% 0 0 0);          /* zone active = moitié basse par défaut */
+}
+.browse-folder-head:hover:not(:has(.bfn-director:hover)) .bfn-director{
+  clip-path:inset(100% 0 0 0);         /* survoler moitié haute → director invisible */
+}
+.bfn-inner{
+  display:block;
+  --bfn-color:var(--accent);
+  text-shadow:
+    0 -1lh var(--bfn-color),
+    0  1lh color-mix(in hsl, var(--bfn-color), transparent 60%);
+  transition:translate .22s ease-out;
+}
+/* Moitié haute → texte descend, ombre du haut apparaît */
+.browse-folder-head:hover:not(:has(.bfn-director:hover)) .bfn-inner{
+  translate:0 1lh; transition-delay:.04s;
+}
+/* Moitié basse → texte monte, ombre du bas apparaît */
+.bfn-director:hover ~ .bfn-inner{
+  translate:0 -1lh; transition-delay:.04s;
+}
 
 .browse-folder-meta{
   display:flex; align-items:center; gap:7px; justify-content:center;
@@ -2550,7 +3076,7 @@ button, a, [onclick] { touch-action: manipulation; }
 [data-theme="light"] .subpage-view-btn{ background:rgba(0,0,0,.06); }
 /* Vue liste (défaut des sous-pages) */
 .list-view{ display:flex; flex-direction:column; padding-bottom:80px; }
-.list-item{ display:flex; align-items:center; gap:14px; padding:22px 0; border-bottom:1px solid var(--border); cursor:pointer; -webkit-tap-highlight-color:transparent; }
+.list-item{ display:flex; align-items:center; gap:14px; padding:30px 0; border-bottom:1px solid var(--border); cursor:pointer; -webkit-tap-highlight-color:transparent; }
 .list-item:last-child{ border-bottom:none; }
 .list-item:active{ opacity:.7; }
 [data-theme="light"] .list-item{ border-color:rgba(0,0,0,.08); }
@@ -2586,7 +3112,7 @@ button, a, [onclick] { touch-action: manipulation; }
 .feed-page-header{ display:flex; flex-direction:column; align-items:center; padding:32px 24px 24px; text-align:center; }
 .feed-page-fav{ position:relative; width:64px; height:64px; border-radius:50%; overflow:hidden; flex-shrink:0; background:transparent; border:1.5px solid rgba(255,255,255,.12); display:flex; align-items:center; justify-content:center; font-family:var(--font-inter); font-size:22px; font-weight:700; color:var(--text-muted); margin-bottom:16px; }
 [data-theme="light"] .feed-page-fav{ border-color:rgba(0,0,0,.1); }
-.feed-page-fav img{ position:absolute; inset:0; width:100%; height:100%; object-fit:contain; padding:7px; box-sizing:border-box; }
+.feed-page-fav img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
 .feed-page-title{ font-family:var(--font-inter); font-size:24px; font-weight:800; letter-spacing:-.03em; color:var(--text); text-align:center; }
 .feed-page-desc{ font-family:var(--font-inter); font-size:14px; font-weight:500; color:var(--text-muted); margin-top:8px; line-height:1.55; text-align:center; max-width:280px; }
 .feed-page-sep{ width:40px; height:2px; background:var(--accent); border-radius:2px; margin:16px auto 0; opacity:.7; }
@@ -2641,19 +3167,26 @@ button, a, [onclick] { touch-action: manipulation; }
 [data-theme="light"] .art-modal-source-row{ border-color:rgba(0,0,0,.08); }
 .art-modal-source-pill{
   display:flex; align-items:center; gap:7px;
-  background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1);
+  background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.15);
+  -webkit-backdrop-filter:blur(12px) saturate(140%);
+  backdrop-filter:blur(12px) saturate(140%);
+  box-shadow:inset 1px 1px 0 0 rgba(255,255,255,.1);
   border-radius:999px; padding:5px 12px 5px 6px;
 }
-[data-theme="light"] .art-modal-source-pill{ background:rgba(0,0,0,.04); border-color:rgba(0,0,0,.09); }
+[data-theme="light"] .art-modal-source-pill{
+  background:rgba(255,255,255,.65); border-color:rgba(255,255,255,.9);
+  -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.8);
+}
 .art-modal-source-fav{ width:28px; height:28px; border-radius:50%; overflow:hidden; background:transparent; flex-shrink:0; border:1px solid rgba(255,255,255,.1); }
-.art-modal-source-fav img{ width:100%; height:100%; object-fit:contain; border-radius:50%; display:block; }
+.art-modal-source-fav img{ width:100%; height:100%; object-fit:cover; border-radius:50%; display:block; }
 [data-theme="light"] .art-modal-source-fav{ border-color:rgba(0,0,0,.1); }
 .art-modal-source-name{ font-family:var(--font-inter); font-size:12px; font-weight:700; color:var(--text); text-transform:uppercase; letter-spacing:.04em; }
 /* Reader content */
 .art-reader-section{ position:relative; z-index:1; padding:4px 0 20px; }
 .art-reader-text{
   font-family:var(--font-title),Georgia,serif;
-  font-size:17px; line-height:1.72; color:var(--text);
+  font-size:var(--reader-font-size,17px); line-height:1.72; color:var(--text);
   letter-spacing:.008em;
 }
 [data-theme="light"] .art-reader-text{ color:#1a1a1a; }
@@ -2673,8 +3206,11 @@ button, a, [onclick] { touch-action: manipulation; }
 /* Toolbar bas */
 .art-modal-toolbar{ position:sticky; bottom:0; left:0; right:0; z-index:5; display:flex; align-items:center; justify-content:flex-end; padding:10px 20px 14px; background:linear-gradient(transparent,var(--bg) 40%); }
 /* artModal — entrée animée */
-#artModal{ transform:translateY(32px); opacity:0; transition:transform .38s cubic-bezier(.25,1,.4,1), opacity .28s ease; }
-#artModal.art-open{ transform:none; opacity:1; }
+/* Entrée du modal : monte depuis le bas avec spring naturel */
+#artModal{ transform:translateY(48px) scale(.98); opacity:0; transition:transform .48s cubic-bezier(.16,1,.3,1), opacity .3s ease; }
+#artModal.art-open{ transform:translateY(0) scale(1); opacity:1; }
+/* Sortie : rapide et directe vers le bas */
+#artModal.art-closing{ transform:translateY(64px) scale(.97); opacity:0; transition:transform .28s cubic-bezier(.4,0,1,1), opacity .2s ease; }
 .art-toolbar-pill{ display:flex; align-items:center; gap:2px; background:rgba(255,255,255,.08); border-radius:999px; padding:4px; }
 [data-theme="light"] .art-toolbar-pill{ background:rgba(0,0,0,.07); }
 .art-toolbar-btn{ width:36px; height:36px; border:none; background:transparent; color:var(--text-muted); cursor:pointer; display:flex; align-items:center; justify-content:center; border-radius:50%; transition:background .15s,color .15s; -webkit-tap-highlight-color:transparent; }
@@ -3098,12 +3634,10 @@ body.focus-mode .focus-exit{ display:flex; }
               <a class="sub-link sub-link-sm" data-qtheme="dark"  onclick="qmenuSetTheme('dark')">Sombre</a>
               <a class="sub-link sub-link-sm" data-qtheme="light" onclick="qmenuSetTheme('light')">Clair</a>
               <div class="qmenu-sub-section-label" style="margin-top:10px">Vue</div>
-              <a class="sub-link sub-link-sm" data-qview="editions"   onclick="qmenuSetView('editions')">Éditions</a>
-              <a class="sub-link sub-link-sm" data-qview="essentiel"  onclick="qmenuSetView('essentiel')">Essentiel</a>
+              <a class="sub-link sub-link-sm" data-qview="editions"   onclick="qmenuSetView('editions')">Magazine</a>
               <a class="sub-link sub-link-sm" data-qview="liste"      onclick="qmenuSetView('liste')">Liste</a>
               <a class="sub-link sub-link-sm" data-qview="grille"     onclick="qmenuSetView('grille')">Grille</a>
               <a class="sub-link sub-link-sm" data-qview="sequential" onclick="qmenuSetView('sequential')">Séquentiel</a>
-              <a class="sub-link sub-link-sm" data-qview="browse"     onclick="qmenuSetView('browse')">Parcourir</a>
               <div class="qmenu-sub-section-label" style="margin-top:10px">Police</div>
               <a class="sub-link sub-link-sm" data-qfont="inter" onclick="qmenuSetFont('inter')" style="font-family:var(--font-inter)">Inter</a>
               <a class="sub-link sub-link-sm" data-qfont="geist" onclick="qmenuSetFont('geist')" style="font-family:var(--font-geist)">Geist</a>
@@ -3165,19 +3699,7 @@ body.focus-mode .focus-exit{ display:flex; }
           <rect x="13" y="16" width="8" height="5" rx="1.5"/>
         </svg>
       </div>
-      <span class="vp-label">Éditions</span>
-      <span class="vp-check"><svg viewBox="0 0 24 24" fill="none" stroke="#0a84ff" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-    </div>
-
-    <div class="vp-divider"></div>
-
-    <div class="vp-item" data-vpview="essentiel" onclick="vpSelect('essentiel')">
-      <div class="vp-icon">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-        </svg>
-      </div>
-      <span class="vp-label">Essentiel</span>
+      <span class="vp-label">Magazine</span>
       <span class="vp-check"><svg viewBox="0 0 24 24" fill="none" stroke="#0a84ff" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></span>
     </div>
 
@@ -3230,20 +3752,6 @@ body.focus-mode .focus-exit{ display:flex; }
       <span class="vp-check"><svg viewBox="0 0 24 24" fill="none" stroke="#0a84ff" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></span>
     </div>
 
-    <div class="vp-divider"></div>
-
-    <div class="vp-item" data-vpview="browse" onclick="vpSelect('browse')">
-      <div class="vp-icon">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <path d="M12 20h9"/>
-          <path d="M3 4h18"/>
-          <path d="M3 9h12"/>
-          <path d="M3 14h7"/>
-        </svg>
-      </div>
-      <span class="vp-label">Parcourir</span>
-      <span class="vp-check"><svg viewBox="0 0 24 24" fill="none" stroke="#0a84ff" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-    </div>
 
       </div><!-- /view-picker-list -->
     </div><!-- /view-picker -->
@@ -3289,6 +3797,17 @@ body.focus-mode .focus-exit{ display:flex; }
         </div>
       </div>
       <div id="folderList"></div>
+
+      <!-- Flux intelligents (règles automatiques) -->
+      <div class="sb-section" id="smartSection">
+        <span>Flux intelligents</span>
+        <div class="sb-section-actions">
+          <button class="sb-add" id="addSmartTop" aria-label="Nouveau flux intelligent" onclick="BF_SMART.openCreate()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+        </div>
+      </div>
+      <div id="smartList"></div>
 
     </div>
 
@@ -3417,7 +3936,24 @@ body.focus-mode .focus-exit{ display:flex; }
       <!-- Onglet Abonné : abonnements podcast (vide pour l'instant) -->
       <div class="pc-pane" id="pcPaneAbonne" hidden>
         <div class="pc-empty">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1h3zM3 19a2 2 0 0 0 2 2h1a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1H3z"/></svg>
+          <svg viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="width:100px;height:100px;opacity:.38;margin-bottom:8px" aria-hidden="true">
+            <!-- Microphone capsule -->
+            <rect x="40" y="8" width="40" height="58" rx="20" stroke-width="1.8"/>
+            <!-- Microphone body lines -->
+            <line x1="50" y1="28" x2="70" y2="28" stroke-width="1"/>
+            <line x1="47" y1="37" x2="73" y2="37" stroke-width="1"/>
+            <line x1="50" y1="46" x2="70" y2="46" stroke-width="1"/>
+            <!-- Stand arm -->
+            <path d="M60 66 L60 98" stroke-width="2"/>
+            <!-- Stand base -->
+            <line x1="36" y1="98" x2="84" y2="98" stroke-width="2.2"/>
+            <!-- Ondes sonores gauche -->
+            <path d="M30 22 C20 34 20 52 30 64" stroke-width="1.6" opacity=".55"/>
+            <path d="M20 14 C6 30 6 56 20 72" stroke-width="1.4" opacity=".3"/>
+            <!-- Ondes sonores droite -->
+            <path d="M90 22 C100 34 100 52 90 64" stroke-width="1.6" opacity=".55"/>
+            <path d="M100 14 C114 30 114 56 100 72" stroke-width="1.4" opacity=".3"/>
+          </svg>
           <div class="pc-empty-title">Aucun abonnement</div>
           <div class="pc-empty-sub">Abonnez-vous depuis l'onglet Découvrir pour retrouver vos balados ici.</div>
         </div>
@@ -3606,6 +4142,19 @@ body.focus-mode .focus-exit{ display:flex; }
                 <div class="sp-item">
                   <div class="sp-info"><span class="sp-label">Compteur dans le favicon <span class="pp-help" title="Intégrer le compteur dans le favicon">?</span></span><span class="sp-desc">Intégrer le compteur non lu dans le favicon plutôt que dans le titre de l'onglet.</span></div>
                   <label class="sp-toggle"><input type="checkbox" checked id="spFavicon"><span class="sp-track"><span class="sp-thumb"></span></span></label>
+                </div>
+              </div>
+            </div>
+            <div class="pp-section" id="ppDedupeSection">
+              <div class="sp-section-label">Filtre anti-doublons</div>
+              <div class="sp-card">
+                <div class="sp-item sp-item-col">
+                  <div class="sp-info"><span class="sp-label">Déduplication des articles</span><span class="sp-desc">Masque les articles en double provenant de sources différentes pour une lecture plus claire.</span></div>
+                  <select class="sp-select" id="spDedupeMode" onchange="if(window.BF_SMART)BF_SMART._setDedupe(this.value)">
+                    <option value="fuzzy">Titres similaires (recommandé)</option>
+                    <option value="exact">Titres identiques seulement</option>
+                    <option value="off">Désactivé</option>
+                  </select>
                 </div>
               </div>
             </div>
@@ -3885,7 +4434,26 @@ body.focus-mode .focus-exit{ display:flex; }
     <div class="column">
 
       <!-- Label centré, toujours présent au-dessus de toutes les vues -->
-      <h2 class="edition-label">Mon édition du jour</h2>
+      <h2 class="edition-label">Mon magazine du jour</h2>
+
+      <!-- Smart Bar — segment intelligent + catégories (tiret animé) + sources (accordéon) -->
+      <div id="smartBar" class="sbar" hidden>
+        <div class="sbar-seg" id="sbarSeg">
+          <span class="sbar-seg-pill" id="sbarSegPill" aria-hidden="true"></span>
+          <button class="sbar-seg-btn" type="button" data-mode="all">Tout <span class="sbar-seg-n"></span></button>
+          <button class="sbar-seg-btn" type="button" data-mode="unread">Non lus <span class="sbar-seg-n"></span></button>
+          <div class="sbar-seg-temporal" id="sbarTemporal">
+            <button class="sbar-seg-btn sbar-seg-today" type="button" data-mode="today">Aujourd'hui <span class="sbar-seg-n"></span></button>
+            <div class="sbar-seg-more" id="sbarSegMore">
+              <button class="sbar-seg-btn" type="button" data-mode="3days">3 jours <span class="sbar-seg-n"></span></button>
+              <button class="sbar-seg-btn" type="button" data-mode="week">Semaine <span class="sbar-seg-n"></span></button>
+              <button class="sbar-seg-btn" type="button" data-mode="month">Mois <span class="sbar-seg-n"></span></button>
+            </div>
+          </div>
+        </div>
+        <div class="sbar-cats" id="sbarCats"></div>
+        <div class="sbar-srcs-wrap" id="sbarSrcsWrap"><div class="sbar-srcs-inner"><div class="sbar-srcs" id="sbarSrcs"></div></div></div>
+      </div>
 
       <!-- ========== VUE ÉDITIONS (magazine) ========== -->
       <div class="view" data-view="editions">
@@ -3893,9 +4461,38 @@ body.focus-mode .focus-exit{ display:flex; }
         <!-- État vide / chargement — Option A « Éditorial centré » -->
         <div id="editionsEmpty" style="display:none;padding:44px 8px 0;">
           <div style="display:flex;flex-direction:column;align-items:center;text-align:center;max-width:320px;margin:0 auto;">
-            <div style="width:54px;height:54px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;margin-bottom:24px;color:var(--text-muted);">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1" fill="currentColor" stroke="none"/></svg>
-            </div>
+            <svg viewBox="0 0 200 118" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="width:200px;height:auto;margin-bottom:28px;opacity:.38" aria-hidden="true">
+              <!-- Sources flux (gauche) -->
+              <circle cx="14" cy="18" r="3.5" fill="currentColor" stroke="none"/>
+              <circle cx="14" cy="36" r="3" fill="currentColor" stroke="none" opacity=".7"/>
+              <circle cx="14" cy="52" r="4" fill="currentColor" stroke="none"/>
+              <circle cx="14" cy="68" r="3" fill="currentColor" stroke="none" opacity=".7"/>
+              <circle cx="14" cy="86" r="3.5" fill="currentColor" stroke="none"/>
+              <!-- Lignes de flux convergentes -->
+              <path d="M18 18 C54 18 64 52 96 52" stroke-width="1.4" opacity=".5"/>
+              <path d="M17 36 C52 36 64 52 96 52" stroke-width="1.4" opacity=".65"/>
+              <path d="M18 52 L96 52" stroke-width="1.8"/>
+              <path d="M17 68 C52 68 64 52 96 52" stroke-width="1.4" opacity=".65"/>
+              <path d="M18 86 C54 86 64 52 96 52" stroke-width="1.4" opacity=".5"/>
+              <!-- Nœud central (lentille Briefeed) -->
+              <circle cx="96" cy="52" r="13" stroke-width="1.6"/>
+              <circle cx="96" cy="52" r="4.5" fill="currentColor" stroke="none"/>
+              <!-- Trait de sortie -->
+              <line x1="109" y1="44" x2="126" y2="33" stroke-width="1.4"/>
+              <line x1="109" y1="52" x2="126" y2="52" stroke-width="1.8"/>
+              <line x1="109" y1="60" x2="126" y2="71" stroke-width="1.4"/>
+              <!-- Cartes article (droite) -->
+              <rect x="126" y="24" width="60" height="18" rx="4" stroke-width="1.4"/>
+              <rect x="126" y="43" width="60" height="18" rx="4" stroke-width="1.8"/>
+              <rect x="126" y="62" width="60" height="18" rx="4" stroke-width="1.4"/>
+              <!-- Lignes texte dans les cartes -->
+              <line x1="134" y1="31" x2="178" y2="31" stroke-width="1" opacity=".5"/>
+              <line x1="134" y1="37" x2="164" y2="37" stroke-width="1" opacity=".5"/>
+              <line x1="134" y1="50" x2="178" y2="50" stroke-width="1.2" opacity=".6"/>
+              <line x1="134" y1="56" x2="158" y2="56" stroke-width="1.2" opacity=".6"/>
+              <line x1="134" y1="69" x2="178" y2="69" stroke-width="1" opacity=".5"/>
+              <line x1="134" y1="75" x2="168" y2="75" stroke-width="1" opacity=".5"/>
+            </svg>
             <div style="font-family: -apple-system; font-size: 30px; line-height: 1.12; letter-spacing: -.01em; color: var(--text); text-wrap: balance; font-weight: 700">Composez votre édition.</div>
             <div style="margin-top: 14px; font-family: -apple-system; font-size: 13.5px; line-height: 1.55; color: var(--text-muted)">Choisissez quelques sources pour générer votre première édition du jour.</div>
             <button onclick="document.getElementById('navDiscover').click()" style="margin-top: 30px; width: 100%; height: 50px; border: none; border-radius: 90px; background: #0a84ff; color: #fff; font-family: system-ui; font-size: 13px; font-weight: 500; letter-spacing: .04em; text-transform: uppercase; cursor: pointer; -webkit-tap-highlight-color: transparent">Découvrir des sources</button>
@@ -3922,11 +4519,6 @@ body.focus-mode .focus-exit{ display:flex; }
 
       </div><!-- /vue éditions -->
 
-      <!-- ========== VUE ESSENTIEL ========== -->
-      <div class="view" data-view="essentiel" hidden>
-        <div class="essentiel-wrap" id="essentielList"></div>
-      </div><!-- /vue essentiel -->
-
       <!-- ========== VUE LISTE ========== -->
       <div class="view" data-view="liste" hidden>
         <div class="list-view" id="listeList"></div>
@@ -3942,13 +4534,6 @@ body.focus-mode .focus-exit{ display:flex; }
         <div class="seq-progress" id="seqProgress"></div>
         <div class="seq-list" id="seqList"></div>
       </div><!-- /vue séquentielle -->
-
-      <!-- ========== VUE PARCOURIR ========== -->
-      <div class="view" data-view="browse" hidden>
-      <section class="browse" id="browseSection">
-        <!-- généré dynamiquement par renderBrowseTimeline() -->
-      </section>
-      </div><!-- /vue parcourir -->
 
       <!-- ========== VUE FAVORIS ========== -->
       <div class="view" data-view="favoris" hidden>
@@ -4138,7 +4723,7 @@ body.focus-mode .focus-exit{ display:flex; }
 
   // ---- Bouton œil : cycle éditions → grille → séquentiel → parcourir ----
   const views = document.querySelectorAll('.view');
-  const order = ['editions', 'essentiel', 'liste', 'grille', 'sequential', 'browse'];
+  const order = ['editions', 'liste', 'grille', 'sequential'];
   let _currentView = (() => { try { const v = localStorage.getItem('bf_view'); return order.includes(v) ? v : 'editions'; } catch(e){ return 'editions'; } })();
   // Déclarés tôt pour éviter reference-before-declaration dans _switchView
   let _feedPageArts = [];
@@ -4369,7 +4954,7 @@ body.focus-mode .focus-exit{ display:flex; }
 
       // ── En-tête centré cliquable ──
       html += `<div class="browse-folder-head" onclick="_bfToggle(${fi})">
-        <span class="browse-folder-name">${escapeHtml(folder.name)}</span>
+        <span class="browse-folder-name"><span class="bfn-director"></span><span class="bfn-inner">${escapeHtml(folder.name)}</span></span>
         <div class="browse-folder-meta">
           <span class="browse-folder-count">${artCount} article${artCount > 1 ? 's' : ''}</span>
           <div class="browse-folder-chevron">
@@ -5402,6 +5987,7 @@ body.focus-mode .focus-exit{ display:flex; }
     _qmenu.querySelectorAll('.qmenu-sort-item').forEach(el => el.classList.toggle('active', el.dataset.sort === sort));
     _qmenu.querySelectorAll('.qmenu-filter-item').forEach(el => el.classList.toggle('active', el.dataset.filter === filter));
     _qmenu.querySelectorAll('.qmenu-size-item').forEach(el => el.classList.toggle('active', el.dataset.size === size));
+    (()=>{ const sm2={sm:'15px',md:'17px',lg:'20px'},ss2={sm:'15px',md:'18px',lg:'21px'}; document.documentElement.style.setProperty('--reader-font-size',sm2[size]||'17px'); document.documentElement.style.setProperty('--seq-title-size',ss2[size]||'18px'); })();
     // Toggle opts
     const summariesOn = (typeof localStorage !== 'undefined' && localStorage.getItem('reader.opt.summaries') === '1');
     const imagesOn    = (typeof localStorage !== 'undefined' && localStorage.getItem('reader.opt.images') !== '0');
@@ -5497,9 +6083,12 @@ body.focus-mode .focus-exit{ display:flex; }
   window.qmenuSetSize = function(size){
     try{ localStorage.setItem('reader.textSize', size); }catch(e){}
     _qmenu.querySelectorAll('.qmenu-size-item').forEach(el => el.classList.toggle('active', el.dataset.size === size));
+    (()=>{ const sm2={sm:'15px',md:'17px',lg:'20px'},ss2={sm:'15px',md:'18px',lg:'21px'}; document.documentElement.style.setProperty('--reader-font-size',sm2[size]||'17px'); document.documentElement.style.setProperty('--seq-title-size',ss2[size]||'18px'); })();
     // Apply size to reader text
-    const sizeMap = { sm:'15px', md:'17px', lg:'20px' };
+    const sizeMap    = { sm:'15px', md:'17px', lg:'20px' };
+    const seqSizeMap = { sm:'15px', md:'18px', lg:'21px' };
     document.documentElement.style.setProperty('--reader-font-size', sizeMap[size] || '17px');
+    document.documentElement.style.setProperty('--seq-title-size', seqSizeMap[size] || '18px');
   };
 
   window.qmenuToggleOpt = function(opt){
@@ -5786,7 +6375,7 @@ body.focus-mode .focus-exit{ display:flex; }
 
   // Catalogue : 8 thèmes — flux ordonnés pour qu'aucune couleur identique ne se suive
   const DC_THEMES = [
-    { id:'actu', name:'Actualités', illus:'globe',
+    { id:'actu', name:'Actualités', illus:'globe', tileGrad:'linear-gradient(145deg,#0077b6 0%,#00b4d8 100%)', icon:'🌐',
       desc:'Information internationale, politique et société',
       feeds:[
         // bleu → rouge → sombre → orange → vert → rouge
@@ -5810,7 +6399,7 @@ body.focus-mode .focus-exit{ display:flex; }
         { name:'Washington Post World', domain:'washingtonpost.com', color:'#1a1a2e', url:'https://feeds.washingtonpost.com/rss/world', desc:'Le monde selon le WaPo' },
         { name:'NY Post', domain:'nypost.com', color:'#c8000a', url:'https://nypost.com/feed/', desc:'Actualité américaine directe' },
       ]},
-    { id:'geopolitique', name:'G\u00e9opolitique', illus:'geopolitique',
+    { id:'geopolitique', name:'G\u00e9opolitique', illus:'geopolitique', tileGrad:'linear-gradient(145deg,#6c3483 0%,#9b59b6 100%)', icon:'\u{1F30D}',
       desc:'Diplomatie, conflits et relations internationales',
       feeds:[
         { name:'Le Grand Continent',   domain:'legrandcontinent.eu',  color:'#1a2a5e', url:'https://legrandcontinent.eu/fr/feed/',                                    desc:'Revue de g\u00e9opolitique europ\u00e9enne de r\u00e9f\u00e9rence' },
@@ -5830,7 +6419,7 @@ body.focus-mode .focus-exit{ display:flex; }
         { name:'Reuters Africa', domain:'reutersbest.com', color:'#e87722', url:'https://reutersbest.com/region/africa/feed/', desc:'Afrique par Reuters Best' },
         { name:'WaPo World', domain:'washingtonpost.com', color:'#1a1a2e', url:'https://feeds.washingtonpost.com/rss/world?itid=lk_inline_manual_', desc:'Géopolitique Washington Post' },
       ]},
-    { id:'finance', name:'Finance', illus:'finance',
+    { id:'finance', name:'Finance', illus:'finance', tileGrad:'linear-gradient(145deg,#1e4d00 0%,#27ae60 100%)', icon:'📈',
       desc:'Marchés, économie mondiale et finance personnelle',
       feeds:[
         // bleu → sombre → rouge → orange → vert → bleu clair
@@ -5850,7 +6439,7 @@ body.focus-mode .focus-exit{ display:flex; }
         { name:'Forbes Innovation', domain:'forbes.com', color:'#c8000a', url:'https://www.forbes.com/innovation/feed2/', desc:'Innovation et business Forbes' },
         { name:'NY Post Business', domain:'nypost.com', color:'#c8000a', url:'https://nypost.com/business/feed/', desc:'Business à l\'américaine' },
       ]},
-    { id:'science', name:'Science', illus:'cosmos',
+    { id:'science', name:'Science', illus:'cosmos', tileGrad:'linear-gradient(145deg,#0d47a1 0%,#42a5f5 100%)', icon:'🔭',
       desc:'Espace, physique, biologie et grandes découvertes',
       feeds:[
         // rose → bleu → rouge → vert → sarcelle → sombre
@@ -5865,7 +6454,7 @@ body.focus-mode .focus-exit{ display:flex; }
         { name:'Nouvel Obs Sciences', domain:'nouvelobs.com', color:'#003f8e', url:'https://www.nouvelobs.com/sciences/rss.xml', desc:'Sciences et innovations' },
         { name:'NYT Space', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/Space.xml', desc:'Espace et astronomie NYT' },
       ]},
-    { id:'sante', name:'Santé', illus:'sante',
+    { id:'sante', name:'Santé', illus:'sante', tileGrad:'linear-gradient(145deg,#b71c1c 0%,#ef5350 100%)', icon:'❤️',
       desc:'Médecine, recherche et bien-être',
       feeds:[
         // rose → bleu → rouge → vert → sombre → violet
@@ -5880,7 +6469,7 @@ body.focus-mode .focus-exit{ display:flex; }
         { name:'Nouvel Obs Sante', domain:'nouvelobs.com', color:'#003f8e', url:'https://www.nouvelobs.com/sante/rss.xml', desc:'Sante et medecine' },
         { name:'NYT Health', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/svc/collections/v1/publish/https://www.nytimes.com/section/health/rss.xml', desc:'Santé et médecine NYT' },
       ]},
-    { id:'tech-ia', name:'Tech & IA', illus:'neural',
+    { id:'tech-ia', name:'Tech & IA', illus:'neural', tileGrad:'linear-gradient(145deg,#4a235a 0%,#a044ff 100%)', icon:'🤖',
       desc:'Intelligence artificielle, hardware et culture du code',
       feeds:[
         // rose → vert → orange → violet → sombre → rouge sombre
@@ -5902,7 +6491,7 @@ body.focus-mode .focus-exit{ display:flex; }
         { name:'Forbes Big Data', domain:'forbes.com', color:'#c8000a', url:'https://www.forbes.com/big-data/feed2/', desc:'Big Data et IA Forbes' },
         { name:'Forbes Cloud', domain:'forbes.com', color:'#c8000a', url:'https://www.forbes.com/cloud/feed2/', desc:'Cloud computing Forbes' },
       ]},
-    { id:'climat', name:'Climat & Éco', illus:'climat',
+    { id:'climat', name:'Climat & Éco', illus:'climat', tileGrad:'linear-gradient(145deg,#0b5345 0%,#1abc9c 100%)', icon:'🌱',
       desc:'Environnement, énergie verte et transition écologique',
       feeds:[
         // vert → sombre → bleu → vert foncé → rouge → gris-vert
@@ -5918,7 +6507,7 @@ body.focus-mode .focus-exit{ display:flex; }
         { name:'NYT Energy & Enviro', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/EnergyEnvironment.xml', desc:'Énergie et environnement NYT' },
         { name:'Reuters Énergie', domain:'reutersbest.com', color:'#e87722', url:'https://reutersbest.com/topic/commodities-energy/feed/', desc:'Énergie et matières premières' },
       ]},
-    { id:'startup', name:'Entrepreneuriat', illus:'entrepreneuriat',
+    { id:'startup', name:'Entrepreneuriat', illus:'entrepreneuriat', tileGrad:'linear-gradient(145deg,#7e4a00 0%,#f39c12 100%)', icon:'🚀',
       desc:'Startups, innovation et culture du business',
       feeds:[
         // orange → bleu → sombre → rouge → vert → gris
@@ -5932,7 +6521,7 @@ body.focus-mode .focus-exit{ display:flex; }
         { name:'JDN Decideurs', domain:'journaldunet.com', color:'#003fa3', url:'https://www.journaldunet.com/decideurs/rss/', desc:'Dirigeants et strategie' },
         { name:'PC Startups', domain:'presse-citron.net', color:'#f5a623', url:'https://www.presse-citron.net/category/startups/feed/', desc:'Startups et innovation' },
       ]},
-    { id:'crypto', name:'Crypto & Web3', illus:'crypto',
+    { id:'crypto', name:'Crypto & Web3', illus:'crypto', tileGrad:'linear-gradient(145deg,#5a3e00 0%,#f7931a 100%)', icon:'₿',
       desc:'Bitcoin, DeFi, blockchain et économie numérique',
       feeds:[
         // orange → sombre → rouge → gris → orange-vert → bleu
@@ -5945,7 +6534,7 @@ body.focus-mode .focus-exit{ display:flex; }
         { name:'PC Crypto', domain:'presse-citron.net', color:'#f5a623', url:'https://www.presse-citron.net/category/crypto-monnaies/feed/', desc:'Cryptomonnaies et blockchain' },
         { name:'01net Crypto', domain:'01net.com', color:'#003fa3', url:'https://www.01net.com/actualites/cryptomonnaie/feed/', desc:'Bitcoin et altcoins en francais' },
       ]},
-    { id:'nba', name:'NBA', illus:'basketball',
+    { id:'nba', name:'NBA', illus:'basketball', tileGrad:'linear-gradient(145deg,#6e2c00 0%,#e67e22 100%)', icon:'🏀',
       desc:'Basketball américain, analyses et coulisses de la ligue',
       feeds:[
         // rouge → orange → bleu → rouge → vert → bleu
@@ -5956,7 +6545,7 @@ body.focus-mode .focus-exit{ display:flex; }
         { name:'HoopsHype',         domain:'hoopshype.com',         color:'#1a5a1a', url:'https://hoopshype.com/feed/',                        desc:'Rumeurs, trades et contrats' },
         { name:'RealGM Basketball', domain:'realgm.com', color:'#0055a5', url:'https://basketball.realgm.com/rss/',                 desc:'Stats, transactions et draft' },
       ]},
-    { id:'football', name:'Football', illus:'soccer',
+    { id:'football', name:'Football', illus:'soccer', tileGrad:'linear-gradient(145deg,#0b5345 0%,#27ae60 100%)', icon:'⚽',
       desc:'Championnats européens, Ligue des Champions et transferts',
       feeds:[
         // bleu → rouge → vert → bleu → rouge → sombre
@@ -5969,7 +6558,7 @@ body.focus-mode .focus-exit{ display:flex; }
         { name:'Athletic Premier League', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/athletic/rss/premier-league/', desc:'The Athletic - Premier League' },
         { name:'Athletic Football', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/athletic/rss/football/', desc:'The Athletic - Football mondial' },
       ]},
-    { id:'sport-mondial', name:'Sport Mondial', illus:'podium',
+    { id:'sport-mondial', name:'Sport Mondial', illus:'podium', tileGrad:'linear-gradient(145deg,#7d6608 0%,#f1c40f 100%)', icon:'🏆',
       desc:'Athlétisme, tennis, F1 et multisports internationaux',
       feeds:[
         // bleu → rouge → orange → sombre → bleu clair
@@ -5983,7 +6572,7 @@ body.focus-mode .focus-exit{ display:flex; }
         { name:'Athletic Tennis', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/athletic/rss/tennis/', desc:'The Athletic - Tennis mondial' },
         { name:'Reuters Amériques', domain:'reutersbest.com', color:'#e87722', url:'https://reutersbest.com/region/americas/feed/', desc:'Sport et actu Amériques' },
       ]},
-    { id:'culture', name:'Culture', illus:'film',
+    { id:'culture', name:'Culture', illus:'film', tileGrad:'linear-gradient(145deg,#6c0070 0%,#e91e8c 100%)', icon:'🎬',
       desc:'Cinéma, musique, littérature et art de vivre',
       feeds:[
         // sombre → rouge → violet → rouge sombre → bleu → gris
@@ -6001,7 +6590,7 @@ body.focus-mode .focus-exit{ display:flex; }
         { name:'NYT Arts & Music', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/svc/collections/v1/publish/https://www.nytimes.com/section/arts/music/rss.xml', desc:'Musique NYT' },
         { name:'WaPo Arts', domain:'washingtonpost.com', color:'#1a1a2e', url:'https://feeds.washingtonpost.com/rss/entertainment', desc:'Arts et divertissement WaPo' },
       ]},
-    { id:'design', name:'Design & Créa', illus:'bauhaus',
+    { id:'design', name:'Design & Créa', illus:'bauhaus', tileGrad:'linear-gradient(145deg,#4a0080 0%,#a044ff 100%)', icon:'🎨',
       desc:'UX, typographie, culture visuelle et outils créatifs',
       feeds:[
         // orange → rouge → bleu → sombre → bleu clair → sarcelle
@@ -6012,7 +6601,7 @@ body.focus-mode .focus-exit{ display:flex; }
         { name:'A List Apart',      domain:'alistapart.com',        color:'#367eb6', url:'https://alistapart.com/main/feed/',                  desc:'Web design et bonnes pratiques' },
         { name:'Abduzeedo',         domain:'abduzeedo.com',         color:'#1a7a6a', url:'https://abduzeedo.com/rss.xml',                      desc:'Inspiration design et motion' },
       ]},
-    { id:'gastro', name:'Gastronomie', illus:'gastronomie',
+    { id:'gastro', name:'Gastronomie', illus:'gastronomie', tileGrad:'linear-gradient(145deg,#7b241c 0%,#e74c3c 100%)', icon:'🍽️',
       desc:'Cuisine, recettes et culture culinaire',
       feeds:[
         // sombre → rouge → orange → vert → jaune → bleu
@@ -6024,7 +6613,7 @@ body.focus-mode .focus-exit{ display:flex; }
         { name:'Saveur',            domain:'saveur.com',            color:'#1a3a6e', url:'https://www.saveur.com/feed/rss/',                   desc:'Voyages culinaires et recettes' },
         { name:'NYT Food', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/svc/collections/v1/publish/https://www.nytimes.com/section/food/rss.xml', desc:'Gastronomie et recettes NYT' },
       ]},
-    { id:'voyage', name:'Voyage', illus:'voyage',
+    { id:'voyage', name:'Voyage', illus:'voyage', tileGrad:'linear-gradient(145deg,#0e4d6e 0%,#00b4d8 100%)', icon:'✈️',
       desc:'Destinations, aventure et art de voyager',
       feeds:[
         // sombre → bleu → orange → vert → rouge → gris-bleu
@@ -6037,7 +6626,7 @@ body.focus-mode .focus-exit{ display:flex; }
         { name:'NYT Travel', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/travel.xml', desc:'Voyages et destinations NYT' },
         { name:'WaPo Lifestyle', domain:'washingtonpost.com', color:'#1a1a2e', url:'https://feeds.washingtonpost.com/rss/lifestyle', desc:'Lifestyle et voyages WaPo' },
       ]},
-    { id:'gaming', name:'Gaming', illus:'gaming',
+    { id:'gaming', name:'Gaming', illus:'gaming', tileGrad:'linear-gradient(145deg,#512e5f 0%,#9b59b6 100%)', icon:'🎮',
       desc:'Jeux vidéo, esport et culture geek',
       feeds:[
         // violet → rouge → gris → vert → bleu → orange
@@ -6064,48 +6653,113 @@ body.focus-mode .focus-exit{ display:flex; }
   }
 
   function dcRenderThemeTile(theme){
-    return `<div class="dc-theme-tile" onclick="dcOpenTheme('${theme.id}')">
-      <div class="dc-theme-tile-img" style="background-image:url('${dcSvgUrl(theme.illus)}');"></div>
-      <div class="dc-theme-tile-badge">${theme.feeds.length} flux</div>
-      <div class="dc-theme-tile-body">
+    const grad = theme.tileGrad || 'linear-gradient(145deg,#1a1a2e 0%,#16213e 100%)';
+    const icon = theme.icon || '\u{1F4F0}';
+    return `<div class="dc-theme-tile" data-desc="${escapeHtml(theme.desc||'')}" onclick="dcOpenTheme('${theme.id}')">
+      <div class="dc-theme-tile-img" style="background:${grad}">
+        <div class="dc-theme-tile-icon">${icon}</div>
+        <div class="dc-theme-tile-badge">${theme.feeds.length} flux</div>
         <div class="dc-theme-tile-name">${escapeHtml(theme.name)}</div>
-        <div class="dc-theme-tile-desc">${escapeHtml(theme.desc)}</div>
       </div>
     </div>`;
   }
 
-  function dcRenderFeedRow(feed, themeName){
+  function dcRenderFeedRow(feed, themeName, idx){
     const subKey = 'dc.sub.' + encodeURIComponent(feed.url);
     let subbed = false; try{ subbed = localStorage.getItem(subKey)==='1'; }catch(e){}
     const initial = feed.name.trim()[0].toUpperCase();
-    return `<div class="dc-feed-row">
-      <div class="dc-feed-logo" style="background:${feed.color}">
-        ${initial}
-        <img src="https://icon.horse/icon/${feed.domain}"
-             data-fb="https://www.google.com/s2/favicons?domain=${feed.domain}&sz=128"
-             onerror="if(this.dataset.fb){this.src=this.dataset.fb;delete this.dataset.fb}else{this.remove()}"
-             loading="lazy" alt="">
-      </div>
-      <div class="dc-feed-info">
-        <div class="dc-feed-row-name">${escapeHtml(feed.name)}</div>
-        <div class="dc-feed-row-desc">${escapeHtml(feed.desc)}</div>
-      </div>
+    return `<div class="dc-feed-card">
+      <div class="dc-feed-row">
+        <div class="dc-feed-logo" style="background:${feed.color}">
+          ${initial}
+          <img src="https://icon.horse/icon/${feed.domain}"
+               data-fb="https://www.google.com/s2/favicons?domain=${feed.domain}&sz=128"
+               onerror="if(this.dataset.fb){this.src=this.dataset.fb;delete this.dataset.fb}else{this.remove()}"
+               loading="lazy" alt="">
+        </div>
+        <div class="dc-feed-info">
+          <div class="dc-feed-row-name">${escapeHtml(feed.name)}</div>
+          <div class="dc-feed-row-desc">${escapeHtml(feed.desc)}</div>
+        </div>
       <button class="dc-sub-btn${subbed?' subbed':''}"
         data-feed-url="${escapeHtml(feed.url)}"
         data-feed-name="${escapeHtml(feed.name)}"
         data-feed-desc="${escapeHtml(feed.desc||'')}"
         data-theme="${escapeHtml(themeName)}"
         onclick="dcToggleSub(this)">${subbed?'Abonné \u2713':'+ Suivre'}</button>
+      </div>
+      <div class="dc-feed-arts" id="dcfa-${idx}">
+        <div class="dc-arts-carousel">
+          <div class="dc-art-skel"></div>
+          <div class="dc-art-skel"></div>
+          <div class="dc-art-skel"></div>
+        </div>
+      </div>
     </div>`;
+  }
+
+  // ── Aperçu des 5 derniers articles par flux (chargement à la demande) ──
+  const _dcArtCache = {};
+  let _dcThemeToken = 0;
+
+  window._dcOpenArt = function(url, i){
+    const arr = _dcArtCache[url];
+    const a = arr && arr[i];
+    if(a && typeof _showArtModal === 'function') _showArtModal(a);
+  };
+
+  function _dcFillArts(cont, feedUrl, arts){
+    if(!cont) return;
+    if(!arts || !arts.length){
+      cont.innerHTML = '<div class="dc-art-state">Aucun article récent disponible.</div>';
+      return;
+    }
+    const safeUrl = String(feedUrl).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    const cards = arts.map((a,i)=>{
+      const imgHtml = a.imageUrl
+        ? `<div class="dc-art-img"><img src="${escapeHtml(a.imageUrl)}" alt="" decoding="async" loading="lazy" onerror="this.parentNode.className='dc-art-no-img'"><span class="dc-art-no-img-dot" style="display:none"></span></div>`
+        : `<div class="dc-art-no-img"><span class="dc-art-no-img-dot"></span></div>`;
+      return `<div class="dc-art" onclick="_dcOpenArt('${safeUrl}',${i})">
+        ${imgHtml}
+        <div class="dc-art-title">${escapeHtml(a.title||'')}</div>
+        <div class="dc-art-time">${relTime(a.pubDate)}</div>
+      </div>`;
+    }).join('');
+    cont.innerHTML = `<div class="dc-arts-carousel">${cards}</div>`;
+  }
+
+  async function _dcLoadThemeArts(theme, token){
+    const feeds = theme.feeds.slice();
+    let idx = 0;
+    const next = async()=>{
+      while(idx < feeds.length){
+        if(token !== _dcThemeToken) return;       // thème changé : on abandonne
+        const myIdx = idx++;
+        const f = feeds[myIdx];
+        let arts = _dcArtCache[f.url];
+        if(!arts){
+          try{
+            const r = await _loadSingleFeed({ url:f.url, name:f.name, slug:f.domain||f.url, domain:f.domain, color:f.color });
+            arts = (r||[]).slice().sort((a,b)=>b.pubDate-a.pubDate).slice(0,5);
+          }catch(e){ arts = []; }
+          _dcArtCache[f.url] = arts;
+        }
+        if(token !== _dcThemeToken) return;
+        _dcFillArts(document.getElementById('dcfa-'+myIdx), f.url, arts);
+      }
+    };
+    await Promise.all([next(), next(), next()]);   // 3 chargements parallèles max
   }
 
   window.dcOpenTheme = function(id){
     const theme = DC_THEMES.find(t=>t.id===id);
     if(!theme) return;
+    const token = ++_dcThemeToken;
     document.getElementById('dcDetailTitle').textContent = theme.name;
-    document.getElementById('dcFeedList').innerHTML = theme.feeds.map(f=>dcRenderFeedRow(f,theme.name)).join('');
+    document.getElementById('dcFeedList').innerHTML = theme.feeds.map((f,i)=>dcRenderFeedRow(f,theme.name,i)).join('');
     document.getElementById('dcCatalogPanel').classList.add('pushed');
     document.getElementById('dcDetailPanel').classList.add('visible');
+    _dcLoadThemeArts(theme, token);
   };
 
   function dcCloseTheme(){
@@ -6154,7 +6808,7 @@ body.focus-mode .focus-exit{ display:flex; }
     const q = this.value.trim().toLowerCase();
     document.querySelectorAll('.dc-theme-tile').forEach(tile=>{
       const n = (tile.querySelector('.dc-theme-tile-name')?.textContent||'').toLowerCase();
-      const d = (tile.querySelector('.dc-theme-tile-desc')?.textContent||'').toLowerCase();
+      const d = (tile.dataset.desc||'').toLowerCase();
       tile.style.display = !q || n.includes(q) || d.includes(q) ? '' : 'none';
     });
   });
@@ -6191,12 +6845,10 @@ body.focus-mode .focus-exit{ display:flex; }
   ];
 
   function pcRenderThemeTile(theme){
-    return `<div class="dc-theme-tile" onclick="pcOpenTheme('${theme.id}')">
-      <div class="dc-theme-tile-img" style="background-image:url('${dcSvgUrl(theme.illus)}');"></div>
-      <div class="dc-theme-tile-badge">${theme.count} balados</div>
-      <div class="dc-theme-tile-body">
+    return `<div class="dc-theme-tile" data-desc="${escapeHtml(theme.desc||'')}" onclick="pcOpenTheme('${theme.id}')">
+      <div class="dc-theme-tile-img" style="background-image:url('${dcSvgUrl(theme.illus)}');">
+        <div class="dc-theme-tile-badge">${theme.count} balados</div>
         <div class="dc-theme-tile-name">${escapeHtml(theme.name)}</div>
-        <div class="dc-theme-tile-desc">${escapeHtml(theme.desc)}</div>
       </div>
     </div>`;
   }
@@ -6234,7 +6886,7 @@ body.focus-mode .focus-exit{ display:flex; }
     const q = this.value.trim().toLowerCase();
     document.querySelectorAll('#pcThemeGrid .dc-theme-tile').forEach(tile=>{
       const n = (tile.querySelector('.dc-theme-tile-name')?.textContent||'').toLowerCase();
-      const d = (tile.querySelector('.dc-theme-tile-desc')?.textContent||'').toLowerCase();
+      const d = (tile.dataset.desc||'').toLowerCase();
       tile.style.display = !q || n.includes(q) || d.includes(q) ? '' : 'none';
     });
   });
@@ -6278,9 +6930,15 @@ body.focus-mode .focus-exit{ display:flex; }
   function getFavicon(url){ return 'https://www.google.com/s2/favicons?domain='+getFaviconDomain(url)+'&sz=64'; }
   function showBadge(msg, ok=false){
     const b = document.getElementById('refreshBadge'); if(!b) return;
-    b.className = ok ? 'ok' : 'vis';
     clearTimeout(b._t);
-    if(ok) b._t = setTimeout(()=>{ b.className=''; }, 1800);
+    if(ok){
+      b.innerHTML = '<svg class="rb-check" viewBox="0 0 24 24" fill="none" stroke="#34c759" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>'+(msg||'À jour')+'</span>';
+      b.className = 'ok';
+      b._t = setTimeout(()=>{ b.className=''; }, 1700);
+    } else {
+      b.innerHTML = '<span class="rb-spin"></span><span>'+(msg||'Actualisation…')+'</span>';
+      b.className = 'vis';
+    }
   }
   function hideBadge(){ const b=document.getElementById('refreshBadge'); if(b) b.className=''; }
 
@@ -6396,6 +7054,7 @@ body.focus-mode .focus-exit{ display:flex; }
         'media:thumbnail': mt.length?mt[0]:null,
         'itunes:image': (()=>{const ii=el.querySelector('itunes\\:image');return ii?{href:ii.getAttribute('href')}:null})(),
         author: g('dc\\:creator')||g('author')||g('itunes\\:author')||'',
+        categories: (()=>{const out=[];el.querySelectorAll('category').forEach(c=>{let t=(c.textContent||'').trim(); if(!t) t=(c.getAttribute('term')||'').trim(); if(t) out.push(t);});return out;})(),
       });
     });
     return items;
@@ -6430,7 +7089,7 @@ body.focus-mode .focus-exit{ display:flex; }
         // Podcast — pister une pièce jointe audio (enclosure)
         const enc = item.enclosure;
         const audioUrl = (enc && enc.url && (/^audio\//i.test(enc.type||'') || /\.(mp3|m4a|aac|ogg|wav|opus)(\?|$)/i.test(enc.url))) ? enc.url : null;
-        const art = { title:item.title||'Sans titre', link:item.link||'#', description:desc, pubDate:pd, source:feed.name, slug:feed.slug, feedUrl:feed.url, imageUrl:img, needsFetch:!img, contentEncoded:(item['content:encoded']||'').slice(0,2000), author:(item.author||'').replace(/<[^>]+>/g,'').trim().slice(0,60)||null, audioUrl, audioDuration:(item['itunes:duration']||'')||null };
+        const art = { title:item.title||'Sans titre', link:item.link||'#', description:desc, pubDate:pd, source:feed.name, slug:feed.slug, feedUrl:feed.url, imageUrl:img, needsFetch:!img, contentEncoded:(item['content:encoded']||'').slice(0,2000), author:(item.author||'').replace(/<[^>]+>/g,'').trim().slice(0,60)||null, audioUrl, audioDuration:(item['itunes:duration']||'')||null, categories:(item.categories||[]) };
         if(audioUrl && feed.url && window.BF_SOURCES) window.BF_SOURCES.markType(feed.url,'podcast');
         if(art.title && art.link !== '#') arr.push(art);
       }catch(e){}
@@ -6562,10 +7221,36 @@ body.focus-mode .focus-exit{ display:flex; }
   // Dédup Jaccard léger
   function _tokens(t){ return new Set((t||'').toLowerCase().split(/\W+/).filter(w=>w.length>3)); }
   function _sim(a,b){ const sa=_tokens(a.title),sb=_tokens(b.title); let inter=0; sa.forEach(w=>{if(sb.has(w))inter++;}); return inter/(sa.size+sb.size-inter||1); }
+  // ── Filtre anti-doublons configurable (« Clone Wars ») ──────────
+  //   off    : seul le lien identique est dédupliqué (filtre minimal)
+  //   exact  : + titres strictement identiques (après normalisation)
+  //   fuzzy  : + titres très similaires (Jaccard ≥ .55) — défaut historique
+  const _DEDUPE_KEY = 'reader.dedupe';
+  let _dedupeCfg = { mode:'fuzzy' };
+  function _dedupeReload(){
+    try{ const s = JSON.parse(localStorage.getItem(_DEDUPE_KEY)||'{}');
+         _dedupeCfg = { mode: (s.mode==='off'||s.mode==='exact'||s.mode==='fuzzy') ? s.mode : 'fuzzy' }; }
+    catch(e){ _dedupeCfg = { mode:'fuzzy' }; }
+  }
+  _dedupeReload();
+  function _normTitle(t){
+    return String(t||'').toLowerCase()
+      .replace(/[^a-zàâäéèêëîïôöùûüç0-9\s]/g,' ').replace(/\s+/g,' ').trim();
+  }
+
   function _dedup(arts){
     // 1) Dédup exact par lien — O(n)
     const byLink = new Set(); const stage = [];
     for(const a of arts){ if(a.link && byLink.has(a.link)) continue; if(a.link) byLink.add(a.link); stage.push(a); }
+
+    const mode = _dedupeCfg.mode;
+    if(mode === 'off') return stage;
+    if(mode === 'exact'){
+      // Titres strictement identiques après normalisation — on garde la 1re occurrence.
+      const seen = new Set(); const out = [];
+      for(const a of stage){ const k = _normTitle(a.title); if(k && seen.has(k)) continue; if(k) seen.add(k); out.push(a); }
+      return out;
+    }
     // 2) Quasi-doublons par titre via index inversé de tokens — quasi-linéaire.
     //    On ne compare qu'aux articles DÉJÀ gardés partageant ≥1 token signifiant,
     //    et les tokens de chaque titre sont calculés UNE seule fois (plus de O(n²)
@@ -6600,6 +7285,298 @@ body.focus-mode .focus-exit{ display:flex; }
   // ── 13. Rendu vue Éditions ────────────────────────────────────
   // ── Tableau global — articles indexés (pas de JSON dans onclick) ──
   let _editionArts = [];
+
+  // ══════════════════════════════════════════════════════════════
+  //  SMART BAR (A+C) — deux niveaux façon Apple Music + tiret « Sunday »
+  //  · Segment : Tout / Non lus / Aujourd'hui  (mode intelligent, empilable)
+  //  · Catégories : onglets (= dossiers) avec tiret animé
+  //  · Sources : avatars de la catégorie active, révélés en accordéon,
+  //    un seul tap = filtre instantané
+  //  _railApplyFilter() reste l'API commune respectée par les 4 vues.
+  // ══════════════════════════════════════════════════════════════
+  let _railFilterUrl = null;     // source active (ou null)
+  let _smartCat      = null;     // catégorie (= dossier) active (ou null = Tout)
+  let _smartMode     = 'all';    // 'all' | 'unread' | 'today' | '3days' | 'week' | 'month'
+  let _railBound     = false;    // écouteurs attachés une fois
+  let _railInstant   = false;    // true → prochain rendu sans animation
+  try{ _railFilterUrl = localStorage.getItem('bf_rail_filter') || null; }catch(e){}
+  try{ _smartCat = localStorage.getItem('bf_smart_cat') || null; }catch(e){}
+  try{ _smartMode = localStorage.getItem('bf_smart_mode') || 'all'; }catch(e){}
+  const _smartTemporalExtras = ['3days','week','month'];  // modes cachés derrière « Aujourd'hui »
+  let _smartTemporalOpen = _smartTemporalExtras.includes(_smartMode);  // panneau déployé au chargement si besoin
+
+  function _smartTodayMs(){ const d = new Date(); d.setHours(0,0,0,0); return d.getTime(); }
+  function _smartModeMs(mode){
+    const d = new Date();
+    if(mode === 'today'){ d.setHours(0,0,0,0); return d.getTime(); }
+    if(mode === '3days'){ d.setDate(d.getDate()-2); d.setHours(0,0,0,0); return d.getTime(); }
+    if(mode === 'week'){  d.setDate(d.getDate()-6); d.setHours(0,0,0,0); return d.getTime(); }
+    if(mode === 'month'){ d.setDate(1); d.setHours(0,0,0,0); return d.getTime(); }
+    return 0;
+  }
+
+  // Catégories (dossiers) dans l'ordre, avec leurs sources
+  function _smartCatMap(){
+    const feeds = (typeof _rssFeeds !== 'undefined') ? _rssFeeds : [];
+    const order = [], map = {};
+    feeds.forEach(f => {
+      const c = f.category || 'Autres';
+      if(!map[c]){ map[c] = []; order.push(c); }
+      if(!map[c].some(s => s.url === f.url)) map[c].push({ name:f.name, url:f.url });
+    });
+    return { order, map };
+  }
+  // URLs appartenant à une catégorie
+  function _smartCatUrls(cat){
+    const { map } = _smartCatMap();
+    return new Set((map[cat] || []).map(s => s.url));
+  }
+
+  // Filtre global appliqué par chaque vue (source > catégorie, + mode, empilés)
+  function _railApplyFilter(arts){
+    let out = arts;
+    if(_railFilterUrl){
+      out = out.filter(a => (a.feedUrl || '') === _railFilterUrl);
+    } else if(_smartCat){
+      const urls = _smartCatUrls(_smartCat);
+      out = out.filter(a => urls.has(a.feedUrl || ''));
+    }
+    if(_smartMode === 'unread' && window._RS){
+      out = out.filter(a => !window._RS.has(a.link));
+    } else if(_smartMode !== 'all'){
+      const ms = _smartModeMs(_smartMode);
+      if(ms) out = out.filter(a => (a.pubDate || 0) >= ms);
+    }
+    return out;
+  }
+
+  function _railUnread(url){
+    if(typeof window._RS === 'undefined') return 0;
+    let n = 0;
+    for(const a of _allArticles){ if((a.feedUrl||'') === url && !window._RS.has(a.link)) n++; }
+    return n;
+  }
+
+  // Sources à afficher dans la rangée : celles de la catégorie active (ou toutes),
+  // triées par non-lus décroissant → les plus actives à gauche
+  function _smartSources(){
+    const { map } = _smartCatMap();
+    let raw;
+    if(_smartCat && map[_smartCat]){
+      raw = map[_smartCat];
+    } else {
+      const seen = {}; raw = [];
+      Object.keys(map).forEach(c => map[c].forEach(s => { if(!seen[s.url]){ seen[s.url]=1; raw.push(s); } }));
+    }
+    return raw.map(s => ({ name:s.name, url:s.url, unread:_railUnread(s.url) }))
+              .sort((a,b) => b.unread - a.unread || a.name.localeCompare(b.name));
+  }
+
+  // Compteurs des segments — sur le pool filtré par source/catégorie (pas par mode)
+  function _smartCounts(){
+    let pool = _allArticles || [];
+    if(_railFilterUrl){
+      pool = pool.filter(a => (a.feedUrl||'') === _railFilterUrl);
+    } else if(_smartCat){
+      const urls = _smartCatUrls(_smartCat);
+      pool = pool.filter(a => urls.has(a.feedUrl||''));
+    }
+    pool = (typeof _dedup === 'function') ? _dedup([...pool]) : pool;
+    const msToday = _smartModeMs('today');
+    const ms3days = _smartModeMs('3days');
+    const msWeek  = _smartModeMs('week');
+    const msMonth = _smartModeMs('month');
+    let unread = 0, today = 0, d3 = 0, week = 0, month = 0;
+    for(const a of pool){
+      const pub = a.pubDate || 0;
+      if(window._RS && !window._RS.has(a.link)) unread++;
+      if(pub >= msToday) today++;
+      if(pub >= ms3days) d3++;
+      if(pub >= msWeek)  week++;
+      if(pub >= msMonth) month++;
+    }
+    return { all: pool.length, unread, today, '3days': d3, week, month };
+  }
+
+  const _GRID_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.6"/><rect x="14" y="3" width="7" height="7" rx="1.6"/><rect x="3" y="14" width="7" height="7" rx="1.6"/><rect x="14" y="14" width="7" height="7" rx="1.6"/></svg>';
+
+  function _renderSrcRail(){
+    const bar = document.getElementById('smartBar');
+    if(!bar) return;
+    const { order } = _smartCatMap();
+    if(!order.length){ bar.hidden = true; return; }
+    bar.hidden = false;
+
+    // La catégorie active existe-t-elle encore ?
+    if(_smartCat && !order.includes(_smartCat)){
+      _smartCat = null;
+      try{ localStorage.removeItem('bf_smart_cat'); }catch(e){}
+    }
+    const sources = _smartSources();
+    // La source active appartient-elle encore à la sélection ?
+    if(_railFilterUrl && !sources.some(s => s.url === _railFilterUrl)){
+      _railFilterUrl = null;
+      try{ localStorage.removeItem('bf_rail_filter'); }catch(e){}
+    }
+
+    // Segment + compteurs intelligents
+    const counts = _smartCounts();
+    const seg = document.getElementById('sbarSeg');
+    if(seg){
+      if(_smartTemporalExtras.includes(_smartMode)) _smartTemporalOpen = true;
+      seg.classList.toggle('temporal-open', _smartTemporalOpen);
+      seg.querySelectorAll('.sbar-seg-btn').forEach(btn => {
+        const m = btn.dataset.mode;
+        btn.classList.toggle('active', m === _smartMode);
+        const nEl = btn.querySelector('.sbar-seg-n');
+        if(nEl){ const v = counts[m] || 0; nEl.textContent = v > 999 ? '999+' : v; }
+      });
+      _smartMovePill();
+    }
+
+    // Onglets catégories (tiret « Sunday ») — « Tout » en tête
+    const cats = document.getElementById('sbarCats');
+    if(cats){
+      const prevLeft = cats.scrollLeft;
+      let html = `<button class="sbar-cat${_smartCat ? '' : ' sel'}" type="button" data-cat="">
+        <span class="sbar-cat-label">Tout</span><span class="sbar-cat-dash"></span>
+      </button>`;
+      html += order.map(c => `<button class="sbar-cat${_smartCat === c ? ' sel' : ''}" type="button" data-cat="${escAttr(c)}">
+        <span class="sbar-cat-label">${escHtml(c)}</span><span class="sbar-cat-dash"></span>
+      </button>`).join('');
+      cats.innerHTML = html;
+      cats.scrollLeft = prevLeft;
+    }
+
+    // Sources de la catégorie active (préserve le défilement horizontal)
+    const srcs = document.getElementById('sbarSrcs');
+    if(srcs){
+      const prevLeft = srcs.scrollLeft;
+      let html = `<button class="sbar-src sbar-src-all${_railFilterUrl ? '' : ' sel'}" type="button" data-url="">
+        <span class="sbar-src-av sbar-all-av">${_GRID_SVG}</span>
+        <span class="sbar-src-name">Toutes</span>
+      </button>`;
+      html += sources.map(s => {
+        const sel = _railFilterUrl === s.url;
+        return `<button class="sbar-src${sel ? ' sel' : ''}" type="button" data-url="${escAttr(s.url)}">
+          <span class="sbar-src-av"><img src="${escAttr(getFavicon(s.url))}" alt="" onerror="this.style.opacity='.3'">${s.unread ? '<span class="sbar-src-dot"></span>' : ''}</span>
+          <span class="sbar-src-name">${escHtml(s.name)}</span>
+        </button>`;
+      }).join('');
+      srcs.innerHTML = html;
+      srcs.scrollLeft = prevLeft;
+    }
+
+    _smartBindOnce();
+  }
+
+  // Pastille glissante du segment (sur le bouton actif)
+  function _smartMovePill(scroll){
+    const seg  = document.getElementById('sbarSeg');
+    const pill = document.getElementById('sbarSegPill');
+    if(!seg || !pill) return;
+    const btn = seg.querySelector('.sbar-seg-btn.active');
+    if(!btn){ pill.classList.remove('vis'); return; }
+    pill.style.transform = `translateX(${btn.offsetLeft - 3}px)`;
+    pill.style.width = btn.offsetWidth + 'px';
+    pill.classList.add('vis');
+    if(scroll) btn.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' });
+  }
+
+  // Petit « accordéon » : rejoue la révélation grid-rows de la rangée sources
+  function _smartRevealSrcs(){
+    const wrap = document.getElementById('sbarSrcsWrap');
+    if(!wrap) return;
+    wrap.classList.add('collapsed');
+    requestAnimationFrame(()=>{ requestAnimationFrame(()=>{ wrap.classList.remove('collapsed'); }); });
+  }
+
+  // Sélection d'un mode intelligent — rendu instantané
+  function _smartSetMode(mode){
+    if(_smartMode === mode) return;
+    _smartMode = mode;
+    try{ localStorage.setItem('bf_smart_mode', mode); }catch(e){}
+    // Met à jour le segment visuellement avant le rendu pour que la pastille scroll
+    const seg = document.getElementById('sbarSeg');
+    if(seg){
+      // Repli auto sur « Tout » / « Non lus » ; déploiement sur un mode temporel avancé
+      if(mode === 'all' || mode === 'unread') _smartTemporalOpen = false;
+      else if(_smartTemporalExtras.includes(mode)) _smartTemporalOpen = true;
+      seg.classList.toggle('temporal-open', _smartTemporalOpen);
+      seg.querySelectorAll('.sbar-seg-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+      _smartMovePill(true);
+    }
+    _railInstant = true;
+    _renderCurrentView();
+  }
+
+  // Ouvre/ferme le tiroir temporel (3 jours / Semaine / Mois) derrière « Aujourd'hui »
+  function _smartToggleTemporal(force){
+    const seg = document.getElementById('sbarSeg');
+    if(!seg) return;
+    _smartTemporalOpen = (force === undefined) ? !_smartTemporalOpen : !!force;
+    seg.classList.toggle('temporal-open', _smartTemporalOpen);
+    requestAnimationFrame(() => _smartMovePill(true));
+  }
+
+  // Sélection d'une catégorie (cat='' = Tout) — révèle ses sources + filtre instantané
+  function _smartPickCat(cat){
+    const next = cat || null;
+    if(_smartCat === next) return;
+    _smartCat = next;
+    _railFilterUrl = null;   // changer de catégorie remet la source à « Toutes »
+    try{
+      if(_smartCat) localStorage.setItem('bf_smart_cat', _smartCat);
+      else localStorage.removeItem('bf_smart_cat');
+      localStorage.removeItem('bf_rail_filter');
+    }catch(e){}
+    _smartRevealSrcs();
+    _railInstant = true;
+    _renderCurrentView();
+  }
+
+  // Sélection d'une source (url='' = Toutes) — toggle + rendu instantané
+  function _smartPickSource(url){
+    if(!url){
+      if(!_railFilterUrl) return;        // déjà « Toutes »
+      _railFilterUrl = null;
+    } else {
+      _railFilterUrl = (_railFilterUrl === url) ? null : url;
+    }
+    try{
+      if(_railFilterUrl) localStorage.setItem('bf_rail_filter', _railFilterUrl);
+      else localStorage.removeItem('bf_rail_filter');
+    }catch(e){}
+    _railInstant = true;
+    _renderCurrentView();
+  }
+
+  // Alias conservé pour les appels externes éventuels
+  function _railClearFilter(){ _smartCat = null; _smartPickSource(''); }
+
+  function _smartBindOnce(){
+    if(_railBound) return;
+    _railBound = true;
+    const seg  = document.getElementById('sbarSeg');
+    const cats = document.getElementById('sbarCats');
+    const srcs = document.getElementById('sbarSrcs');
+    if(seg) seg.addEventListener('click', e => {
+      const b = e.target.closest('.sbar-seg-btn');
+      if(!b) return;
+      const mode = b.dataset.mode;
+      // Second appui sur « Aujourd'hui » (déjà actif) : déploie / replie le tiroir temporel
+      if(mode === 'today' && _smartMode === 'today'){ _smartToggleTemporal(); return; }
+      _smartSetMode(mode);
+    });
+    if(cats) cats.addEventListener('click', e => {
+      const b = e.target.closest('.sbar-cat');
+      if(b) _smartPickCat(b.dataset.cat);
+    });
+    if(srcs) srcs.addEventListener('click', e => {
+      const b = e.target.closest('.sbar-src');
+      if(b) _smartPickSource(b.dataset.url);
+    });
+  }
 
 
   // ════════════════════════════════════════════════════════════════
@@ -6839,49 +7816,46 @@ body.focus-mode .focus-exit{ display:flex; }
     const grid  = document.getElementById('editionsGrid');
     const empty = document.getElementById('editionsEmpty');
     const skel  = document.getElementById('editionsSkeleton');
-    if(!hero||!grid) return;
+    if(!grid) return;
     if(skel) skel.style.display='none';
     if(!_allArticles.length){
       if(empty) empty.style.display = _rssFeeds.length ? 'none' : 'block';
       return;
     }
     if(empty) empty.style.display='none';
+    if(hero){ hero.innerHTML=''; hero.style.display='none'; }
 
-    const deduped = _dedup([..._allArticles].sort((a,b)=>b.pubDate-a.pubDate));
-    const best    = deduped.find(a=>a.imageUrl) || deduped[0];
-    const rest    = deduped.filter(a=>a.link!==best?.link).slice(0,60);
-    _editionArts  = best ? [best,...rest] : rest;
-
-    const heroHtml = best ? _artCardHtml(best, 0, true, 'hero') : '';
-    const gridHtml = rest.map((a,i)=>_artCardHtml(a, i+1, false, 'standard')).join('');
+    // Filtrage éventuel par source (rail global)
+    const pool    = _railApplyFilter(_allArticles);
+    const deduped = _dedup([...pool].sort((a,b)=>b.pubDate-a.pubDate));
+    _editionArts  = deduped.slice(0, 60);
 
     // Jitter fix : ne re-rendre que si le contenu a changé
-    const heroKey = best?.link || '';
-    const gridKey = rest.slice(0,5).map(a=>a.link).join('|');
+    const gridKey = _editionArts.slice(0,6).map(a=>a.link).join('|') + '#' + (_railFilterUrl || '') + '#' + (_smartCat || '') + '#' + _smartMode + '#' + _editionArts.length;
+    if(grid.dataset.key === gridKey) return; // rien n'a changé
 
-    if(hero.dataset.key === heroKey && grid.dataset.key === gridKey) return; // rien n'a changé
+    const isFirst = !grid.dataset.key;
+    const rowEl   = document.querySelector('.row');
+    const prevTop = rowEl ? rowEl.scrollTop : 0;
+    const instant = _railInstant;
+    _railInstant  = false;
 
-    // Si première fois → direct, sinon fade discret
-    const isFirst = !hero.dataset.key;
-    if(!isFirst){
-      grid.style.transition = 'opacity .25s ease';
-      grid.style.opacity = '0.4';
-    }
-    requestAnimationFrame(()=>{
-      if(heroHtml) hero.innerHTML = heroHtml;
-      grid.innerHTML = gridHtml;
-      hero.dataset.key = heroKey;
+    const doRender = ()=>{
+      grid.className = 'edl';
+      grid.style.fontFamily = '';
+      grid.innerHTML = _editionArts.map((a,i)=>_edlCardHtml(a, i)).join('');
       grid.dataset.key = gridKey;
-      if(!isFirst){
-        requestAnimationFrame(()=>{
-          grid.style.opacity = '1';
-          setTimeout(()=>{ grid.style.transition = ''; }, 300);
-        });
+      if(rowEl && !isFirst && rowEl.scrollTop !== prevTop) rowEl.scrollTop = prevTop;
+      if(instant){
+        // Filtre pill : affichage immédiat, pas d'animation révélation
+        grid.querySelectorAll('.reveal').forEach(el=>el.classList.add('in'));
+      } else {
+        if(typeof window._revealObserve === 'function') _revealObserve(grid);
       }
-      // Activer le preload des images nouvellement rendues
       if(typeof window._obsImage === 'function') setTimeout(window._obsImage, 50);
-      if(typeof window._obsReveal === 'function') window._obsReveal();
-    });
+    };
+
+    if(instant) doRender(); else requestAnimationFrame(doRender);
   }
 
   function _artCardHtml(a, idx, isHero, tier){
@@ -6946,35 +7920,38 @@ body.focus-mode .focus-exit{ display:flex; }
 
   window._openEditionArt = function(idx){
     const a = _editionArts[idx];
-    if(a) _showArtModal(a);
+    if(!a) return;
+    if(window._RS) _RS.mark(a.link);
+    _showArtModal(a);
+    const el = document.querySelector('.edl-item[data-edl-idx="' + idx + '"]');
+    if(el) el.classList.add('is-read');
   };
 
 
   // ── 14. loadAllFeeds — moteur principal ──────────────────────
   // ── Rendu de la vue courante (point unique) ───────────────
   function _renderCurrentView(){
+    // Fallback si une vue supprimée était en localStorage
+    if(!order.includes(_currentView)){ _currentView='editions'; try{localStorage.setItem('bf_view','editions');}catch(e){} }
     views.forEach(v => { v.hidden = v.dataset.view !== _currentView; });
+    _renderSrcRail();   // rail partagé visible sur toutes les vues
     if(_currentView === 'editions')    _renderEditions();
-    else if(_currentView === 'browse') renderBrowseTimeline();
     else if(_currentView === 'grille') _renderGrille();
     else if(_currentView === 'sequential') _renderSequential();
     else if(_currentView === 'liste')  _renderListe();
-    else if(_currentView === 'essentiel') _renderEssentiel();
+    if(window.BF_SMART && BF_SMART.renderSidebar){ try{ BF_SMART.renderSidebar(); }catch(e){} }
   }
 
-  // Crossfade lisse : fade out .column → swap DOM → fade in
+  // Rendu stable : swap en place + préservation du défilement (zéro saut)
   function _smoothRenderCurrentView(cb){
-    const col = document.querySelector('.column');
-    if(!col){ _renderCurrentView(); if(cb) cb(); return; }
-    col.style.transition = 'opacity .14s ease';
-    col.style.opacity    = '0';
-    setTimeout(()=>{
-      _renderCurrentView();
-      col.offsetHeight; // force reflow
-      col.style.transition = 'opacity .2s ease';
-      col.style.opacity    = '1';
-      setTimeout(()=>{ col.style.transition=''; if(cb) cb(); }, 220);
-    }, 150);
+    const rowEl   = document.querySelector('.row');
+    const prevTop = rowEl ? rowEl.scrollTop : 0;
+    _renderCurrentView();
+    // Restaurer la position après le rendu (rAF couvre le cas éditions)
+    requestAnimationFrame(()=>{
+      if(rowEl && rowEl.scrollTop !== prevTop) rowEl.scrollTop = prevTop;
+      if(cb) cb();
+    });
   }
 
   // ── Pending articles (background fetch) ──────────────────
@@ -7058,7 +8035,7 @@ body.focus-mode .focus-exit{ display:flex; }
       if(skel) skel.style.display='none'; return;
     }
     _isLoading = true; _lastLoad = Date.now();
-    showBadge('', false);
+    // Badge silencieux pendant le fetch — n'apparaît qu'avec le résultat
     await new Promise(r=>setTimeout(r,80));
 
     const existingLinks = new Set(_allArticles.map(a=>a.link));
@@ -7134,7 +8111,8 @@ body.focus-mode .focus-exit{ display:flex; }
       try{ idbSaveArticles(toSave); idbPrune(); }catch(e){}
       showBadge(`+${newCount} article${newCount>1?'s':''}`, true);
     } else {
-      hideBadge();
+      // Refresh manuel sans nouveauté → confirmation discrète « À jour »
+      if(force) showBadge('À jour', true); else hideBadge();
     }
 
     // Enrichir images en arrière-plan
@@ -7480,12 +8458,11 @@ body.focus-mode .focus-exit{ display:flex; }
     if(modal && modal.style.display === 'flex' && !_artClosing){
       _artClosing = true;
       modal.classList.remove('art-open');
-      modal.style.transition = 'transform .32s cubic-bezier(.32,.72,0,1), opacity .26s ease';
-      modal.style.transform  = 'translateY(40px)';
-      modal.style.opacity    = '0';
+      modal.classList.add('art-closing');
       if(_artCloseTimer) clearTimeout(_artCloseTimer);
       _artCloseTimer = setTimeout(()=>{
         modal.style.display='none';
+        modal.classList.remove('art-closing');
         modal.style.transition=''; modal.style.transform=''; modal.style.opacity='';
         _artCloseTimer = null; _artClosing = false;
         unlockScroll();
@@ -7569,7 +8546,7 @@ body.focus-mode .focus-exit{ display:flex; }
     }
   }
   // ── Vue Favoris ───────────────────────────────────────────────
-  const _MAIN_VIEWS = ['editions','browse','themes'];
+  const _MAIN_VIEWS = ['editions','themes'];
   function _showMainViews(){
     document.querySelectorAll('.view').forEach(v=>{
       v.hidden = v.dataset.view !== _currentView;
@@ -7582,6 +8559,11 @@ body.focus-mode .focus-exit{ display:flex; }
   }
 
   let _favArts = [];
+  let _favView = [];                 // sous-ensemble affiché selon le filtre
+  let _favFilter = 'all';            // 'all' | 'unread' | 'read'
+  let _favBound = false;
+  try{ _favFilter = localStorage.getItem('bf_fav_filter') || 'all'; }catch(e){}
+  const _favIsRead = a => !!(window._RS && window._RS.has(a.link));
   function _renderFavoris(){
     const container = document.getElementById('favorisList');
     if(!container) return;
@@ -7595,14 +8577,88 @@ body.focus-mode .focus-exit{ display:flex; }
       </div>`;
       return;
     }
+    // Squelette persistant (en-tête + bar déployable + hôte des items) — construit une seule fois
+    if(!document.getElementById('favBar')){
+      const header = `<div class="fav-header"><span class="fav-header-title">Favoris</span><button class="fav-clear-btn" onclick="_clearFavoris()">Tout effacer</button></div>`;
+      container.innerHTML = header + _favBarHTML() + `<div id="favItems"></div>`;
+    }
+    _favSyncBar(_favCounts());
+    _favRenderItems();
+    _favBindOnce();
+  }
+
+  // Compteurs par état de lecture
+  function _favCounts(){
+    let unread = 0, read = 0;
+    for(const a of _favArts){ _favIsRead(a) ? read++ : unread++; }
+    return { all:_favArts.length, unread, read };
+  }
+
+  // Markup du bar déployable
+  function _favBarHTML(){
+    const open = (_favFilter === 'unread' || _favFilter === 'read');
+    const act = f => _favFilter === f ? ' active' : '';
+    return `<div class="favbar" id="favBar">
+      <span class="favbar-pill" id="favBarPill" aria-hidden="true"></span>
+      <button class="favbar-tab${act('all')}" type="button" data-fav="all">Tous<span class="favbar-n" data-n="all"></span></button>
+      <div class="favbar-group${open ? ' open' : ''}" id="favBarGroup">
+        <button class="favbar-tab favbar-label" type="button" data-fav="read-init">Lecture<span class="favbar-sub">Non lus · Lus</span></button>
+        <div class="favbar-hidden">
+          <button class="favbar-tab${act('unread')}" type="button" data-fav="unread">Non lus<span class="favbar-n" data-n="unread"></span></button>
+          <button class="favbar-tab${act('read')}" type="button" data-fav="read">Déjà lus<span class="favbar-n" data-n="read"></span></button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  // Synchronise classes actives, ouverture du tiroir, compteurs et pastille glissante
+  function _favSyncBar(counts){
+    const bar = document.getElementById('favBar');
+    if(!bar) return;
+    const group = document.getElementById('favBarGroup');
+    if(group) group.classList.toggle('open', _favFilter === 'unread' || _favFilter === 'read');
+    bar.querySelectorAll('.favbar-tab').forEach(t => t.classList.toggle('active', t.dataset.fav === _favFilter));
+    bar.querySelectorAll('.favbar-n').forEach(n => { n.textContent = counts[n.dataset.n] != null ? counts[n.dataset.n] : ''; });
+    requestAnimationFrame(_favMovePill);
+  }
+
+  // Pastille positionnée sur l'onglet actif (ignorée si caché dans un tiroir fermé)
+  function _favMovePill(){
+    const bar = document.getElementById('favBar'), pill = document.getElementById('favBarPill');
+    if(!bar || !pill) return;
+    const act = bar.querySelector('.favbar-tab.active');
+    const group = document.getElementById('favBarGroup');
+    if(!act || (act.closest('.favbar-hidden') && group && !group.classList.contains('open'))){
+      pill.classList.remove('vis'); return;
+    }
+    const r = act.getBoundingClientRect(), br = bar.getBoundingClientRect();
+    pill.style.transform = `translateX(${r.left - br.left}px)`;
+    pill.style.width = r.width + 'px';
+    pill.classList.add('vis');
+  }
+
+  // Liste filtrée selon l'état actif
+  function _favVisible(){
+    if(_favFilter === 'unread') return _favArts.filter(a => !_favIsRead(a));
+    if(_favFilter === 'read')   return _favArts.filter(a =>  _favIsRead(a));
+    return _favArts;
+  }
+
+  function _favRenderItems(){
+    const host = document.getElementById('favItems');
+    if(!host) return;
+    _favView = _favVisible();
+    if(!_favView.length){
+      host.innerHTML = `<div class="fav-filter-empty" style="padding:42px 24px;text-align:center;color:var(--text-muted);font-family:var(--font-inter);font-size:13.5px">Aucun favori dans ce filtre.</div>`;
+      return;
+    }
     const DEL = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
-    const header = `<div class="fav-header"><span class="fav-header-title">Favoris</span><button class="fav-clear-btn" onclick="_clearFavoris()">Tout effacer</button></div>`;
-    const items = _favArts.map((a,i)=>{
+    host.innerHTML = _favView.map((a,i)=>{
       const fav = getFavicon(a.feedUrl||a.link||'');
       const thumb = a.imageUrl
         ? `<div class="fav-thumb" onclick="_openFavArt(${i})"><img src="${escAttr(a.imageUrl)}" alt="" onerror="this.parentNode.className='fav-thumb-empty'"></div>`
         : `<div class="fav-thumb-empty" onclick="_openFavArt(${i})"></div>`;
-      return `<div class="fav-item">
+      return `<div class="fav-item reveal${_favIsRead(a)?' is-read':''}">
         ${thumb}
         <div class="fav-meta" onclick="_openFavArt(${i})">
           <div class="fav-source-row">
@@ -7615,10 +8671,32 @@ body.focus-mode .focus-exit{ display:flex; }
         <button class="fav-del" onclick="_removeFavori('${escAttr(a.link)}')" aria-label="Retirer">${DEL}</button>
       </div>`;
     }).join('');
-    container.innerHTML = header + items;
+    if(typeof window._revealObserve === 'function') _revealObserve(host);
   }
 
-  window._openFavArt = function(i){ const a=_favArts[i]; if(a) _showArtModal(a); };
+  // Change le filtre (et déploie/replie le tiroir en conséquence)
+  function _favSetFilter(f){
+    _favFilter = f;
+    try{ localStorage.setItem('bf_fav_filter', f); }catch(e){}
+    _favSyncBar(_favCounts());
+    _favRenderItems();
+  }
+
+  function _favBindOnce(){
+    if(_favBound) return;
+    _favBound = true;
+    const container = document.getElementById('favorisList');
+    if(!container) return;
+    container.addEventListener('click', e => {
+      const t = e.target.closest('.favbar-tab');
+      if(!t) return;
+      const f = t.dataset.fav;
+      if(f === 'read-init'){ _favSetFilter('unread'); return; }   // appui sur « Lecture » → déploie, défaut Non lus
+      if(f === 'all' || f === 'unread' || f === 'read') _favSetFilter(f);
+    });
+  }
+
+  window._openFavArt = function(i){ const a=_favView[i]; if(a) _showArtModal(a); };
   window._removeFavori = function(link){
     let list = _getReadLater().filter(a=>a.link!==link);
     _saveReadLater(list);
@@ -7646,7 +8724,7 @@ body.focus-mode .focus-exit{ display:flex; }
   function _renderGrille(){
     const wrap = document.getElementById('grilleGrid');
     if(!wrap) return;
-    const arts = typeof _allArticles !== 'undefined' ? _dedup([..._allArticles].sort((a,b)=>b.pubDate-a.pubDate)) : [];
+    const arts = typeof _allArticles !== 'undefined' ? _dedup(_railApplyFilter([..._allArticles]).sort((a,b)=>b.pubDate-a.pubDate)) : [];
     _grilleArts = arts.slice(0,60);
     if(!_grilleArts.length){
       wrap.innerHTML = '<div style="grid-column:1/-1;padding:60px 0;text-align:center;color:var(--text-muted);font-size:14px;font-family:var(--font-inter)">Aucun article disponible</div>';
@@ -7657,7 +8735,7 @@ body.focus-mode .focus-exit{ display:flex; }
       const imgH = a.imageUrl
         ? `<div class="grid2-img"><img src="${escAttr(a.imageUrl)}" alt="" decoding="async" onerror="this.parentNode.style.background='#1a1a1a'"></div>`
         : `<div class="grid2-img" style="background:linear-gradient(135deg,rgba(10,132,255,.15),#0a0a0a)"></div>`;
-      return `<div class="grid2-card" onclick="_grilleOpen(${i})" style="position:relative">
+      return `<div class="grid2-card reveal" onclick="_grilleOpen(${i})" style="position:relative">
         ${imgH}
         ${_titleWithShare(escHtml(a.title), a.link, a.title, 'grid2-title')}
         <div class="grid2-meta">
@@ -7667,7 +8745,7 @@ body.focus-mode .focus-exit{ display:flex; }
         </div>
       </div>`;
     }).join('');
-    if(typeof window._obsReveal === 'function') window._obsReveal(wrap);
+    if(typeof window._revealObserve === 'function') _revealObserve(wrap);
   }
   window._grilleOpen = function(i){ const a=_grilleArts[i]; if(a) _showArtModal(a); };
 
@@ -7717,118 +8795,172 @@ body.focus-mode .focus-exit{ display:flex; }
     return t ? t.split(/\s+/).length : 0;
   }
 
-  // ── En-tête de progression : compteur, barre, temps restant ──
-  function _seqRenderProgress(){
-    const host = document.getElementById('seqProgress');
-    if(!host) return;
-    const total = _seqArts ? _seqArts.length : 0;
-    if(!total){ host.className = 'seq-progress'; host.innerHTML = ''; return; }
-    let read = 0, mins = 0;
-    for(const a of _seqArts){
-      if(_RS.has(a.link)) read++;
-      else mins += Math.max(1, Math.round(_seqWords(a) / 200));
-    }
-    const pct  = Math.round(read / total * 100);
-    const done = read >= total;
-    host.className = 'seq-progress show' + (done ? ' is-done' : '');
-    const label = done
-      ? `<div class="seq-progress-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>Vous êtes à jour</div>`
-      : `<div class="seq-progress-label">${read} / ${total} lus</div>`;
-    const time = done ? '' : `<div class="seq-progress-time">~${mins} min de lecture restante</div>`;
-    const actions = done
-      ? ''
-      : `<div class="seq-progress-actions">
-           <button class="seq-progress-action" onclick="_seqResume()">Reprendre</button>
-           <button class="seq-progress-ghost" onclick="_seqMarkAllRead()">Tout lu</button>
-         </div>`;
-    host.innerHTML =
-      `<div class="seq-progress-info">
-         ${label}
-         ${time}
-         <div class="seq-progress-bar"><div class="seq-progress-fill" style="width:${pct}%"></div></div>
-       </div>
-       ${actions}`;
+  // ── Vues Édition / Séquentiel — helpers partagés ──
+
+  // Apparition au défilement — observer générique (toutes les vues)
+  let _revealIO = null;
+  function _revealObserve(container){
+    if(!container) return;
+    const items = container.querySelectorAll('.reveal');
+    if(!items.length) return;
+    if(!('IntersectionObserver' in window)){ items.forEach(el=>el.classList.add('in')); return; }
+    if(_revealIO) _revealIO.disconnect();
+    _revealIO = new IntersectionObserver((entries, obs)=>{
+      // Cascade : les items entrant dans le même lot se révèlent l'un après l'autre (haut → bas)
+      const incoming = entries.filter(en=>en.isIntersecting)
+                              .sort((a,b)=>a.boundingClientRect.top - b.boundingClientRect.top);
+      incoming.forEach((en, i)=>{
+        const el = en.target;
+        const d = Math.min(i * 55, 330);  // décalage progressif, plafonné
+        if(d){
+          el.style.transitionDelay = d + 'ms';
+          el.addEventListener('transitionend', ()=>{ el.style.transitionDelay = ''; }, { once:true });
+        }
+        el.classList.add('in');
+        obs.unobserve(el);
+      });
+    }, { rootMargin:'0px 0px -8% 0px', threshold:.08 });
+    items.forEach(el=>{
+      // Déjà défilé au-dessus de l'écran : révéler d'emblée (jamais masqué).
+      // Visible ou plus bas : animer à l'entrée dans le viewport.
+      if(el.getBoundingClientRect().bottom < 0) el.classList.add('in');
+      else _revealIO.observe(el);
+    });
+  }
+  window._revealObserve = _revealObserve;
+
+  // Date complète en français : « 15 mai 2026 »
+  function _seqDateStr(ts){
+    if(!ts) return '';
+    const d = new Date(ts); if(isNaN(d)) return '';
+    const months = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+    return d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
   }
 
-  // ── Rafraîchir les états « lu » sans re-render (préserve le scroll) ──
+  // Sous-titre éditorial (description nettoyée, repli sur la source)
+  function _edlSub(a){
+    const raw = (a.description || a.contentEncoded || '')
+      .replace(/<[^>]+>/g,' ').replace(/&(?:amp|lt|gt|quot|nbsp|apos);/g,' ')
+      .replace(/\s+/g,' ').trim();
+    return raw || (a.source || '');
+  }
+
+  // Mots-clés extraits de l'article (priorité au titre, noms propres)
+  const _KW_STOP = new Set(('le la les un une des de du au aux et ou à a en dans sur sous par pour avec sans ce cet cette ces son sa ses leur leurs notre nos votre vos mon ma mes ton ta tes qui que quoi dont où est sont été être avoir fait plus moins très bien mais donc car ne pas ni se si on il elle ils elles nous vous je tu me te lui comme aussi alors ainsi cela ceci tout tous toute toutes deux trois selon vers chez entre depuis pendant après avant face autour dès lors encore déjà non oui via per cet the a an of to in on for and or with this that these those is are was were be been it its their his her our your my as at by from into over under after before about against between during through what why when who which then than not no new news first last more most just out up down off').split(/\s+/));
+  function _extractKeywords(a, max){
+    max = max || 3;
+    const title = (a.title||'').replace(/[‘’′]/g, "'");
+    const desc  = (a.description||'').replace(/<[^>]+>/g,' ');
+    const cand = {};
+    const add = (w, score) => {
+      const lw = w.toLowerCase();
+      if(lw.length < 3 || _KW_STOP.has(lw)) return;
+      if(!cand[lw]) cand[lw] = { word:w, score:0 };
+      cand[lw].score += score;
+    };
+    const tokRe = /[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ'’\-]{2,}/g;
+    const tTok = title.match(tokRe) || [];
+    tTok.forEach((w, idx) => {
+      const proper = idx > 0 && /^[A-ZÀ-Ö]/.test(w);
+      let sc = proper ? 3 : 1.2;
+      sc += Math.min(w.length, 11) / 11;
+      add(w, sc);
+    });
+    (desc.match(tokRe) || []).slice(0, 80).forEach(w => add(w, 0.4));
+    let list = Object.values(cand).sort((x,y)=>y.score - x.score).map(o=>o.word);
+    list = list.slice(0, max).map(w => w.length > 16 ? w.slice(0,16) : w);
+    if(!list.length && a.source) list = [a.source];
+    return list;
+  }
+  window._extractKeywords = _extractKeywords;
+
+  // Carte « Ordered List » — vue Édition
+  function _edlCardHtml(a, i){
+    const isRead = _RS.has(a.link);
+    const fig = a.imageUrl
+      ? `<div class="edl-fig"><img src="${escAttr(a.imageUrl)}" alt="" decoding="async" loading="lazy" onerror="this.parentNode.style.visibility='hidden'"></div>`
+      : `<div class="edl-fig"></div>`;
+    const sub  = _edlSub(a);
+    const kws  = _extractKeywords(a, 3);
+    const tags = kws.length
+      ? `<div class="edl-tags">${kws.map(t=>`<span class="edl-tag">${escHtml(t)}</span>`).join('')}</div>`
+      : '';
+    return `<div class="edl-item reveal${isRead?' is-read':''}" data-edl-idx="${i}" onclick="_openEditionArt(${i})">
+      ${fig}
+      <div class="edl-title">${escHtml(a.title||'')}</div>
+      ${sub ? `<div class="edl-sub">${escHtml(sub.slice(0,150))}</div>` : ''}
+      <div class="edl-date">${escHtml(_seqDateStr(a.pubDate))}</div>
+      ${tags}
+    </div>`;
+  }
+  window._edlCardHtml = _edlCardHtml;
+
+  // Vue séquentielle — liste numérotée éditoriale
+  function _seqRenderProgress(){ /* no-op */ }
+
   function _seqRefreshReadStates(){
     const list = document.getElementById('seqList');
-    if(!list || !_seqArts || !_seqArts.length){ _seqRenderProgress(); return; }
+    if(!list || !_seqArts || !_seqArts.length) return;
     list.querySelectorAll('.seq-item').forEach(el => {
       const i = +el.getAttribute('data-seq-idx');
       const a = _seqArts[i];
       if(a) el.classList.toggle('is-read', _RS.has(a.link));
     });
-    _seqRenderProgress();
   }
 
-  // ── Reprendre : défiler jusqu'au premier article non-lu ──
-  window._seqResume = function(){
-    const list = document.getElementById('seqList');
-    if(!list || !_seqArts || !_seqArts.length) return;
-    let idx = _seqArts.findIndex(a => !_RS.has(a.link));
-    if(idx < 0) idx = 0;
-    const el = list.querySelector('.seq-item[data-seq-idx="' + idx + '"]');
-    if(el) el.scrollIntoView({behavior:'smooth', block:'center'});
-  };
-
-  // ── Tout marquer comme lu (vider le retard) ──
+  window._seqResume = function(){};
   window._seqMarkAllRead = function(){
     if(!_seqArts || !_seqArts.length) return;
     _RS.markMany(_seqArts.map(a => a.link));
     _seqRefreshReadStates();
   };
 
+  function _seqItemHtml(a, i){
+    const isRead = _RS.has(a.link);
+    const fav = getFavicon(a.feedUrl||a.link||'');
+    const thumb = a.imageUrl
+      ? `<div class="seq-thumb"><img src="${escAttr(a.imageUrl)}" alt="" decoding="async" loading="lazy" onerror="this.parentNode.style.display='none'"></div>`
+      : '';
+    return `<div class="seq-item reveal${isRead?' is-read':''}" data-seq-idx="${i}" onclick="_seqOpen(${i})">
+      <span class="seq-num">${String(i+1).padStart(2,'0')}</span>
+      <div class="seq-body">
+        <div class="seq-source"><span class="seq-fav"><img src="${escAttr(fav)}" onerror="this.style.opacity='.3'"></span>${escHtml(a.source||'')} · ${relTime(a.pubDate)}</div>
+        <div class="seq-title">${escHtml(a.title||'')}</div>
+      </div>
+      ${thumb}
+    </div>`;
+  }
+
   function _renderSequential(){
     const list = document.getElementById('seqList');
     if(!list) return;
-    const arts = typeof _allArticles !== 'undefined' ? _dedup([..._allArticles].sort((a,b)=>b.pubDate-a.pubDate)) : [];
-    _seqArts = arts.slice(0,80);
+    const arts = typeof _allArticles !== 'undefined'
+      ? _dedup(_railApplyFilter([..._allArticles]).sort((a,b)=>b.pubDate-a.pubDate))
+      : [];
+    _seqArts = arts.slice(0, 100);
     if(!_seqArts.length){
-      list.innerHTML = '<div style="padding:60px 0;text-align:center;color:var(--text-muted);font-size:14px;font-family:var(--font-inter)">Aucun article disponible</div>';
-      _seqRenderProgress();
+      list.innerHTML = '<div style="padding:80px 0;text-align:center;color:var(--text-muted);font-size:14px;font-family:var(--font-inter)">Aucun article disponible.<br>Ajoutez des sources pour commencer.</div>';
       return;
     }
-    list.innerHTML = _seqArts.map((a,i)=>{
-      const fav = getFavicon(a.feedUrl||a.link||'');
-      const thumb = a.imageUrl
-        ? `<div class="seq-thumb"><img src="${escAttr(a.imageUrl)}" alt="" decoding="async" onerror="this.parentNode.style.display='none'"></div>`
-        : '';
-      const isRead = _RS.has(a.link);
-      return `<div class="seq-item${isRead?' is-read':''}" data-seq-idx="${i}" onclick="_seqOpen(${i})" style="position:relative">
-        <span class="seq-num">${String(i+1).padStart(2,'0')}</span>
-        <div class="seq-body">
-          <div class="seq-source">
-            <div class="seq-fav"><img src="${escAttr(fav)}" onerror="this.style.opacity='.3'"></div>
-            ${escHtml(a.source)} · ${relTime(a.pubDate)}
-          </div>
-          ${_titleWithShare(escHtml(a.title), a.link, a.title, 'seq-title')}
-        </div>
-        ${thumb}
-      </div>`;
-    }).join('');
-    if(typeof window._obsReveal === 'function') window._obsReveal(list);
-
-    // Progression (compteur + barre + temps) puis reprise automatique
-    // vers le premier article non-lu si l'on revient en cours de séquence.
-    _seqRenderProgress();
-    const firstUnread = _seqArts.findIndex(a => !_RS.has(a.link));
-    const readCount   = _seqArts.filter(a => _RS.has(a.link)).length;
-    if(readCount > 0 && firstUnread > 0){
-      requestAnimationFrame(()=> setTimeout(()=>{
-        const el = list.querySelector('.seq-item[data-seq-idx="' + firstUnread + '"]');
-        if(el) el.scrollIntoView({behavior:'smooth', block:'center'});
-      }, 140));
-    }
+    list.innerHTML = _seqArts.map((a,i)=>_seqItemHtml(a,i)).join('');
+    _revealObserve(list);
   }
-  window._seqOpen = function(i){ const a=_seqArts[i]; if(a) _showArtModal(a); };
+
+  window._seqOpen = function(i){
+    const a = _seqArts[i];
+    if(!a) return;
+    _RS.mark(a.link);
+    _showArtModal(a);
+    const el = document.querySelector('.seq-item[data-seq-idx="' + i + '"]');
+    if(el) el.classList.add('is-read');
+  };
 
   // ── VUE LISTE ─────────────────────────────────────────────────
   let _listeArts = [];
   function _renderListe(){
     const wrap = document.getElementById('listeList');
     if(!wrap) return;
-    const arts = typeof _allArticles !== 'undefined' ? _dedup([..._allArticles].sort((a,b)=>b.pubDate-a.pubDate)) : [];
+    const arts = typeof _allArticles !== 'undefined' ? _dedup(_railApplyFilter([..._allArticles]).sort((a,b)=>b.pubDate-a.pubDate)) : [];
     _listeArts = arts.slice(0, 100);
     if(!_listeArts.length){
       wrap.innerHTML = '<div style="padding:60px 0;text-align:center;color:var(--text-muted);font-size:14px;font-family:var(--font-inter)">Aucun article disponible</div>';
@@ -7839,7 +8971,7 @@ body.focus-mode .focus-exit{ display:flex; }
       const thumb = a.imageUrl
         ? `<div class="list-thumb"><img src="${escAttr(a.imageUrl)}" alt="" decoding="async" onerror="this.parentNode.className='list-thumb-empty'"></div>`
         : `<div class="list-thumb-empty"></div>`;
-      return `<div class="list-item" onclick="_listeOpen(${i})" style="position:relative">
+      return `<div class="list-item reveal" onclick="_listeOpen(${i})" style="position:relative">
         ${thumb}
         <div class="list-body">
           <div class="list-source"><div class="list-fav"><img src="${escAttr(fav)}" onerror="this.style.opacity='.3'"></div>${escHtml(a.source)} · ${relTime(a.pubDate)}</div>
@@ -7847,7 +8979,7 @@ body.focus-mode .focus-exit{ display:flex; }
         </div>
       </div>`;
     }).join('');
-    if(typeof window._obsReveal === 'function') window._obsReveal(wrap);
+    if(typeof window._revealObserve === 'function') _revealObserve(wrap);
   }
   window._listeOpen = function(i){ const a=_listeArts[i]; if(a) _showArtModal(a); };
 
@@ -8050,41 +9182,6 @@ body.focus-mode .focus-exit{ display:flex; }
           '</div>';
       }).join('') + '</div>';
       container.innerHTML = html;
-
-    } else if(view === 'browse'){
-      // Groupes de 7 : 1 hero + 6 grille, répétés sur tous les articles avec respiration
-      const CHUNK = 7;
-      let html = '';
-      for(let g = 0; g < arts.length; g += CHUNK){
-        const chunk = arts.slice(g, g + CHUNK);
-        // Choisir le hero : premier article avec image, sinon le premier
-        let hi = chunk.findIndex(a => a.imageUrl);
-        if(hi < 0) hi = 0;
-        const hero     = chunk[hi];
-        const heroReal = g + hi;
-        const heroImg  = hero.imageUrl ? "background:url('" + hero.imageUrl.replace(/'/g,"\\'") + "') center/cover no-repeat" : 'background:linear-gradient(135deg,rgba(10,132,255,.18),#0a0a0a)';
-        const heroFav  = getFavicon(hero.feedUrl||hero.link||'');
-
-        // Respiration entre groupes (pas de séparateur visuel, juste de l'air)
-        if(g > 0) html += '<div class="browse-group-spacer"></div>';
-
-        // Hero pleine largeur
-        html += '<div class="browse-hero-card" onclick="' + arrName + 'Open(' + heroReal + ')">';
-        html += '<div class="browse-hero-img" style="' + heroImg + '"></div>';
-        html += '<div class="browse-hero-body"><div class="browse-hero-source"><img src="' + escAttr(heroFav) + '" style="width:16px;height:16px;border-radius:50%;object-fit:contain;margin-right:6px;flex-shrink:0">' + escapeHtml(hero.source) + ' · ' + relTime(hero.pubDate) + '</div>';
-        html += '<div class="browse-hero-title">' + escapeHtml(hero.title) + '</div></div></div>';
-
-        // Grille : tous les articles du chunk sauf le hero
-        const gridItems = chunk.map(function(a, ci){ return { a: a, real: g + ci }; }).filter(function(_, ci){ return ci !== hi; });
-        if(gridItems.length){
-          html += '<div class="browse-folder-grid">' + gridItems.map(function(item){
-            var fav      = getFavicon(item.a.feedUrl||item.a.link||'');
-            var imgStyle = item.a.imageUrl ? "background:url('" + item.a.imageUrl.replace(/'/g,"\\'") + "') center/cover no-repeat" : 'background:linear-gradient(135deg,rgba(10,132,255,.12),#0a0a0a)';
-            return '<div class="grid2-card" onclick="' + arrName + 'Open(' + item.real + ')"><div class="grid2-img" style="' + imgStyle + '"></div><div class="grid2-title">' + escapeHtml(item.a.title) + '</div><div class="grid2-meta"><div class="grid2-fav"><img src="' + escAttr(fav) + '"></div><span>' + escapeHtml(item.a.source) + '</span><span style="margin-left:auto">' + relTime(item.a.pubDate) + '</span></div></div>';
-          }).join('') + '</div>';
-        }
-      }
-      container.innerHTML = html || '<div style="padding:60px 0;text-align:center;color:var(--text-muted);font-size:14px;font-family:var(--font-inter)">Aucun article.</div>';
 
     } else if(view === 'grille'){
       container.innerHTML = '<div class="grid2-wrap">' + arts.map(function(a,i){
@@ -8350,12 +9447,65 @@ body.focus-mode .focus-exit{ display:flex; }
     return _FOLDER_WELCOME[key] || _FOLDER_WELCOME['default'];
   }
 
+  // Palette de gradients héro indexée sur le hash du nom du dossier
+  const _FOLDER_GRADS = [
+    ['#0d47a1','#42a5f5'], // bleu
+    ['#4a0080','#a044ff'], // violet
+    ['#0b5345','#1abc9c'], // vert teal
+    ['#7b241c','#e74c3c'], // rouge
+    ['#7e4a00','#f39c12'], // orange
+    ['#6c0070','#e91e8c'], // rose
+    ['#0e4d6e','#00b4d8'], // cyan
+    ['#5a3e00','#f7931a'], // ambre
+    ['#0b5345','#27ae60'], // vert
+    ['#512e5f','#9b59b6'], // aubergine
+  ];
+  function _folderGrad(name){
+    let h = 0; for(let i=0;i<(name||'').length;i++) h = (h*31+name.charCodeAt(i))&0xffff;
+    return _FOLDER_GRADS[h % _FOLDER_GRADS.length];
+  }
+
   function openFolderPage(folderIdx){
     const folder = folders[folderIdx];
     if(!folder) return;
-    document.getElementById('folderPageTitle').textContent = folder.name;
+
+    // ── Titre + subtitle ────────────────────────────────────────────
+    const titleEl = document.getElementById('folderPageTitle');
+    if(titleEl) titleEl.textContent = folder.name;
     const welcomeEl = document.getElementById('folderPageWelcome');
     if(welcomeEl) welcomeEl.textContent = _getFolderWelcome(folder.name);
+
+    // ── Héro décoratif (gradient + orbe lumineux) ───────────────────
+    const [c1, c2] = _folderGrad(folder.name);
+    const heroBg = document.getElementById('folderHeroBg');
+    if(heroBg) heroBg.style.background = `linear-gradient(145deg,${c1} 0%,${c2} 100%)`;
+    const heroOrb = document.getElementById('folderHeroOrb');
+    if(heroOrb){ heroOrb.style.background = c2; }
+    const badgeEl = document.getElementById('folderHeroBadge');
+    if(badgeEl){ const n = (folder.feeds||[]).length; badgeEl.textContent = n + ' source' + (n!==1?'s':''); }
+
+    // ── Logos flottants des sources ─────────────────────────────────
+    const logoRow = document.getElementById('folderLogoRow');
+    if(logoRow){
+      const feeds = folder.feeds || [];
+      const MAX = 7;
+      const shown = feeds.slice(0, MAX);
+      const rest  = feeds.length - shown.length;
+      logoRow.innerHTML = shown.map(url=>{
+        const db   = (typeof _FEED_DB!=='undefined' && _FEED_DB[url]) || {};
+        const domain = db.domain || (()=>{ try{ return new URL(url).hostname.replace(/^www\./,''); }catch(e){ return ''; } })();
+        const bg   = db.color || '#333';
+        const init = (db.name||domain||'?')[0].toUpperCase();
+        const fav  = domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=64` : '';
+        return `<div class="folder-logo-bubble" style="background:${bg}" title="${escHtml(db.name||domain)}">`
+          + (fav ? `<img src="${escAttr(fav)}" alt="" onerror="this.remove()">` : '')
+          + init + `</div>`;
+      }).join('')
+        + (rest>0 ? `<div class="folder-logo-bubble folder-logo-bubble-more">+${rest}</div>` : '')
+        + (feeds.length ? `<span class="folder-logo-row-count">${feeds.length} source${feeds.length!==1?'s':''}</span>` : '');
+    }
+
+    // ── Articles ────────────────────────────────────────────────────
     const feedUrls = new Set(folder.feeds||[]);
     const arts = typeof _allArticles !== 'undefined'
       ? _dedup([..._allArticles].filter(a=>feedUrls.has(a.feedUrl||'')).sort((a,b)=>b.pubDate-a.pubDate))
@@ -8363,7 +9513,7 @@ body.focus-mode .focus-exit{ display:flex; }
     _folderPageArts = arts;
     const content = document.getElementById('folderPageContent');
     _renderSubpageArts(_folderPageArts, _currentView, content, '_folderArt');
-    _stFold(true); // en haut avant l'animation d'entrée
+    _stFold(true);
     const page = document.getElementById('folderPage');
     page.style.display='flex';
     requestAnimationFrame(()=>page.classList.add('open'));
@@ -8503,32 +9653,63 @@ body.focus-mode .focus-exit{ display:flex; }
     },{passive:true});
   })();
 
-  // ── Pull-to-refresh avec indicateur visuel ────────────────────
+  // ── Pull-to-refresh — ciblé sur le conteneur .row (anti-faux-refresh) ──
   (function initPullRefresh(){
-    let startY=0;
-    const H=50;
+    const H=56, THRESHOLD=90;
+    let startY=0, pulling=false, armed=false;
+
     const ind=document.createElement('div');
-    ind.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%) translateY(-'+H+'px);z-index:600;height:'+H+'px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:8px;pointer-events:none;transition:transform .25s ease';
-    ind.innerHTML='<div style="display:flex;align-items:center;gap:6px;background:rgba(28,28,30,.9);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:6px 14px;border-radius:999px;font-family:var(--font-inter);font-size:12px;font-weight:600;color:rgba(255,255,255,.8)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.08-5"/></svg>Actualiser</div>';
+    ind.id='ptrIndicator';
+    ind.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%) translateY(-'+H+'px);z-index:600;height:'+H+'px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:10px;pointer-events:none;transition:transform .28s cubic-bezier(.34,1.56,.64,1)';
+    ind.innerHTML='<div class="ptr-pill"><svg class="ptr-arrow" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg><span class="ptr-txt">Tirez pour actualiser</span></div>';
     document.body.appendChild(ind);
+    const txt=()=>ind.querySelector('.ptr-txt');
+    const reset=()=>{ ind.style.transition='transform .28s cubic-bezier(.34,1.56,.64,1)'; ind.style.transform='translateX(-50%) translateY(-'+H+'px)'; ind.classList.remove('ptr-armed'); };
+
+    // Le pull n'est valide qu'en haut de l'accueil, aucune surface par-dessus
+    function eligible(){
+      const r=document.querySelector('.row');
+      if(!r || r.scrollTop>2) return false;
+      const sb=document.getElementById('sidebar');
+      if(sb&&sb.classList.contains('open')) return false;
+      const modal=document.getElementById('artModal');
+      if(modal&&modal.style.display==='flex') return false;
+      // Pages plein écran ouvertes ?
+      for(const id of ['folderPage','feedPage','discoverPage','podcastPage','prefsPage','bfListPage']){
+        const el=document.getElementById(id);
+        if(el && el.classList.contains('open')) return false;
+      }
+      return true;
+    }
 
     document.addEventListener('touchstart', e=>{
-      if(window.scrollY<2) startY=e.touches[0].clientY;
+      if(e.touches.length!==1 || !eligible()){ startY=0; pulling=false; return; }
+      startY=e.touches[0].clientY; pulling=true; armed=false;
     },{passive:true});
+
     document.addEventListener('touchmove', e=>{
-      if(!startY||window.scrollY>2) return;
-      const dy=Math.max(0,e.touches[0].clientY-startY);
-      const prog=Math.min(dy/90,1);
+      if(!pulling || !startY) return;
+      const r=document.querySelector('.row');
+      if(r && r.scrollTop>2){ startY=0; pulling=false; reset(); return; }
+      const dy=e.touches[0].clientY-startY;
+      if(dy<=0){ ind.style.transition='none'; ind.style.transform='translateX(-50%) translateY(-'+H+'px)'; armed=false; ind.classList.remove('ptr-armed'); return; }
+      const dist=Math.min(dy*0.55, H+14);   // résistance élastique
       ind.style.transition='none';
-      ind.style.transform='translateX(-50%) translateY('+(-H+prog*H)+'px)';
+      ind.style.transform='translateX(-50%) translateY('+(-H+dist)+'px)';
+      const nowArmed=dy>THRESHOLD;
+      if(nowArmed!==armed){
+        armed=nowArmed;
+        ind.classList.toggle('ptr-armed',armed);
+        const t=txt(); if(t) t.textContent=armed?'Relâchez pour actualiser':'Tirez pour actualiser';
+      }
     },{passive:true});
+
     document.addEventListener('touchend', e=>{
-      if(!startY) return;
+      if(!pulling || !startY){ startY=0; pulling=false; return; }
       const dy=e.changedTouches[0].clientY-startY;
-      ind.style.transition='transform .3s ease';
-      ind.style.transform='translateX(-50%) translateY(-'+H+'px)';
-      if(dy>80&&window.scrollY<2) loadAllFeeds(true);
-      startY=0;
+      pulling=false; startY=0;
+      reset();
+      if(dy>THRESHOLD && eligible()) loadAllFeeds(true);   // la pastille de synchro prend le relais
     },{passive:true});
   })();
 
@@ -8871,17 +10052,25 @@ body.focus-mode .focus-exit{ display:flex; }
   </div>
 
   <div class="folder-page" id="folderPage">
-    <div class="folder-page-bar">
-      <button class="folder-page-back" onclick="closeFolderPage()" aria-label="Retour">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+    <div class="folder-page-bar" style="position:absolute;top:0;left:0;right:0;z-index:10;background:transparent;border:none">
+      <button class="folder-page-back" onclick="closeFolderPage()" aria-label="Retour" style="background:rgba(0,0,0,.35);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
     </div>
     <div class="folder-page-scroll">
-      <div class="folder-page-header">
-        <div class="folder-page-title" id="folderPageTitle"></div>
-        <div class="folder-page-welcome" id="folderPageWelcome"></div>
-        <div class="folder-page-sep"></div>
+      <!-- Héro décoratif -->
+      <div class="folder-hero" id="folderHero">
+        <div class="folder-hero-bg" id="folderHeroBg"></div>
+        <div class="folder-hero-noise"></div>
+        <div class="folder-hero-orb" id="folderHeroOrb"></div>
+        <div class="folder-hero-content">
+          <div class="folder-hero-badge" id="folderHeroBadge">Dossier</div>
+          <div class="folder-hero-title" id="folderPageTitle"></div>
+          <div class="folder-hero-sub" id="folderPageWelcome"></div>
+        </div>
       </div>
+      <!-- Logos flottants des sources -->
+      <div class="folder-logo-row" id="folderLogoRow"></div>
       <div class="folder-page-inner" id="folderPageContent"></div>
     </div>
   </div>
@@ -8910,7 +10099,7 @@ body.focus-mode .focus-exit{ display:flex; }
       <div class="menu3-section">
         <div class="menu3-label">Vue</div>
         <div class="menu3-chips" id="menu3ViewChips">
-          <div class="menu3-chip active" data-view="editions" onclick="menu3SetView('editions')">Éditions</div>
+          <div class="menu3-chip active" data-view="editions" onclick="menu3SetView('editions')">Magazine</div>
           <div class="menu3-chip" data-view="grille" onclick="menu3SetView('grille')">Grille</div>
           <div class="menu3-chip" data-view="sequential" onclick="menu3SetView('sequential')">Séquentiel</div>
           <div class="menu3-chip" data-view="browse" onclick="menu3SetView('browse')">Parcourir</div>
@@ -9204,6 +10393,61 @@ body.focus-mode .focus-exit{ display:flex; }
   .bf-chip-sm:active{transform:scale(.96);}
   .bf-chip-sm .c{color:var(--text-muted);font-weight:500;margin-left:5px;}
   .bf-empty{padding:40px 20px;text-align:center;color:var(--text-muted);font-family:var(--font-inter);font-size:14px;line-height:1.6;}
+
+  /* ── Constructeur de règles (flux intelligents) ── */
+  .bf-cond{
+    display:flex;flex-direction:column;gap:8px;
+    padding:11px;margin-bottom:10px;border:1px solid var(--border);border-radius:14px;
+    background:rgba(127,127,127,.05);position:relative;
+  }
+  .bf-cond-top{display:flex;gap:8px;}
+  .bf-cond-sel{
+    flex:1;min-width:0;-webkit-appearance:none;appearance:none;
+    padding:10px 30px 10px 12px;border:1px solid var(--border);border-radius:11px;
+    background:rgba(127,127,127,.06) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 11px center;
+    color:var(--text);font-family:var(--font-inter);font-size:14px;font-weight:600;outline:none;cursor:pointer;
+  }
+  .bf-cond-sel:focus{border-color:#0a84ff;}
+  .bf-cond-val{
+    width:100%;padding:11px 13px;border:1px solid var(--border);border-radius:11px;
+    background:rgba(127,127,127,.06);color:var(--text);font-family:var(--font-inter);font-size:14.5px;outline:none;
+  }
+  .bf-cond-val:focus{border-color:#0a84ff;}
+  .bf-cond-del{
+    width:34px;flex:none;border:1px solid var(--border);border-radius:11px;background:rgba(127,127,127,.06);
+    color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;
+  }
+  .bf-cond-del svg{width:15px;height:15px;}
+  .bf-cond-del:active{transform:scale(.94);}
+  .bf-add-cond{
+    width:100%;padding:12px;border:1px dashed var(--border);border-radius:13px;background:none;
+    color:#0a84ff;font-family:var(--font-inter);font-size:13.5px;font-weight:700;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;gap:7px;margin-bottom:14px;
+  }
+  .bf-add-cond:active{transform:scale(.99);background:rgba(10,132,255,.06);}
+  .bf-add-cond svg{width:15px;height:15px;}
+
+  /* ── Filtre anti-doublons (carte de réglage) ── */
+  .bf-dd-card{
+    border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:18px;
+    background:rgba(127,127,127,.05);
+  }
+  .bf-dd-head{display:flex;align-items:center;gap:11px;margin-bottom:12px;}
+  .bf-dd-ic{width:34px;height:34px;flex:none;border-radius:10px;display:flex;align-items:center;justify-content:center;background:rgba(10,132,255,.16);color:#0a84ff;}
+  .bf-dd-ic svg{width:18px;height:18px;}
+  .bf-dd-tt{font-family:var(--font-inter);font-size:14.5px;font-weight:700;color:var(--text);letter-spacing:-.01em;}
+  .bf-dd-ds{font-family:var(--font-inter);font-size:11.5px;color:var(--text-muted);margin-top:1px;}
+  .bf-dd-opts{display:flex;flex-direction:column;gap:7px;}
+  .bf-dd-opt{
+    display:flex;align-items:flex-start;gap:11px;padding:11px 12px;border-radius:12px;cursor:pointer;
+    border:1px solid var(--border);background:rgba(127,127,127,.04);transition:border-color .15s,background .15s;
+  }
+  .bf-dd-opt.on{border-color:#0a84ff;background:rgba(10,132,255,.08);}
+  .bf-dd-radio{width:19px;height:19px;flex:none;border-radius:50%;border:2px solid var(--text-muted);margin-top:1px;position:relative;transition:border-color .15s;}
+  .bf-dd-opt.on .bf-dd-radio{border-color:#0a84ff;}
+  .bf-dd-opt.on .bf-dd-radio::after{content:'';position:absolute;inset:3px;border-radius:50%;background:#0a84ff;}
+  .bf-dd-ot{font-family:var(--font-inter);font-size:14px;font-weight:600;color:var(--text);}
+  .bf-dd-od{font-family:var(--font-inter);font-size:11.5px;color:var(--text-muted);margin-top:2px;line-height:1.4;}
 
   /* ── Page liste générique (résultats smart feed / tag) ── */
   .bf-list-page{
@@ -9653,30 +10897,119 @@ body.focus-mode .focus-exit{ display:flex; }
   const BF_SMART = (function(){
     const KEY = 'reader.smartfeeds';
     function load(){ try{ return JSON.parse(localStorage.getItem(KEY)||'[]'); }catch(e){ return []; } }
-    function save(list){ try{ localStorage.setItem(KEY, JSON.stringify(list)); }catch(e){} }
+    function save(list){ try{ localStorage.setItem(KEY, JSON.stringify(list)); }catch(e){} renderSidebar(); }
 
     function _articles(){ return (typeof _allArticles!=='undefined' && _allArticles) ? _allArticles : []; }
 
-    function run(sf){
-      const terms = (sf.terms||[]).map(t=>t.toLowerCase()).filter(Boolean);
+    // ── Champs & opérateurs disponibles (logique façon Inoreader) ──
+    const FIELDS = {
+      titlebody:'Titre ou description',
+      title:'Titre',
+      body:'Description',
+      url:'Lien (URL)',
+      source:'Source',
+      author:'Auteur'
+    };
+    const OPS = {
+      contains:'contient',
+      not_contains:'ne contient pas',
+      starts:'commence par',
+      is:'est exactement',
+      regex:'correspond (regex)'
+    };
+
+    function _fieldText(a, field){
+      switch(field){
+        case 'title':  return a.title||'';
+        case 'body':   return a.description||'';
+        case 'url':    return a.link||a.feedUrl||'';
+        case 'source': return a.source||'';
+        case 'author': return a.author||'';
+        default:       return (a.title||'')+' '+(a.description||'');
+      }
+    }
+    function _evalCond(a, c){
+      const raw = _fieldText(a, c.field);
+      if(c.op==='regex'){ try{ return new RegExp(c.value,'i').test(raw); }catch(e){ return false; } }
+      const hay = raw.toLowerCase();
+      const v   = String(c.value||'').toLowerCase().trim();
+      if(!v) return c.op==='not_contains'; // condition vide : neutre
+      switch(c.op){
+        case 'contains':     return hay.includes(v);
+        case 'not_contains': return !hay.includes(v);
+        case 'starts':       return hay.trimStart().startsWith(v);
+        case 'is':           return hay.trim()===v;
+        default:             return false;
+      }
+    }
+
+    // Migration : anciens flux (terms + match) → conditions
+    function _conditions(sf){
+      if(Array.isArray(sf.conditions) && sf.conditions.length) return sf.conditions;
+      return (sf.terms||[]).filter(Boolean).map(t=>({field:'titlebody', op:'contains', value:t}));
+    }
+
+    function _filter(sf){
       const srcs  = new Set(sf.sources||[]);
-      const arts = _articles().filter(a=>{
+      const conds = _conditions(sf);
+      const all   = sf.match==='all';
+      return _articles().filter(a=>{
         if(srcs.size && !srcs.has(a.feedUrl||'')) return false;
-        if(!terms.length) return true;
-        const hay = ((a.title||'')+' '+(a.description||'')).toLowerCase();
-        return sf.match==='all' ? terms.every(t=>hay.includes(t)) : terms.some(t=>hay.includes(t));
+        if(!conds.length) return true;
+        return all ? conds.every(c=>_evalCond(a,c)) : conds.some(c=>_evalCond(a,c));
       }).sort((a,b)=>new Date(b.pubDate)-new Date(a.pubDate));
-      const sub = [
-        (sf.terms&&sf.terms.length)?(sf.match==='all'?'Tous : ':'Au moins un : ')+sf.terms.join(', '):null,
-        (sf.sources&&sf.sources.length)?(sf.sources.length+' source'+(sf.sources.length>1?'s':'')):null
-      ].filter(Boolean).join(' · ');
-      bfSheetClose();
-      bfListPageOpen({ title:sf.name, subtitle:sub||'Tous vos abonnements', articles:arts,
+    }
+
+    function _summary(sf){
+      const conds = _conditions(sf);
+      const parts = [];
+      if(conds.length){
+        const join = sf.match==='all' ? ' ET ' : ' OU ';
+        parts.push(conds.map(c=>{
+          const f = FIELDS[c.field]||c.field;
+          const o = OPS[c.op]||c.op;
+          return c.field==='titlebody' ? (o+' « '+c.value+' »') : (f+' '+o+' « '+c.value+' »');
+        }).join(join));
+      }
+      if(sf.sources&&sf.sources.length) parts.push(sf.sources.length+' source'+(sf.sources.length>1?'s':''));
+      return parts.join(' · ');
+    }
+
+    function run(sf){
+      const arts = _filter(sf);
+      if(typeof bfSheetClose==='function') bfSheetClose();
+      if(typeof window._closeAllSurfaces==='function') window._closeAllSurfaces();
+      bfListPageOpen({ title:sf.name, subtitle:_summary(sf)||'Tous vos abonnements', articles:arts,
         emptyMsg:'Aucun article ne correspond encore. Les résultats se rempliront à mesure que vos flux se chargent.' });
     }
     function runById(id){ const sf = load().find(x=>x.id===id); if(sf) run(sf); }
 
-    function del(id){ save(load().filter(x=>x.id!==id)); openList(); }
+    function del(id){
+      if(typeof confirm==='function' && !confirm('Supprimer ce flux intelligent ?')) return;
+      save(load().filter(x=>x.id!==id)); openList();
+    }
+
+    // ── Rendu sidebar ──────────────────────────────────────────────
+    const ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h18"/><path d="M6 9h12"/><path d="M9 14h6"/><path d="M11 19h2"/></svg>';
+    const ICON_X = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>';
+    function renderSidebar(){
+      const host = $('smartList');
+      if(!host) return;
+      const list = load();
+      host.innerHTML = list.map(sf=>{
+        let n = 0; try{ n = _filter(sf).length; }catch(e){}
+        return '<div class="smart-item" onclick="BF_SMART.runById(\''+sf.id+'\')">'
+          + ICON
+          + '<span class="si-label">'+esc(sf.name)+'</span>'
+          + (n?'<span class="si-count">'+n+'</span>':'')
+          + '</div>';
+      }).join('');
+      // Sync dedupe select if prefs page is open
+      try{
+        const sel=$('spDedupeMode');
+        if(sel){const m=(JSON.parse(localStorage.getItem('reader.dedupe')||'{}')).mode;sel.value=(m==='off'||m==='exact'||m==='fuzzy')?m:'fuzzy';}
+      }catch(e){}
+    }
 
     // Suggestions automatiques à partir des mots fréquents dans les titres
     function _suggest(){
@@ -9689,71 +11022,180 @@ body.focus-mode .focus-exit{ display:flex; }
       return Object.entries(cnt).filter(([,n])=>n>=3).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([w])=>w);
     }
 
+    // ── Carte filtre anti-doublons ─────────────────────────────────
+    const _DD_MODES = [
+      { id:'fuzzy', t:'Titres similaires', d:'Masque les articles dont le titre est très proche, même sur des sources différentes. Recommandé.' },
+      { id:'exact', t:'Titres identiques', d:'Masque uniquement les articles au titre rigoureusement identique.' },
+      { id:'off',   t:'Désactivé',         d:'Ne déduplique que les liens strictement identiques.' }
+    ];
+    function _ddMode(){ try{ const m=(JSON.parse(localStorage.getItem('reader.dedupe')||'{}')).mode; return (m==='off'||m==='exact'||m==='fuzzy')?m:'fuzzy'; }catch(e){ return 'fuzzy'; } }
+    function _ddCard(){
+      const cur = _ddMode();
+      const opts = _DD_MODES.map(m=>
+        '<div class="bf-dd-opt'+(m.id===cur?' on':'')+'" onclick="BF_SMART._setDedupe(\''+m.id+'\')">'
+        + '<span class="bf-dd-radio"></span>'
+        + '<span><span class="bf-dd-ot">'+m.t+'</span><span class="bf-dd-od">'+m.d+'</span></span>'
+        + '</div>').join('');
+      return '<div class="bf-dd-card">'
+        + '<div class="bf-dd-head">'
+        + '<span class="bf-dd-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></span>'
+        + '<span><div class="bf-dd-tt">Filtre anti-doublons</div><div class="bf-dd-ds">Élimine les articles en double sur l\'ensemble de vos flux.</div></span>'
+        + '</div>'
+        + '<div class="bf-dd-opts">'+opts+'</div>'
+        + '</div>';
+    }
+    function _setDedupe(mode){
+      try{ localStorage.setItem('reader.dedupe', JSON.stringify({mode})); }catch(e){}
+      if(typeof _dedupeReload==='function') _dedupeReload();
+      // rafraîchir la carte
+      const card = document.querySelector('.bf-dd-card');
+      if(card){ const tmp=document.createElement('div'); tmp.innerHTML=_ddCard(); card.replaceWith(tmp.firstElementChild); }
+      renderSidebar();
+      if(typeof _renderCurrentView==='function') _renderCurrentView();
+    }
+
     function openList(){
       const list = load();
       const rows = list.length ? list.map(sf=>{
-        const sub = [(sf.terms||[]).join(', '), (sf.sources&&sf.sources.length)?(sf.sources.length+' src'):''].filter(Boolean).join(' · ');
         return '<div class="bf-row">'
-          + '<div class="bf-ri" style="color:#0a84ff;background:rgba(10,132,255,.16)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h18"/><path d="M6 9h12"/><path d="M9 14h6"/><path d="M11 19h2"/></svg></div>'
-          + '<div class="bf-rm" onclick="BF_SMART.runById(\''+sf.id+'\')"><div class="bf-rn">'+esc(sf.name)+'</div><div class="bf-rs">'+esc(sub||'Tous les articles')+'</div></div>'
-          + '<button class="bf-rx" onclick="BF_SMART.del(\''+sf.id+'\')" aria-label="Supprimer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>'
+          + '<div class="bf-ri" style="color:#0a84ff;background:rgba(10,132,255,.16)">'+ICON+'</div>'
+          + '<div class="bf-rm" onclick="BF_SMART.runById(\''+sf.id+'\')"><div class="bf-rn">'+esc(sf.name)+'</div><div class="bf-rs">'+esc(_summary(sf)||'Tous les articles')+'</div></div>'
+          + '<button class="bf-rx" onclick="BF_SMART.openEdit(\''+sf.id+'\')" aria-label="Modifier"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>'
+          + '<button class="bf-rx" onclick="BF_SMART.del(\''+sf.id+'\')" aria-label="Supprimer">'+ICON_X+'</button>'
           + '</div>';
-      }).join('') : '<div class="bf-empty">Aucun flux intelligent.<br>Combinez mots-clés et sources pour créer une vue thématique automatique.</div>';
+      }).join('') : '<div class="bf-empty">Aucun flux intelligent.<br>Créez des règles pour filtrer automatiquement tous vos abonnements.</div>';
 
       const sugg = _suggest();
       const suggHtml = sugg.length ? ('<div style="font-family:var(--font-inter);font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px">Suggestions</div><div class="bf-chips">'
         + sugg.map(w=>'<span class="bf-chip-sm" onclick="BF_SMART.quick(\''+esc(w).replace(/'/g,"")+'\')">'+esc(w)+'</span>').join('')+'</div>') : '';
 
       bfSheetOpen('Flux intelligents',
-        '<div class="bf-sub">Un flux intelligent filtre automatiquement tous vos abonnements selon des mots-clés et des sources.</div>'
+        '<div class="bf-sub">Un flux intelligent applique des règles (titre, source, auteur…) pour rassembler automatiquement les articles qui vous intéressent.</div>'
         + rows + suggHtml
         + '<button class="bf-cta" onclick="BF_SMART.openCreate()" style="margin-top:14px">+ Nouveau flux intelligent</button>');
     }
 
     function quick(word){
-      const sf = { id:'sf'+Date.now().toString(36), name:word.charAt(0).toUpperCase()+word.slice(1), terms:[word], sources:[], match:'any' };
+      const sf = { id:'sf'+Date.now().toString(36), name:word.charAt(0).toUpperCase()+word.slice(1),
+        match:'any', conditions:[{field:'titlebody',op:'contains',value:word}], sources:[] };
       const l = load(); l.unshift(sf); save(l);
       run(sf);
     }
 
+    // ── Éditeur (création + modification) ──────────────────────────
     let _formSources = new Set();
     let _formMatch = 'any';
-    function openCreate(){
-      _formSources = new Set(); _formMatch = 'any';
-      // Liste des sources abonnées
+    let _editId = null;
+
+    function _condRowHtml(c){
+      c = c || {field:'titlebody', op:'contains', value:''};
+      const fieldOpts = Object.keys(FIELDS).map(k=>'<option value="'+k+'"'+(k===c.field?' selected':'')+'>'+FIELDS[k]+'</option>').join('');
+      const opOpts    = Object.keys(OPS).map(k=>'<option value="'+k+'"'+(k===c.op?' selected':'')+'>'+OPS[k]+'</option>').join('');
+      return '<div class="bf-cond">'
+        + '<div class="bf-cond-top">'
+        + '<select class="bf-cond-sel bf-cond-field">'+fieldOpts+'</select>'
+        + '<select class="bf-cond-sel bf-cond-op">'+opOpts+'</select>'
+        + '<button type="button" class="bf-cond-del" aria-label="Retirer" onclick="BF_SMART._delCond(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg></button>'
+        + '</div>'
+        + '<input class="bf-cond-val" placeholder="Valeur à rechercher…" autocapitalize="none" value="'+escA(c.value||'')+'">'
+        + '</div>';
+    }
+    function _addCond(c){
+      const host = $('bfCondList');
+      if(!host) return;
+      const tmp = document.createElement('div');
+      tmp.innerHTML = _condRowHtml(c);
+      host.appendChild(tmp.firstElementChild);
+    }
+    function _delCond(btn){
+      const row = btn.closest('.bf-cond');
+      const host = $('bfCondList');
+      if(row && host && host.children.length>1) row.remove();
+      else if(row){ // garder au moins une ligne : on la réinitialise
+        const v = row.querySelector('.bf-cond-val'); if(v) v.value='';
+      }
+    }
+
+    function _srcRows(){
       const meta = (()=>{ try{ return JSON.parse(localStorage.getItem('reader.feedMeta')||'{}'); }catch(e){ return {}; } })();
       const urls = []; const seen = new Set();
       (folders||[]).forEach(f=>(f.feeds||[]).forEach(u=>{ if(!seen.has(u)){ seen.add(u); urls.push(u); } }));
-      const srcRows = urls.length ? urls.map(u=>{
+      return urls.length ? urls.map(u=>{
         const nm = (meta[u]&&meta[u].name) || (()=>{try{return new URL(u).hostname.replace(/^www\./,'');}catch(e){return u;}})();
         const fav = (typeof getFavicon==='function')?getFavicon(u):'';
-        return '<div class="bf-src-row" data-url="'+escA(u)+'" onclick="BF_SMART._toggleSrc(this)"><img src="'+escA(fav)+'" alt="" onerror="this.style.opacity=\'.3\'"><span class="nm">'+esc(nm)+'</span><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></span></div>';
+        const on = _formSources.has(u) ? ' on' : '';
+        return '<div class="bf-src-row'+on+'" data-url="'+escA(u)+'" onclick="BF_SMART._toggleSrc(this)"><img src="'+escA(fav)+'" alt="" onerror="this.style.opacity=\'.3\'"><span class="nm">'+esc(nm)+'</span><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></span></div>';
       }).join('') : '<div class="bf-empty" style="padding:18px">Aucune source. Ajoutez d’abord des flux.</div>';
-
-      bfSheetOpen('Nouveau flux intelligent',
-        '<div class="bf-field"><label>Nom</label><input class="bf-input" id="bfSfName" placeholder="ex. Apple + IA" maxlength="40"></div>'
-        + '<div class="bf-field"><label>Mots-clés (séparés par des virgules)</label><input class="bf-input" id="bfSfTerms" placeholder="apple, intelligence artificielle" autocapitalize="none"></div>'
-        + '<div class="bf-field"><label>Correspondance</label><div class="bf-seg" id="bfSfSeg"><button class="on" onclick="BF_SMART._setMatch(\'any\',this)">Au moins un</button><button onclick="BF_SMART._setMatch(\'all\',this)">Tous</button></div></div>'
-        + '<div class="bf-field"><label>Limiter à des sources (optionnel)</label><div class="bf-src-list">'+srcRows+'</div></div>'
-        + '<button class="bf-cta" onclick="BF_SMART._submit()">Créer le flux</button>');
-      setTimeout(()=>{ const n=$('bfSfName'); if(n) n.focus(); }, 420);
     }
+
+    function _openEditor(sf){
+      _editId = sf ? sf.id : null;
+      _formSources = new Set(sf ? (sf.sources||[]) : []);
+      _formMatch = (sf && sf.match==='all') ? 'all' : 'any';
+      const conds = sf ? _conditions(sf) : [{field:'titlebody',op:'contains',value:''}];
+      const condHtml = (conds.length?conds:[{field:'titlebody',op:'contains',value:''}]).map(_condRowHtml).join('');
+
+      bfSheetOpen(sf ? 'Modifier le flux' : 'Nouveau flux intelligent',
+        '<div class="bf-field"><label>Nom</label><input class="bf-input" id="bfSfName" placeholder="ex. Apple + IA" maxlength="40" value="'+(sf?escA(sf.name):'')+'"></div>'
+        + '<div class="bf-field"><label>Correspondance des règles</label><div class="bf-seg" id="bfSfSeg"><button class="'+(_formMatch==='any'?'on':'')+'" onclick="BF_SMART._setMatch(\'any\',this)">Au moins une</button><button class="'+(_formMatch==='all'?'on':'')+'" onclick="BF_SMART._setMatch(\'all\',this)">Toutes</button></div></div>'
+        + '<div class="bf-field"><label>Règles</label><div id="bfCondList">'+condHtml+'</div>'
+        + '<button type="button" class="bf-add-cond" onclick="BF_SMART._addCond()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Ajouter une règle</button></div>'
+        + '<div class="bf-field"><label>Limiter à des sources (optionnel)</label><div class="bf-src-list" id="bfSfSrc">'+_srcRows()+'</div></div>'
+        + '<button class="bf-cta" onclick="BF_SMART._submit()">'+(sf?'Enregistrer':'Créer le flux')+'</button>');
+      setTimeout(()=>{ const n=$('bfSfName'); if(n && !sf) n.focus(); }, 420);
+    }
+    function openCreate(){ _openEditor(null); }
+    function openEdit(id){ const sf = load().find(x=>x.id===id); if(sf) _openEditor(sf); }
+
     function _toggleSrc(el){ const u=el.dataset.url; if(_formSources.has(u)){ _formSources.delete(u); el.classList.remove('on'); } else { _formSources.add(u); el.classList.add('on'); } }
     function _setMatch(m, btn){ _formMatch=m; const seg=$('bfSfSeg'); if(seg) seg.querySelectorAll('button').forEach(b=>b.classList.toggle('on', b===btn)); }
+
+    function _gatherConds(){
+      const host = $('bfCondList'); if(!host) return [];
+      return [...host.querySelectorAll('.bf-cond')].map(row=>({
+        field: row.querySelector('.bf-cond-field').value,
+        op:    row.querySelector('.bf-cond-op').value,
+        value: (row.querySelector('.bf-cond-val').value||'').trim()
+      })).filter(c=>c.value);
+    }
+
     function _submit(){
       const name = ($('bfSfName')?.value||'').trim();
-      const terms = ($('bfSfTerms')?.value||'').split(',').map(s=>s.trim()).filter(Boolean);
-      if(!name && !terms.length){ const n=$('bfSfName'); if(n) n.focus(); return; }
-      if(!terms.length && !_formSources.size){ const t=$('bfSfTerms'); if(t) t.focus(); return; }
-      const sf = { id:'sf'+Date.now().toString(36), name:name||terms.join(' + '), terms, sources:[..._formSources], match:_formMatch };
-      const l = load(); l.unshift(sf); save(l);
+      const conditions = _gatherConds();
+      if(!conditions.length && !_formSources.size){
+        const host=$('bfCondList'); const v=host&&host.querySelector('.bf-cond-val'); if(v) v.focus();
+        return;
+      }
+      const fallback = conditions.length ? conditions.map(c=>c.value).join(' + ') : 'Sources sélectionnées';
+      const sf = { id:_editId||('sf'+Date.now().toString(36)), name:name||fallback,
+        match:_formMatch, conditions, sources:[..._formSources] };
+      let l = load();
+      if(_editId){ l = l.map(x=>x.id===_editId?sf:x); } else { l.unshift(sf); }
+      save(l);
       run(sf);
     }
 
-    return { openList, openCreate, runById, del, quick, _toggleSrc, _setMatch, _submit };
+    return { openList, openCreate, openEdit, runById, del, quick, renderSidebar,
+             _toggleSrc, _setMatch, _submit, _addCond, _delCond, _setDedupe };
   })();
   window.BF_SMART = BF_SMART;
   window.bfSmartOpenList = BF_SMART.openList;
+  try{ BF_SMART.renderSidebar(); }catch(e){}
+
+  // Sync dedupe select quand la page prefs s'ouvre (enchaîne l'existant)
+  (function(){
+    const _prev = window.__renderPrefsContent;
+    window.__renderPrefsContent = function(){
+      if(_prev) _prev();
+      try{
+        const sel=$('spDedupeMode');
+        if(sel){
+          const m=(JSON.parse(localStorage.getItem('reader.dedupe')||'{}')).mode;
+          sel.value=(m==='off'||m==='exact'||m==='fuzzy')?m:'fuzzy';
+        }
+      }catch(e){}
+    };
+  })();
 
   // ════════════════════════════════════════════════════════════════
   //  4) BF_TAGS — étiquettes par article
