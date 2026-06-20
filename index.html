@@ -1942,6 +1942,9 @@ button, .ob-btn, .ob-btn-ghost,
   background:rgba(255,255,255,.05);
 }
 .edl-item:first-child .edl-fig{ width:100%; aspect-ratio:350.25 / 197.16; border-radius:20px; }
+/* Cartes secondaires (310px) centrées dans la colonne — bloc image+texte aligné */
+.edl-item:not(:first-child){ align-items:center; }
+.edl-item:not(:first-child) > *{ width:310px; max-width:100%; }
 [data-theme="light"] .edl-fig{ background:rgba(0,0,0,.04); }
 .edl-fig img{
   width:100%; height:100%; object-fit:cover; display:block;
