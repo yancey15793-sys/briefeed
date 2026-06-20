@@ -1648,17 +1648,17 @@ button, .ob-btn, .ob-btn-ghost,
 .dc-arts-carousel{ display:flex; gap:10px; overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none; padding:4px 18px 6px 59px; -webkit-overflow-scrolling:touch; scroll-snap-type:x proximity; }
 .dc-arts-carousel::-webkit-scrollbar{ display:none; }
 /* Carte article dans le carrousel */
-.dc-art{ flex:none; width:148px; cursor:pointer; scroll-snap-align:start; -webkit-tap-highlight-color:transparent; }
+.dc-art{ flex:none; width:258px; cursor:pointer; scroll-snap-align:start; -webkit-tap-highlight-color:transparent; }
 .dc-art:active{ opacity:.75; }
-.dc-art-img{ width:148px; height:96px; border-radius:10px; overflow:hidden; background:rgba(127,127,127,.12); flex-shrink:0; margin-bottom:7px; }
+.dc-art-img{ width:258px; height:179px; border-radius:14px; overflow:hidden; background:rgba(127,127,127,.12); flex-shrink:0; margin-bottom:9px; }
 .dc-art-img img{ width:100%; height:100%; object-fit:cover; display:block; transition:transform .5s cubic-bezier(.22,1,.36,1); }
 .dc-art:active .dc-art-img img{ transform:scale(1.04); }
-.dc-art-no-img{ width:148px; height:96px; border-radius:10px; background:rgba(127,127,127,.1); display:flex; align-items:center; justify-content:center; margin-bottom:7px; }
+.dc-art-no-img{ width:258px; height:179px; border-radius:14px; background:rgba(127,127,127,.1); display:flex; align-items:center; justify-content:center; margin-bottom:9px; }
 .dc-art-no-img-dot{ width:24px; height:24px; border-radius:50%; background:var(--accent); opacity:.25; }
-.dc-art-title{ font-family:var(--font-inter); font-size:12px; font-weight:600; letter-spacing:-.01em; color:var(--text); line-height:1.35; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.dc-art-title{ font-family:var(--font-inter); font-size:13px; font-weight:600; letter-spacing:-.01em; color:var(--text); line-height:1.35; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
 .dc-art-time{ font-family:var(--font-inter); font-size:10px; font-weight:500; color:var(--text-muted); margin-top:3px; font-variant-numeric:tabular-nums; }
 .dc-art-state{ font-family:var(--font-inter); font-size:12px; font-weight:500; color:var(--text-muted); padding:6px 18px 2px 59px; }
-.dc-art-skel{ height:96px; border-radius:10px; width:148px; flex:none; background:linear-gradient(90deg,rgba(127,127,127,.10),rgba(127,127,127,.18),rgba(127,127,127,.10)); background-size:200% 100%; animation:dcSkel 1.2s linear infinite; }
+.dc-art-skel{ height:179px; border-radius:14px; width:258px; flex:none; background:linear-gradient(90deg,rgba(127,127,127,.10),rgba(127,127,127,.18),rgba(127,127,127,.10)); background-size:200% 100%; animation:dcSkel 1.2s linear infinite; }
 @keyframes dcSkel{ from{ background-position:200% 0; } to{ background-position:-200% 0; } }
 .dc-feed-logo{ width:46px; height:46px; flex:none; border-radius:50%; position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; font-family:var(--font-inter); font-size:18px; font-weight:800; color:var(--text-muted); background:transparent; border:1.5px solid rgba(255,255,255,.1); flex-shrink:0; }
 [data-theme="light"] .dc-feed-logo{ border-color:rgba(0,0,0,.1); }
@@ -1862,6 +1862,9 @@ button, .ob-btn, .ob-btn-ghost,
 .grid2-card{ display:flex; flex-direction:column; cursor:pointer; -webkit-tap-highlight-color:transparent; }
 .grid2-img{ border-radius:12px; overflow:hidden; aspect-ratio:4/3; background:#111; margin-bottom:8px; }
 .grid2-img img{ width:100%; height:100%; object-fit:cover; display:block; }
+/* Première carte grille — hero pleine largeur 16:9 (350.25×197.16), radius 20px */
+.grid2-card:first-child{ grid-column:1 / -1; }
+.grid2-card:first-child .grid2-img{ aspect-ratio:350.25 / 197.16; border-radius:20px; }
 .grid2-title{ font-family:var(--font-inter); font-size:13px; font-weight:700; line-height:1.3; color:var(--text); display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; margin-bottom:5px; }
 .grid2-meta{ font-family:var(--font-inter); font-size:10.5px; color:var(--text-muted); font-weight:600; display:flex; align-items:center; gap:4px; }
 /* ── Logos sources — rond sans fond, professionnel ─────────── */
@@ -1934,10 +1937,11 @@ button, .ob-btn, .ob-btn-ghost,
 .edl-item.is-read.in{ opacity:.42; }
 .edl-item:active{ transform:scale(.985); transition:transform .12s ease; }
 .edl-fig{
-  width:100%; aspect-ratio:327.63 / 184.64;
-  border-radius:12px; overflow:hidden;
+  width:100%; aspect-ratio:310 / 174.38;
+  border-radius:20px; overflow:hidden;
   background:rgba(255,255,255,.05);
 }
+.edl-item:first-child .edl-fig{ aspect-ratio:350.25 / 197.16; border-radius:20px; }
 [data-theme="light"] .edl-fig{ background:rgba(0,0,0,.04); }
 .edl-fig img{
   width:100%; height:100%; object-fit:cover; display:block;
@@ -1977,7 +1981,7 @@ button, .ob-btn, .ob-btn-ghost,
   letter-spacing:.01em; white-space:nowrap;
 }
 @media (min-width:560px){
-  .edl-fig{ border-radius:8px; }
+  .edl-fig{ border-radius:16px; }
   .edl-title{ font-size:14px; margin-top:5px; -webkit-line-clamp:2; }
   .edl-sub{ font-size:11px; }
   .edl-date{ font-size:9px; }
@@ -2026,6 +2030,10 @@ button, .ob-btn, .ob-btn-ghost,
 }
 .seq-thumb img{ width:100%; height:100%; object-fit:cover; display:block;
   transition:transform .6s cubic-bezier(.22,1,.36,1); }
+/* Première carte séquentiel — hero plein cadre 16:9 (350.25×197.16), radius 20px */
+.seq-item:first-child{ flex-direction:column; align-items:stretch; gap:10px; }
+.seq-item:first-child .seq-thumb{ order:-1; width:100%; height:auto; aspect-ratio:350.25 / 197.16; border-radius:20px; align-self:stretch; }
+.seq-item:first-child .seq-num{ text-align:left; }
 @media (hover:hover) and (pointer:fine){
   .seq-item:hover .seq-thumb img{ transform:scale(1.06); }
 }
@@ -3087,6 +3095,10 @@ button, .ob-btn, .ob-btn-ghost,
 .list-thumb{ width:114px; height:76px; flex-shrink:0; border-radius:10px; overflow:hidden; background:#111; }
 .list-thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
 .list-thumb-empty{ width:114px; height:76px; flex-shrink:0; border-radius:10px; background:linear-gradient(135deg,rgba(10,132,255,.15),#0a0a0a); }
+/* Première carte liste — hero plein cadre 16:9 (350.25×197.16), radius 20px */
+.list-item:first-child{ flex-direction:column; align-items:stretch; gap:12px; }
+.list-item:first-child .list-thumb,
+.list-item:first-child .list-thumb-empty{ width:100%; height:auto; aspect-ratio:350.25 / 197.16; border-radius:20px; }
 .list-body{ flex:1; min-width:0; }
 .list-source{ font-family:var(--font-inter); font-size:10.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.04em; margin-bottom:4px; display:flex; align-items:center; gap:4px; }
 .list-fav{ width:16px; height:16px; border-radius:22%; overflow:hidden; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.18),0 0 0 .5px rgba(0,0,0,.06); display:flex; align-items:center; justify-content:center; }
