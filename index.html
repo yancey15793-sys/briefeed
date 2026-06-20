@@ -12,10 +12,14 @@
 <meta name="apple-mobile-web-app-title" content="Briefeed">
 <meta name="theme-color" content="#000000">
 
-<!-- Polices par option : Inter (≈ SF Pro, bien grasse) + Geist -->
+<!-- Polices par option -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;590;700;800&family=Geist:wght@400;500;600;700;800&family=DM+Serif+Display&family=Oswald:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;590;700;800&family=Geist:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=DM+Serif+Display&family=Oswald:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- Fontshare : Aeonik + Satoshi -->
+<link href="https://api.fontshare.com/v2/css?f[]=aeonik@400,500,700&f[]=satoshi@400,500,700,900&display=swap" rel="stylesheet">
+<!-- Cal Sans -->
+<link href="https://fonts.cdnfonts.com/css/cal-sans" rel="stylesheet">
 
 <!-- Reader mode -->
 <script src="https://cdn.jsdelivr.net/npm/@mozilla/readability@0.5.0/Readability.min.js"></script>
@@ -43,19 +47,28 @@ if(!AbortSignal.timeout){
   --bg-elev:     #0a0a0a;
   --accent:      #2f80ff;   /* météo (bleu, cf. maquette) */
 
-  --font-inter:'Inter', -apple-system, system-ui, sans-serif;
-  --font-geist:'Geist', -apple-system, system-ui, sans-serif;
-  --font-dm:'DM Serif Display', Georgia, 'Times New Roman', serif;
-  --font-ui: var(--font-inter);
-  /* Police des titres d'articles & du texte de lecture.
-     Par défaut elle SUIT la police choisie par l'utilisateur (--font-ui) ;
-     l'option « Éditorial » la repasse en serif DM. */
+  --font-inter:       'Inter',        -apple-system, system-ui, sans-serif;
+  --font-geist:       'Geist',        -apple-system, system-ui, sans-serif;
+  --font-aeonik:      'Aeonik',       -apple-system, system-ui, sans-serif;
+  --font-satoshi:     'Satoshi',      -apple-system, system-ui, sans-serif;
+  --font-calsans:     'Cal Sans',     -apple-system, system-ui, sans-serif;
+  --font-manrope:     'Manrope',      -apple-system, system-ui, sans-serif;
+  --font-helvetica:   'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-spacegrotesk:'Space Grotesk',-apple-system, system-ui, sans-serif;
+  --font-dm:          'DM Serif Display', Georgia, 'Times New Roman', serif;
+  --font-ui:    var(--font-inter);
   --font-title: var(--font-ui);
 }
-html[data-font="inter"]{ --font-ui:var(--font-inter); }
-html[data-font="geist"]{ --font-ui:var(--font-geist); }
-/* Éditorial : interface en Inter, titres & lecture en serif DM */
-html[data-font="serif"]{ --font-ui:var(--font-inter); --font-title:var(--font-dm); }
+html[data-font="inter"]        { --font-ui:var(--font-inter); }
+html[data-font="geist"]        { --font-ui:var(--font-geist); }
+html[data-font="aeonik"]       { --font-ui:var(--font-aeonik); }
+html[data-font="satoshi"]      { --font-ui:var(--font-satoshi); }
+html[data-font="calsans"]      { --font-ui:var(--font-calsans); }
+html[data-font="manrope"]      { --font-ui:var(--font-manrope); }
+html[data-font="helvetica"]    { --font-ui:var(--font-helvetica); }
+html[data-font="spacegrotesk"] { --font-ui:var(--font-spacegrotesk); }
+/* Éditorial : interface en Inter, titres en serif DM */
+html[data-font="serif"]        { --font-ui:var(--font-inter); --font-title:var(--font-dm); }
 
 /* Mode clair — variables inversées */
 [data-theme="light"]{
@@ -3630,9 +3643,15 @@ body.focus-mode .focus-exit{ display:flex; }
               <a class="sub-link sub-link-sm" data-qview="grille"     onclick="qmenuSetView('grille')">Grille</a>
               <a class="sub-link sub-link-sm" data-qview="sequential" onclick="qmenuSetView('sequential')">Séquentiel</a>
               <div class="qmenu-sub-section-label" style="margin-top:10px">Police</div>
-              <a class="sub-link sub-link-sm" data-qfont="inter" onclick="qmenuSetFont('inter')" style="font-family:var(--font-inter)">Inter</a>
-              <a class="sub-link sub-link-sm" data-qfont="geist" onclick="qmenuSetFont('geist')" style="font-family:var(--font-geist)">Geist</a>
-              <a class="sub-link sub-link-sm" data-qfont="serif" onclick="qmenuSetFont('serif')" style="font-family:var(--font-dm)">Éditorial</a>
+              <a class="sub-link sub-link-sm" data-qfont="inter"        onclick="qmenuSetFont('inter')"        style="font-family:'Inter',-apple-system,sans-serif">Inter</a>
+              <a class="sub-link sub-link-sm" data-qfont="geist"        onclick="qmenuSetFont('geist')"        style="font-family:'Geist',-apple-system,sans-serif">Geist</a>
+              <a class="sub-link sub-link-sm" data-qfont="aeonik"       onclick="qmenuSetFont('aeonik')"       style="font-family:'Aeonik',-apple-system,sans-serif">Aeonik</a>
+              <a class="sub-link sub-link-sm" data-qfont="satoshi"      onclick="qmenuSetFont('satoshi')"      style="font-family:'Satoshi',-apple-system,sans-serif">Satoshi</a>
+              <a class="sub-link sub-link-sm" data-qfont="calsans"      onclick="qmenuSetFont('calsans')"      style="font-family:'Cal Sans',-apple-system,sans-serif">Cal Sans</a>
+              <a class="sub-link sub-link-sm" data-qfont="manrope"      onclick="qmenuSetFont('manrope')"      style="font-family:'Manrope',-apple-system,sans-serif">Manrope</a>
+              <a class="sub-link sub-link-sm" data-qfont="helvetica"    onclick="qmenuSetFont('helvetica')"    style="font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">Helvetica</a>
+              <a class="sub-link sub-link-sm" data-qfont="spacegrotesk" onclick="qmenuSetFont('spacegrotesk')" style="font-family:'Space Grotesk',-apple-system,sans-serif">Space Grotesk</a>
+              <a class="sub-link sub-link-sm" data-qfont="serif"        onclick="qmenuSetFont('serif')"        style="font-family:'DM Serif Display',Georgia,serif">Éditorial</a>
             </div>
           </div>
 
@@ -5925,9 +5944,9 @@ body.focus-mode .focus-exit{ display:flex; }
     if(cl) cl.style.display = theme==='light' ? '' : 'none';
   };
 
-  // ── Police (Inter → Geist → Éditorial) — cycle sur le qpill ──
+  // ── Police — cycle complet sur le qpill ──
   window.qpillToggleFont = function(){
-    const order = ['inter','geist','serif'];
+    const order = ['inter','geist','aeonik','satoshi','calsans','manrope','helvetica','spacegrotesk','serif'];
     const cur = document.documentElement.dataset.font || 'inter';
     const next = order[(order.indexOf(cur) + 1) % order.length];
     document.documentElement.dataset.font = next;
