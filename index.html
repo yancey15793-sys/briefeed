@@ -226,7 +226,7 @@ button, .ob-btn, .ob-btn-ghost,
   display:flex; flex-direction:column; align-items:flex-start;
   gap:9.5px;
   width:341.25px;
-  padding:90px 0 140px; /* haut ajusté pour iPhone 17 (header ~88px) */
+  padding:calc(env(safe-area-inset-top,0px) + 76px) 0 140px;
 }
 
 /* h1.typography-hero-headline — « Hello Developer » */
@@ -247,15 +247,7 @@ button, .ob-btn, .ob-btn-ghost,
    HEADER « Bonjour, [Nom]. » + date / météo / lieu
    =========================================================== */
 .welcome{
-  position:fixed; top:0; left:0; right:0; z-index:55;
-  background:var(--bg);
-  -webkit-backdrop-filter:blur(20px) saturate(180%);
-  backdrop-filter:blur(20px) saturate(180%);
-  align-self:stretch;
-  text-align:center;
-  /* padding latéral = clearance des boutons flottants (sidebar 44px + marge) */
-  padding:max(env(safe-area-inset-top,18px),18px) 66px 14px;
-  border-bottom:1px solid rgba(255,255,255,.06);
+  display:none; /* remplacé par .topnav */
 }
 [data-theme="light"] .welcome{ border-bottom-color:rgba(0,0,0,.06); }
 .welcome-title{
@@ -364,8 +356,8 @@ button, .ob-btn, .ob-btn-ghost,
    =========================================================== */
 .menu-btn{
   position:fixed;
-  top:max(env(safe-area-inset-top,0px),16px);
-  left:16px; z-index:70;
+  top:calc(env(safe-area-inset-top,0px) + 10px);
+  left:10px; z-index:70;
   width:44px; height:44px;
   display:inline-flex; align-items:center; justify-content:center;
   border:0;
@@ -2244,7 +2236,7 @@ button, .ob-btn, .ob-btn-ghost,
    Inspiration Sunday × Apple. Dark-first, light override.
    =========================================================== */
 .qmenu-wrapper{
-  position:fixed; top:16px; right:16px; z-index:520;
+  position:fixed; top:calc(env(safe-area-inset-top,0px) + 10px); right:10px; z-index:520;
 }
 
 .morph-menu{
@@ -3264,6 +3256,7 @@ body.focus-mode .sidebar,
 body.focus-mode .sidebar-overlay,
 body.focus-mode .smart-nav,
 body.focus-mode .welcome,
+body.focus-mode #topNav,
 body.focus-mode .qpill,
 body.focus-mode #newArtsPill,
 body.focus-mode .view-picker-overlay{ display:none !important; }
@@ -3554,6 +3547,34 @@ body.focus-mode .focus-exit{ display:flex; }
   background-image:linear-gradient(90deg,#e8e8ec 25%,#f0f0f4 50%,#e8e8ec 75%);
 }
 
+/* ── TOPNAV NYTimes style ─────────────────────────────────────── */
+.topnav{
+  position:fixed; top:0; left:0; right:0; z-index:62;
+  height:calc(env(safe-area-inset-top,0px) + 60px);
+  display:flex; align-items:flex-end; justify-content:center;
+  padding-bottom:10px;
+  background:var(--bg);
+  border-bottom:1px solid rgba(255,255,255,.06);
+  -webkit-backdrop-filter:blur(20px) saturate(180%);
+  backdrop-filter:blur(20px) saturate(180%);
+  pointer-events:none;
+}
+[data-theme="light"] .topnav{ border-bottom-color:rgba(0,0,0,.07); }
+.topnav-wordmark{
+  font-family:var(--font-inter); font-size:15px; font-weight:700;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--text);
+  pointer-events:none; user-select:none; line-height:1;
+}
+/* ── Police variable sur tout le contenu article ─────────────────
+   Surcharge les font-family:var(--font-inter) hardcodés afin que
+   le choix utilisateur (--font-ui) s'applique partout. */
+.edl-title, .edl-sub, .edl-date, .edl-tag,
+.list-title, .list-source,
+.seq-title, .seq-source,
+.grid2-title, .grid2-meta,
+.dc-art-title, .dc-art-time, .dc-art-state,
+.dc-feed-row-name, .dc-feed-row-desc { font-family:var(--font-ui); }
+
 </style>
 <link id="gfont-Permanent-Marker" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Permanent+Marker:wght@300;400;500;600;700&amp;display=swap">
 <link id="gfont-Caveat" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@300;400;500;600;700&amp;display=swap">
@@ -3609,6 +3630,11 @@ body.focus-mode .focus-exit{ display:flex; }
     </div>
   </div>
 
+
+  <!-- Barre de navigation NYTimes style — wordmark centré -->
+  <div class="topnav" id="topNav" aria-hidden="true">
+    <span class="topnav-wordmark">Briefeed</span>
+  </div>
 
   <!-- Bouton sidebar — grille 3×3, haut gauche -->
   <button class="menu-btn" id="menuBtn" aria-label="Ouvrir le menu">
