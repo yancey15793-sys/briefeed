@@ -3600,6 +3600,176 @@ body.focus-mode .focus-exit{ display:flex; }
 .dc-art-title, .dc-art-time, .dc-art-state,
 .dc-feed-row-name, .dc-feed-row-desc { font-family:var(--font-ui); }
 
+/* ══════════════════════════════════════════════════════════════════
+   FENÊTRE SOURCES — style Sunday (carte centrée, scale + blur)
+   ══════════════════════════════════════════════════════════════════ */
+.srcm-overlay{
+  position:fixed; inset:0; z-index:600;
+  display:flex; align-items:center; justify-content:center;
+  padding:20px;
+  background:rgba(0,0,0,.5);
+  -webkit-backdrop-filter:blur(10px) saturate(120%);
+  backdrop-filter:blur(10px) saturate(120%);
+  opacity:0; pointer-events:none;
+  transition:opacity .34s ease;
+}
+.srcm-overlay.open{ opacity:1; pointer-events:auto; }
+.srcm-card{
+  width:min(680px,100%); max-height:min(580px,88vh);
+  display:flex; flex-direction:column;
+  background:#16181d; color:var(--text);
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:24px; overflow:hidden;
+  box-shadow:0 40px 90px rgba(0,0,0,.55), 0 4px 16px rgba(0,0,0,.4);
+  transform:scale(.92); opacity:0;
+  transition:transform .44s cubic-bezier(.34,1.42,.64,1), opacity .3s ease;
+}
+[data-theme="light"] .srcm-card{
+  background:#fff; border-color:rgba(0,0,0,.05);
+  box-shadow:0 40px 90px rgba(0,0,0,.22), 0 4px 16px rgba(0,0,0,.12);
+}
+.srcm-overlay.open .srcm-card{ transform:scale(1); opacity:1; }
+
+.srcm-head{
+  flex:none; display:flex; align-items:center; justify-content:space-between;
+  padding:18px 22px 14px;
+}
+.srcm-brand{
+  display:flex; align-items:center; gap:9px;
+  font-family:var(--font-inter); font-size:13px; font-weight:700;
+  letter-spacing:.18em; text-transform:uppercase; color:var(--text);
+}
+.srcm-brand-dot{
+  width:22px; height:22px; border-radius:7px; flex:none;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--accent); color:#fff;
+}
+.srcm-brand-dot svg{ width:13px; height:13px; }
+.srcm-close{
+  width:32px; height:32px; border:0; border-radius:50%;
+  background:rgba(255,255,255,.06); color:var(--text-muted);
+  display:flex; align-items:center; justify-content:center; cursor:pointer;
+  -webkit-tap-highlight-color:transparent; transition:background .18s, color .18s;
+}
+[data-theme="light"] .srcm-close{ background:rgba(0,0,0,.05); }
+.srcm-close:hover{ background:rgba(255,255,255,.12); color:var(--text); }
+.srcm-close svg{ width:15px; height:15px; }
+
+.srcm-body{
+  flex:1; min-height:0; display:flex; gap:14px;
+  padding:6px 16px 4px;
+}
+@media (min-width:540px){ .srcm-body{ gap:18px; padding:6px 22px 4px; } }
+/* Colonne navigation (dossiers) — gros texte éditorial Sunday */
+.srcm-nav{
+  flex:0 0 42%; min-width:0; display:flex; flex-direction:column;
+  gap:2px; overflow-y:auto; -ms-overflow-style:none; scrollbar-width:none;
+  padding:4px 0;
+}
+.srcm-nav::-webkit-scrollbar{ display:none; }
+.srcm-nav-item{
+  display:flex; align-items:baseline; gap:8px;
+  border:0; background:none; cursor:pointer; text-align:left;
+  font-family:var(--font-title); font-size:21px; font-weight:400;
+  line-height:1.16; letter-spacing:-.01em; color:var(--text-muted);
+  padding:5px 0; -webkit-tap-highlight-color:transparent;
+  transition:color .2s ease, transform .2s cubic-bezier(.34,1.4,.64,1);
+}
+@media (min-width:540px){ .srcm-nav-item{ font-size:27px; line-height:1.18; padding:5px 0; } }
+.srcm-nav-item:hover{ color:var(--text); }
+.srcm-nav-item.sel{ color:var(--text); transform:translateX(3px); }
+.srcm-nav-item .srcm-nav-n{
+  font-family:var(--font-inter); font-size:11px; font-weight:700;
+  color:var(--accent); align-self:center;
+}
+
+/* Colonne preview (média + sources du dossier) */
+.srcm-preview{
+  flex:1; min-width:0; display:flex; flex-direction:column; gap:12px;
+  padding:6px 0;
+}
+.srcm-prev-media{
+  position:relative; width:100%; aspect-ratio:16/10;
+  border-radius:14px; overflow:hidden; cursor:pointer;
+  background:var(--bg-elev);
+  display:flex; align-items:center; justify-content:center;
+}
+.srcm-prev-media:active{ transform:scale(.985); }
+.srcm-prev-media img{ width:100%; height:100%; object-fit:cover; display:block; }
+.srcm-prev-media-empty{
+  color:var(--text-muted); font-size:12px; font-weight:600;
+}
+.srcm-prev-badge{
+  position:absolute; left:10px; bottom:10px; z-index:2;
+  display:inline-flex; align-items:center; gap:6px;
+  padding:6px 12px; border-radius:999px;
+  background:rgba(0,0,0,.55); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px);
+  font-family:var(--font-inter); font-size:11.5px; font-weight:700; color:#fff;
+}
+.srcm-prev-badge::before{
+  content:''; width:6px; height:6px; border-radius:50%; background:var(--accent);
+}
+.srcm-prev-srcs{
+  display:flex; flex-wrap:wrap; gap:7px; align-content:flex-start;
+  overflow-y:auto; -ms-overflow-style:none; scrollbar-width:none;
+}
+.srcm-prev-srcs::-webkit-scrollbar{ display:none; }
+.srcm-chip{
+  display:inline-flex; align-items:center; gap:7px;
+  padding:5px 11px 5px 5px; border-radius:999px;
+  background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.08);
+  cursor:pointer; -webkit-tap-highlight-color:transparent;
+  font-family:var(--font-inter); font-size:12px; font-weight:600; color:var(--text);
+  transition:background .18s, border-color .18s, transform .15s;
+}
+[data-theme="light"] .srcm-chip{ background:rgba(0,0,0,.04); border-color:rgba(0,0,0,.06); }
+.srcm-chip:active{ transform:scale(.94); }
+.srcm-chip.sel{ background:var(--accent); border-color:var(--accent); color:#fff; }
+.srcm-chip-av{
+  width:22px; height:22px; border-radius:50%; flex:none; overflow:hidden;
+  background:#fff; display:flex; align-items:center; justify-content:center;
+}
+.srcm-chip-av img{ width:74%; height:74%; object-fit:contain; }
+.srcm-chip-n{ font-size:10px; font-weight:700; color:var(--accent); }
+.srcm-chip.sel .srcm-chip-n{ color:#fff; }
+
+.srcm-foot{
+  flex:none; display:flex; align-items:center; justify-content:space-between;
+  gap:10px; padding:14px 22px 18px;
+  border-top:1px solid rgba(255,255,255,.06);
+  font-family:var(--font-inter); font-size:11.5px; font-weight:600;
+  color:var(--text-muted); letter-spacing:.01em;
+}
+[data-theme="light"] .srcm-foot{ border-top-color:rgba(0,0,0,.06); }
+.srcm-foot b{ color:var(--text); font-weight:700; }
+
+/* Déclencheur dans la Smart Bar — remplace la rangée de logos */
+.sbar-srcs:has(.sbar-srcs-trigger){
+  -webkit-mask-image:none; mask-image:none;
+  overflow:visible;
+}
+.sbar-srcs-trigger{
+  display:inline-flex; align-items:center; gap:10px;
+  padding:7px 14px 7px 8px; border-radius:999px;
+  background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.09);
+  cursor:pointer; -webkit-tap-highlight-color:transparent;
+  font-family:var(--font-inter); font-size:13px; font-weight:600; color:var(--text);
+  transition:background .18s, border-color .18s, transform .15s;
+}
+[data-theme="light"] .sbar-srcs-trigger{ background:rgba(0,0,0,.035); border-color:rgba(0,0,0,.07); }
+.sbar-srcs-trigger:active{ transform:scale(.97); }
+.sbar-srcs-trigger.act{ border-color:rgba(10,132,255,.4); color:var(--accent); }
+.sbar-trig-av{
+  width:26px; height:26px; border-radius:50%; flex:none; overflow:hidden;
+  background:#fff; display:flex; align-items:center; justify-content:center;
+  box-shadow:0 1px 4px rgba(0,0,0,.25);
+}
+.sbar-trig-av img{ width:74%; height:74%; object-fit:contain; }
+.sbar-trig-av.grid{ background:none; color:var(--text-muted); box-shadow:none; }
+.sbar-trig-av.grid svg{ width:15px; height:15px; }
+.sbar-trig-chev{ margin-left:2px; color:var(--text-muted); display:flex; }
+.sbar-trig-chev svg{ width:13px; height:13px; }
+
 </style>
 <link id="gfont-Permanent-Marker" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Permanent+Marker:wght@300;400;500;600;700&amp;display=swap">
 <link id="gfont-Caveat" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@300;400;500;600;700&amp;display=swap">
@@ -4528,6 +4698,26 @@ body.focus-mode .focus-exit{ display:flex; }
         </div>
         <div class="sbar-cats" id="sbarCats"></div>
         <div class="sbar-srcs-wrap" id="sbarSrcsWrap"><div class="sbar-srcs-inner"><div class="sbar-srcs" id="sbarSrcs"></div></div></div>
+      </div>
+
+      <!-- Fenêtre Sources — style Sunday (scale + blur) -->
+      <div class="srcm-overlay" id="srcModal" aria-hidden="true">
+        <div class="srcm-card" role="dialog" aria-modal="true" aria-label="Sources">
+          <div class="srcm-head">
+            <div class="srcm-brand">
+              <span class="srcm-brand-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1.5" fill="currentColor" stroke="none"/></svg></span>
+              Briefeed
+            </div>
+            <button class="srcm-close" type="button" onclick="_srcModalClose()" aria-label="Fermer">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            </button>
+          </div>
+          <div class="srcm-body">
+            <div class="srcm-nav" id="srcmNav"></div>
+            <div class="srcm-preview" id="srcmPreview"></div>
+          </div>
+          <div class="srcm-foot" id="srcmFoot"></div>
+        </div>
       </div>
 
       <!-- ========== VUE ÉDITIONS (magazine) ========== -->
@@ -7601,24 +7791,25 @@ body.focus-mode .focus-exit{ display:flex; }
       cats.scrollLeft = prevLeft;
     }
 
-    // Sources de la catégorie active (préserve le défilement horizontal)
+    // Déclencheur unique : ouvre la fenêtre Sources (style Sunday)
     const srcs = document.getElementById('sbarSrcs');
     if(srcs){
-      const prevLeft = srcs.scrollLeft;
-      const _ring = `<svg class="sbar-src-ring" width="54" height="54" viewBox="-27 -27 54 54" aria-hidden="true"><circle cx="0" cy="0" r="24"/></svg>`;
-      let html = `<button class="sbar-src sbar-src-all${_railFilterUrl ? '' : ' sel'}" type="button" data-url="">
-        <span class="sbar-src-av sbar-all-av">${_GRID_SVG}</span>
-        <span class="sbar-src-name">Toutes</span>
-      </button>`;
-      html += sources.map(s => {
-        const sel = _railFilterUrl === s.url;
-        return `<button class="sbar-src${sel ? ' sel' : ''}" type="button" data-url="${escAttr(s.url)}">
-          <span class="sbar-src-av">${_ring}<img src="${escAttr(getFavicon(s.url))}" alt="" onerror="this.style.opacity='.3'">${s.unread ? '<span class="sbar-src-dot"></span>' : ''}</span>
-          <span class="sbar-src-name">${escHtml(s.name)}</span>
-        </button>`;
-      }).join('');
-      srcs.innerHTML = html;
-      srcs.scrollLeft = prevLeft;
+      const chev = '<span class="sbar-trig-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span>';
+      let av, label, act = '';
+      if(_railFilterUrl){
+        const cur = sources.find(s => s.url === _railFilterUrl);
+        av = `<span class="sbar-trig-av"><img src="${escAttr(getFavicon(_railFilterUrl))}" alt="" onerror="this.style.opacity='.3'"></span>`;
+        label = cur ? escHtml(cur.name) : 'Source';
+        act = ' act';
+      } else if(_smartCat){
+        av = `<span class="sbar-trig-av grid">${_GRID_SVG}</span>`;
+        label = escHtml(_smartCat);
+        act = ' act';
+      } else {
+        av = `<span class="sbar-trig-av grid">${_GRID_SVG}</span>`;
+        label = 'Toutes les sources';
+      }
+      srcs.innerHTML = `<button class="sbar-srcs-trigger${act}" type="button" id="sbarSrcsTrigger">${av}<span>${label}</span>${chev}</button>`;
     }
 
     _smartBindOnce();
@@ -7727,10 +7918,121 @@ body.focus-mode .focus-exit{ display:flex; }
       if(b) _smartPickCat(b.dataset.cat);
     });
     if(srcs) srcs.addEventListener('click', e => {
-      const b = e.target.closest('.sbar-src');
-      if(b) _smartPickSource(b.dataset.url);
+      if(e.target.closest('.sbar-srcs-trigger')) _srcModalOpen();
     });
   }
+
+  // ── Fenêtre Sources « style Sunday » ─────────────────────────────
+  let _srcmCat   = null;   // dossier en aperçu dans la fenêtre
+  let _srcmBound = false;
+
+  function _srcmAllUrls(){
+    const { map } = _smartCatMap(); const seen = new Set();
+    Object.keys(map).forEach(c => map[c].forEach(s => seen.add(s.url)));
+    return seen;
+  }
+  function _srcmCatSources(cat){
+    const { map } = _smartCatMap();
+    let raw;
+    if(cat && map[cat]){ raw = map[cat]; }
+    else { const seen = {}; raw = []; Object.keys(map).forEach(c => map[c].forEach(s => { if(!seen[s.url]){ seen[s.url] = 1; raw.push(s); } })); }
+    return raw.map(s => ({ name:s.name, url:s.url, unread:_railUnread(s.url) }))
+              .sort((a,b) => b.unread - a.unread || a.name.localeCompare(b.name));
+  }
+  function _srcmLatestImg(cat){
+    const urls = cat ? _smartCatUrls(cat) : null;
+    let best = null;
+    for(const a of (_allArticles || [])){
+      if(!a.imageUrl) continue;
+      if(urls && !urls.has(a.feedUrl || '')) continue;
+      if(!best || (a.pubDate || 0) > (best.pubDate || 0)) best = a;
+    }
+    return best;
+  }
+  function _srcmCatUnread(cat){
+    const urls = _smartCatUrls(cat); let n = 0;
+    for(const a of (_allArticles || [])){ if(urls.has(a.feedUrl || '') && window._RS && !window._RS.has(a.link)) n++; }
+    return n;
+  }
+
+  function _srcmRenderNav(){
+    const nav = document.getElementById('srcmNav'); if(!nav) return;
+    const { order } = _smartCatMap();
+    let html = `<button class="srcm-nav-item${_srcmCat ? '' : ' sel'}" type="button" data-cat="">Tout</button>`;
+    html += order.map(c => {
+      const n = _srcmCatUnread(c);
+      return `<button class="srcm-nav-item${_srcmCat === c ? ' sel' : ''}" type="button" data-cat="${escAttr(c)}">${escHtml(c)}${n ? `<span class="srcm-nav-n">${n > 99 ? '99+' : n}</span>` : ''}</button>`;
+    }).join('');
+    nav.innerHTML = html;
+  }
+
+  function _srcmRenderPreview(){
+    const prev = document.getElementById('srcmPreview'); if(!prev) return;
+    const art = _srcmLatestImg(_srcmCat);
+    const list = _srcmCatSources(_srcmCat);
+    let total = 0; list.forEach(s => total += s.unread);
+    const media = (art && art.imageUrl)
+      ? `<img src="${escAttr(art.imageUrl)}" alt="" decoding="async" onerror="this.remove()">`
+      : `<span class="srcm-prev-media-empty">Aucun aperçu</span>`;
+    const badge = total ? `<span class="srcm-prev-badge">${total > 999 ? '999+' : total} à lire</span>` : '';
+    const chips = list.map(s => {
+      const sel = _railFilterUrl === s.url;
+      return `<button class="srcm-chip${sel ? ' sel' : ''}" type="button" data-url="${escAttr(s.url)}"><span class="srcm-chip-av"><img src="${escAttr(getFavicon(s.url))}" alt="" onerror="this.style.opacity='.3'"></span>${escHtml(s.name)}${s.unread ? `<span class="srcm-chip-n">${s.unread > 99 ? '99+' : s.unread}</span>` : ''}</button>`;
+    }).join('');
+    prev.innerHTML = `<div class="srcm-prev-media" title="Afficher ce dossier">${media}${badge}</div><div class="srcm-prev-srcs">${chips || '<span class="srcm-prev-media-empty">Aucune source</span>'}</div>`;
+  }
+
+  function _srcmRenderFoot(){
+    const foot = document.getElementById('srcmFoot'); if(!foot) return;
+    const nSrc = _srcmAllUrls().size;
+    let latest = 0, unread = 0;
+    for(const a of (_allArticles || [])){
+      if((a.pubDate || 0) > latest) latest = a.pubDate || 0;
+      if(window._RS && !window._RS.has(a.link)) unread++;
+    }
+    const sync = latest ? relTime(latest) : '—';
+    foot.innerHTML = `<span><b>${nSrc}</b> source${nSrc > 1 ? 's' : ''}</span><span>Synchro <b>${sync}</b></span><span><b>${unread > 999 ? '999+' : unread}</b> à lire</span>`;
+  }
+
+  function _srcmBindOnce(){
+    if(_srcmBound) return; _srcmBound = true;
+    const ov   = document.getElementById('srcModal');
+    const nav  = document.getElementById('srcmNav');
+    const prev = document.getElementById('srcmPreview');
+    if(ov) ov.addEventListener('click', e => { if(e.target === ov) _srcModalClose(); });
+    if(nav) nav.addEventListener('click', e => {
+      const b = e.target.closest('.srcm-nav-item'); if(!b) return;
+      _srcmCat = b.dataset.cat || null;
+      _srcmRenderNav(); _srcmRenderPreview();
+    });
+    if(prev) prev.addEventListener('click', e => {
+      const c = e.target.closest('.srcm-chip');
+      if(c){
+        if((_srcmCat || null) !== (_smartCat || null)) _smartPickCat(_srcmCat || '');
+        _smartPickSource(c.dataset.url);
+        _srcModalClose(); return;
+      }
+      if(e.target.closest('.srcm-prev-media')){
+        _smartPickCat(_srcmCat || '');
+        _smartPickSource('');
+        _srcModalClose();
+      }
+    });
+  }
+
+  window._srcModalOpen = function(){
+    _srcmCat = _smartCat || null;
+    _srcmRenderNav(); _srcmRenderPreview(); _srcmRenderFoot();
+    const ov = document.getElementById('srcModal'); if(!ov) return;
+    ov.setAttribute('aria-hidden', 'false');
+    requestAnimationFrame(() => ov.classList.add('open'));
+    _srcmBindOnce();
+  };
+  window._srcModalClose = function(){
+    const ov = document.getElementById('srcModal'); if(!ov) return;
+    ov.classList.remove('open');
+    ov.setAttribute('aria-hidden', 'true');
+  };
 
 
   // ════════════════════════════════════════════════════════════════
