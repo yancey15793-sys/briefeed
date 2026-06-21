@@ -3840,7 +3840,8 @@ body.focus-mode .focus-exit{ display:flex; }
 }
 .srcm-chip:last-child{ border-bottom:none; }
 [data-theme="light"] .srcm-chip{ border-bottom-color:rgba(0,0,0,.05); }
-.srcm-chip:active{ background:rgba(255,255,255,.06); transform:scale(.98); }
+.srcm-chip:active{ background:rgba(255,255,255,.06); transform:scale(.97);
+  transition:transform .18s cubic-bezier(.34,1.4,.64,1), background .12s; }
 .srcm-chip.sel{ background:rgba(10,132,255,.12); color:var(--accent); }
 .srcm-chip-av{
   width:30px; height:30px; border-radius:8px; flex:none; overflow:hidden;
@@ -3909,12 +3910,18 @@ body.focus-mode .focus-exit{ display:flex; }
   position:relative; cursor:pointer;
   background:#111; aspect-ratio:16/8;
 }
-.srcm-editorial img{
-  width:100%; height:100%; object-fit:cover; display:block;
-  transform:scale(1.05);
+/* Le wrapper porte l'animation Ken Burns (scale) */
+.srcm-editorial-img-wrap{
+  position:absolute; inset:0; overflow:hidden;
   animation:srcmKenBurns 10s ease-out forwards;
+  transform-origin:center;
 }
-.srcm-editorial.no-img img{ display:none; }
+/* L'image porte la translation parallaxe (Y seulement) via JS */
+.srcm-editorial img{
+  width:100%; height:130%; object-fit:cover; display:block;
+  will-change:transform; transform:translateY(0); transition:none;
+}
+.srcm-editorial.no-img .srcm-editorial-img-wrap{ display:none; }
 .srcm-editorial-overlay{
   position:absolute; inset:0;
   background:linear-gradient(160deg,rgba(0,0,0,.06) 0%,rgba(0,0,0,.55) 55%,rgba(0,0,0,.88) 100%);
@@ -3956,13 +3963,21 @@ body.focus-mode .focus-exit{ display:flex; }
   background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.08);
   color:var(--text-muted); white-space:nowrap; cursor:pointer;
   -webkit-tap-highlight-color:transparent;
-  transition:background .18s, color .18s, border-color .18s;
+  transition:background .22s cubic-bezier(.34,1.56,.64,1),
+             color .18s, border-color .18s,
+             transform .28s cubic-bezier(.34,1.56,.64,1);
 }
 .srcm-coll.has-items{ color:var(--text); border-color:rgba(255,255,255,.12); }
-.srcm-coll:active{ background:rgba(255,255,255,.12); transform:scale(.96); }
+.srcm-coll:active{ background:rgba(255,255,255,.12); transform:scale(.94); }
 .srcm-coll-dot{ width:5px; height:5px; border-radius:50%; background:var(--accent); flex:none; }
 .srcm-coll-n{ font-size:10px; font-weight:700; color:var(--accent); margin-left:1px; }
 [data-theme="light"] .srcm-coll{ background:rgba(0,0,0,.04); border-color:rgba(0,0,0,.08); }
+
+/* ── Chip scroll-reveal (IntersectionObserver inside modal) ── */
+@keyframes srcmChipIn{
+  from{ opacity:0; transform:translateY(9px); }
+  to  { opacity:1; transform:none; }
+}
 
 /* ── Barres de pertinence sur les chips sources ── */
 .srcm-chip-bar-wrap{
@@ -8266,7 +8281,9 @@ body.focus-mode .focus-exit{ display:flex; }
     const tag = feedUrl ? escHtml(a.source||'') : 'À la une';
     const badge = srcCount>1 ? `<span class="srcm-editorial-badge">${srcCount} sources</span>` : '';
     return `<div class="srcm-editorial" id="srcmEditorial" data-link="${escAttr(a.link||'')}">
-      <img src="${escAttr(a.imageUrl)}" alt="" decoding="async" loading="lazy" onerror="this.parentNode.classList.add('no-img')">
+      <div class="srcm-editorial-img-wrap">
+        <img src="${escAttr(a.imageUrl)}" alt="" decoding="async" loading="lazy" onerror="this.closest('.srcm-editorial').classList.add('no-img')">
+      </div>
       <div class="srcm-editorial-overlay"></div>
       <div class="srcm-editorial-info">
         <div class="srcm-editorial-tags"><span class="srcm-editorial-tag">${tag}</span></div>
@@ -8280,11 +8297,30 @@ body.focus-mode .focus-exit{ display:flex; }
 
   function _srcmBuildCollections(cat){
     const urls = cat ? _smartCatUrls(cat) : null;
-    const now = Date.now(); const pool = (_allArticles||[]).filter(a => !urls || urls.has(a.feedUrl||''));
+    const now = Date.now();
+    const pool = (_allArticles||[]).filter(a => !urls || urls.has(a.feedUrl||''));
     const lastHour = pool.filter(a => (a.pubDate||0) >= now-3600000).length;
     const today = pool.filter(a => { const d=new Date(a.pubDate||0),t=new Date(); return d.toDateString()===t.toDateString(); }).length;
     const unread = pool.filter(a => window._RS && !window._RS.has(a.link)).length;
-    const forgotten = pool.filter(a => (a.pubDate||0)<now-172800000 && window._RS && !window._RS.has(a.link)).length;
+    // Pépites oubliées : articles "chauds" (≥2 sources) non lus, entre 3h et 48h
+    const ALL = _allArticles||[];
+    const tokenSrcsMap = new Map();
+    ALL.forEach(a => {
+      if(now-(a.pubDate||0) > 172800000) return;
+      _tokens(a.title).forEach(t => {
+        if(!tokenSrcsMap.has(t)) tokenSrcsMap.set(t, new Set());
+        tokenSrcsMap.get(t).add(a.feedUrl||'');
+      });
+    });
+    const forgotten = pool.filter(a => {
+      const age = now-(a.pubDate||0);
+      if(age < 10800000 || age > 172800000) return false; // entre 3h et 48h
+      if(!window._RS || window._RS.has(a.link)) return false; // non lus
+      if(!a.imageUrl && !a.summary) return false; // article avec contenu
+      const srcs = new Set([a.feedUrl||'']);
+      _tokens(a.title).forEach(t => (tokenSrcsMap.get(t)||new Set()).forEach(s => srcs.add(s)));
+      return srcs.size >= 2; // chaud = couvert par ≥2 sources
+    }).length;
     const mk = (label, n, id) => {
       const has=n>0?' has-items':'';
       return `<button class="srcm-coll${has}" type="button" data-coll="${id}">${n>0?'<span class="srcm-coll-dot"></span>':''}${escHtml(label)}${n>0?`<span class="srcm-coll-n">${n}</span>`:''}</button>`;
@@ -8318,6 +8354,22 @@ body.focus-mode .focus-exit{ display:flex; }
     if(cn) cn.addEventListener('click', e=>{ e.stopPropagation(); _srcmCarNav(1); });
   }
 
+  function _srcmAnimateChips(prev){
+    if(!prev || !('IntersectionObserver' in window)) return;
+    const chips = prev.querySelectorAll('.srcm-chip');
+    if(!chips.length) return;
+    let idx=0;
+    const obs = new IntersectionObserver(entries=>{
+      entries.forEach(e=>{
+        if(!e.isIntersecting) return;
+        const i=idx++;
+        e.target.style.animation=`srcmChipIn .38s cubic-bezier(.34,1.4,.64,1) ${i*20}ms both`;
+        obs.unobserve(e.target);
+      });
+    },{ root: prev, rootMargin:'0px', threshold:0.05 });
+    chips.forEach(c=>{ c.style.opacity='0'; obs.observe(c); });
+  }
+
   function _srcmRenderPreview(){
     const prev = document.getElementById('srcmPreview'); if(!prev) return;
     _srcmPreviewUrl = null;
@@ -8334,6 +8386,7 @@ body.focus-mode .focus-exit{ display:flex; }
       _srcmBuildCollections(_srcmCat) +
       `<div class="srcm-prev-srcs">${chips||'<span style="font-size:12px;color:var(--text-muted)">Aucune source</span>'}</div>`;
     _srcmRenderBanner();
+    requestAnimationFrame(()=> _srcmAnimateChips(prev));
   }
 
   function _srcmPreviewSource(url, name){
@@ -8346,7 +8399,9 @@ body.focus-mode .focus-exit{ display:flex; }
       if(story){
         const { article:a } = story;
         ed.dataset.link = a.link||'';
-        const img = ed.querySelector('img'); if(img){ img.src=''; img.src=a.imageUrl||''; }
+        const wrap = ed.querySelector('.srcm-editorial-img-wrap');
+      if(wrap){ wrap.style.animation='none'; requestAnimationFrame(()=>{ wrap.style.animation='srcmKenBurns 10s ease-out forwards'; }); }
+      const img = ed.querySelector('img'); if(img){ img.style.transform='translateY(0)'; img.src=''; img.src=a.imageUrl||''; }
         const titleEl = ed.querySelector('.srcm-editorial-title'); if(titleEl) titleEl.textContent=(a.title||'').slice(0,120);
         const srcEl = ed.querySelector('.srcm-editorial-src'); if(srcEl) srcEl.textContent=a.source||'';
         const tagEl = ed.querySelector('.srcm-editorial-tag'); if(tagEl) tagEl.textContent=escHtml(name||'');
@@ -8425,17 +8480,32 @@ body.focus-mode .focus-exit{ display:flex; }
       _srcmRenderNav(); _srcmRenderPreview(); _srcmRenderFoot();
     });
     if(prev){
+      // ── Parallaxe éditoriale : image glisse à 38% de la vitesse de scroll ──
+      prev.addEventListener('scroll', ()=>{
+        const ed = prev.querySelector('.srcm-editorial'); if(!ed) return;
+        const img = ed.querySelector('img'); if(!img) return;
+        const relY = prev.scrollTop * 0.38;
+        img.style.transform = `translateY(${Math.min(relY, 28)}px)`;
+      },{passive:true});
+
       prev.addEventListener('click', e=>{
-        // Carte éditoriale → ouvrir l'article
+        // Carte éditoriale → ouvrir l'article dans le lecteur
         const ed=e.target.closest('.srcm-editorial');
         if(ed && ed.dataset.link){ window.open(ed.dataset.link,'_blank','noopener'); return; }
-        // Collection → appliquer filtre + fermer
+        // Collection → appliquer filtre smart + fermer
         const coll=e.target.closest('.srcm-coll');
         if(coll){
           const id=coll.dataset.coll;
           if(id==='unread') _smartSetMode('unread');
-          else if(id==='today'||id==='lastHour') _smartSetMode('today');
-          else if(id==='forgotten') _smartSetMode('3days');
+          else if(id==='today') _smartSetMode('today');
+          else if(id==='lastHour') _smartSetMode('today');
+          else if(id==='forgotten'){
+            // Pépites oubliées : activer "3 jours" + "non lus"
+            _smartSetMode('3days');
+            // tenter de combiner avec non-lus si la fonction existe
+            if(typeof _smartSetMode === 'function') _smartSetMode('unread');
+          }
+          if((_srcmCat||null)!==(_smartCat||null)) _smartPickCat(_srcmCat||'');
           _srcModalClose(); return;
         }
         // Chip source
