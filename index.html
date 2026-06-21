@@ -3649,10 +3649,37 @@ body.focus-mode .focus-exit{ display:flex; }
   box-shadow:0 -8px 40px rgba(0,0,0,.18), 0 40px 90px rgba(0,0,0,.22);
 }
 .srcm-overlay.open .srcm-card{ transform:none; opacity:1; }
+/* Pendant le drag-to-dismiss : la carte suit le doigt sans transition */
+.srcm-card.dragging{ transition:none; }
+
+/* Poignée de glissement (mobile uniquement) */
+.srcm-grip{
+  flex:none; display:flex; justify-content:center; padding:8px 0 2px;
+  cursor:grab; touch-action:none;
+}
+.srcm-grip::before{
+  content:''; width:38px; height:4px; border-radius:999px;
+  background:rgba(255,255,255,.22);
+}
+[data-theme="light"] .srcm-grip::before{ background:rgba(0,0,0,.16); }
+@media (min-width:560px){ .srcm-grip{ display:none; } }
+
+/* ── Cascade d'entrée — tabs, carrousel, liste apparaissent en décalé ── */
+.srcm-card.entering .srcm-nav{ animation:srcmRise .5s cubic-bezier(.22,1,.36,1) both; animation-delay:.06s; }
+.srcm-card.entering .srcm-carousel{ animation:srcmRise .56s cubic-bezier(.22,1,.36,1) both; animation-delay:.13s; }
+.srcm-card.entering .srcm-prev-srcs{ animation:srcmRise .56s cubic-bezier(.22,1,.36,1) both; animation-delay:.21s; }
+.srcm-card.entering .srcm-foot{ animation:srcmRise .5s cubic-bezier(.22,1,.36,1) both; animation-delay:.28s; }
+@keyframes srcmRise{ from{ opacity:0; transform:translateY(16px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce){
+  .srcm-card.entering .srcm-nav,
+  .srcm-card.entering .srcm-carousel,
+  .srcm-card.entering .srcm-prev-srcs,
+  .srcm-card.entering .srcm-foot{ animation:none; }
+}
 
 .srcm-head{
   flex:none; display:flex; align-items:center; justify-content:space-between;
-  padding:16px 18px 12px;
+  padding:8px 18px 12px;
 }
 @media (min-width:560px){ .srcm-head{ padding:18px 22px 14px; } }
 .srcm-brand{
@@ -3737,7 +3764,16 @@ body.focus-mode .focus-exit{ display:flex; }
 }
 .srcm-car-track.swiping{ transition:none; }
 .srcm-slide{ flex:0 0 100%; position:relative; overflow:hidden; }
-.srcm-slide img{ width:100%; height:100%; object-fit:cover; display:block; }
+.srcm-slide img{
+  width:100%; height:100%; object-fit:cover; display:block;
+  transform:scale(1.05); transform-origin:center;
+  transition:transform .55s cubic-bezier(.22,1,.36,1);
+}
+/* Ken Burns — zoom lent sur le slide actif pendant l'autoplay */
+.srcm-slide.act img{ animation:srcmKenBurns 6.5s ease-out forwards; }
+@keyframes srcmKenBurns{ from{ transform:scale(1.05); } to{ transform:scale(1.15); } }
+/* Pendant le swipe : transition + Ken Burns suspendus (parallaxe live) */
+.srcm-car-track.swiping .srcm-slide img{ transition:none; animation:none; }
 .srcm-slide-info{
   position:absolute; bottom:0; left:0; right:0;
   padding:32px 14px 13px;
@@ -4819,6 +4855,7 @@ body.focus-mode .focus-exit{ display:flex; }
       <!-- Fenêtre Sources — style Sunday (scale + blur) -->
       <div class="srcm-overlay" id="srcModal" aria-hidden="true">
         <div class="srcm-card" role="dialog" aria-modal="true" aria-label="Sources">
+          <div class="srcm-grip" id="srcmGrip" aria-hidden="true"></div>
           <div class="srcm-head">
             <div class="srcm-brand">
               <span class="srcm-brand-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1.5" fill="currentColor" stroke="none"/></svg></span>
@@ -8091,8 +8128,8 @@ body.focus-mode .focus-exit{ display:flex; }
   function _srcmBuildCar(slides){
     if(!slides.length)
       return `<div class="srcm-carousel"><div class="srcm-car-empty">Aucun aperçu disponible</div></div>`;
-    const slideHtml = slides.map(a =>
-      `<div class="srcm-slide" data-link="${escAttr(a.link||'')}">
+    const slideHtml = slides.map((a,i) =>
+      `<div class="srcm-slide${i===0?' act':''}" data-link="${escAttr(a.link||'')}">
         <img src="${escAttr(a.imageUrl)}" alt="" decoding="async" loading="lazy" onerror="this.parentNode.classList.add('no-img')">
         <div class="srcm-slide-info">
           <div class="srcm-slide-src">${escHtml(a.source||'')}</div>
@@ -8205,6 +8242,11 @@ body.focus-mode .focus-exit{ display:flex; }
     _srcmSlideIdx = ((idx%_srcmSlideCnt)+_srcmSlideCnt)%_srcmSlideCnt;
     track.style.transform = `translateX(-${_srcmSlideIdx*100}%)`;
     if(dots) dots.querySelectorAll('.srcm-dot').forEach((d,i)=>d.classList.toggle('act',i===_srcmSlideIdx));
+    // Ken Burns : ré-armer l'animation sur le slide actif
+    track.querySelectorAll('.srcm-slide').forEach((s,i)=>{
+      s.querySelectorAll('img').forEach(im=>{ im.style.transform=''; });
+      s.classList.toggle('act', i===_srcmSlideIdx);
+    });
   }
   function _srcmCarNav(dir){ _srcmGoTo(_srcmSlideIdx+dir); }
   function _srcmAutoPlay(){ _srcmAutoStop(); _srcmAutoTimer=setInterval(()=>_srcmCarNav(1),4200); }
@@ -8249,8 +8291,10 @@ body.focus-mode .focus-exit{ display:flex; }
       prev.addEventListener('mousemove', e=>{
         if(_mouseX0===null) return;
         const track=document.getElementById('srcmCarTrack'); if(!track) return;
+        const dx=e.clientX-_mouseX0;
         track.classList.add('swiping');
-        track.style.transform=`translateX(calc(-${_srcmSlideIdx*100}% + ${e.clientX-_mouseX0}px))`;
+        track.style.transform=`translateX(calc(-${_srcmSlideIdx*100}% + ${dx}px))`;
+        const im=track.querySelector('.srcm-slide.act img'); if(im) im.style.transform=`translateX(${dx*0.12}px) scale(1.08)`;
       });
       const _mouseEnd = e=>{
         if(_mouseX0===null) return;
@@ -8271,8 +8315,10 @@ body.focus-mode .focus-exit{ display:flex; }
       prev.addEventListener('touchmove', e=>{
         if(!e.target.closest('.srcm-carousel')||_srcmTouchX0===null) return;
         const track=document.getElementById('srcmCarTrack'); if(!track) return;
+        const dx=e.touches[0].clientX-_srcmTouchX0;
         track.classList.add('swiping');
-        track.style.transform=`translateX(calc(-${_srcmSlideIdx*100}% + ${e.touches[0].clientX-_srcmTouchX0}px))`;
+        track.style.transform=`translateX(calc(-${_srcmSlideIdx*100}% + ${dx}px))`;
+        const im=track.querySelector('.srcm-slide.act img'); if(im) im.style.transform=`translateX(${dx*0.12}px) scale(1.08)`;
       },{passive:true});
       prev.addEventListener('touchend', e=>{
         if(!e.target.closest('.srcm-carousel')||_srcmTouchX0===null) return;
@@ -8283,19 +8329,54 @@ body.focus-mode .focus-exit{ display:flex; }
         _srcmAutoPlay();
       },{passive:true});
     }
+
+    // Drag-to-dismiss (mobile) — poignée tirée vers le bas
+    const grip = document.getElementById('srcmGrip');
+    const card = document.querySelector('.srcm-card');
+    if(grip && card && ov){
+      let _gy0=null;
+      grip.addEventListener('touchstart', e=>{ _gy0=e.touches[0].clientY; card.classList.add('dragging'); _srcmAutoStop(); },{passive:true});
+      grip.addEventListener('touchmove', e=>{
+        if(_gy0===null) return;
+        let dy=e.touches[0].clientY-_gy0; if(dy<0) dy*=0.3;
+        card.style.transform=`translateY(${dy}px)`;
+        ov.style.opacity=String(Math.max(.25, 1-dy/520));
+      },{passive:true});
+      const gripEnd = e=>{
+        if(_gy0===null) return;
+        const dy=(e.changedTouches&&e.changedTouches[0]?e.changedTouches[0].clientY:_gy0)-_gy0;
+        _gy0=null; card.classList.remove('dragging');
+        if(dy>110){
+          // Continuer la descente puis fermer
+          ov.classList.remove('open'); ov.setAttribute('aria-hidden','true');
+          card.style.transform=''; ov.style.opacity='';
+        } else {
+          card.style.transform=''; ov.style.opacity='';
+        }
+      };
+      grip.addEventListener('touchend', gripEnd, {passive:true});
+      grip.addEventListener('touchcancel', gripEnd, {passive:true});
+    }
   }
 
   window._srcModalOpen = function(){
     _srcmCat=_smartCat||null; _srcmPreviewUrl=null;
     _srcmRenderNav(); _srcmRenderPreview(); _srcmRenderFoot();
     const ov=document.getElementById('srcModal'); if(!ov) return;
+    const card=ov.querySelector('.srcm-card');
+    if(card){ card.style.transform=''; ov.style.opacity=''; }
     ov.setAttribute('aria-hidden','false');
     requestAnimationFrame(()=>ov.classList.add('open'));
+    // Cascade d'entrée : tabs → carrousel → liste → footer
+    if(card){ card.classList.add('entering'); setTimeout(()=>card.classList.remove('entering'),850); }
     _srcmBindOnce();
   };
   window._srcModalClose = function(){
     const ov=document.getElementById('srcModal'); if(!ov) return;
     _srcmAutoStop();
+    const card=ov.querySelector('.srcm-card');
+    if(card){ card.classList.remove('dragging'); card.style.transform=''; }
+    ov.style.opacity='';
     ov.classList.remove('open');
     ov.setAttribute('aria-hidden','true');
   };
