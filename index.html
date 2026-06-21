@@ -2559,59 +2559,57 @@ button, .ob-btn, .ob-btn-ghost,
 .sbar-src{ scroll-snap-align:start; }
 .sbar-srcs::-webkit-scrollbar{ display:none; }
 .sbar-src{
-  flex:0 0 auto; width:54px;
-  display:flex; flex-direction:column; align-items:center; gap:7px;
-  border:none; background:none; padding:0; cursor:pointer; -webkit-tap-highlight-color:transparent;
+  flex:0 0 auto; width:46px;
+  display:flex; flex-direction:column; align-items:center; gap:9px;
+  border:none; background:none; padding:0 0 4px; cursor:pointer; -webkit-tap-highlight-color:transparent;
   transition:transform .3s cubic-bezier(.34,1.56,.64,1);
 }
 .sbar-src:active{ transform:scale(.9); transition:transform .07s ease-in; }
 .sbar-src-av{
-  width:42px; height:42px; border-radius:50%; position:relative; overflow:visible;
-  background:rgba(255,255,255,.09);
-  -webkit-backdrop-filter:blur(12px) saturate(160%);
-  backdrop-filter:blur(12px) saturate(160%);
-  border:1px solid rgba(255,255,255,.13);
-  box-shadow:0 2px 10px rgba(0,0,0,.32), inset 0 .5px 0 rgba(255,255,255,.12);
+  width:30px; height:30px; border-radius:0; position:relative; overflow:visible;
+  background:none; border:none; box-shadow:none;
+  -webkit-backdrop-filter:none; backdrop-filter:none;
   display:flex; align-items:center; justify-content:center;
-  transition:box-shadow .26s ease, border-color .26s ease;
+  transition:none;
 }
 [data-theme="light"] .sbar-src-av{
-  background:rgba(255,255,255,.7);
-  border-color:rgba(0,0,0,.07);
-  box-shadow:0 1.5px 6px rgba(0,0,0,.11);
+  background:none; border-color:transparent; box-shadow:none;
 }
 .sbar-src-av img{
-  width:70%; height:70%; object-fit:contain; border-radius:0; display:block;
+  width:100%; height:100%; object-fit:contain; border-radius:20%; display:block;
+  filter:drop-shadow(0 2px 5px rgba(0,0,0,.45)) drop-shadow(0 1px 2px rgba(0,0,0,.3));
+  transition:filter .22s ease, transform .22s ease;
+}
+[data-theme="light"] .sbar-src-av img{
+  filter:drop-shadow(0 1.5px 4px rgba(0,0,0,.18));
 }
 .sbar-src.sel .sbar-src-av{
-  box-shadow:0 0 0 0 transparent, 0 4px 16px rgba(10,132,255,.28);
-  border-color:rgba(10,132,255,.25);
+  box-shadow:none; border-color:transparent;
 }
-/* Anneau SVG story */
-.sbar-src-ring{
-  position:absolute; top:50%; left:50%;
-  transform:translate(-50%,-50%) rotate(-90deg);
-  pointer-events:none; overflow:visible;
+.sbar-src.sel .sbar-src-av img{
+  filter:drop-shadow(0 3px 8px rgba(10,132,255,.5)) drop-shadow(0 1px 3px rgba(10,132,255,.3));
 }
-.sbar-src-ring circle{
-  fill:none; stroke:#0a84ff; stroke-width:2.2;
-  stroke-linecap:round;
-  stroke-dasharray:150.8; /* 2π×24 */
-  stroke-dashoffset:150.8;
-  transition:stroke-dashoffset .45s cubic-bezier(.4,0,.2,1), opacity .3s ease;
-  opacity:0;
+/* Trait accent sous le logo (sélection) */
+.sbar-src-av::after{
+  content:''; position:absolute; bottom:-7px; left:50%;
+  width:0; height:2px; background:#0a84ff; border-radius:999px;
+  transform:translateX(-50%) scaleX(0);
+  transform-origin:center;
+  transition:transform .38s cubic-bezier(.34,1.4,.64,1), width .38s cubic-bezier(.34,1.4,.64,1);
 }
-.sbar-src.sel .sbar-src-ring circle{
-  stroke-dashoffset:0;
-  opacity:1;
+.sbar-src.sel .sbar-src-av::after{
+  width:22px;
+  transform:translateX(-50%) scaleX(1);
 }
+/* Anneau SVG supprimé — pas utilisé en mode Raw Float */
+.sbar-src-ring{ display:none; }
 .sbar-src-dot{
   position:absolute; top:-1px; right:-1px; width:13px; height:13px; z-index:2;
   border-radius:50%; background:#0a84ff; border:2.5px solid var(--bg);
 }
 .sbar-src-name{
-  font-family:var(--font-inter); font-size:10.5px; font-weight:600;
-  color:var(--text-muted); text-align:center; width:54px;
+  font-family:var(--font-inter); font-size:10px; font-weight:600;
+  color:var(--text-muted); text-align:center; width:46px;
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
   transition:color .22s ease;
 }
