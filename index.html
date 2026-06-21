@@ -3609,27 +3609,46 @@ body.focus-mode .focus-exit{ display:flex; }
    ══════════════════════════════════════════════════════════════════ */
 .srcm-overlay{
   position:fixed; inset:0; z-index:600;
-  display:flex; align-items:center; justify-content:center; padding:12px;
-  background:rgba(0,0,0,.5);
-  -webkit-backdrop-filter:blur(10px) saturate(120%);
-  backdrop-filter:blur(10px) saturate(120%);
-  opacity:0; pointer-events:none; transition:opacity .34s ease;
+  display:flex; align-items:flex-end; justify-content:center; padding:0;
+  background:rgba(0,0,0,0);
+  -webkit-backdrop-filter:blur(0px); backdrop-filter:blur(0px);
+  opacity:0; pointer-events:none;
+  transition:opacity .4s ease, background .42s ease,
+             backdrop-filter .48s ease, -webkit-backdrop-filter .48s ease;
 }
-.srcm-overlay.open{ opacity:1; pointer-events:auto; }
+@media (min-width:560px){
+  .srcm-overlay{ align-items:center; padding:12px; }
+}
+.srcm-overlay.open{
+  opacity:1; pointer-events:auto;
+  background:rgba(0,0,0,.52);
+  -webkit-backdrop-filter:blur(14px) saturate(130%);
+  backdrop-filter:blur(14px) saturate(130%);
+}
 .srcm-card{
-  width:min(680px,calc(100vw - 24px)); max-height:min(580px,90vh);
+  width:min(680px,100vw); max-height:min(620px,92vh);
   display:flex; flex-direction:column;
   background:#16181d; color:var(--text);
-  border:1px solid rgba(255,255,255,.07); border-radius:24px; overflow:hidden;
-  box-shadow:0 40px 90px rgba(0,0,0,.55), 0 4px 16px rgba(0,0,0,.4);
-  transform:scale(.92); opacity:0;
-  transition:transform .44s cubic-bezier(.34,1.42,.64,1), opacity .3s ease;
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:22px 22px 0 0; overflow:hidden;
+  box-shadow:0 -8px 40px rgba(0,0,0,.6), 0 0 0 0.5px rgba(255,255,255,.06);
+  transform:translateY(100%); opacity:0;
+  transition:transform .52s cubic-bezier(.34,1.38,.64,1), opacity .32s ease;
+}
+@media (min-width:560px){
+  .srcm-card{
+    width:min(680px,calc(100vw - 24px)); max-height:min(600px,90vh);
+    border-radius:24px;
+    box-shadow:0 40px 90px rgba(0,0,0,.55), 0 4px 16px rgba(0,0,0,.4);
+    transform:scale(.84) translateY(30px);
+    transition:transform .56s cubic-bezier(.34,1.42,.64,1), opacity .3s ease;
+  }
 }
 [data-theme="light"] .srcm-card{
   background:#fff; border-color:rgba(0,0,0,.05);
-  box-shadow:0 40px 90px rgba(0,0,0,.22), 0 4px 16px rgba(0,0,0,.12);
+  box-shadow:0 -8px 40px rgba(0,0,0,.18), 0 40px 90px rgba(0,0,0,.22);
 }
-.srcm-overlay.open .srcm-card{ transform:scale(1); opacity:1; }
+.srcm-overlay.open .srcm-card{ transform:none; opacity:1; }
 
 .srcm-head{
   flex:none; display:flex; align-items:center; justify-content:space-between;
@@ -3657,76 +3676,66 @@ body.focus-mode .focus-exit{ display:flex; }
 .srcm-close:hover{ background:rgba(255,255,255,.12); color:var(--text); }
 .srcm-close svg{ width:15px; height:15px; }
 
-/* ── Corps : colonne unique mobile, côte à côte desktop ── */
+/* ── Corps : toujours en colonne ── */
 .srcm-body{
   flex:1; min-height:0; display:flex; flex-direction:column; overflow:hidden;
 }
-@media (min-width:560px){ .srcm-body{ flex-direction:row; } }
 
-/* ── Nav : pills horizontales sur mobile, grande typo éditoriale sur desktop ── */
+/* ── Nav : tabs horizontaux avec tiret glissant (style Sunday) ── */
 .srcm-nav{
-  flex:none; display:flex; flex-direction:row; flex-wrap:nowrap;
-  gap:7px; padding:0 18px 12px;
-  overflow-x:auto; overflow-y:hidden; -ms-overflow-style:none; scrollbar-width:none;
+  flex:none; display:flex; flex-direction:row; gap:0;
+  padding:0 16px; overflow-x:auto; overflow-y:hidden;
+  -ms-overflow-style:none; scrollbar-width:none;
+  border-bottom:1px solid rgba(255,255,255,.07);
 }
 .srcm-nav::-webkit-scrollbar{ display:none; }
-@media (min-width:560px){
-  .srcm-nav{
-    flex:0 0 42%; flex-direction:column; flex-wrap:nowrap;
-    overflow-x:hidden; overflow-y:auto;
-    gap:2px; padding:8px 0 8px 22px;
-  }
-}
-/* Pill mobile */
+[data-theme="light"] .srcm-nav{ border-bottom-color:rgba(0,0,0,.07); }
 .srcm-nav-item{
-  flex:0 0 auto; display:inline-flex; align-items:center; gap:6px;
-  border:1.5px solid rgba(255,255,255,.1); border-radius:999px;
-  background:rgba(255,255,255,.04); cursor:pointer; white-space:nowrap;
-  font-family:var(--font-inter); font-size:13px; font-weight:600;
-  color:var(--text-muted); padding:7px 14px;
-  -webkit-tap-highlight-color:transparent;
-  transition:color .2s, background .2s, border-color .2s;
+  flex:0 0 auto; position:relative;
+  display:inline-flex; flex-direction:column; align-items:center; gap:5px;
+  padding:10px 12px 0; border:none; background:none; cursor:pointer;
+  -webkit-tap-highlight-color:transparent; transition:none;
 }
-[data-theme="light"] .srcm-nav-item{ background:rgba(0,0,0,.03); border-color:rgba(0,0,0,.1); }
-.srcm-nav-item:active{ transform:scale(.95); }
-.srcm-nav-item.sel{ background:var(--accent); border-color:var(--accent); color:#fff; }
-.srcm-nav-item .srcm-nav-n{ font-size:10px; font-weight:700; color:inherit; opacity:.8; }
-/* Grande typo éditoriale desktop */
-@media (min-width:560px){
-  .srcm-nav-item{
-    border:0; border-radius:0; background:none; white-space:normal;
-    font-family:var(--font-title); font-size:27px; font-weight:400;
-    line-height:1.18; letter-spacing:-.01em; color:var(--text-muted);
-    padding:5px 0;
-    transition:color .2s ease, transform .2s cubic-bezier(.34,1.4,.64,1);
-  }
-  [data-theme="light"] .srcm-nav-item{ background:none; border:0; }
-  .srcm-nav-item:hover{ color:var(--text); }
-  .srcm-nav-item.sel{ background:none; border:0; color:var(--text); transform:translateX(3px); }
-  .srcm-nav-item:active{ transform:translateX(3px); }
-  .srcm-nav-item .srcm-nav-n{ font-family:var(--font-inter); font-size:11px; font-weight:700; color:var(--accent); opacity:1; }
+.srcm-nav-item-label{
+  font-family:var(--font-inter); font-size:13px; font-weight:600;
+  color:var(--text-muted); white-space:nowrap;
+  transition:color .28s ease;
+}
+.srcm-nav-item.sel .srcm-nav-item-label,
+.srcm-nav-item:active .srcm-nav-item-label{ color:var(--text); }
+.srcm-nav-item-dash{
+  width:8px; height:2.5px; border-radius:2px; background:transparent;
+  margin-bottom:-1px;
+  transition:width .38s cubic-bezier(.34,1.4,.64,1), background .28s ease;
+}
+.srcm-nav-item.sel .srcm-nav-item-dash{ width:20px; background:var(--accent); }
+.srcm-nav-n{
+  display:inline-block; font-family:var(--font-inter);
+  font-size:9.5px; font-weight:700; color:var(--accent); margin-left:3px;
 }
 
 /* ── Colonne preview ── */
 .srcm-preview{
   flex:1; min-height:0; min-width:0;
   display:flex; flex-direction:column; gap:10px;
-  padding:0 18px 8px; overflow-y:auto;
+  padding:12px 18px 8px; overflow-y:auto;
   -ms-overflow-style:none; scrollbar-width:none;
 }
 .srcm-preview::-webkit-scrollbar{ display:none; }
-@media (min-width:560px){ .srcm-preview{ padding:8px 18px 8px 0; } }
 
-/* ── Carrousel 3 derniers articles ── */
+/* ── Carrousel 6 derniers articles ── */
 .srcm-carousel{
   position:relative; width:100%; flex:none;
   aspect-ratio:16/9; border-radius:14px; overflow:hidden;
-  background:rgba(255,255,255,.04); cursor:pointer;
+  background:rgba(255,255,255,.04); cursor:grab;
+  -webkit-tap-highlight-color:transparent;
 }
+.srcm-carousel.grabbing{ cursor:grabbing; }
 .srcm-car-track{
   display:flex; height:100%; width:100%;
   transition:transform .42s cubic-bezier(.22,1,.36,1); will-change:transform;
 }
+.srcm-car-track.swiping{ transition:none; }
 .srcm-slide{ flex:0 0 100%; position:relative; overflow:hidden; }
 .srcm-slide img{ width:100%; height:100%; object-fit:cover; display:block; }
 .srcm-slide-info{
@@ -3750,13 +3759,14 @@ body.focus-mode .focus-exit{ display:flex; }
 /* Flèches */
 .srcm-car-btn{
   position:absolute; top:50%; transform:translateY(-50%);
-  width:32px; height:32px; border:0; border-radius:50%;
-  background:rgba(0,0,0,.42); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px);
+  width:34px; height:34px; border:0; border-radius:50%;
+  background:rgba(0,0,0,.48); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.12);
   color:#fff; display:flex; align-items:center; justify-content:center;
-  cursor:pointer; opacity:0; transition:opacity .2s; z-index:2;
+  cursor:pointer; opacity:.85; transition:opacity .2s, transform .18s; z-index:2;
   -webkit-tap-highlight-color:transparent;
 }
-.srcm-carousel:hover .srcm-car-btn{ opacity:1; }
+.srcm-car-btn:active{ opacity:1; transform:translateY(-50%) scale(.9); }
 .srcm-car-btn-prev{ left:9px; }
 .srcm-car-btn-next{ right:9px; }
 .srcm-car-btn svg{ width:16px; height:16px; }
@@ -3803,6 +3813,42 @@ body.focus-mode .focus-exit{ display:flex; }
   background:var(--accent); border-radius:999px; padding:1px 6px; min-width:20px; text-align:center;
 }
 .srcm-chip.sel .srcm-chip-n{ background:var(--accent); }
+
+/* ── Bannière source en cours de preview ── */
+.srcm-src-banner{
+  flex:none; display:flex; align-items:center; gap:10px;
+  padding:8px 18px; background:rgba(10,132,255,.1);
+  border-top:1px solid rgba(10,132,255,.2);
+  animation:srcmBannerIn .28s cubic-bezier(.34,1.4,.64,1);
+}
+@keyframes srcmBannerIn{ from{ opacity:0; transform:translateY(6px); } to{ opacity:1; transform:none; } }
+.srcm-src-banner-av{
+  width:26px; height:26px; border-radius:7px; flex:none; overflow:hidden;
+  background:rgba(127,127,127,.12); display:flex; align-items:center; justify-content:center;
+}
+.srcm-src-banner-av img{ width:70%; height:70%; object-fit:contain; }
+.srcm-src-banner-name{
+  flex:1; font-family:var(--font-inter); font-size:12.5px; font-weight:700;
+  color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.srcm-src-banner-count{ font-family:var(--font-inter); font-size:11px; font-weight:600; color:var(--text-muted); flex:none; }
+.srcm-src-banner-btn{
+  flex:none; padding:5px 12px; border:none; border-radius:999px;
+  background:var(--accent); color:#fff;
+  font-family:var(--font-inter); font-size:12px; font-weight:700;
+  cursor:pointer; -webkit-tap-highlight-color:transparent;
+  transition:opacity .15s, transform .15s;
+}
+.srcm-src-banner-btn:active{ opacity:.8; transform:scale(.95); }
+.srcm-src-banner-back{
+  flex:none; width:28px; height:28px; border:none; border-radius:50%;
+  background:rgba(255,255,255,.08); color:var(--text-muted);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; -webkit-tap-highlight-color:transparent;
+  transition:background .15s;
+}
+.srcm-src-banner-back:active{ background:rgba(255,255,255,.14); }
+.srcm-src-banner-back svg{ width:14px; height:14px; }
 
 /* ── Footer ── */
 .srcm-foot{
@@ -4766,7 +4812,7 @@ body.focus-mode .focus-exit{ display:flex; }
             </div>
           </div>
         </div>
-        <div class="sbar-cats" id="sbarCats"></div>
+        <div class="sbar-cats" id="sbarCats" style="display:none"></div>
         <div class="sbar-srcs-wrap" id="sbarSrcsWrap"><div class="sbar-srcs-inner"><div class="sbar-srcs" id="sbarSrcs"></div></div></div>
       </div>
 
@@ -7997,8 +8043,9 @@ body.focus-mode .focus-exit{ display:flex; }
   let _srcmBound     = false;
   let _srcmSlideIdx  = 0;
   let _srcmSlideCnt  = 0;
-  let _srcmAutoTimer = null;
-  let _srcmTouchX0   = null;
+  let _srcmAutoTimer  = null;
+  let _srcmTouchX0    = null;
+  let _srcmPreviewUrl = null;
 
   function _srcmAllUrls(){
     const { map } = _smartCatMap(); const seen = new Set();
@@ -8012,11 +8059,16 @@ body.focus-mode .focus-exit{ display:flex; }
     return raw.map(s => ({ name:s.name, url:s.url, unread:_railUnread(s.url) }))
               .sort((a,b) => b.unread - a.unread || a.name.localeCompare(b.name));
   }
-  function _srcmGetSlides(cat){
-    const urls = cat ? _smartCatUrls(cat) : null;
-    const pool = (_allArticles||[]).filter(a => a.imageUrl && (!urls || urls.has(a.feedUrl||'')));
+  function _srcmGetSlides(cat, feedUrl){
+    let pool;
+    if(feedUrl){
+      pool = (_allArticles||[]).filter(a => (a.feedUrl||'')=== feedUrl && a.imageUrl);
+    } else {
+      const urls = cat ? _smartCatUrls(cat) : null;
+      pool = (_allArticles||[]).filter(a => a.imageUrl && (!urls || urls.has(a.feedUrl||'')));
+    }
     pool.sort((a,b) => (b.pubDate||0) - (a.pubDate||0));
-    return pool.slice(0,3);
+    return pool.slice(0,6);
   }
   function _srcmCatUnread(cat){
     const urls = _smartCatUrls(cat); let n=0;
@@ -8027,55 +8079,112 @@ body.focus-mode .focus-exit{ display:flex; }
   function _srcmRenderNav(){
     const nav = document.getElementById('srcmNav'); if(!nav) return;
     const { order } = _smartCatMap();
-    let html = `<button class="srcm-nav-item${_srcmCat ? '' : ' sel'}" type="button" data-cat="">Tout</button>`;
-    html += order.map(c => {
-      const n = _srcmCatUnread(c);
-      return `<button class="srcm-nav-item${_srcmCat===c?' sel':''}" type="button" data-cat="${escAttr(c)}">${escHtml(c)}${n?`<span class="srcm-nav-n">${n>99?'99+':n}</span>`:''}  </button>`;
-    }).join('');
+    const mkTab = (label, cat, n) => {
+      const sel = (cat===null ? !_srcmCat : _srcmCat===cat) ? ' sel' : '';
+      return `<button class="srcm-nav-item${sel}" type="button" data-cat="${cat===null?'':escAttr(cat)}"><span class="srcm-nav-item-label">${escHtml(label)}${n?`<span class="srcm-nav-n">${n>99?'99+':n}</span>`:''}</span><span class="srcm-nav-item-dash"></span></button>`;
+    };
+    let html = mkTab('Tout', null, 0);
+    html += order.map(c => mkTab(c, c, _srcmCatUnread(c))).join('');
     nav.innerHTML = html;
+  }
+
+  function _srcmBuildCar(slides){
+    if(!slides.length)
+      return `<div class="srcm-carousel"><div class="srcm-car-empty">Aucun aperçu disponible</div></div>`;
+    const slideHtml = slides.map(a =>
+      `<div class="srcm-slide" data-link="${escAttr(a.link||'')}">
+        <img src="${escAttr(a.imageUrl)}" alt="" decoding="async" loading="lazy" onerror="this.parentNode.classList.add('no-img')">
+        <div class="srcm-slide-info">
+          <div class="srcm-slide-src">${escHtml(a.source||'')}</div>
+          <div class="srcm-slide-title">${escHtml((a.title||'').slice(0,90))}</div>
+        </div>
+      </div>`).join('');
+    const btns = slides.length>1
+      ? `<button class="srcm-car-btn srcm-car-btn-prev" type="button" aria-label="Précédent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+         <button class="srcm-car-btn srcm-car-btn-next" type="button" aria-label="Suivant"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg></button>` : '';
+    const dotsHtml = slides.length>1
+      ? `<div class="srcm-dots" id="srcmDots">${slides.map((_,i)=>`<span class="srcm-dot${i===0?' act':''}" data-dot="${i}"></span>`).join('')}</div>` : '';
+    return `<div class="srcm-carousel" id="srcmCarousel"><div class="srcm-car-track" id="srcmCarTrack">${slideHtml}</div>${btns}</div>${dotsHtml}`;
+  }
+
+  function _srcmBindCarBtns(container){
+    const cp = container.querySelector('.srcm-car-btn-prev');
+    const cn = container.querySelector('.srcm-car-btn-next');
+    if(cp) cp.addEventListener('click', e=>{ e.stopPropagation(); _srcmCarNav(-1); });
+    if(cn) cn.addEventListener('click', e=>{ e.stopPropagation(); _srcmCarNav(1); });
   }
 
   function _srcmRenderPreview(){
     const prev = document.getElementById('srcmPreview'); if(!prev) return;
-    const slides = _srcmGetSlides(_srcmCat);
+    _srcmPreviewUrl = null;
+    const slides = _srcmGetSlides(_srcmCat, null);
     const list   = _srcmCatSources(_srcmCat);
     _srcmSlideIdx = 0; _srcmSlideCnt = slides.length;
-
-    let carHtml;
-    if(!slides.length){
-      carHtml = `<div class="srcm-carousel"><div class="srcm-car-empty">Aucun aperçu disponible</div></div>`;
-    } else {
-      const slideHtml = slides.map((a,i) =>
-        `<div class="srcm-slide" data-link="${escAttr(a.link||'')}">
-          <img src="${escAttr(a.imageUrl)}" alt="" decoding="async" loading="lazy" onerror="this.parentNode.classList.add('no-img')">
-          <div class="srcm-slide-info">
-            <div class="srcm-slide-src">${escHtml(a.source||'')}</div>
-            <div class="srcm-slide-title">${escHtml((a.title||'').slice(0,90))}</div>
-          </div>
-        </div>`).join('');
-      const btns = slides.length>1
-        ? `<button class="srcm-car-btn srcm-car-btn-prev" type="button" aria-label="Précédent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg></button>
-           <button class="srcm-car-btn srcm-car-btn-next" type="button" aria-label="Suivant"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg></button>` : '';
-      const dotsHtml = slides.length>1
-        ? `<div class="srcm-dots" id="srcmDots">${slides.map((_,i)=>`<span class="srcm-dot${i===0?' act':''}" data-dot="${i}"></span>`).join('')}</div>` : '';
-      carHtml = `<div class="srcm-carousel" id="srcmCarousel"><div class="srcm-car-track" id="srcmCarTrack">${slideHtml}</div>${btns}</div>${dotsHtml}`;
-    }
 
     const chips = list.map(s => {
       const sel = _railFilterUrl===s.url;
       return `<button class="srcm-chip${sel?' sel':''}" type="button" data-url="${escAttr(s.url)}"><span class="srcm-chip-av"><img src="${escAttr(getFavicon(s.url))}" alt="" onerror="this.style.opacity='.3'"></span><span class="srcm-chip-name">${escHtml(s.name)}</span>${s.unread?`<span class="srcm-chip-n">${s.unread>99?'99+':s.unread}</span>`:''}</button>`;
     }).join('');
 
-    prev.innerHTML = carHtml + `<div class="srcm-prev-srcs">${chips||'<span style="font-size:12px;color:var(--text-muted)">Aucune source</span>'}</div>`;
-
-    // Bind prev/next (inline onclick ne peut pas atteindre la closure)
-    const cp = prev.querySelector('.srcm-car-btn-prev');
-    const cn = prev.querySelector('.srcm-car-btn-next');
-    if(cp) cp.addEventListener('click', e => { e.stopPropagation(); _srcmCarNav(-1); });
-    if(cn) cn.addEventListener('click', e => { e.stopPropagation(); _srcmCarNav(1); });
-
+    prev.innerHTML = _srcmBuildCar(slides) + `<div class="srcm-prev-srcs">${chips||'<span style="font-size:12px;color:var(--text-muted)">Aucune source</span>'}</div>`;
+    _srcmBindCarBtns(prev);
     _srcmAutoStop();
     if(slides.length>1) _srcmAutoPlay();
+    _srcmRenderBanner();
+  }
+
+  function _srcmPreviewSource(url, name){
+    _srcmPreviewUrl = url;
+    // mettre à jour le carrousel
+    const slides = _srcmGetSlides(_srcmCat, url);
+    _srcmSlideIdx = 0; _srcmSlideCnt = slides.length;
+    _srcmAutoStop();
+    const prev = document.getElementById('srcmPreview'); if(!prev) return;
+    const oldCar = prev.querySelector('.srcm-carousel');
+    const oldDots = prev.querySelector('.srcm-dots');
+    if(oldCar) oldCar.outerHTML; // reuse node
+    const carHtml = _srcmBuildCar(slides);
+    const tmp = document.createElement('div');
+    tmp.innerHTML = carHtml + (prev.querySelector('.srcm-dots') ? '' : '');
+    // Replace carousel + dots
+    const existingCar = prev.querySelector('.srcm-carousel');
+    const existingDots = prev.querySelector('.srcm-dots');
+    if(existingCar){ existingCar.outerHTML = tmp.querySelector('.srcm-carousel').outerHTML; }
+    if(existingDots && tmp.querySelector('.srcm-dots')){ existingDots.outerHTML = tmp.querySelector('.srcm-dots').outerHTML; }
+    else if(existingDots && !tmp.querySelector('.srcm-dots')){ existingDots.remove(); }
+    _srcmBindCarBtns(prev);
+    if(slides.length>1) _srcmAutoPlay();
+    // highlight chip
+    prev.querySelectorAll('.srcm-chip').forEach(c=>c.classList.toggle('sel',c.dataset.url===url));
+    _srcmRenderBanner(url, name);
+  }
+
+  function _srcmRenderBanner(url, name){
+    const card = document.querySelector('.srcm-card'); if(!card) return;
+    const existing = card.querySelector('.srcm-src-banner');
+    if(!url){
+      if(existing) existing.remove();
+      return;
+    }
+    const fav = getFavicon(url);
+    const html = `<div class="srcm-src-banner">
+      <button class="srcm-src-banner-back" type="button" id="srcmBannerBack" aria-label="Retour"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <span class="srcm-src-banner-av"><img src="${escAttr(fav)}" alt="" onerror="this.style.opacity='.3'"></span>
+      <span class="srcm-src-banner-name">${escHtml(name||'')}</span>
+      <button class="srcm-src-banner-btn" type="button" id="srcmBannerApply">Voir</button>
+    </div>`;
+    if(existing){ existing.outerHTML = html; }
+    else{
+      const foot = card.querySelector('.srcm-foot');
+      if(foot) foot.insertAdjacentHTML('beforebegin', html);
+    }
+    const back = card.querySelector('#srcmBannerBack');
+    const apply = card.querySelector('#srcmBannerApply');
+    if(back) back.addEventListener('click', ()=>{ _srcmRenderPreview(); _srcmRenderFoot(); });
+    if(apply) apply.addEventListener('click', ()=>{
+      if((_srcmCat||null)!==(_smartCat||null)) _smartPickCat(_srcmCat||'');
+      _smartPickSource(url); _srcModalClose();
+    });
   }
 
   function _srcmRenderFoot(){
@@ -8103,39 +8212,81 @@ body.focus-mode .focus-exit{ display:flex; }
 
   function _srcmBindOnce(){
     if(_srcmBound) return; _srcmBound=true;
-    const ov   = document.getElementById('srcModal');
-    const nav  = document.getElementById('srcmNav');
+    const ov  = document.getElementById('srcModal');
+    const nav = document.getElementById('srcmNav');
     const prev = document.getElementById('srcmPreview');
     if(ov) ov.addEventListener('click', e=>{ if(e.target===ov) _srcModalClose(); });
     if(nav) nav.addEventListener('click', e=>{
       const b=e.target.closest('.srcm-nav-item'); if(!b) return;
       _srcmCat=b.dataset.cat||null; _srcmAutoStop();
-      _srcmRenderNav(); _srcmRenderPreview();
+      _srcmRenderNav(); _srcmRenderPreview(); _srcmRenderFoot();
     });
     if(prev){
       prev.addEventListener('click', e=>{
         const c=e.target.closest('.srcm-chip');
-        if(c){ if((_srcmCat||null)!==(_smartCat||null)) _smartPickCat(_srcmCat||''); _smartPickSource(c.dataset.url); _srcModalClose(); return; }
+        if(c){
+          if(_srcmPreviewUrl && _srcmPreviewUrl===c.dataset.url){
+            // 2ème tap sur la même source → appliquer filtre + fermer
+            if((_srcmCat||null)!==(_smartCat||null)) _smartPickCat(_srcmCat||'');
+            _smartPickSource(c.dataset.url); _srcModalClose();
+          } else {
+            _srcmPreviewSource(c.dataset.url, c.querySelector('.srcm-chip-name')?.textContent||'');
+          }
+          return;
+        }
         const d=e.target.closest('.srcm-dot');
         if(d&&d.dataset.dot!==undefined){ _srcmGoTo(+d.dataset.dot); return; }
         const sl=e.target.closest('.srcm-slide');
         if(sl&&sl.dataset.link){ _smartPickCat(_srcmCat||''); _smartPickSource(''); _srcModalClose(); }
       });
+      // Swipe live (mouse)
+      let _mouseX0=null;
+      prev.addEventListener('mousedown', e=>{
+        if(!e.target.closest('.srcm-carousel')) return;
+        _mouseX0=e.clientX; _srcmAutoStop();
+        document.getElementById('srcmCarousel')?.classList.add('grabbing');
+      });
+      prev.addEventListener('mousemove', e=>{
+        if(_mouseX0===null) return;
+        const track=document.getElementById('srcmCarTrack'); if(!track) return;
+        track.classList.add('swiping');
+        track.style.transform=`translateX(calc(-${_srcmSlideIdx*100}% + ${e.clientX-_mouseX0}px))`;
+      });
+      const _mouseEnd = e=>{
+        if(_mouseX0===null) return;
+        const dx=(e.clientX||0)-_mouseX0; _mouseX0=null;
+        document.getElementById('srcmCarousel')?.classList.remove('grabbing');
+        const track=document.getElementById('srcmCarTrack');
+        if(track) track.classList.remove('swiping');
+        if(Math.abs(dx)>40) _srcmCarNav(dx<0?1:-1); else _srcmGoTo(_srcmSlideIdx);
+        _srcmAutoPlay();
+      };
+      prev.addEventListener('mouseup',_mouseEnd);
+      prev.addEventListener('mouseleave',_mouseEnd);
+      // Swipe live (touch)
       prev.addEventListener('touchstart', e=>{
         if(!e.target.closest('.srcm-carousel')) return;
         _srcmTouchX0=e.touches[0].clientX; _srcmAutoStop();
       },{passive:true});
+      prev.addEventListener('touchmove', e=>{
+        if(!e.target.closest('.srcm-carousel')||_srcmTouchX0===null) return;
+        const track=document.getElementById('srcmCarTrack'); if(!track) return;
+        track.classList.add('swiping');
+        track.style.transform=`translateX(calc(-${_srcmSlideIdx*100}% + ${e.touches[0].clientX-_srcmTouchX0}px))`;
+      },{passive:true});
       prev.addEventListener('touchend', e=>{
         if(!e.target.closest('.srcm-carousel')||_srcmTouchX0===null) return;
         const dx=e.changedTouches[0].clientX-_srcmTouchX0; _srcmTouchX0=null;
-        if(Math.abs(dx)>40) _srcmCarNav(dx<0?1:-1);
+        const track=document.getElementById('srcmCarTrack');
+        if(track) track.classList.remove('swiping');
+        if(Math.abs(dx)>40) _srcmCarNav(dx<0?1:-1); else _srcmGoTo(_srcmSlideIdx);
         _srcmAutoPlay();
       },{passive:true});
     }
   }
 
   window._srcModalOpen = function(){
-    _srcmCat=_smartCat||null;
+    _srcmCat=_smartCat||null; _srcmPreviewUrl=null;
     _srcmRenderNav(); _srcmRenderPreview(); _srcmRenderFoot();
     const ov=document.getElementById('srcModal'); if(!ov) return;
     ov.setAttribute('aria-hidden','false');
