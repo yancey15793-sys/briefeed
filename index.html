@@ -11797,11 +11797,20 @@ body.focus-mode .focus-exit{ display:flex; }
     }, true);
   }
 
-  /* ── Observer : init à chaque ouverture d'accordéon ── */
+  /* ── Observer : init à chaque ouverture d'accordéon ──
+     childList (ajout de nœuds) + debounce rAF : on ne rescanne plus le DOM
+     à chaque changement de classe (déclenché en continu par les animations),
+     mais seulement quand de nouveaux carrousels sont insérés. */
+  let _carScheduled = false;
   const mo = new MutationObserver(() => {
-    document.querySelectorAll('.browse-carousel').forEach(initCarousel);
+    if(_carScheduled) return;
+    _carScheduled = true;
+    requestAnimationFrame(() => {
+      _carScheduled = false;
+      document.querySelectorAll('.browse-carousel').forEach(initCarousel);
+    });
   });
-  mo.observe(document.body, { attributes: true, subtree: true, attributeFilter: ['class'] });
+  mo.observe(document.body, { childList: true, subtree: true });
 
   document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.browse-carousel').forEach(initCarousel);
