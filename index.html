@@ -3738,7 +3738,7 @@ body.focus-mode .focus-exit{ display:flex; }
 /* Item de catégorie — typographie Sunday : grand, light */
 .srcm-cat-item{
   display:flex; align-items:baseline; justify-content:space-between;
-  padding:10px 0; border-bottom:1px solid rgba(255,255,255,.055);
+  padding:9px 0; border-bottom:1px solid rgba(255,255,255,.055);
   border:none; background:none; width:100%;
   text-align:left; cursor:pointer; will-change:transform;
   -webkit-tap-highlight-color:transparent;
@@ -3749,15 +3749,15 @@ body.focus-mode .focus-exit{ display:flex; }
 [data-theme="light"] .srcm-cat-item{ border-top-color:rgba(0,0,0,.07); }
 .srcm-cat-item-label{
   font-family:var(--font-inter);
-  font-size:clamp(19px,5vw,23px);
-  font-weight:450; letter-spacing:-0.022em; line-height:1.15;
+  font-size:clamp(16px,4.2vw,19px);
+  font-weight:500; letter-spacing:-0.018em; line-height:1.2;
   color:var(--text);
   transition:color .22s ease;
 }
 .srcm-cat-item.sel .srcm-cat-item-label{ color:var(--accent); }
 [data-theme="light"] .srcm-cat-item-label{ color:#1d1d1f; }
 .srcm-cat-item-meta{
-  font-family:var(--font-inter); font-size:11px; font-weight:600;
+  font-family:var(--font-inter); font-size:10.5px; font-weight:600;
   color:var(--text-muted); opacity:.45; flex:none; margin-left:14px;
 }
 
@@ -3781,8 +3781,8 @@ body.focus-mode .focus-exit{ display:flex; }
 
 /* Chip logo source */
 .srcm-logo-chip{
-  display:flex; align-items:center; gap:12px;
-  padding:8px 2px; border:none; background:none; width:100%;
+  display:flex; align-items:center; gap:11px;
+  padding:7px 2px; border:none; background:none; width:100%;
   text-align:left; cursor:pointer;
   border-top:1px solid rgba(255,255,255,.04);
   -webkit-tap-highlight-color:transparent;
@@ -3795,32 +3795,32 @@ body.focus-mode .focus-exit{ display:flex; }
 
 /* Avatar logo */
 .srcm-logo-av{
-  width:36px; height:36px; border-radius:10px; flex:none;
+  width:30px; height:30px; border-radius:9px; flex:none;
   background:rgba(255,255,255,.07); overflow:hidden;
   position:relative; display:flex; align-items:center; justify-content:center;
 }
 .srcm-logo-av img{
   position:absolute; inset:0; width:100%; height:100%;
-  object-fit:cover; border-radius:10px;
+  object-fit:cover; border-radius:9px;
   opacity:0; transition:opacity .3s ease;
 }
 .srcm-logo-av img.loaded{ opacity:1; }
 .srcm-logo-init{
-  font-size:13px; font-weight:700; color:var(--text-muted);
+  font-size:12px; font-weight:700; color:var(--text-muted);
   user-select:none; position:relative; z-index:0;
 }
 [data-theme="light"] .srcm-logo-av{ background:rgba(0,0,0,.06); }
 
 /* Texte + badge */
 .srcm-logo-name{
-  flex:1; font-size:13px; font-weight:500; color:var(--text);
+  flex:1; font-size:12.5px; font-weight:500; color:var(--text);
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
   letter-spacing:-.01em;
 }
 .srcm-logo-n{
-  flex:none; font-size:10px; font-weight:700; color:var(--accent);
+  flex:none; font-size:9.5px; font-weight:700; color:var(--accent);
   background:rgba(10,132,255,.14); border-radius:999px;
-  padding:2px 7px; min-width:22px; text-align:center;
+  padding:2px 6px; min-width:20px; text-align:center;
 }
 [data-theme="light"] .srcm-logo-n{ background:rgba(0,113,227,.1); }
 
