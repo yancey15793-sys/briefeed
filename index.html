@@ -3761,6 +3761,69 @@ body.focus-mode .focus-exit{ display:flex; }
   color:var(--text-muted); opacity:.45; flex:none; margin-left:14px;
 }
 
+/* Isolation : items non-sélectionnés s'estompent */
+.srcm-cat-item.dimmed{
+  opacity:.13; pointer-events:none;
+  transition:opacity .28s cubic-bezier(.22,1,.36,1);
+}
+.srcm-cat-item.sel{ opacity:1; }
+
+/* Sources inline — apparition accordéon */
+.srcm-cat-sources{
+  display:flex; flex-direction:column; gap:0;
+  padding:2px 0 10px; overflow:hidden;
+  animation:srcmSrcsIn .42s cubic-bezier(.22,1,.36,1) both;
+}
+@keyframes srcmSrcsIn{
+  from{ opacity:0; transform:translateY(-10px); }
+  to{ opacity:1; transform:none; }
+}
+
+/* Chip logo source */
+.srcm-logo-chip{
+  display:flex; align-items:center; gap:12px;
+  padding:8px 2px; border:none; background:none; width:100%;
+  text-align:left; cursor:pointer;
+  border-top:1px solid rgba(255,255,255,.04);
+  -webkit-tap-highlight-color:transparent;
+  transition:opacity .14s ease, transform .22s cubic-bezier(.34,1.4,.64,1);
+  will-change:transform;
+}
+.srcm-logo-chip:first-child{ border-top:none; }
+.srcm-logo-chip:active{ opacity:.48; transform:scale(.96); }
+[data-theme="light"] .srcm-logo-chip{ border-top-color:rgba(0,0,0,.05); }
+
+/* Avatar logo */
+.srcm-logo-av{
+  width:36px; height:36px; border-radius:10px; flex:none;
+  background:rgba(255,255,255,.07); overflow:hidden;
+  position:relative; display:flex; align-items:center; justify-content:center;
+}
+.srcm-logo-av img{
+  position:absolute; inset:0; width:100%; height:100%;
+  object-fit:cover; border-radius:10px;
+  opacity:0; transition:opacity .3s ease;
+}
+.srcm-logo-av img.loaded{ opacity:1; }
+.srcm-logo-init{
+  font-size:13px; font-weight:700; color:var(--text-muted);
+  user-select:none; position:relative; z-index:0;
+}
+[data-theme="light"] .srcm-logo-av{ background:rgba(0,0,0,.06); }
+
+/* Texte + badge */
+.srcm-logo-name{
+  flex:1; font-size:13px; font-weight:500; color:var(--text);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  letter-spacing:-.01em;
+}
+.srcm-logo-n{
+  flex:none; font-size:10px; font-weight:700; color:var(--accent);
+  background:rgba(10,132,255,.14); border-radius:999px;
+  padding:2px 7px; min-width:22px; text-align:center;
+}
+[data-theme="light"] .srcm-logo-n{ background:rgba(0,113,227,.1); }
+
 /* ── Preview : slot éditorial en bas de carte ── */
 .srcm-preview{
   flex:none; overflow:hidden;
@@ -8231,20 +8294,49 @@ body.focus-mode .focus-exit{ display:flex; }
     return n;
   }
 
+  function _srcmBuildSources(cat){
+    const srcs = _srcmCatSources(cat);
+    if(!srcs.length) return '';
+    const chips = srcs.map((s, i) => {
+      const domain = (()=>{ try{ return new URL(s.url).hostname.replace(/^www\./,''); }catch(e){ return ''; } })();
+      const initial = (s.name||'?').trim()[0].toUpperCase();
+      const fav1 = domain ? `https://icon.horse/icon/${domain}` : '';
+      const fav2 = domain ? `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=64` : '';
+      const imgHtml = fav1
+        ? `<img src="${escAttr(fav1)}" data-fb="${escAttr(fav2)}"
+             onload="this.classList.add('loaded')"
+             onerror="if(this.dataset.fb){this.src=this.dataset.fb;this.classList.add('loaded');delete this.dataset.fb}else{this.style.display='none'}"
+             alt="" loading="lazy" decoding="async">`
+        : '';
+      const badge = s.unread > 0 ? `<span class="srcm-logo-n">${s.unread}</span>` : '';
+      const delay = `style="animation-delay:${i*38}ms"`;
+      return `<button class="srcm-logo-chip" type="button" data-url="${escAttr(s.url)}" ${delay}>
+        <div class="srcm-logo-av"><span class="srcm-logo-init">${initial}</span>${imgHtml}</div>
+        <span class="srcm-logo-name">${escHtml(s.name)}</span>
+        ${badge}
+      </button>`;
+    }).join('');
+    return `<div class="srcm-cat-sources">${chips}</div>`;
+  }
+
   function _srcmRenderNav(){
     const nav = document.getElementById('srcmNav'); if(!nav) return;
     const { order } = _smartCatMap();
     const ALL = _allArticles||[];
 
     const mk = (label, cat) => {
-      const sel = (cat===null ? !_srcmCat : _srcmCat===cat) ? ' sel' : '';
+      const isSel = cat===null ? !_srcmCat : _srcmCat===cat;
+      const isDimmed = _srcmCat !== null && !isSel && cat !== null;
+      const cls = [isSel?' sel':'', isDimmed?' dimmed':''].join('');
       const pool = cat ? ALL.filter(a => _smartCatUrls(cat).has(a.feedUrl||'')) : ALL;
       const unread = pool.filter(a => window._RS && !window._RS.has(a.link)).length;
       const meta = unread > 0 ? unread : pool.length;
-      return `<button class="srcm-cat-item${sel}" type="button" data-cat="${cat===null?'':escAttr(cat)}">
+      let html = `<button class="srcm-cat-item${cls}" type="button" data-cat="${cat===null?'':escAttr(cat)}">
         <span class="srcm-cat-item-label">${escHtml(label)}</span>
         <span class="srcm-cat-item-meta">${meta||''}</span>
       </button>`;
+      if(isSel && cat !== null) html += _srcmBuildSources(cat);
+      return html;
     };
     let html = mk('Tout', null);
     html += order.map(c => mk(c, c)).join('');
@@ -8254,32 +8346,29 @@ body.focus-mode .focus-exit{ display:flex; }
   }
 
   function _srcmAnimateCats(nav){
-    const items = nav.querySelectorAll('.srcm-cat-item');
-    // Entrée décalée avec profondeur (parallaxe vertical)
+    const items = nav.querySelectorAll('.srcm-cat-item:not(.dimmed)');
     items.forEach((item, i) => {
       item.style.opacity = '0';
-      item.style.transform = `translateY(${20 + i * 9}px)`;
+      item.style.transform = `translateY(${16 + i * 8}px)`;
       item.style.transition = 'none';
       requestAnimationFrame(() => requestAnimationFrame(() => {
         item.style.transition = [
-          `opacity .54s cubic-bezier(.22,1,.36,1) ${i*52}ms`,
-          `transform .6s cubic-bezier(.34,1.38,.64,1) ${i*52}ms`
+          `opacity .52s cubic-bezier(.22,1,.36,1) ${i*46}ms`,
+          `transform .58s cubic-bezier(.34,1.38,.64,1) ${i*46}ms`
         ].join(',');
         item.style.opacity = '1';
         item.style.transform = 'none';
       }));
     });
 
-    // Parallaxe continue : chaque item se déplace à une vitesse légèrement différente
     let _rafId = null;
     nav.addEventListener('scroll', () => {
-      if(_rafId) return; // throttle via rAF
+      if(_rafId) return;
       _rafId = requestAnimationFrame(() => {
         _rafId = null;
         const s = nav.scrollTop;
-        items.forEach((item, i) => {
-          // Vitesse croissante par index → profondeur croissante vers le bas
-          const shift = s * (0.06 + i * 0.018);
+        nav.querySelectorAll('.srcm-cat-item:not(.dimmed)').forEach((item, i) => {
+          const shift = s * (0.05 + i * 0.016);
           item.style.transform = `translateY(${-shift}px)`;
         });
       });
@@ -8410,12 +8499,36 @@ body.focus-mode .focus-exit{ display:flex; }
     if(cn) cn.addEventListener('click', e=>{ e.stopPropagation(); _srcmCarNav(1); });
   }
 
+  function _srcmBindCarTouch(container){
+    let tx0 = null;
+    container.addEventListener('touchstart', e=>{
+      if(!e.target.closest('#srcmCarousel')) return;
+      tx0 = e.touches[0].clientX;
+    }, {passive:true});
+    container.addEventListener('touchend', e=>{
+      if(tx0===null) return;
+      const dx = e.changedTouches[0].clientX - tx0; tx0 = null;
+      if(Math.abs(dx) < 28) return;
+      _srcmCarNav(dx < 0 ? 1 : -1);
+    }, {passive:true});
+  }
+
   function _srcmRenderPreview(){
     const prev = document.getElementById('srcmPreview'); if(!prev) return;
     _srcmPreviewUrl = null;
-    // Uniquement la carte éditoriale — en position bas de la carte
-    prev.innerHTML = _srcmBuildEditorial(_srcmCat, null);
-    _srcmRenderBanner();
+    if(_srcmCat){
+      const slides = _srcmGetSlides(_srcmCat, null);
+      _srcmSlideCnt = Math.min(slides.length, 5);
+      _srcmSlideIdx = 0;
+      prev.innerHTML = _srcmBuildCar(slides.slice(0, 5));
+      _srcmBindCarBtns(prev);
+      _srcmBindCarTouch(prev);
+      if(slides.length > 1) _srcmAutoPlay();
+    } else {
+      _srcmAutoStop();
+      prev.innerHTML = _srcmBuildEditorial(null, null);
+      _srcmRenderBanner();
+    }
   }
 
   function _srcmPreviewSource(url, name){
@@ -8504,15 +8617,27 @@ body.focus-mode .focus-exit{ display:flex; }
     const prev = document.getElementById('srcmPreview');
     if(ov) ov.addEventListener('click', e=>{ if(e.target===ov) _srcModalClose(); });
     if(nav) nav.addEventListener('click', e=>{
-      const b=e.target.closest('.srcm-cat-item'); if(!b) return;
-      const cat=b.dataset.cat||null;
-      _smartPickCat(cat||'');
-      _srcModalClose();
+      // Clic sur un logo source → filtre source + ferme
+      const logo = e.target.closest('.srcm-logo-chip');
+      if(logo){ _smartPickCat(_srcmCat||''); _smartPickSource(logo.dataset.url); _srcModalClose(); return; }
+
+      const b = e.target.closest('.srcm-cat-item'); if(!b) return;
+      const cat = b.dataset.cat || null;
+
+      if(cat === null){
+        // "Tout" → reset + ferme
+        _smartPickCat(''); _srcModalClose(); return;
+      }
+      // Toggle isolation : même cat → collapse, autre cat → expand
+      _srcmCat = (_srcmCat === cat) ? null : cat;
+      _srcmRenderNav(); _srcmRenderPreview();
     });
     if(prev){
       prev.addEventListener('click', e=>{
-        const ed=e.target.closest('.srcm-editorial');
+        const ed = e.target.closest('.srcm-editorial');
         if(ed && ed.dataset.link){ window.open(ed.dataset.link,'_blank','noopener'); return; }
+        const sl = e.target.closest('.srcm-slide[data-link]');
+        if(sl){ window.open(sl.dataset.link,'_blank','noopener'); return; }
       });
     }
 
