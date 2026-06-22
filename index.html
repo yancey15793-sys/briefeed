@@ -2508,10 +2508,7 @@ button, .ob-btn, .ob-btn-ghost,
 }
 .sbar-seg-btn.active .sbar-seg-n{ background:rgba(0,0,0,.14); color:var(--bg); }
 
-/* — Bouton « Filtres » : ouvre le panneau de filtres intelligents — */
-.sbar-seg-filters{ display:inline-flex; align-items:center; gap:5px; }
-.sbar-flt-ic{ display:inline-flex; align-items:center; }
-.sbar-flt-ic svg{ width:14px; height:14px; }
+/* — Modes de lecture (déplacés dans le menu Affichage) — */
 
 /* — Catégories : onglets avec tiret animé (style « Sunday ») — */
 .sbar-cats{
@@ -4179,6 +4176,19 @@ body.focus-mode .focus-exit{ display:flex; }
   70%{ box-shadow:0 0 0 7px rgba(10,132,255,0); }
   100%{ box-shadow:0 0 0 0 rgba(10,132,255,0); }
 }
+/* ── Digest catégorie : bottom sheet sur mobile ── */
+@media (max-width:559px){
+  .catd-overlay{ align-items:flex-end; padding:0; }
+  .catd-card{
+    max-width:100%; border-radius:22px 22px 0 0;
+    max-height:82dvh;
+    animation:catdInMobile .45s cubic-bezier(.32,.72,0,1) both;
+  }
+}
+@keyframes catdInMobile{
+  from{ transform:translateY(100%); opacity:.6; }
+  to{   transform:translateY(0);    opacity:1;  }
+}
 
 /* ── Liste sources (verticale) ── */
 .srcm-prev-srcs{
@@ -4514,10 +4524,23 @@ body.focus-mode .focus-exit{ display:flex; }
               <a class="sub-link sub-link-sm qmenu-sort-item active" data-sort="date" onclick="qmenuSetSort('date')">Date</a>
               <a class="sub-link sub-link-sm qmenu-sort-item" data-sort="source" onclick="qmenuSetSort('source')">Source</a>
               <a class="sub-link sub-link-sm qmenu-sort-item" data-sort="relevance" onclick="qmenuSetSort('relevance')">Pertinence</a>
-              <div class="qmenu-sub-section-label" style="margin-top:10px">Afficher</div>
-              <a class="sub-link sub-link-sm qmenu-filter-item active" data-filter="all" onclick="qmenuSetFilter('all')">Tous</a>
-              <a class="sub-link sub-link-sm qmenu-filter-item" data-filter="unread" onclick="qmenuSetFilter('unread')">Non lus</a>
-              <a class="sub-link sub-link-sm qmenu-filter-item" data-filter="starred" onclick="qmenuSetFilter('starred')">Favoris</a>
+              <div class="qmenu-sub-section-label" style="margin-top:10px">Mode de lecture</div>
+              <a class="sub-link sub-link-sm qmenu-mode-item" data-qmode="all"          onclick="qmenuSetSmartMode('all')">Tout</a>
+              <a class="sub-link sub-link-sm qmenu-mode-item" data-qmode="unread"       onclick="qmenuSetSmartMode('unread')">Non lus</a>
+              <a class="sub-link sub-link-sm qmenu-mode-item" data-qmode="today"        onclick="qmenuSetSmartMode('today')">Aujourd'hui</a>
+              <a class="sub-link sub-link-sm qmenu-mode-item" data-qmode="week"         onclick="qmenuSetSmartMode('week')">Cette semaine</a>
+              <a class="sub-link sub-link-sm qmenu-mode-item" data-qmode="month"        onclick="qmenuSetSmartMode('month')">Ce mois</a>
+              <div class="qmenu-sub-section-label" style="margin-top:10px">Collections intelligentes</div>
+              <a class="sub-link sub-link-sm qmenu-mode-item" data-qmode="trending"     onclick="qmenuSetSmartMode('trending')">Tendances</a>
+              <a class="sub-link sub-link-sm qmenu-mode-item" data-qmode="breaking"     onclick="qmenuSetSmartMode('breaking')">Dernière heure</a>
+              <a class="sub-link sub-link-sm qmenu-mode-item" data-qmode="hidden_gems"  onclick="qmenuSetSmartMode('hidden_gems')">Pépites oubliées</a>
+              <a class="sub-link sub-link-sm qmenu-mode-item" data-qmode="growing"      onclick="qmenuSetSmartMode('growing')">En progression</a>
+              <a class="sub-link sub-link-sm qmenu-mode-item" data-qmode="recommended"  onclick="qmenuSetSmartMode('recommended')">Pour vous</a>
+              <a class="sub-link sub-link-sm qmenu-mode-item" data-qmode="exclusive"    onclick="qmenuSetSmartMode('exclusive')">Sous les radars</a>
+              <div class="qmenu-sub-section-label" style="margin-top:10px">Signal</div>
+              <a class="sub-link sub-link-sm qmenu-mode-item" data-qmode="signalStrong" onclick="qmenuSetSmartMode('signalStrong')">Signal fort</a>
+              <a class="sub-link sub-link-sm qmenu-mode-item" data-qmode="multiSource"  onclick="qmenuSetSmartMode('multiSource')">Sources multiples</a>
+              <a class="sub-link sub-link-sm qmenu-mode-item" data-qmode="quick5"       onclick="qmenuSetSmartMode('quick5')">À lire en 5 min</a>
             </div>
           </div>
 
@@ -5301,10 +5324,6 @@ body.focus-mode .focus-exit{ display:flex; }
           <span class="sbar-seg-pill" id="sbarSegPill" aria-hidden="true"></span>
           <button class="sbar-seg-btn" type="button" data-mode="all">Tout <span class="sbar-seg-n"></span></button>
           <button class="sbar-seg-btn" type="button" data-mode="unread">Non lus <span class="sbar-seg-n"></span></button>
-          <button class="sbar-seg-btn sbar-seg-filters" type="button" id="sbarFiltersBtn" aria-label="Ouvrir les filtres">
-            <span class="sbar-flt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18M6 12h12M10 19h4"/></svg></span>
-            <span id="sbarFiltersLabel">Filtres</span>
-          </button>
         </div>
         <div class="sbar-cats" id="sbarCats"></div>
         <div class="sbar-srcs-wrap" id="sbarSrcsWrap"><div class="sbar-srcs-inner">
@@ -6933,6 +6952,8 @@ body.focus-mode .focus-exit{ display:flex; }
     _qmenu.querySelectorAll('.qmenu-sort-item').forEach(el => el.classList.toggle('active', el.dataset.sort === sort));
     _qmenu.querySelectorAll('.qmenu-filter-item').forEach(el => el.classList.toggle('active', el.dataset.filter === filter));
     _qmenu.querySelectorAll('.qmenu-size-item').forEach(el => el.classList.toggle('active', el.dataset.size === size));
+    const curMode = (typeof _smartMode !== 'undefined') ? _smartMode : 'all';
+    _qmenu.querySelectorAll('.qmenu-mode-item').forEach(el => el.classList.toggle('active', el.dataset.qmode === curMode));
     (()=>{ const sm2={sm:'15px',md:'17px',lg:'20px'},ss2={sm:'15px',md:'18px',lg:'21px'}; document.documentElement.style.setProperty('--reader-font-size',sm2[size]||'17px'); document.documentElement.style.setProperty('--seq-title-size',ss2[size]||'18px'); })();
     // Toggle opts
     const summariesOn = (typeof localStorage !== 'undefined' && localStorage.getItem('reader.opt.summaries') === '1');
@@ -7023,6 +7044,12 @@ body.focus-mode .focus-exit{ display:flex; }
   window.qmenuSetFilter = function(filter){
     try{ localStorage.setItem('reader.filter', filter); }catch(e){}
     _qmenu.querySelectorAll('.qmenu-filter-item').forEach(el => el.classList.toggle('active', el.dataset.filter === filter));
+  };
+
+  window.qmenuSetSmartMode = function(mode){
+    if(typeof _smartSetMode === 'function') _smartSetMode(mode);
+    _qmenu.querySelectorAll('.qmenu-mode-item').forEach(el => el.classList.toggle('active', el.dataset.qmode === mode));
+    qmenuClose();
   };
 
   // ── LECTURE ───────────────────────────────────────────────────
@@ -8368,6 +8395,21 @@ body.focus-mode .focus-exit{ display:flex; }
       case '3days':      return a => (a.pubDate || 0) >= _smartModeMs('3days');
       case '7days':      return a => (a.pubDate || 0) >= now - 7 * 86400000;
       case '30days':     return a => (a.pubDate || 0) >= now - 30 * 86400000;
+      // Collections intelligentes
+      case 'trending':    return a => _artCoverage(a, ts) >= 2 && (a.pubDate || 0) >= now - 86400000;
+      case 'breaking':    return a => (a.pubDate || 0) >= now - 3600000;
+      case 'hidden_gems': return a => {
+        // Qualité source (approximée par longueur du résumé) + sujet original (coverage=1) + lecture longue
+        const cov = _artCoverage(a, ts);
+        const mins = _readMins(a);
+        const qual = (a.summary || '').replace(/<[^>]+>/g,' ').trim().length;
+        return cov === 1 && mins >= 3 && qual >= 120;
+      };
+      case 'growing':     return a => {
+        // Articles récents (48h) sur un sujet qui commence à être couvert par plusieurs sources
+        const cov = _artCoverage(a, ts);
+        return cov >= 2 && (a.pubDate || 0) >= now - 172800000;
+      };
       case 'signalStrong': return a => _artCoverage(a, ts) >= 3;
       case 'fullCoverage': return a => _artCoverage(a, ts) >= 4;
       case 'multiSource':  return a => _artCoverage(a, ts) >= 2;
@@ -8470,11 +8512,17 @@ body.focus-mode .focus-exit{ display:flex; }
       ['7days','7 derniers jours'],
       ['30days','30 derniers jours'],
     ]},
+    { t:'Collections intelligentes', items:[
+      ['trending','Tendances'],
+      ['breaking','Dernière heure ⚡'],
+      ['hidden_gems','Pépites oubliées 💎'],
+      ['growing','En progression 📈'],
+      ['exclusive','Sous les radars 🌊'],
+    ]},
     { t:'Signal éditorial', items:[
       ['signalStrong','Signal fort','🔥'],
       ['fullCoverage','Couverture complète'],
       ['multiSource','Sources multiples'],
-      ['exclusive','Ce que personne ne couvre','👁'],
     ]},
     { t:'Lecture', items:[
       ['quick5','À lire en 5 min'],
@@ -8561,19 +8609,16 @@ body.focus-mode .focus-exit{ display:flex; }
     };
   })();
 
-  // Synchronise l'état visuel du segment + bouton/étiquette « Filtres »
-  const _SEG_MODES = ['all','unread'];
+  // Synchronise l'état visuel du segment (Tout / Non lus) + morph menu
   function _smartSyncSegment(){
     const seg = document.getElementById('sbarSeg'); if(!seg) return;
-    const isAdvanced = !_SEG_MODES.includes(_smartMode);
     seg.querySelectorAll('.sbar-seg-btn').forEach(btn => {
       const m = btn.dataset.mode;
       if(m) btn.classList.toggle('active', m === _smartMode);
     });
-    const fbtn = document.getElementById('sbarFiltersBtn');
-    const flab = document.getElementById('sbarFiltersLabel');
-    if(fbtn) fbtn.classList.toggle('active', isAdvanced);
-    if(flab) flab.textContent = isAdvanced ? (_FLT_LABELS[_smartMode] || 'Filtres') : 'Filtres';
+    // Sync indicateurs dans le morph menu
+    const qm = document.getElementById('qmenu');
+    if(qm) qm.querySelectorAll('.qmenu-mode-item').forEach(el => el.classList.toggle('active', el.dataset.qmode === _smartMode));
     _smartMovePill(true);
   }
 
@@ -8746,8 +8791,6 @@ body.focus-mode .focus-exit{ display:flex; }
     const cats = document.getElementById('sbarCats');
     const srcs = document.getElementById('sbarSrcs');
     if(seg) seg.addEventListener('click', e => {
-      // Bouton « Filtres » → ouvre le panneau de filtres intelligents
-      if(e.target.closest('.sbar-seg-filters')){ _srcModalOpen(); return; }
       const b = e.target.closest('.sbar-seg-btn');
       if(!b || !b.dataset.mode) return;
       _smartSetMode(b.dataset.mode);
