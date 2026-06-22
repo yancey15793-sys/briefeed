@@ -3635,20 +3635,20 @@ body.focus-mode .focus-exit{ display:flex; }
   backdrop-filter:blur(22px) saturate(160%);
 }
 .srcm-card{
-  width:min(680px,100vw); max-height:min(660px,94vh);
+  width:min(680px,100vw); max-height:min(720px,96vh);
   display:flex; flex-direction:column;
-  background:rgba(16,18,22,.97); color:var(--text);
+  background:rgba(13,14,18,.98); color:var(--text);
   border:1px solid rgba(255,255,255,.09);
   border-radius:28px 28px 0 0; overflow:hidden;
-  box-shadow:0 -12px 48px rgba(0,0,0,.7), 0 0 0 0.5px rgba(255,255,255,.08);
+  box-shadow:0 -14px 52px rgba(0,0,0,.72), 0 0 0 0.5px rgba(255,255,255,.08);
   transform:translateY(100%); opacity:0;
   transition:transform .52s cubic-bezier(.34,1.38,.64,1), opacity .32s ease;
 }
 @media (min-width:560px){
   .srcm-card{
-    width:min(700px,calc(100vw - 24px)); max-height:min(640px,92vh);
+    width:min(440px,calc(100vw - 24px)); max-height:min(700px,94vh);
     border-radius:28px;
-    box-shadow:0 48px 100px rgba(0,0,0,.6), 0 4px 20px rgba(0,0,0,.45);
+    box-shadow:0 52px 110px rgba(0,0,0,.65), 0 4px 22px rgba(0,0,0,.48);
     transform:scale(.84) translateY(30px);
     transition:transform .56s cubic-bezier(.34,1.42,.64,1), opacity .3s ease;
   }
@@ -3691,77 +3691,81 @@ body.focus-mode .focus-exit{ display:flex; }
 }
 
 .srcm-head{
-  flex:none; display:flex; align-items:center; justify-content:space-between;
-  padding:8px 18px 12px;
+  flex:none; display:grid; grid-template-columns:1fr auto 1fr;
+  align-items:center; padding:14px 18px 10px;
 }
-@media (min-width:560px){ .srcm-head{ padding:18px 22px 14px; } }
+@media (min-width:560px){ .srcm-head{ padding:20px 24px 12px; } }
 .srcm-brand{
-  display:flex; align-items:center; gap:9px;
-  font-family:var(--font-inter); font-size:13px; font-weight:700;
-  letter-spacing:.18em; text-transform:uppercase; color:var(--text);
+  display:flex; align-items:center; justify-self:start;
 }
 .srcm-brand-dot{
-  width:22px; height:22px; border-radius:7px; flex:none;
+  width:24px; height:24px; border-radius:7px; flex:none;
   display:flex; align-items:center; justify-content:center;
   background:var(--accent); color:#fff;
 }
 .srcm-brand-dot svg{ width:13px; height:13px; }
+.srcm-wordmark{
+  justify-self:center;
+  font-family:var(--font-inter); font-size:13px; font-weight:700;
+  letter-spacing:.22em; text-transform:uppercase; color:var(--text);
+  pointer-events:none; user-select:none;
+}
 .srcm-close{
-  width:32px; height:32px; border:0; border-radius:50%;
-  background:rgba(255,255,255,.06); color:var(--text-muted);
+  justify-self:end;
+  width:30px; height:30px; border:0; border-radius:50%;
+  background:rgba(255,255,255,.05); color:var(--text-muted);
   display:flex; align-items:center; justify-content:center; cursor:pointer;
   -webkit-tap-highlight-color:transparent; transition:background .18s, color .18s;
 }
 [data-theme="light"] .srcm-close{ background:rgba(0,0,0,.05); }
-.srcm-close:hover{ background:rgba(255,255,255,.12); color:var(--text); }
-.srcm-close svg{ width:15px; height:15px; }
+.srcm-close:hover{ background:rgba(255,255,255,.1); color:var(--text); }
+.srcm-close svg{ width:14px; height:14px; }
 
 /* ── Corps : toujours en colonne ── */
 .srcm-body{
   flex:1; min-height:0; display:flex; flex-direction:column; overflow:hidden;
 }
 
-/* ── Nav : tabs horizontaux avec tiret glissant (style Sunday) ── */
+/* ── Nav : liste verticale Sunday (remplace les tabs horizontaux) ── */
 .srcm-nav{
-  flex:none; display:flex; flex-direction:row; gap:0;
-  padding:0 16px; overflow-x:auto; overflow-y:hidden;
+  flex:1; display:flex; flex-direction:column; gap:0;
+  padding:0 22px; overflow-y:auto; overflow-x:hidden;
   -ms-overflow-style:none; scrollbar-width:none;
-  border-bottom:1px solid rgba(255,255,255,.07);
+  border-bottom:none;
 }
 .srcm-nav::-webkit-scrollbar{ display:none; }
-[data-theme="light"] .srcm-nav{ border-bottom-color:rgba(0,0,0,.07); }
-.srcm-nav-item{
-  flex:0 0 auto; position:relative;
-  display:inline-flex; flex-direction:column; align-items:center; gap:5px;
-  padding:10px 12px 0; border:none; background:none; cursor:pointer;
-  -webkit-tap-highlight-color:transparent; transition:none;
+
+/* Item de catégorie — typographie Sunday : grand, light */
+.srcm-cat-item{
+  display:flex; align-items:baseline; justify-content:space-between;
+  padding:14px 0; border-bottom:1px solid rgba(255,255,255,.055);
+  border:none; background:none; width:100%;
+  text-align:left; cursor:pointer; will-change:transform;
+  -webkit-tap-highlight-color:transparent;
+  transition:opacity .16s ease;
 }
-.srcm-nav-item-label{
-  font-family:var(--font-inter); font-size:13px; font-weight:600;
-  color:var(--text-muted); white-space:nowrap;
-  transition:color .28s ease;
+.srcm-cat-item + .srcm-cat-item{ border-top:1px solid rgba(255,255,255,.055); }
+.srcm-cat-item:active{ opacity:.45; }
+[data-theme="light"] .srcm-cat-item{ border-top-color:rgba(0,0,0,.07); }
+.srcm-cat-item-label{
+  font-family:var(--font-inter);
+  font-size:clamp(26px,7vw,32px);
+  font-weight:450; letter-spacing:-0.028em; line-height:1.15;
+  color:var(--text);
+  transition:color .22s ease;
 }
-.srcm-nav-item.sel .srcm-nav-item-label,
-.srcm-nav-item:active .srcm-nav-item-label{ color:var(--text); }
-.srcm-nav-item-dash{
-  width:8px; height:2.5px; border-radius:2px; background:transparent;
-  margin-bottom:-1px;
-  transition:width .38s cubic-bezier(.34,1.4,.64,1), background .28s ease;
-}
-.srcm-nav-item.sel .srcm-nav-item-dash{ width:20px; background:var(--accent); }
-.srcm-nav-n{
-  display:inline-block; font-family:var(--font-inter);
-  font-size:9.5px; font-weight:700; color:var(--accent); margin-left:3px;
+.srcm-cat-item.sel .srcm-cat-item-label{ color:var(--accent); }
+[data-theme="light"] .srcm-cat-item-label{ color:#1d1d1f; }
+.srcm-cat-item-meta{
+  font-family:var(--font-inter); font-size:11px; font-weight:600;
+  color:var(--text-muted); opacity:.45; flex:none; margin-left:14px;
 }
 
-/* ── Colonne preview ── */
+/* ── Preview : slot éditorial en bas de carte ── */
 .srcm-preview{
-  flex:1; min-height:0; min-width:0;
-  display:flex; flex-direction:column; gap:10px;
-  padding:12px 18px 8px; overflow-y:auto;
-  -ms-overflow-style:none; scrollbar-width:none;
+  flex:none; overflow:hidden;
+  padding:0 14px 10px;
 }
-.srcm-preview::-webkit-scrollbar{ display:none; }
 
 /* ── Carrousel 6 derniers articles ── */
 .srcm-carousel{
@@ -4973,8 +4977,8 @@ body.focus-mode .focus-exit{ display:flex; }
           <div class="srcm-head">
             <div class="srcm-brand">
               <span class="srcm-brand-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1.5" fill="currentColor" stroke="none"/></svg></span>
-              Briefeed
             </div>
+            <span class="srcm-wordmark">Briefeed</span>
             <button class="srcm-close" type="button" onclick="_srcModalClose()" aria-label="Fermer">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
             </button>
@@ -8230,13 +8234,56 @@ body.focus-mode .focus-exit{ display:flex; }
   function _srcmRenderNav(){
     const nav = document.getElementById('srcmNav'); if(!nav) return;
     const { order } = _smartCatMap();
-    const mkTab = (label, cat, n) => {
+    const ALL = _allArticles||[];
+
+    const mk = (label, cat) => {
       const sel = (cat===null ? !_srcmCat : _srcmCat===cat) ? ' sel' : '';
-      return `<button class="srcm-nav-item${sel}" type="button" data-cat="${cat===null?'':escAttr(cat)}"><span class="srcm-nav-item-label">${escHtml(label)}${n?`<span class="srcm-nav-n">${n}</span>`:''}</span><span class="srcm-nav-item-dash"></span></button>`;
+      const pool = cat ? ALL.filter(a => _smartCatUrls(cat).has(a.feedUrl||'')) : ALL;
+      const unread = pool.filter(a => window._RS && !window._RS.has(a.link)).length;
+      const meta = unread > 0 ? unread : pool.length;
+      return `<button class="srcm-cat-item${sel}" type="button" data-cat="${cat===null?'':escAttr(cat)}">
+        <span class="srcm-cat-item-label">${escHtml(label)}</span>
+        <span class="srcm-cat-item-meta">${meta||''}</span>
+      </button>`;
     };
-    let html = mkTab('Tout', null, 0);
-    html += order.map(c => mkTab(c, c, _srcmCatUnread(c))).join('');
+    let html = mk('Tout', null);
+    html += order.map(c => mk(c, c)).join('');
     nav.innerHTML = html;
+
+    requestAnimationFrame(() => _srcmAnimateCats(nav));
+  }
+
+  function _srcmAnimateCats(nav){
+    const items = nav.querySelectorAll('.srcm-cat-item');
+    // Entrée décalée avec profondeur (parallaxe vertical)
+    items.forEach((item, i) => {
+      item.style.opacity = '0';
+      item.style.transform = `translateY(${20 + i * 9}px)`;
+      item.style.transition = 'none';
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        item.style.transition = [
+          `opacity .54s cubic-bezier(.22,1,.36,1) ${i*52}ms`,
+          `transform .6s cubic-bezier(.34,1.38,.64,1) ${i*52}ms`
+        ].join(',');
+        item.style.opacity = '1';
+        item.style.transform = 'none';
+      }));
+    });
+
+    // Parallaxe continue : chaque item se déplace à une vitesse légèrement différente
+    let _rafId = null;
+    nav.addEventListener('scroll', () => {
+      if(_rafId) return; // throttle via rAF
+      _rafId = requestAnimationFrame(() => {
+        _rafId = null;
+        const s = nav.scrollTop;
+        items.forEach((item, i) => {
+          // Vitesse croissante par index → profondeur croissante vers le bas
+          const shift = s * (0.06 + i * 0.018);
+          item.style.transform = `translateY(${-shift}px)`;
+        });
+      });
+    }, {passive:true});
   }
 
   // ── Hub de découverte ────────────────────────────────────────────
@@ -8363,39 +8410,12 @@ body.focus-mode .focus-exit{ display:flex; }
     if(cn) cn.addEventListener('click', e=>{ e.stopPropagation(); _srcmCarNav(1); });
   }
 
-  function _srcmAnimateChips(prev){
-    if(!prev || !('IntersectionObserver' in window)) return;
-    const chips = prev.querySelectorAll('.srcm-chip');
-    if(!chips.length) return;
-    let idx=0;
-    const obs = new IntersectionObserver(entries=>{
-      entries.forEach(e=>{
-        if(!e.isIntersecting) return;
-        const i=idx++;
-        e.target.style.animation=`srcmChipIn .38s cubic-bezier(.34,1.4,.64,1) ${i*20}ms both`;
-        obs.unobserve(e.target);
-      });
-    },{ root: prev, rootMargin:'0px', threshold:0.05 });
-    chips.forEach(c=>{ c.style.opacity='0'; obs.observe(c); });
-  }
-
   function _srcmRenderPreview(){
     const prev = document.getElementById('srcmPreview'); if(!prev) return;
     _srcmPreviewUrl = null;
-    const list = _srcmCatSources(_srcmCat);
-    const maxUnread = Math.max(1, ...list.map(s => s.unread||0));
-    const chips = list.map(s => {
-      const sel = _railFilterUrl===s.url;
-      const barW = Math.round(((s.unread||0)/maxUnread)*100);
-      return `<button class="srcm-chip${sel?' sel':''}" type="button" data-url="${escAttr(s.url)}"><span class="srcm-chip-av"><img src="${escAttr(getFavicon(s.url))}" alt="" onerror="this.style.opacity='.3'"></span><span class="srcm-chip-name">${escHtml(s.name)}</span><span class="srcm-chip-bar-wrap"><span class="srcm-chip-bar" style="width:${barW}%"></span></span>${s.unread?`<span class="srcm-chip-n">${s.unread}</span>`:''}</button>`;
-    }).join('');
-    prev.innerHTML =
-      _srcmBuildGreeting() +
-      _srcmBuildEditorial(_srcmCat, null) +
-      _srcmBuildCollections(_srcmCat) +
-      `<div class="srcm-prev-srcs">${chips||'<span style="font-size:12px;color:var(--text-muted)">Aucune source</span>'}</div>`;
+    // Uniquement la carte éditoriale — en position bas de la carte
+    prev.innerHTML = _srcmBuildEditorial(_srcmCat, null);
     _srcmRenderBanner();
-    requestAnimationFrame(()=> _srcmAnimateChips(prev));
   }
 
   function _srcmPreviewSource(url, name){
@@ -8484,50 +8504,15 @@ body.focus-mode .focus-exit{ display:flex; }
     const prev = document.getElementById('srcmPreview');
     if(ov) ov.addEventListener('click', e=>{ if(e.target===ov) _srcModalClose(); });
     if(nav) nav.addEventListener('click', e=>{
-      const b=e.target.closest('.srcm-nav-item'); if(!b) return;
-      _srcmCat=b.dataset.cat||null;
-      _srcmRenderNav(); _srcmRenderPreview(); _srcmRenderFoot();
+      const b=e.target.closest('.srcm-cat-item'); if(!b) return;
+      const cat=b.dataset.cat||null;
+      _smartPickCat(cat||'');
+      _srcModalClose();
     });
     if(prev){
-      // ── Parallaxe éditoriale : image glisse à 38% de la vitesse de scroll ──
-      prev.addEventListener('scroll', ()=>{
-        const ed = prev.querySelector('.srcm-editorial'); if(!ed) return;
-        const img = ed.querySelector('img'); if(!img) return;
-        const relY = prev.scrollTop * 0.38;
-        img.style.transform = `translateY(${Math.min(relY, 28)}px)`;
-      },{passive:true});
-
       prev.addEventListener('click', e=>{
-        // Carte éditoriale → ouvrir l'article dans le lecteur
         const ed=e.target.closest('.srcm-editorial');
         if(ed && ed.dataset.link){ window.open(ed.dataset.link,'_blank','noopener'); return; }
-        // Collection → appliquer filtre smart + fermer
-        const coll=e.target.closest('.srcm-coll');
-        if(coll){
-          const id=coll.dataset.coll;
-          if(id==='unread') _smartSetMode('unread');
-          else if(id==='today') _smartSetMode('today');
-          else if(id==='lastHour') _smartSetMode('today');
-          else if(id==='forgotten'){
-            // Pépites oubliées : activer "3 jours" + "non lus"
-            _smartSetMode('3days');
-            // tenter de combiner avec non-lus si la fonction existe
-            if(typeof _smartSetMode === 'function') _smartSetMode('unread');
-          }
-          if((_srcmCat||null)!==(_smartCat||null)) _smartPickCat(_srcmCat||'');
-          _srcModalClose(); return;
-        }
-        // Chip source
-        const c=e.target.closest('.srcm-chip');
-        if(c){
-          if(_srcmPreviewUrl && _srcmPreviewUrl===c.dataset.url){
-            if((_srcmCat||null)!==(_smartCat||null)) _smartPickCat(_srcmCat||'');
-            _smartPickSource(c.dataset.url); _srcModalClose();
-          } else {
-            _srcmPreviewSource(c.dataset.url, c.querySelector('.srcm-chip-name')?.textContent||'');
-          }
-          return;
-        }
       });
     }
 
