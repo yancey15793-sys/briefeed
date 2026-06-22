@@ -2468,7 +2468,7 @@ button, .ob-btn, .ob-btn-ghost,
    SMART BAR — filtres intelligents + sources à plat (toutes vues)
    Segment Tout/Non lus/Aujourd'hui (empilable) · un tap = instantané
    ══════════════════════════════════════════════════════════ */
-.sbar{ align-self:stretch; width:100%; margin:6px 0 18px; display:flex; flex-direction:column; gap:15px; }
+.sbar{ align-self:stretch; width:min(100%, 341.25px); margin:6px 0 18px; display:flex; flex-direction:column; gap:15px; }
 .sbar[hidden]{ display:none; }
 
 /* — Segment de filtres intelligents (pastille glissante) — */
@@ -2477,8 +2477,6 @@ button, .ob-btn, .ob-btn-ghost,
   background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.06);
   border-radius:999px;
   overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none; -webkit-overflow-scrolling:touch;
-  -webkit-mask-image:linear-gradient(90deg, #000 82%, transparent 100%);
-          mask-image:linear-gradient(90deg, #000 82%, transparent 100%);
 }
 .sbar-seg::-webkit-scrollbar{ display:none; }
 [data-theme="light"] .sbar-seg{ background:rgba(0,0,0,.035); border-color:rgba(0,0,0,.05); }
@@ -3925,14 +3923,12 @@ body.focus-mode .focus-exit{ display:flex; }
 .sbar-srail-item{
   position:relative; z-index:1; flex:none;
   width:46px; height:46px; border-radius:50%;
-  border:1.5px solid rgba(255,255,255,.1);
-  background:rgba(255,255,255,.05);
-  box-shadow:0 4px 12px rgba(0,0,0,.26), inset 0 0.5px 0 rgba(255,255,255,.08);
+  border:none; background:transparent; box-shadow:none;
   display:flex; align-items:center; justify-content:center;
   cursor:pointer; -webkit-tap-highlight-color:transparent;
   scroll-snap-align:center; overflow:visible;
   animation:srailItemIn .46s cubic-bezier(.34,1.56,.64,1) both;
-  transition:transform .3s cubic-bezier(.34,1.56,.64,1), border-color .2s ease, box-shadow .24s ease;
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1);
   will-change:transform;
 }
 @media(hover:hover) and (pointer:fine){
@@ -3941,17 +3937,16 @@ body.focus-mode .focus-exit{ display:flex; }
 }
 .sbar-srail-item:active{ transform:scale(.86); transition:transform .08s ease-in; }
 .sbar-srail-item .savatar{
-  width:64%; height:64%; border-radius:50%; overflow:hidden;
-  background:#fff; display:flex; align-items:center; justify-content:center;
+  width:80%; height:80%; border-radius:50%; overflow:hidden;
+  background:transparent; display:flex; align-items:center; justify-content:center;
 }
 .sbar-srail-item .savatar img{ width:80%; height:80%; object-fit:contain; display:block; }
-.sbar-srail-item.sel{ border-color:transparent; box-shadow:0 6px 18px rgba(10,132,255,.35); }
-.sbar-srail-item.sel .savatar{ box-shadow:0 0 0 2px rgba(255,255,255,.5); }
+.sbar-srail-item.sel{ box-shadow:0 6px 18px rgba(10,132,255,.35); }
+.sbar-srail-item.sel .savatar{ box-shadow:0 0 0 2px rgba(255,255,255,.5); border-radius:50%; }
 /* Pastille « Toutes les sources » (icône grille) */
 .sbar-srail-all{ color:var(--text); }
 .sbar-srail-all svg{ width:21px; height:21px; }
 .sbar-srail-all.sel{ color:#fff; }
-[data-theme="light"] .sbar-srail-item{ background:rgba(0,0,0,.035); border-color:rgba(0,0,0,.08); }
 [data-theme="light"] .sbar-srail-all.sel{ color:#fff; }
 /* Pastille non-lus sur un logo */
 .sbar-srail-dot{
@@ -4050,146 +4045,6 @@ body.focus-mode .focus-exit{ display:flex; }
 /* ══════════════════════════════════════════════════════════════════
    DIGEST CATÉGORIE — fenêtre « Sunday » (puces centrées + carrousel)
    ══════════════════════════════════════════════════════════════════ */
-@keyframes catdIn{
-  from{ opacity:0; transform:scale(.9) translateY(28px); }
-  to  { opacity:1; transform:none; }
-}
-@keyframes catdItemIn{
-  from{ opacity:0; transform:translateY(10px); }
-  to  { opacity:1; transform:none; }
-}
-.catd-overlay{
-  position:fixed; inset:0; z-index:610;
-  display:flex; align-items:center; justify-content:center;
-  padding:env(safe-area-inset-top,16px) 16px env(safe-area-inset-bottom,16px);
-  background:rgba(0,0,0,0);
-  -webkit-backdrop-filter:blur(0); backdrop-filter:blur(0);
-  opacity:0; pointer-events:none;
-  transition:opacity .32s ease, background .32s ease, backdrop-filter .32s ease;
-}
-.catd-overlay.open{
-  opacity:1; pointer-events:auto;
-  background:rgba(0,0,0,.6);
-  -webkit-backdrop-filter:blur(30px) saturate(180%); backdrop-filter:blur(30px) saturate(180%);
-}
-.catd-card{
-  width:100%; max-width:430px;
-  max-height:calc(100vh - env(safe-area-inset-top,16px) - env(safe-area-inset-bottom,16px) - 32px);
-  display:flex; flex-direction:column; overflow:hidden;
-  background:rgba(20,21,26,.94);
-  -webkit-backdrop-filter:blur(40px) saturate(200%); backdrop-filter:blur(40px) saturate(200%);
-  border:1px solid rgba(255,255,255,.1);
-  box-shadow:0 32px 80px rgba(0,0,0,.6), 0 2px 8px rgba(0,0,0,.4), inset 0 .5px 0 rgba(255,255,255,.09);
-  border-radius:26px;
-  animation:catdIn .5s cubic-bezier(.34,1.56,.64,1) both;
-}
-[data-theme="light"] .catd-card{
-  background:rgba(250,250,252,.97); border-color:rgba(0,0,0,.07);
-  box-shadow:0 32px 80px rgba(0,0,0,.2), 0 2px 8px rgba(0,0,0,.1);
-}
-.catd-head{
-  display:flex; align-items:center; gap:10px;
-  padding:18px 18px 14px; flex:none;
-}
-.catd-dot{
-  width:28px; height:28px; border-radius:9px; flex:none;
-  display:flex; align-items:center; justify-content:center;
-  background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.08);
-  color:var(--accent);
-}
-[data-theme="light"] .catd-dot{ background:rgba(0,0,0,.04); border-color:rgba(0,0,0,.06); }
-.catd-dot svg{ width:15px; height:15px; }
-.catd-name{
-  flex:1; text-align:center;
-  font-family:'Oswald', var(--font-inter), sans-serif;
-  font-size:15px; font-weight:700; letter-spacing:.12em; text-transform:uppercase;
-  color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-}
-.catd-close{
-  width:30px; height:30px; border-radius:50%; border:none; flex:none;
-  background:rgba(255,255,255,.08); color:var(--text-muted);
-  display:flex; align-items:center; justify-content:center; cursor:pointer;
-  -webkit-tap-highlight-color:transparent;
-  transition:background .18s ease, transform .22s cubic-bezier(.34,1.56,.64,1);
-}
-.catd-close:active{ transform:scale(.84); }
-[data-theme="light"] .catd-close{ background:rgba(0,0,0,.05); }
-.catd-close svg{ width:14px; height:14px; }
-.catd-list{
-  flex:1 1 auto; min-height:0; overflow-y:auto;
-  padding:6px 22px 16px; display:flex; flex-direction:column; gap:2px;
-  -ms-overflow-style:none; scrollbar-width:none;
-}
-.catd-list::-webkit-scrollbar{ display:none; }
-.catd-item{
-  display:flex; align-items:flex-start; gap:11px;
-  padding:11px 4px; cursor:pointer; text-align:left; width:100%;
-  background:none; border:none; -webkit-tap-highlight-color:transparent;
-  border-bottom:1px solid rgba(255,255,255,.05);
-  animation:catdItemIn .5s cubic-bezier(.22,1,.36,1) both;
-  transition:transform .2s cubic-bezier(.34,1.4,.64,1), opacity .2s ease;
-}
-.catd-item:last-child{ border-bottom:none; }
-[data-theme="light"] .catd-item{ border-bottom-color:rgba(0,0,0,.05); }
-.catd-item:active{ transform:scale(.985); opacity:.7; }
-.catd-rank{
-  flex:none; width:22px; text-align:center;
-  font-family:var(--font-inter); font-size:13px; font-weight:800;
-  line-height:1.5; letter-spacing:-.02em;
-  background:linear-gradient(180deg, var(--accent), rgba(10,132,255,.55));
-  -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
-}
-.catd-itxt{ flex:1; min-width:0; }
-.catd-ititle{
-  font-family:var(--font-title); font-size:16px; font-weight:700;
-  line-height:1.28; letter-spacing:-.012em; color:var(--text);
-  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
-}
-.catd-imeta{
-  margin-top:4px; font-family:var(--font-inter); font-size:10.5px; font-weight:600;
-  color:var(--text-muted); text-transform:uppercase; letter-spacing:.04em;
-  display:flex; align-items:center; gap:7px; flex-wrap:wrap;
-}
-.catd-heat{ color:var(--accent); display:inline-flex; align-items:center; gap:3px; }
-.catd-heat svg{ width:10px; height:10px; }
-.catd-empty{
-  padding:30px 0; text-align:center;
-  font-family:var(--font-inter); font-size:13px; color:var(--text-muted);
-}
-.catd-car{
-  flex:none; padding:0 18px;
-}
-.catd-car:empty{ display:none; }
-.catd-foot{
-  flex:none; display:flex; align-items:center; justify-content:space-between;
-  padding:14px 22px calc(16px + env(safe-area-inset-bottom,0px));
-  font-family:var(--font-inter); font-size:11.5px; font-weight:500; color:var(--text-muted);
-}
-.catd-foot b{ color:var(--text); font-weight:700; }
-.catd-live{ display:inline-flex; align-items:center; gap:6px; }
-.catd-live-dot{
-  width:7px; height:7px; border-radius:50%; background:var(--accent);
-  box-shadow:0 0 0 0 rgba(10,132,255,.5); animation:catdPulse 2s ease-out infinite;
-}
-@keyframes catdPulse{
-  0%{ box-shadow:0 0 0 0 rgba(10,132,255,.5); }
-  70%{ box-shadow:0 0 0 7px rgba(10,132,255,0); }
-  100%{ box-shadow:0 0 0 0 rgba(10,132,255,0); }
-}
-/* ── Digest catégorie : bottom sheet sur mobile ── */
-@media (max-width:559px){
-  .catd-overlay{ align-items:flex-end; padding:0; }
-  .catd-card{
-    max-width:100%; border-radius:22px 22px 0 0;
-    max-height:82dvh;
-    animation:catdInMobile .45s cubic-bezier(.32,.72,0,1) both;
-  }
-}
-@keyframes catdInMobile{
-  from{ transform:translateY(100%); opacity:.6; }
-  to{   transform:translateY(0);    opacity:1;  }
-}
-
 /* ── Liste sources (verticale) ── */
 .srcm-prev-srcs{
   display:flex; flex-direction:column; gap:0; flex:1;
@@ -5361,22 +5216,6 @@ body.focus-mode .focus-exit{ display:flex; }
             <div class="srcm-preview" id="srcmPreview"></div>
           </div>
           <div class="srcm-foot" id="srcmFoot"></div>
-        </div>
-      </div>
-
-      <!-- Digest catégorie — fenêtre « Sunday » : puces + carrousel -->
-      <div class="catd-overlay" id="catDigest" aria-hidden="true">
-        <div class="catd-card" role="dialog" aria-modal="true" aria-label="Aperçu du dossier">
-          <div class="catd-head">
-            <span class="catd-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.6"/><rect x="14" y="3" width="7" height="7" rx="1.6"/><rect x="3" y="14" width="7" height="7" rx="1.6"/><rect x="14" y="14" width="7" height="7" rx="1.6"/></svg></span>
-            <span class="catd-name" id="catdName">Dossier</span>
-            <button class="catd-close" type="button" id="catdClose" aria-label="Fermer">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
-            </button>
-          </div>
-          <div class="catd-list" id="catdList"></div>
-          <div class="catd-car" id="catdCar"></div>
-          <div class="catd-foot" id="catdFoot"></div>
         </div>
       </div>
 
@@ -8847,8 +8686,6 @@ body.focus-mode .focus-exit{ display:flex; }
       const b = e.target.closest('.sbar-cat');
       if(!b) return;
       _smartPickCat(b.dataset.cat);
-      // Un vrai dossier (≠ « Tout ») ouvre son digest « Sunday »
-      if(b.dataset.cat) _catDigestOpen(b.dataset.cat);
     });
     if(srcs) srcs.addEventListener('click', e => {
       const it = e.target.closest('.sbar-srail-item');
@@ -9209,9 +9046,6 @@ body.focus-mode .focus-exit{ display:flex; }
   function _srcmAutoPlay(){ _srcmAutoStop(); _srcmAutoTimer=setInterval(()=>_srcmCarNav(1),4200); }
   function _srcmAutoStop(){ if(_srcmAutoTimer){ clearInterval(_srcmAutoTimer); _srcmAutoTimer=null; } }
 
-  // ── Digest catégorie « Sunday » : 5 articles les plus chauds du jour ──
-  let _catdBound = false;
-
   // Articles les plus « chauds » d'un dossier : couverture + signal + fraîcheur
   function _catHotArticles(cat, n){
     const urls = _smartCatUrls(cat);
@@ -9230,84 +9064,6 @@ body.focus-mode .focus-exit{ display:flex; }
       })
       .sort((x, y) => y.heat - x.heat)
       .slice(0, n);
-  }
-
-  function _catDigestOpen(cat){
-    if(!cat) return;
-    const ov = document.getElementById('catDigest'); if(!ov) return;
-    const nameEl = document.getElementById('catdName');
-    const listEl = document.getElementById('catdList');
-    const carEl  = document.getElementById('catdCar');
-    const footEl = document.getElementById('catdFoot');
-    if(nameEl) nameEl.textContent = cat;
-
-    const hot = _catHotArticles(cat, 5);
-    const flame = '<span class="catd-heat"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c1 3-1 4-2 6-1 2 0 4 2 4 1 0 2-1 2-3 2 1 3 4 3 6a5 5 0 0 1-10 0c0-3 2-5 3-7 1-2 2-4 2-6z"/></svg>chaud</span>';
-    if(listEl){
-      if(!hot.length){
-        listEl.innerHTML = '<div class="catd-empty">Aucun article récent dans ce dossier.</div>';
-      } else {
-        listEl.innerHTML = hot.map(({ a, cov }, i) => {
-          const meta = (cov >= 2 ? flame + '<span>·</span>' : '') +
-            `<span>${escHtml(a.source || '')}</span><span>·</span><span>${relTime(a.pubDate)}</span>`;
-          return `<button class="catd-item" type="button" data-idx="${i}" style="animation-delay:${i * 55}ms">
-            <span class="catd-rank">${i + 1}</span>
-            <span class="catd-itxt">
-              <span class="catd-ititle">${escHtml(a.title || '')}</span>
-              <span class="catd-imeta">${meta}</span>
-            </span>
-          </button>`;
-        }).join('');
-        listEl._arts = hot.map(h => h.a);
-      }
-    }
-
-    // Carrousel élégant : images des articles chauds (sinon les plus récents)
-    if(carEl){
-      let slides = hot.map(h => h.a).filter(a => a.imageUrl);
-      if(!slides.length) slides = _srcmGetSlides(cat, null);
-      slides = slides.slice(0, 5);
-      _srcmSlideCnt = slides.length; _srcmSlideIdx = 0;
-      _srcmAutoStop();
-      if(slides.length){
-        carEl.innerHTML = _srcmBuildCar(slides);
-        _srcmBindCarBtns(carEl);
-        _srcmBindCarTouch(carEl);
-        if(slides.length > 1) _srcmAutoPlay();
-      } else { carEl.innerHTML = ''; }
-    }
-
-    if(footEl){
-      const total = (_allArticles || []).filter(a => _smartCatUrls(cat).has(a.feedUrl || '') && (a.pubDate || 0) >= _smartModeMs('today')).length;
-      footEl.innerHTML = `<span><b>${total}</b> article${total > 1 ? 's' : ''} aujourd'hui</span>
-        <span class="catd-live"><span class="catd-live-dot"></span>En direct</span>`;
-    }
-
-    ov.setAttribute('aria-hidden', 'false');
-    requestAnimationFrame(() => ov.classList.add('open'));
-    _catDigestBindOnce();
-  }
-
-  function _catDigestClose(){
-    const ov = document.getElementById('catDigest'); if(!ov) return;
-    _srcmAutoStop();
-    ov.classList.remove('open');
-    ov.setAttribute('aria-hidden', 'true');
-  }
-
-  function _catDigestBindOnce(){
-    if(_catdBound) return; _catdBound = true;
-    const ov   = document.getElementById('catDigest');
-    const cls  = document.getElementById('catdClose');
-    const list = document.getElementById('catdList');
-    if(ov)  ov.addEventListener('click', e => { if(e.target === ov) _catDigestClose(); });
-    if(cls) cls.addEventListener('click', _catDigestClose);
-    if(list) list.addEventListener('click', e => {
-      const it = e.target.closest('.catd-item'); if(!it) return;
-      const arts = list._arts || [];
-      const a = arts[+it.dataset.idx];
-      if(a){ _catDigestClose(); _showArtModal(a); }
-    });
   }
 
   function _srcmBindOnce(){
