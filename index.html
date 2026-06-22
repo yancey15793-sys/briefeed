@@ -2468,13 +2468,13 @@ button, .ob-btn, .ob-btn-ghost,
    SMART BAR — filtres intelligents + sources à plat (toutes vues)
    Segment Tout/Non lus/Aujourd'hui (empilable) · un tap = instantané
    ══════════════════════════════════════════════════════════ */
-.sbar{ align-self:stretch; width:min(100%, 341.25px); margin:6px 0 18px; display:flex; flex-direction:column; gap:15px; }
+.sbar{ align-self:center; width:min(100%, 341.25px); margin:6px 0 18px; display:flex; flex-direction:column; gap:15px; align-items:center; }
 .sbar[hidden]{ display:none; }
 
 /* — Segment de filtres intelligents (pastille glissante) — */
 .sbar-seg{
   position:relative; display:inline-flex; gap:0; padding:3px; isolation:isolate;
-  width:fit-content; max-width:100%; align-self:flex-start;
+  width:fit-content; max-width:100%;
   background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.06);
   border-radius:999px;
   overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none; -webkit-overflow-scrolling:touch;
@@ -2512,6 +2512,7 @@ button, .ob-btn, .ob-btn-ghost,
 /* — Catégories : onglets avec tiret animé (style « Sunday ») — */
 .sbar-cats{
   display:flex; gap:4px; overflow-x:auto; padding:2px 2px 0;
+  width:100%;
   scrollbar-width:none; -ms-overflow-style:none; -webkit-overflow-scrolling:touch;
   scroll-snap-type:x proximity;
 }
@@ -3922,12 +3923,14 @@ body.focus-mode .focus-exit{ display:flex; }
 .sbar-srail-item{
   position:relative; z-index:1; flex:none;
   width:46px; height:46px; border-radius:50%;
-  border:none; background:transparent; box-shadow:none;
+  border:1.5px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.06);
+  box-shadow:inset 0 0.5px 0 rgba(255,255,255,.1);
   display:flex; align-items:center; justify-content:center;
   cursor:pointer; -webkit-tap-highlight-color:transparent;
   scroll-snap-align:center; overflow:visible;
   animation:srailItemIn .46s cubic-bezier(.34,1.56,.64,1) both;
-  transition:transform .3s cubic-bezier(.34,1.56,.64,1);
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1), border-color .2s ease;
   will-change:transform;
 }
 @media(hover:hover) and (pointer:fine){
@@ -3946,6 +3949,7 @@ body.focus-mode .focus-exit{ display:flex; }
 .sbar-srail-all{ color:var(--text); }
 .sbar-srail-all svg{ width:21px; height:21px; }
 .sbar-srail-all.sel{ color:#fff; }
+[data-theme="light"] .sbar-srail-item{ background:rgba(0,0,0,.04); border-color:rgba(0,0,0,.09); }
 [data-theme="light"] .sbar-srail-all.sel{ color:#fff; }
 /* Pastille non-lus sur un logo */
 .sbar-srail-dot{
