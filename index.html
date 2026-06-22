@@ -3886,160 +3886,94 @@ body.focus-mode .focus-exit{ display:flex; }
 [data-theme="light"] .flt-chip.sel .flt-n{ background:rgba(0,113,227,.12); }
 
 /* ══════════════════════════════════════════════════════════════════
-   HUB SOURCES — modale centrée « wow », dossiers + logos flottants
+   RAIL SOURCES « liquid glass » — logos flottants + blob springé
    ══════════════════════════════════════════════════════════════════ */
-@keyframes hubIn{
-  from{ opacity:0; transform:scale(.88) translateY(32px); }
-  to  { opacity:1; transform:none; }
-}
-@keyframes hubFolderIn{
-  from{ opacity:0; transform:translateY(18px) scale(.96); }
-  to  { opacity:1; transform:none; }
-}
-@keyframes hubLogoIn{
-  from{ opacity:0; transform:scale(.5) translateY(8px); }
+@keyframes srailItemIn{
+  from{ opacity:0; transform:scale(.4) translateY(6px); }
   to  { opacity:1; transform:scale(1) translateY(0); }
 }
-@keyframes hubFloat{
+@keyframes srailFloat{
   0%,100%{ transform:translateY(0); }
-  50%    { transform:translateY(-4px); }
+  50%    { transform:translateY(-3px); }
 }
-.hub-overlay{
-  position:fixed; inset:0; z-index:630;
-  display:flex; align-items:center; justify-content:center;
-  padding:env(safe-area-inset-top,16px) 16px env(safe-area-inset-bottom,16px);
-  background:rgba(0,0,0,0);
-  -webkit-backdrop-filter:blur(0px); backdrop-filter:blur(0px);
-  opacity:0; pointer-events:none;
-  transition:opacity .3s ease, background .3s ease;
-}
-.hub-overlay.open{
-  opacity:1; pointer-events:auto;
-  background:rgba(0,0,0,.65);
-  -webkit-backdrop-filter:blur(32px) saturate(180%);
-  backdrop-filter:blur(32px) saturate(180%);
-}
-.hub-card{
-  background:rgba(20,21,26,.94);
-  -webkit-backdrop-filter:blur(40px) saturate(200%);
-  backdrop-filter:blur(40px) saturate(200%);
-  border:1px solid rgba(255,255,255,.1);
-  box-shadow:0 32px 80px rgba(0,0,0,.65), 0 2px 8px rgba(0,0,0,.4),
-             inset 0 0.5px 0 rgba(255,255,255,.09);
-  border-radius:26px;
-  width:100%; max-width:430px;
-  max-height:calc(100vh - env(safe-area-inset-top,16px) - env(safe-area-inset-bottom,16px) - 32px);
-  display:flex; flex-direction:column;
-  animation:hubIn .52s cubic-bezier(.34,1.56,.64,1) both;
-  overflow:hidden;
-}
-[data-theme="light"] .hub-card{
-  background:rgba(248,248,252,.96);
-  border-color:rgba(0,0,0,.08);
-  box-shadow:0 32px 80px rgba(0,0,0,.22), 0 2px 8px rgba(0,0,0,.1);
-}
-.hub-head{
-  display:flex; align-items:center; justify-content:space-between;
-  padding:18px 20px 14px;
-  border-bottom:1px solid rgba(255,255,255,.06);
-  flex-shrink:0;
-}
-[data-theme="light"] .hub-head{ border-bottom-color:rgba(0,0,0,.06); }
-.hub-title{
-  font-family:var(--font-inter); font-size:17px; font-weight:700;
-  letter-spacing:-.02em; color:var(--text);
-}
-.hub-subtitle{
-  font-family:var(--font-inter); font-size:12px; font-weight:500;
-  color:var(--text-muted); margin-top:2px;
-}
-.hub-close-btn{
-  width:30px; height:30px; border-radius:50%; border:none;
-  background:rgba(255,255,255,.08); color:var(--text-muted);
-  display:flex; align-items:center; justify-content:center; cursor:pointer;
-  -webkit-tap-highlight-color:transparent;
-  transition:background .18s ease, transform .22s cubic-bezier(.34,1.56,.64,1);
-  flex-shrink:0;
-}
-.hub-close-btn:active{ transform:scale(.84); }
-[data-theme="light"] .hub-close-btn{ background:rgba(0,0,0,.05); }
-.hub-close-btn svg{ width:14px; height:14px; }
-.hub-body{
-  overflow-y:auto; flex:1;
-  padding:12px 16px calc(16px + env(safe-area-inset-bottom,0px));
+.sbar-srail{
+  position:relative; display:block; width:100%;
+  overflow-x:auto; overflow-y:visible; scroll-snap-type:x proximity;
   -ms-overflow-style:none; scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;
 }
-.hub-body::-webkit-scrollbar{ display:none; }
-.hub-folder{
-  margin-bottom:6px; border-radius:18px;
-  background:rgba(255,255,255,.035); border:1px solid rgba(255,255,255,.06);
-  overflow:hidden;
-  animation:hubFolderIn .48s cubic-bezier(.34,1.38,.64,1) both;
-  transition:background .18s ease, transform .22s cubic-bezier(.34,1.56,.64,1);
+.sbar-srail::-webkit-scrollbar{ display:none; }
+.sbar-srail-track{
+  position:relative; display:inline-flex; align-items:center; gap:14px;
+  min-width:100%; padding:7px 6px 9px;
 }
-.hub-folder:active{ transform:scale(.988); }
-[data-theme="light"] .hub-folder{
-  background:rgba(0,0,0,.022); border-color:rgba(0,0,0,.055);
+/* Couche liquide : le blob est filtré « goo » pour un rendu gélifié */
+.sbar-srail-liquid{
+  position:absolute; inset:0; z-index:0; pointer-events:none;
+  filter:url(#srailGoo);
 }
-.hub-folder-head{
-  display:flex; align-items:center; justify-content:space-between;
-  padding:13px 16px 10px; cursor:pointer;
-  -webkit-tap-highlight-color:transparent;
+.sbar-srail-blob{
+  position:absolute; top:50%; left:0;
+  width:46px; height:46px;
+  border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, rgba(10,132,255,.95), rgba(10,132,255,.62));
+  opacity:0; transform-origin:center;
+  transition:opacity .26s ease;
+  will-change:transform;
 }
-.hub-folder-name{
-  font-family:'Oswald', var(--font-inter), sans-serif;
-  font-size:13px; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
-  color:var(--text);
+.sbar-srail-blob.vis{ opacity:1; }
+[data-theme="light"] .sbar-srail-blob{
+  background:radial-gradient(circle at 35% 30%, rgba(0,113,227,.92), rgba(0,113,227,.6));
 }
-.hub-folder-count{
-  font-family:var(--font-inter); font-size:11px; font-weight:600;
-  color:var(--text-muted); background:rgba(255,255,255,.07); border-radius:999px;
-  padding:2px 8px; margin-left:8px;
-}
-[data-theme="light"] .hub-folder-count{ background:rgba(0,0,0,.06); }
-.hub-logos{
-  display:flex; flex-wrap:wrap; gap:10px;
-  padding:4px 16px 14px;
-}
-.hub-logo{
-  width:44px; height:44px; border-radius:50%; flex-shrink:0;
-  background:rgba(255,255,255,.06); border:1.5px solid rgba(255,255,255,.1);
-  box-shadow:0 4px 12px rgba(0,0,0,.28), 0 1px 3px rgba(0,0,0,.2);
-  overflow:hidden; cursor:pointer;
+.sbar-srail-item{
+  position:relative; z-index:1; flex:none;
+  width:46px; height:46px; border-radius:50%;
+  border:1.5px solid rgba(255,255,255,.1);
+  background:rgba(255,255,255,.05);
+  box-shadow:0 4px 12px rgba(0,0,0,.26), inset 0 0.5px 0 rgba(255,255,255,.08);
   display:flex; align-items:center; justify-content:center;
-  position:relative;
-  animation:hubLogoIn .44s cubic-bezier(.34,1.56,.64,1) both;
-  transition:transform .28s cubic-bezier(.34,1.56,.64,1),
-             box-shadow .24s ease, border-color .2s ease;
-  -webkit-tap-highlight-color:transparent;
+  cursor:pointer; -webkit-tap-highlight-color:transparent;
+  scroll-snap-align:center; overflow:visible;
+  animation:srailItemIn .46s cubic-bezier(.34,1.56,.64,1) both;
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1), border-color .2s ease, box-shadow .24s ease;
+  will-change:transform;
 }
-.hub-logo:hover{
-  transform:scale(1.14) translateY(-3px);
-  box-shadow:0 10px 24px rgba(0,0,0,.4), 0 0 0 2px rgba(10,132,255,.5);
-  border-color:rgba(10,132,255,.5);
-}
-.hub-logo:active{ transform:scale(.9); }
-.hub-logo img{
-  width:70%; height:70%; object-fit:contain; border-radius:0; display:block;
-}
-.hub-logo-tip{
-  position:absolute; bottom:-26px; left:50%; transform:translateX(-50%);
-  background:rgba(28,28,30,.92); color:#fff; font-size:9px; font-weight:600;
-  white-space:nowrap; padding:3px 7px; border-radius:6px; pointer-events:none;
-  opacity:0; transition:opacity .16s ease, bottom .18s cubic-bezier(.34,1.38,.64,1);
-}
-.hub-logo:hover .hub-logo-tip{ opacity:1; bottom:-22px; }
-[data-theme="light"] .hub-logo{ background:rgba(0,0,0,.04); border-color:rgba(0,0,0,.09); }
-[data-theme="light"] .hub-logo-tip{ background:rgba(255,255,255,.92); color:#1d1d1f; box-shadow:0 2px 8px rgba(0,0,0,.12); }
-
-/* Floating animation sur les logos (uniquement sur desktop / hover capable) */
 @media(hover:hover) and (pointer:fine){
-  .hub-logo:not(:hover){
-    animation:hubLogoIn .44s cubic-bezier(.34,1.56,.64,1) both,
-              hubFloat 3.2s ease-in-out infinite;
-    animation-play-state:running;
-  }
+  .sbar-srail-item:not(.sel){ animation:srailItemIn .46s cubic-bezier(.34,1.56,.64,1) both, srailFloat 3.4s ease-in-out infinite; }
+  .sbar-srail-item:hover{ transform:translateY(-3px) scale(1.1); border-color:rgba(255,255,255,.22); }
 }
+.sbar-srail-item:active{ transform:scale(.86); transition:transform .08s ease-in; }
+.sbar-srail-item .savatar{
+  width:64%; height:64%; border-radius:50%; overflow:hidden;
+  background:#fff; display:flex; align-items:center; justify-content:center;
+}
+.sbar-srail-item .savatar img{ width:80%; height:80%; object-fit:contain; display:block; }
+.sbar-srail-item.sel{ border-color:transparent; box-shadow:0 6px 18px rgba(10,132,255,.35); }
+.sbar-srail-item.sel .savatar{ box-shadow:0 0 0 2px rgba(255,255,255,.5); }
+/* Pastille « Toutes les sources » (icône grille) */
+.sbar-srail-all{ color:var(--text); }
+.sbar-srail-all svg{ width:21px; height:21px; }
+.sbar-srail-all.sel{ color:#fff; }
+[data-theme="light"] .sbar-srail-item{ background:rgba(0,0,0,.035); border-color:rgba(0,0,0,.08); }
+[data-theme="light"] .sbar-srail-all.sel{ color:#fff; }
+/* Pastille non-lus sur un logo */
+.sbar-srail-dot{
+  position:absolute; top:-1px; right:-1px; z-index:2;
+  min-width:16px; height:16px; padding:0 4px; border-radius:999px;
+  background:var(--accent); color:#fff;
+  font-family:var(--font-inter); font-size:9px; font-weight:700; line-height:16px;
+  text-align:center; box-shadow:0 0 0 2px var(--bg);
+}
+.sbar-srail-item.sel .sbar-srail-dot{ background:#fff; color:var(--accent); }
+/* Étiquette de la source active sous le rail */
+.sbar-srail-label{
+  display:block; text-align:center; min-height:15px;
+  font-family:var(--font-inter); font-size:11px; font-weight:600;
+  letter-spacing:.01em; color:var(--text-muted);
+  padding:0 8px 4px; opacity:0; transition:opacity .24s ease;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.sbar-srail-label.vis{ opacity:1; }
 
 /* ── Preview : slot éditorial en bas de carte ── */
 .srcm-preview{
@@ -5243,24 +5177,22 @@ body.focus-mode .focus-exit{ display:flex; }
           </button>
         </div>
         <div class="sbar-cats" id="sbarCats" style="display:none"></div>
-        <div class="sbar-srcs-wrap" id="sbarSrcsWrap"><div class="sbar-srcs-inner"><div class="sbar-srcs" id="sbarSrcs"></div></div></div>
+        <div class="sbar-srcs-wrap" id="sbarSrcsWrap"><div class="sbar-srcs-inner">
+          <div class="sbar-srail" id="sbarSrcs"></div>
+          <span class="sbar-srail-label" id="sbarSrailLabel"></span>
+        </div></div>
       </div>
 
-      <!-- Hub Sources — modale centrée dossiers + logos -->
-      <div class="hub-overlay" id="hubModal" aria-hidden="true">
-        <div class="hub-card" role="dialog" aria-modal="true" aria-label="Sources">
-          <div class="hub-head">
-            <div>
-              <div class="hub-title">Explorer</div>
-              <div class="hub-subtitle">Dossiers &amp; sources</div>
-            </div>
-            <button class="hub-close-btn" type="button" id="hubCloseBtn" aria-label="Fermer">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
-            </button>
-          </div>
-          <div class="hub-body" id="hubBody"></div>
-        </div>
-      </div>
+      <!-- Filtre « goo » pour le blob liquide du rail sources -->
+      <svg width="0" height="0" style="position:absolute;pointer-events:none" aria-hidden="true">
+        <defs>
+          <filter id="srailGoo">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="blur"/>
+            <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -9" result="goo"/>
+            <feBlend in="SourceGraphic" in2="goo"/>
+          </filter>
+        </defs>
+      </svg>
 
       <!-- Fenêtre Sources — style Sunday (scale + blur) -->
       <div class="srcm-overlay" id="srcModal" aria-hidden="true">
@@ -8449,63 +8381,39 @@ body.focus-mode .focus-exit{ display:flex; }
       </section>`).join('');
   }
 
-  // ── Hub Sources « wow » ─────────────────────────────────────────
-  let _hubBound = false;
-
-  function _hubOpen(){
-    const body = document.getElementById('hubBody'); if(!body) return;
-    const { map, order } = _smartCatMap();
-    let folderIdx = 0;
-    body.innerHTML = order.map(cat => {
-      const srcs = (map[cat] || []).slice(0, 16);
-      if(!srcs.length) return '';
-      const fDelay = folderIdx++ * 55;
-      let logoIdx = 0;
-      const logos = srcs.map(s => {
-        const lDelay = fDelay + 90 + (logoIdx++) * 42;
-        const tip = escHtml(s.name || s.url);
-        return `<button class="hub-logo" type="button" data-hub-src="${escAttr(s.url)}" title="${tip}"
-                  style="animation-delay:${lDelay}ms">
-          <img src="${escAttr(getFavicon(s.url))}" alt="${tip}" onerror="this.style.opacity='.25'">
-          <span class="hub-logo-tip">${tip}</span>
-        </button>`;
-      }).join('');
-      const cnt = srcs.length;
-      return `<div class="hub-folder" style="animation-delay:${fDelay}ms">
-        <div class="hub-folder-head" data-hub-cat="${escAttr(cat)}">
-          <span class="hub-folder-name">${escHtml(cat)}</span>
-          <span class="hub-folder-count">${cnt}</span>
-        </div>
-        <div class="hub-logos">${logos}</div>
-      </div>`;
-    }).join('');
-
-    const ov = document.getElementById('hubModal'); if(!ov) return;
-    ov.setAttribute('aria-hidden','false');
-    requestAnimationFrame(() => ov.classList.add('open'));
-    _hubBindOnce();
-  }
-
-  function _hubClose(){
-    const ov = document.getElementById('hubModal'); if(!ov) return;
-    ov.classList.remove('open');
-    ov.setAttribute('aria-hidden','true');
-  }
-
-  function _hubBindOnce(){
-    if(_hubBound) return; _hubBound = true;
-    const ov   = document.getElementById('hubModal');
-    const body = document.getElementById('hubBody');
-    const cls  = document.getElementById('hubCloseBtn');
-    if(ov)  ov.addEventListener('click', e => { if(e.target === ov) _hubClose(); });
-    if(cls) cls.addEventListener('click', _hubClose);
-    if(body) body.addEventListener('click', e => {
-      const logo = e.target.closest('.hub-logo');
-      if(logo){ _smartPickSource(logo.dataset.hubSrc); _hubClose(); return; }
-      const head = e.target.closest('.hub-folder-head');
-      if(head){ _smartPickCat(head.dataset.hubCat); _hubClose(); }
-    });
-  }
+  // ── Rail Sources « liquid glass » : blob springé qui suit l'actif ──
+  const _SRAIL = (function(){
+    let raf = null, curX = 0, tgtX = 0, vel = 0, started = false;
+    function blob(){ return document.getElementById('sbarSrailBlob'); }
+    function apply(b, x, sx, sy){ b.style.transform = `translate(${x}px,-50%) scale(${sx},${sy})`; }
+    function loop(){
+      const b = blob(); if(!b){ raf = null; return; }
+      const tension = 0.16, friction = 0.74;
+      const dx = tgtX - curX;
+      vel += dx * tension; vel *= friction; curX += vel;
+      const av = Math.abs(vel);
+      const sx = 1 + Math.min(av * 0.022, 0.7);
+      const sy = 1 - Math.min(av * 0.013, 0.36);
+      apply(b, curX, sx, sy);
+      if(av < 0.12 && Math.abs(dx) < 0.12){ curX = tgtX; apply(b, curX, 1, 1); raf = null; return; }
+      raf = requestAnimationFrame(loop);
+    }
+    return {
+      // Positionne le blob sous l'élément actif (animé, ou instantané au montage)
+      moveTo(el, instant){
+        const b = blob(); if(!b || !el) return;
+        b.style.width  = el.offsetWidth + 'px';
+        b.style.height = el.offsetHeight + 'px';
+        b.style.marginLeft = (-el.offsetWidth / 2) + 'px';
+        const x = el.offsetLeft + el.offsetWidth / 2;
+        b.classList.add('vis');
+        if(instant || !started){ curX = tgtX = x; started = true; apply(b, x, 1, 1); if(raf){ cancelAnimationFrame(raf); raf = null; } return; }
+        tgtX = x;
+        if(!raf) raf = requestAnimationFrame(loop);
+      },
+      hide(){ const b = blob(); if(b){ b.classList.remove('vis'); started = false; } }
+    };
+  })();
 
   // Synchronise l'état visuel du segment + bouton/étiquette « Filtres »
   const _SEG_MODES = ['all','unread'];
@@ -8568,25 +8476,52 @@ body.focus-mode .focus-exit{ display:flex; }
       cats.scrollLeft = prevLeft;
     }
 
-    // Déclencheur unique : ouvre la fenêtre Sources (style Sunday)
+    // Rail « liquid glass » : logos flottants + blob springé sous l'actif
     const srcs = document.getElementById('sbarSrcs');
+    const labelEl = document.getElementById('sbarSrailLabel');
     if(srcs){
-      const chev = '<span class="sbar-trig-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span>';
-      let av, label, act = '';
-      if(_railFilterUrl){
-        const cur = sources.find(s => s.url === _railFilterUrl);
-        av = `<span class="sbar-trig-av"><img src="${escAttr(getFavicon(_railFilterUrl))}" alt="" onerror="this.style.opacity='.3'"></span>`;
-        label = cur ? escHtml(cur.name) : 'Source';
-        act = ' act';
-      } else if(_smartCat){
-        av = `<span class="sbar-trig-av grid">${_GRID_SVG}</span>`;
-        label = escHtml(_smartCat);
-        act = ' act';
+      const items = [{ url:'', name:'Toutes les sources', all:true }]
+        .concat(sources.map(s => ({ url:s.url, name:s.name, unread:s.unread })));
+      const sig = (_smartCat || '∅') + '|' + items.map(i => i.url).join(',');
+      const activeUrl = _railFilterUrl || '';
+
+      if(srcs.dataset.sig !== sig){
+        // Reconstruction (catégorie changée ou liste de sources modifiée)
+        const itemsHtml = items.map(it => {
+          const sel = (it.url === activeUrl) ? ' sel' : '';
+          const inner = it.all
+            ? _GRID_SVG
+            : `<span class="savatar"><img src="${escAttr(getFavicon(it.url))}" alt="" onerror="this.style.opacity='.25'"></span>`;
+          const dot = (!it.all && it.unread) ? `<span class="sbar-srail-dot">${it.unread > 99 ? '99+' : it.unread}</span>` : '';
+          const cls = 'sbar-srail-item' + (it.all ? ' sbar-srail-all' : '') + sel;
+          return `<button class="${cls}" type="button" data-url="${escAttr(it.url)}" title="${escAttr(it.name)}">${inner}${dot}</button>`;
+        }).join('');
+        srcs.innerHTML = `<div class="sbar-srail-track">
+          <div class="sbar-srail-liquid"><span class="sbar-srail-blob" id="sbarSrailBlob"></span></div>
+          ${itemsHtml}
+        </div>`;
+        srcs.dataset.sig = sig;
+        const activeEl = srcs.querySelector('.sbar-srail-item.sel') || srcs.querySelector('.sbar-srail-item');
+        requestAnimationFrame(() => _SRAIL.moveTo(activeEl, true));
       } else {
-        av = `<span class="sbar-trig-av grid">${_GRID_SVG}</span>`;
-        label = 'Toutes les sources';
+        // Même liste : on glisse seulement le blob + on met à jour la sélection
+        let activeEl = null;
+        srcs.querySelectorAll('.sbar-srail-item').forEach(el => {
+          const on = (el.dataset.url || '') === activeUrl;
+          el.classList.toggle('sel', on);
+          if(on) activeEl = el;
+        });
+        if(activeEl){
+          _SRAIL.moveTo(activeEl, false);
+          activeEl.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' });
+        }
       }
-      srcs.innerHTML = `<button class="sbar-srcs-trigger${act}" type="button" id="sbarSrcsTrigger">${av}<span>${label}</span>${chev}</button>`;
+      if(labelEl){
+        labelEl.textContent = activeUrl
+          ? (sources.find(s => s.url === activeUrl)?.name || '')
+          : (_smartCat || 'Toutes les sources');
+        labelEl.classList.add('vis');
+      }
     }
 
     _smartBindOnce();
@@ -8676,7 +8611,8 @@ body.focus-mode .focus-exit{ display:flex; }
       if(b) _smartPickCat(b.dataset.cat);
     });
     if(srcs) srcs.addEventListener('click', e => {
-      if(e.target.closest('.sbar-srcs-trigger')) _hubOpen();
+      const it = e.target.closest('.sbar-srail-item');
+      if(it) _smartPickSource(it.dataset.url || '');
     });
   }
 
