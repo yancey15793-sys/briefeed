@@ -8346,7 +8346,31 @@ body.focus-mode .focus-exit{ display:flex; }
   }
 
   function _srcmAnimateCats(nav){
-    const items = nav.querySelectorAll('.srcm-cat-item:not(.dimmed)');
+    const isolated = _srcmCat !== null;
+
+    if(isolated){
+      // Mode isolé : pas de parallaxe (elle chevaucherait le bloc de sources).
+      // On réinitialise tout résidu de transform, puis on amène le dossier en vue.
+      nav.querySelectorAll('.srcm-cat-item').forEach(it => {
+        it.style.transition = 'none'; it.style.transform = 'none'; it.style.opacity = '';
+      });
+      const sel = nav.querySelector('.srcm-cat-item.sel');
+      const srcs = nav.querySelector('.srcm-cat-sources');
+      if(sel){
+        requestAnimationFrame(() => {
+          // Amener le dossier sélectionné en haut pour révéler ses sources dessous
+          nav.scrollTo({ top: Math.max(0, sel.offsetTop - 8), behavior:'smooth' });
+        });
+      }
+      if(srcs){
+        // Réveil des chips (l'animation CSS srcmSrcsIn + le delay inline gèrent l'entrée)
+        srcs.querySelectorAll('.srcm-logo-chip').forEach(c => { c.style.opacity=''; });
+      }
+      return;
+    }
+
+    // Mode liste complète : entrée décalée avec profondeur
+    const items = nav.querySelectorAll('.srcm-cat-item');
     items.forEach((item, i) => {
       item.style.opacity = '0';
       item.style.transform = `translateY(${16 + i * 8}px)`;
@@ -8361,18 +8385,23 @@ body.focus-mode .focus-exit{ display:flex; }
       }));
     });
 
-    let _rafId = null;
-    nav.addEventListener('scroll', () => {
-      if(_rafId) return;
-      _rafId = requestAnimationFrame(() => {
-        _rafId = null;
-        const s = nav.scrollTop;
-        nav.querySelectorAll('.srcm-cat-item:not(.dimmed)').forEach((item, i) => {
-          const shift = s * (0.05 + i * 0.016);
-          item.style.transform = `translateY(${-shift}px)`;
+    // Parallaxe au scroll — attachée une seule fois (sinon accumulation de handlers)
+    if(!nav._srcmScrollBound){
+      nav._srcmScrollBound = true;
+      let _rafId = null;
+      nav.addEventListener('scroll', () => {
+        if(_srcmCat !== null) return; // désactivée en mode isolé
+        if(_rafId) return;
+        _rafId = requestAnimationFrame(() => {
+          _rafId = null;
+          const s = nav.scrollTop;
+          nav.querySelectorAll('.srcm-cat-item:not(.dimmed)').forEach((item, i) => {
+            const shift = s * (0.05 + i * 0.016);
+            item.style.transform = `translateY(${-shift}px)`;
+          });
         });
-      });
-    }, {passive:true});
+      }, {passive:true});
+    }
   }
 
   // ── Hub de découverte ────────────────────────────────────────────
