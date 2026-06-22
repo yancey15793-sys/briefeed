@@ -2503,46 +2503,10 @@ button, .ob-btn, .ob-btn-ghost,
 }
 .sbar-seg-btn.active .sbar-seg-n{ background:rgba(0,0,0,.14); color:var(--bg); }
 
-/* — Groupe temporel : « Aujourd'hui » + dropdown vertical — */
-.sbar-seg-temporal{ display:flex; align-items:center; position:relative; }
-.sbar-seg-today{ position:relative; }
-.sbar-seg-today::after{
-  content:""; position:absolute; right:5px; top:50%; width:4px; height:4px;
-  border-right:1.4px solid currentColor; border-bottom:1.4px solid currentColor;
-  transform:translateY(-65%) rotate(45deg); opacity:.5;
-  transition:transform .36s cubic-bezier(.34,1.4,.64,1), opacity .22s ease;
-  pointer-events:none;
-}
-.sbar-seg-today.active::after{ opacity:.8; }
-.sbar-seg.temporal-open .sbar-seg-today{ padding-right:18px; }
-.sbar-seg.temporal-open .sbar-seg-today::after{ transform:translateY(-35%) rotate(-135deg); }
-
-/* Dropdown vertical sous "Aujourd'hui" */
-.sbar-seg-more{
-  position:absolute; top:calc(100% + 7px); right:0; z-index:20;
-  display:flex; flex-direction:column; gap:1px;
-  background:rgba(26,26,32,.96);
-  -webkit-backdrop-filter:blur(24px) saturate(160%);
-  backdrop-filter:blur(24px) saturate(160%);
-  border:1px solid rgba(255,255,255,.1);
-  border-radius:16px; padding:6px;
-  min-width:130px;
-  box-shadow:0 12px 40px rgba(0,0,0,.55);
-  opacity:0; transform:translateY(-6px) scale(.95); pointer-events:none;
-  transition:opacity .22s ease, transform .28s cubic-bezier(.34,1.56,.64,1);
-}
-.sbar-seg.temporal-open .sbar-seg-more{
-  opacity:1; transform:none; pointer-events:auto;
-}
-[data-theme="light"] .sbar-seg-more{
-  background:rgba(255,255,255,.96); border-color:rgba(0,0,0,.08);
-  box-shadow:0 12px 40px rgba(0,0,0,.14);
-}
-/* Boutons dans le dropdown — pleine largeur, texte aligné à gauche */
-.sbar-seg-more .sbar-seg-btn{
-  width:100%; justify-content:flex-start; border-radius:10px;
-  padding:7px 10px; font-size:13px;
-}
+/* — Bouton « Filtres » : ouvre le panneau de filtres intelligents — */
+.sbar-seg-filters{ display:inline-flex; align-items:center; gap:5px; }
+.sbar-flt-ic{ display:inline-flex; align-items:center; }
+.sbar-flt-ic svg{ width:14px; height:14px; }
 
 /* — Catégories : onglets avec tiret animé (style « Sunday ») — */
 .sbar-cats{
@@ -3850,6 +3814,48 @@ body.focus-mode .focus-exit{ display:flex; }
 }
 [data-theme="light"] .srcm-logo-n{ background:rgba(0,113,227,.1); }
 
+/* ── Panneau de filtres intelligents ── */
+.flt-sec{ padding:4px 0 14px; }
+.flt-sec + .flt-sec{ border-top:1px solid rgba(255,255,255,.06); padding-top:14px; }
+[data-theme="light"] .flt-sec + .flt-sec{ border-top-color:rgba(0,0,0,.06); }
+.flt-sec-t{
+  margin:0 0 9px; font-family:var(--font-inter);
+  font-size:10.5px; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--text-muted); opacity:.7;
+}
+.flt-list{ display:flex; flex-direction:column; gap:5px; }
+.flt-chip{
+  display:flex; align-items:center; gap:10px; width:100%;
+  padding:10px 12px; border-radius:13px;
+  background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.06);
+  color:var(--text); text-align:left; cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+  transition:background .16s ease, border-color .16s ease, transform .22s cubic-bezier(.34,1.4,.64,1);
+  will-change:transform;
+}
+.flt-chip:active{ transform:scale(.975); }
+.flt-chip.sel{
+  background:rgba(10,132,255,.14); border-color:rgba(10,132,255,.4);
+  color:var(--accent);
+}
+[data-theme="light"] .flt-chip{ background:rgba(0,0,0,.03); border-color:rgba(0,0,0,.06); }
+[data-theme="light"] .flt-chip.sel{ background:rgba(0,113,227,.1); border-color:rgba(0,113,227,.32); }
+.flt-ic{
+  flex:none; width:22px; text-align:center; font-size:14px; line-height:1;
+}
+.flt-ic svg{ width:15px; height:15px; vertical-align:middle; }
+.flt-label{
+  flex:1; font-family:var(--font-inter); font-size:13.5px; font-weight:500;
+  letter-spacing:-.012em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.flt-n{
+  flex:none; font-size:10.5px; font-weight:700; color:var(--text-muted);
+  background:rgba(255,255,255,.07); border-radius:999px; padding:2px 8px;
+  min-width:24px; text-align:center;
+}
+.flt-chip.sel .flt-n{ color:var(--accent); background:rgba(10,132,255,.16); }
+[data-theme="light"] .flt-n{ background:rgba(0,0,0,.06); }
+
 /* ── Preview : slot éditorial en bas de carte ── */
 .srcm-preview{
   flex:none; overflow:hidden;
@@ -5046,14 +5052,10 @@ body.focus-mode .focus-exit{ display:flex; }
           <span class="sbar-seg-pill" id="sbarSegPill" aria-hidden="true"></span>
           <button class="sbar-seg-btn" type="button" data-mode="all">Tout <span class="sbar-seg-n"></span></button>
           <button class="sbar-seg-btn" type="button" data-mode="unread">Non lus <span class="sbar-seg-n"></span></button>
-          <div class="sbar-seg-temporal" id="sbarTemporal">
-            <button class="sbar-seg-btn sbar-seg-today" type="button" data-mode="today">Aujourd'hui <span class="sbar-seg-n"></span></button>
-            <div class="sbar-seg-more" id="sbarSegMore">
-              <button class="sbar-seg-btn" type="button" data-mode="3days">3 jours <span class="sbar-seg-n"></span></button>
-              <button class="sbar-seg-btn" type="button" data-mode="week">Semaine <span class="sbar-seg-n"></span></button>
-              <button class="sbar-seg-btn" type="button" data-mode="month">Mois <span class="sbar-seg-n"></span></button>
-            </div>
-          </div>
+          <button class="sbar-seg-btn sbar-seg-filters" type="button" id="sbarFiltersBtn" aria-label="Ouvrir les filtres">
+            <span class="sbar-flt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18M6 12h12M10 19h4"/></svg></span>
+            <span id="sbarFiltersLabel">Filtres</span>
+          </button>
         </div>
         <div class="sbar-cats" id="sbarCats" style="display:none"></div>
         <div class="sbar-srcs-wrap" id="sbarSrcsWrap"><div class="sbar-srcs-inner"><div class="sbar-srcs" id="sbarSrcs"></div></div></div>
@@ -8005,8 +8007,6 @@ body.focus-mode .focus-exit{ display:flex; }
   try{ _railFilterUrl = localStorage.getItem('bf_rail_filter') || null; }catch(e){}
   try{ _smartCat = localStorage.getItem('bf_smart_cat') || null; }catch(e){}
   try{ _smartMode = localStorage.getItem('bf_smart_mode') || 'all'; }catch(e){}
-  const _smartTemporalExtras = ['3days','week','month'];  // modes cachés derrière « Aujourd'hui »
-  let _smartTemporalOpen = _smartTemporalExtras.includes(_smartMode);  // panneau déployé au chargement si besoin
 
   function _smartTodayMs(){ const d = new Date(); d.setHours(0,0,0,0); return d.getTime(); }
   function _smartModeMs(mode){
@@ -8035,6 +8035,82 @@ body.focus-mode .focus-exit{ display:flex; }
     return new Set((map[cat] || []).map(s => s.url));
   }
 
+  // ══ Filtres intelligents — calculés depuis les données réelles ══
+  // token → Set(feedUrl) : couverture d'un sujet par les sources
+  function _buildTokenSrcs(refArts){
+    const m = new Map();
+    for(const a of refArts){
+      _tokens(a.title).forEach(t => {
+        let s = m.get(t); if(!s){ s = new Set(); m.set(t, s); }
+        s.add(a.feedUrl || '');
+      });
+    }
+    return m;
+  }
+  function _artCoverage(a, tokenSrcs){
+    const srcs = new Set([a.feedUrl || '']);
+    _tokens(a.title).forEach(t => { const s = tokenSrcs.get(t); if(s) s.forEach(u => srcs.add(u)); });
+    return srcs.size;
+  }
+  // Temps de lecture estimé (à partir du résumé RSS, ~200 mots/min)
+  function _readMins(a){
+    const text = ((a.title || '') + ' ' + (a.summary || '')).replace(/<[^>]+>/g, ' ');
+    const words = text.trim().split(/\s+/).filter(Boolean).length;
+    return Math.max(1, Math.round(words / 200));
+  }
+  // Contexte de filtrage (token map + tokens des articles lus) — mémoïsé 3 s
+  let _fltCtxCache = null, _fltCtxTs = 0;
+  function _fltContext(){
+    const nowT = Date.now();
+    if(_fltCtxCache && nowT - _fltCtxTs < 3000) return _fltCtxCache;
+    const ALL = _allArticles || [];
+    const ref = ALL.filter(a => (nowT - (a.pubDate || 0)) <= 7 * 86400000);
+    const ts = _buildTokenSrcs(ref);
+    const readToks = new Set();
+    if(window._RS){
+      for(const a of ALL){ if(window._RS.has(a.link)) _tokens(a.title).forEach(t => readToks.add(t)); }
+    }
+    _fltCtxCache = { now: nowT, ts, readToks }; _fltCtxTs = nowT;
+    return _fltCtxCache;
+  }
+  // Prédicat d'un filtre (id → fonction article→booléen)
+  function _fltPredicate(id, ctx){
+    const { now, ts, readToks } = ctx;
+    const RS = window._RS;
+    switch(id){
+      case 'all':        return () => true;
+      case 'unread':     return a => !(RS && RS.has(a.link));
+      case 'favoris':    return a => _isReadLater(a.link);
+      case 'today':      return a => (a.pubDate || 0) >= _smartModeMs('today');
+      case 'week':       return a => (a.pubDate || 0) >= _smartModeMs('week');
+      case 'month':      return a => (a.pubDate || 0) >= _smartModeMs('month');
+      case 'lastHour':   return a => (a.pubDate || 0) >= now - 3600000;
+      case 'last24h':    return a => (a.pubDate || 0) >= now - 86400000;
+      case '3days':      return a => (a.pubDate || 0) >= _smartModeMs('3days');
+      case '7days':      return a => (a.pubDate || 0) >= now - 7 * 86400000;
+      case '30days':     return a => (a.pubDate || 0) >= now - 30 * 86400000;
+      case 'signalStrong': return a => _artCoverage(a, ts) >= 3;
+      case 'fullCoverage': return a => _artCoverage(a, ts) >= 4;
+      case 'multiSource':  return a => _artCoverage(a, ts) >= 2;
+      case 'exclusive':    return a => _artCoverage(a, ts) === 1;
+      case 'freshOnly':  return a => {
+        if(RS && RS.has(a.link)) return false;
+        let h = 0; for(const t of _tokens(a.title)){ if(readToks.has(t)){ h++; if(h >= 2) return false; } }
+        return true;
+      };
+      case 'quick5':     return a => _readMins(a) <= 5;
+      case 'hasSummary': return a => !!a.summary && String(a.summary).replace(/<[^>]+>/g, '').trim().length > 40;
+      case 'withImage':  return a => !!a.imageUrl;
+      case 'recommended':return a => (window._SE && _SE.isActive && _SE.isActive()) ? _SE.score(a) >= 0.6 : true;
+      default:           return () => true;
+    }
+  }
+  function _smartApplyMode(arts, mode){
+    if(!mode || mode === 'all') return arts;
+    const pred = _fltPredicate(mode, _fltContext());
+    return arts.filter(pred);
+  }
+
   // Filtre global appliqué par chaque vue (source > catégorie, + mode, empilés)
   function _railApplyFilter(arts){
     let out = arts;
@@ -8044,12 +8120,7 @@ body.focus-mode .focus-exit{ display:flex; }
       const urls = _smartCatUrls(_smartCat);
       out = out.filter(a => urls.has(a.feedUrl || ''));
     }
-    if(_smartMode === 'unread' && window._RS){
-      out = out.filter(a => !window._RS.has(a.link));
-    } else if(_smartMode !== 'all'){
-      const ms = _smartModeMs(_smartMode);
-      if(ms) out = out.filter(a => (a.pubDate || 0) >= ms);
-    }
+    out = _smartApplyMode(out, _smartMode);
     return out;
   }
 
@@ -8103,6 +8174,104 @@ body.focus-mode .focus-exit{ display:flex; }
 
   const _GRID_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.6"/><rect x="14" y="3" width="7" height="7" rx="1.6"/><rect x="3" y="14" width="7" height="7" rx="1.6"/><rect x="14" y="14" width="7" height="7" rx="1.6"/></svg>';
 
+  // ══ Panneau de filtres — sections [id, label, icône?] ══
+  const _FLT_SECTIONS = [
+    { t:'Essentiel', items:[
+      ['all','Toutes les sources','▦'],
+      ['unread','Non lus','●'],
+      ['favoris','Favoris','★'],
+      ['today',"Aujourd'hui"],
+      ['week','Cette semaine'],
+      ['month','Ce mois'],
+    ]},
+    { t:'Temporel', items:[
+      ['lastHour','Dernière heure'],
+      ['last24h','Dernières 24 h'],
+      ['3days','3 derniers jours'],
+      ['7days','7 derniers jours'],
+      ['30days','30 derniers jours'],
+    ]},
+    { t:'Signal éditorial', items:[
+      ['signalStrong','Signal fort','🔥'],
+      ['fullCoverage','Couverture complète'],
+      ['multiSource','Sources multiples'],
+      ['exclusive','Ce que personne ne couvre','👁'],
+    ]},
+    { t:'Lecture', items:[
+      ['quick5','À lire en 5 min'],
+      ['hasSummary','Résumés disponibles'],
+      ['withImage','Avec visuel'],
+      ['recommended','Recommandé pour vous','✦'],
+    ]},
+    { t:'Intelligent', items:[
+      ['freshOnly','Nouvelles infos uniquement','✨'],
+    ]},
+  ];
+  const _FLT_LABELS = (() => {
+    const m = {}; _FLT_SECTIONS.forEach(s => s.items.forEach(([id, label]) => m[id] = label)); return m;
+  })();
+
+  // Compteurs par filtre — sur le pool dédupliqué, contexte partagé (token map)
+  function _fltCounts(){
+    const base = (typeof _dedup === 'function') ? _dedup([...(_allArticles || [])]) : (_allArticles || []);
+    const ctx = _fltContext();
+    const out = {};
+    _FLT_SECTIONS.forEach(sec => sec.items.forEach(([id]) => {
+      const pred = _fltPredicate(id, ctx);
+      let n = 0; for(const a of base){ if(pred(a)) n++; }
+      out[id] = n;
+    }));
+    return out;
+  }
+
+  function _fltRenderPanel(){
+    const nav = document.getElementById('srcmNav'); if(!nav) return;
+    const counts = _fltCounts();
+    nav.scrollTop = 0;
+    nav.classList.remove('slide-in','slide-out');
+    nav.innerHTML = _FLT_SECTIONS.map(sec => `
+      <section class="flt-sec">
+        <h3 class="flt-sec-t">${escHtml(sec.t)}</h3>
+        <div class="flt-list">
+          ${sec.items.map(([id, label, ic]) => {
+            const sel = _smartMode === id ? ' sel' : '';
+            const n = counts[id] || 0;
+            return `<button class="flt-chip${sel}" type="button" data-flt="${id}">
+              ${ic ? `<span class="flt-ic">${ic}</span>` : '<span class="flt-ic"></span>'}
+              <span class="flt-label">${escHtml(label)}</span>
+              <span class="flt-n">${n > 999 ? '999+' : n}</span>
+            </button>`;
+          }).join('')}
+        </div>
+      </section>`).join('');
+    // Entrée en cascade légère des sections
+    requestAnimationFrame(() => {
+      nav.querySelectorAll('.flt-sec').forEach((sec, i) => {
+        sec.style.opacity = '0'; sec.style.transform = 'translateY(12px)'; sec.style.transition = 'none';
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          sec.style.transition = `opacity .42s ease ${i*55}ms, transform .5s cubic-bezier(.34,1.38,.64,1) ${i*55}ms`;
+          sec.style.opacity = '1'; sec.style.transform = 'none';
+        }));
+      });
+    });
+  }
+
+  // Synchronise l'état visuel du segment + bouton/étiquette « Filtres »
+  const _SEG_MODES = ['all','unread'];
+  function _smartSyncSegment(){
+    const seg = document.getElementById('sbarSeg'); if(!seg) return;
+    const isAdvanced = !_SEG_MODES.includes(_smartMode);
+    seg.querySelectorAll('.sbar-seg-btn').forEach(btn => {
+      const m = btn.dataset.mode;
+      if(m) btn.classList.toggle('active', m === _smartMode);
+    });
+    const fbtn = document.getElementById('sbarFiltersBtn');
+    const flab = document.getElementById('sbarFiltersLabel');
+    if(fbtn) fbtn.classList.toggle('active', isAdvanced);
+    if(flab) flab.textContent = isAdvanced ? (_FLT_LABELS[_smartMode] || 'Filtres') : 'Filtres';
+    _smartMovePill(true);
+  }
+
   function _renderSrcRail(){
     const bar = document.getElementById('smartBar');
     if(!bar) return;
@@ -8122,19 +8291,16 @@ body.focus-mode .focus-exit{ display:flex; }
       try{ localStorage.removeItem('bf_rail_filter'); }catch(e){}
     }
 
-    // Segment + compteurs intelligents
+    // Segment + compteurs (Tout / Non lus) + état du bouton Filtres
     const counts = _smartCounts();
     const seg = document.getElementById('sbarSeg');
     if(seg){
-      if(_smartTemporalExtras.includes(_smartMode)) _smartTemporalOpen = true;
-      seg.classList.toggle('temporal-open', _smartTemporalOpen);
-      seg.querySelectorAll('.sbar-seg-btn').forEach(btn => {
+      seg.querySelectorAll('.sbar-seg-btn[data-mode]').forEach(btn => {
         const m = btn.dataset.mode;
-        btn.classList.toggle('active', m === _smartMode);
         const nEl = btn.querySelector('.sbar-seg-n');
         if(nEl){ const v = counts[m] || 0; nEl.textContent = v > 999 ? '999+' : v; }
       });
-      _smartMovePill();
+      _smartSyncSegment();
     }
 
     // Onglets catégories (tiret « Sunday ») — « Tout » en tête
@@ -8180,15 +8346,12 @@ body.focus-mode .focus-exit{ display:flex; }
     const seg  = document.getElementById('sbarSeg');
     const pill = document.getElementById('sbarSegPill');
     if(!seg || !pill) return;
-    let btn = seg.querySelector('.sbar-seg-btn.active');
+    const btn = seg.querySelector('.sbar-seg-btn.active');
     if(!btn){ pill.classList.remove('vis'); return; }
-    // Si le bouton actif est dans le dropdown vertical, la pill se cale sur "Aujourd'hui"
-    if(btn.closest('.sbar-seg-more')) btn = seg.querySelector('.sbar-seg-today') || btn;
     pill.style.transform = `translateX(${btn.offsetLeft - 3}px)`;
     pill.style.width = btn.offsetWidth + 'px';
     pill.classList.add('vis');
-    if(scroll && !btn.closest('.sbar-seg-more'))
-      btn.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' });
+    if(scroll) btn.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' });
   }
 
   // Petit « accordéon » : rejoue la révélation grid-rows de la rangée sources
@@ -8199,32 +8362,14 @@ body.focus-mode .focus-exit{ display:flex; }
     requestAnimationFrame(()=>{ requestAnimationFrame(()=>{ wrap.classList.remove('collapsed'); }); });
   }
 
-  // Sélection d'un mode intelligent — rendu instantané
+  // Sélection d'un filtre — rendu instantané
   function _smartSetMode(mode){
     if(_smartMode === mode) return;
     _smartMode = mode;
     try{ localStorage.setItem('bf_smart_mode', mode); }catch(e){}
-    // Met à jour le segment visuellement avant le rendu pour que la pastille scroll
-    const seg = document.getElementById('sbarSeg');
-    if(seg){
-      // Repli auto sur « Tout » / « Non lus » ; déploiement sur un mode temporel avancé
-      if(mode === 'all' || mode === 'unread') _smartTemporalOpen = false;
-      else if(_smartTemporalExtras.includes(mode)) _smartTemporalOpen = true;
-      seg.classList.toggle('temporal-open', _smartTemporalOpen);
-      seg.querySelectorAll('.sbar-seg-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
-      _smartMovePill(true);
-    }
+    _smartSyncSegment();
     _railInstant = true;
     _renderCurrentView();
-  }
-
-  // Ouvre/ferme le tiroir temporel (3 jours / Semaine / Mois) derrière « Aujourd'hui »
-  function _smartToggleTemporal(force){
-    const seg = document.getElementById('sbarSeg');
-    if(!seg) return;
-    _smartTemporalOpen = (force === undefined) ? !_smartTemporalOpen : !!force;
-    seg.classList.toggle('temporal-open', _smartTemporalOpen);
-    requestAnimationFrame(() => _smartMovePill(true));
   }
 
   // Sélection d'une catégorie (cat='' = Tout) — révèle ses sources + filtre instantané
@@ -8269,12 +8414,11 @@ body.focus-mode .focus-exit{ display:flex; }
     const cats = document.getElementById('sbarCats');
     const srcs = document.getElementById('sbarSrcs');
     if(seg) seg.addEventListener('click', e => {
+      // Bouton « Filtres » → ouvre le panneau de filtres intelligents
+      if(e.target.closest('.sbar-seg-filters')){ _srcModalOpen(); return; }
       const b = e.target.closest('.sbar-seg-btn');
-      if(!b) return;
-      const mode = b.dataset.mode;
-      // Second appui sur « Aujourd'hui » (déjà actif) : déploie / replie le tiroir temporel
-      if(mode === 'today' && _smartMode === 'today'){ _smartToggleTemporal(); return; }
-      _smartSetMode(mode);
+      if(!b || !b.dataset.mode) return;
+      _smartSetMode(b.dataset.mode);
     });
     if(cats) cats.addEventListener('click', e => {
       const b = e.target.closest('.sbar-cat');
@@ -8645,27 +8789,10 @@ body.focus-mode .focus-exit{ display:flex; }
     const prev = document.getElementById('srcmPreview');
     if(ov) ov.addEventListener('click', e=>{ if(e.target===ov) _srcModalClose(); });
     if(nav) nav.addEventListener('click', e=>{
-      // Niveau 2 : retour → niveau 1
-      if(e.target.closest('#srcmBackBtn')){
-        _srcmCat = null; _srcmRenderNav('back'); _srcmRenderPreview(); return;
-      }
-      // Niveau 2 : clic sur une source → filtre + ferme
-      const logo = e.target.closest('.srcm-logo-chip');
-      if(logo){ _smartPickCat(_srcmCat||''); _smartPickSource(logo.dataset.url); _srcModalClose(); return; }
-      // Niveau 1 : clic sur un dossier
-      const b = e.target.closest('.srcm-cat-item'); if(!b) return;
-      const cat = b.dataset.cat || null;
-      if(cat === null){ _smartPickCat(''); _srcModalClose(); return; }
-      _srcmCat = cat; _srcmRenderNav('forward'); _srcmRenderPreview();
+      // Panneau de filtres : clic sur un filtre → applique + ferme
+      const chip = e.target.closest('.flt-chip');
+      if(chip){ _smartSetMode(chip.dataset.flt); _srcModalClose(); }
     });
-    if(prev){
-      prev.addEventListener('click', e=>{
-        const ed = e.target.closest('.srcm-editorial');
-        if(ed && ed.dataset.link){ window.open(ed.dataset.link,'_blank','noopener'); return; }
-        const sl = e.target.closest('.srcm-slide[data-link]');
-        if(sl){ window.open(sl.dataset.link,'_blank','noopener'); return; }
-      });
-    }
 
     // Drag-to-dismiss (mobile) — poignée tirée vers le bas
     const grip = document.getElementById('srcmGrip');
@@ -8697,14 +8824,19 @@ body.focus-mode .focus-exit{ display:flex; }
   }
 
   window._srcModalOpen = function(){
-    _srcmCat=_smartCat||null; _srcmPreviewUrl=null;
-    _srcmRenderNav(); _srcmRenderPreview(); _srcmRenderFoot();
+    // La fenêtre joue le rôle de panneau de filtres intelligents
+    _fltRenderPanel();
+    const prev = document.getElementById('srcmPreview');
+    if(prev){ prev.innerHTML=''; prev.style.display='none'; }
+    const foot = document.getElementById('srcmFoot');
+    if(foot){ foot.innerHTML=''; foot.style.display='none'; }
+    const wm = document.querySelector('.srcm-wordmark');
+    if(wm) wm.textContent = 'Filtres';
     const ov=document.getElementById('srcModal'); if(!ov) return;
     const card=ov.querySelector('.srcm-card');
     if(card){ card.style.transform=''; ov.style.opacity=''; }
     ov.setAttribute('aria-hidden','false');
     requestAnimationFrame(()=>ov.classList.add('open'));
-    // Cascade d'entrée : tabs → carrousel → liste → footer
     if(card){ card.classList.add('entering'); setTimeout(()=>card.classList.remove('entering'),850); }
     _srcmBindOnce();
   };
