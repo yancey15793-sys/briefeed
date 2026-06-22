@@ -3635,7 +3635,7 @@ body.focus-mode .focus-exit{ display:flex; }
   backdrop-filter:blur(22px) saturate(160%);
 }
 .srcm-card{
-  width:min(680px,100vw); max-height:min(720px,96vh);
+  width:min(680px,100vw); max-height:min(700px,calc(96vh - env(safe-area-inset-bottom,0px)));
   display:flex; flex-direction:column;
   background:rgba(13,14,18,.98); color:var(--text);
   border:1px solid rgba(255,255,255,.09);
@@ -3738,7 +3738,7 @@ body.focus-mode .focus-exit{ display:flex; }
 /* Item de catégorie — typographie Sunday : grand, light */
 .srcm-cat-item{
   display:flex; align-items:baseline; justify-content:space-between;
-  padding:14px 0; border-bottom:1px solid rgba(255,255,255,.055);
+  padding:10px 0; border-bottom:1px solid rgba(255,255,255,.055);
   border:none; background:none; width:100%;
   text-align:left; cursor:pointer; will-change:transform;
   -webkit-tap-highlight-color:transparent;
@@ -3749,8 +3749,8 @@ body.focus-mode .focus-exit{ display:flex; }
 [data-theme="light"] .srcm-cat-item{ border-top-color:rgba(0,0,0,.07); }
 .srcm-cat-item-label{
   font-family:var(--font-inter);
-  font-size:clamp(26px,7vw,32px);
-  font-weight:450; letter-spacing:-0.028em; line-height:1.15;
+  font-size:clamp(19px,5vw,23px);
+  font-weight:450; letter-spacing:-0.022em; line-height:1.15;
   color:var(--text);
   transition:color .22s ease;
 }
@@ -3764,7 +3764,7 @@ body.focus-mode .focus-exit{ display:flex; }
 /* ── Preview : slot éditorial en bas de carte ── */
 .srcm-preview{
   flex:none; overflow:hidden;
-  padding:0 14px 10px;
+  padding:0 14px calc(10px + env(safe-area-inset-bottom, 0px));
 }
 
 /* ── Carrousel 6 derniers articles ── */
