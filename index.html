@@ -2503,25 +2503,46 @@ button, .ob-btn, .ob-btn-ghost,
 }
 .sbar-seg-btn.active .sbar-seg-n{ background:rgba(0,0,0,.14); color:var(--bg); }
 
-/* — Groupe temporel : « Aujourd'hui » qui déploie 3 jours / Semaine / Mois — */
-.sbar-seg-temporal{ display:flex; align-items:center; }
+/* — Groupe temporel : « Aujourd'hui » + dropdown vertical — */
+.sbar-seg-temporal{ display:flex; align-items:center; position:relative; }
 .sbar-seg-today{ position:relative; }
 .sbar-seg-today::after{
   content:""; position:absolute; right:5px; top:50%; width:4px; height:4px;
   border-right:1.4px solid currentColor; border-bottom:1.4px solid currentColor;
   transform:translateY(-65%) rotate(45deg); opacity:.5;
-  transition:transform .42s cubic-bezier(.34,1.4,.64,1), opacity .26s ease;
+  transition:transform .36s cubic-bezier(.34,1.4,.64,1), opacity .22s ease;
   pointer-events:none;
 }
-.sbar-seg-today.active::after{ opacity:.7; }
+.sbar-seg-today.active::after{ opacity:.8; }
 .sbar-seg.temporal-open .sbar-seg-today{ padding-right:18px; }
 .sbar-seg.temporal-open .sbar-seg-today::after{ transform:translateY(-35%) rotate(-135deg); }
+
+/* Dropdown vertical sous "Aujourd'hui" */
 .sbar-seg-more{
-  display:flex; align-items:center; overflow:hidden;
-  max-width:0; opacity:0;
-  transition:max-width .42s cubic-bezier(.34,1.4,.64,1), opacity .3s ease;
+  position:absolute; top:calc(100% + 7px); right:0; z-index:20;
+  display:flex; flex-direction:column; gap:1px;
+  background:rgba(26,26,32,.96);
+  -webkit-backdrop-filter:blur(24px) saturate(160%);
+  backdrop-filter:blur(24px) saturate(160%);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:16px; padding:6px;
+  min-width:130px;
+  box-shadow:0 12px 40px rgba(0,0,0,.55);
+  opacity:0; transform:translateY(-6px) scale(.95); pointer-events:none;
+  transition:opacity .22s ease, transform .28s cubic-bezier(.34,1.56,.64,1);
 }
-.sbar-seg.temporal-open .sbar-seg-more{ max-width:340px; opacity:1; }
+.sbar-seg.temporal-open .sbar-seg-more{
+  opacity:1; transform:none; pointer-events:auto;
+}
+[data-theme="light"] .sbar-seg-more{
+  background:rgba(255,255,255,.96); border-color:rgba(0,0,0,.08);
+  box-shadow:0 12px 40px rgba(0,0,0,.14);
+}
+/* Boutons dans le dropdown — pleine largeur, texte aligné à gauche */
+.sbar-seg-more .sbar-seg-btn{
+  width:100%; justify-content:flex-start; border-radius:10px;
+  padding:7px 10px; font-size:13px;
+}
 
 /* — Catégories : onglets avec tiret animé (style « Sunday ») — */
 .sbar-cats{
@@ -3761,37 +3782,42 @@ body.focus-mode .focus-exit{ display:flex; }
   color:var(--text-muted); opacity:.45; flex:none; margin-left:14px;
 }
 
-/* Isolation : items non-sélectionnés s'estompent */
-.srcm-cat-item.dimmed{
-  opacity:.13; pointer-events:none;
-  transition:opacity .28s cubic-bezier(.22,1,.36,1);
-}
-.srcm-cat-item.sel{ opacity:1; }
+/* ── Navigation deux niveaux : entrées (slide) ── */
+@keyframes srcmSlideRight{ from{ opacity:0; transform:translateX(28px); } to{ opacity:1; transform:none; } }
+@keyframes srcmSlideLeft { from{ opacity:0; transform:translateX(-20px); } to{ opacity:1; transform:none; } }
+.srcm-nav.slide-in  { animation:srcmSlideRight .32s cubic-bezier(.22,1,.36,1) both; }
+.srcm-nav.slide-out { animation:srcmSlideLeft  .3s  cubic-bezier(.22,1,.36,1) both; }
 
-/* Sources inline — apparition accordéon */
-.srcm-cat-sources{
-  display:flex; flex-direction:column; gap:0;
-  padding:2px 0 10px; overflow:hidden;
-  animation:srcmSrcsIn .42s cubic-bezier(.22,1,.36,1) both;
+/* Bouton retour */
+.srcm-back-btn{
+  display:flex; align-items:center; gap:8px;
+  padding:0 0 14px; border:none; background:none;
+  text-align:left; cursor:pointer; width:100%;
+  color:var(--accent); -webkit-tap-highlight-color:transparent;
+  transition:opacity .14s ease;
 }
-@keyframes srcmSrcsIn{
-  from{ opacity:0; transform:translateY(-10px); }
-  to{ opacity:1; transform:none; }
+.srcm-back-btn:active{ opacity:.5; }
+.srcm-back-btn svg{ width:18px; height:18px; flex:none; }
+.srcm-back-cat{ font-size:14px; font-weight:600; letter-spacing:-.012em; }
+
+/* Liste sources scrollable (niveau 2) */
+.srcm-logo-list{
+  flex:1; display:flex; flex-direction:column; gap:0; overflow:visible;
 }
 
 /* Chip logo source */
 .srcm-logo-chip{
   display:flex; align-items:center; gap:11px;
-  padding:7px 2px; border:none; background:none; width:100%;
+  padding:8px 2px; border:none; background:none; width:100%;
   text-align:left; cursor:pointer;
-  border-top:1px solid rgba(255,255,255,.04);
+  border-bottom:1px solid rgba(255,255,255,.04);
   -webkit-tap-highlight-color:transparent;
   transition:opacity .14s ease, transform .22s cubic-bezier(.34,1.4,.64,1);
   will-change:transform;
 }
-.srcm-logo-chip:first-child{ border-top:none; }
+.srcm-logo-chip:last-child{ border-bottom:none; }
 .srcm-logo-chip:active{ opacity:.48; transform:scale(.96); }
-[data-theme="light"] .srcm-logo-chip{ border-top-color:rgba(0,0,0,.05); }
+[data-theme="light"] .srcm-logo-chip{ border-bottom-color:rgba(0,0,0,.05); }
 
 /* Avatar logo */
 .srcm-logo-av{
@@ -8154,12 +8180,15 @@ body.focus-mode .focus-exit{ display:flex; }
     const seg  = document.getElementById('sbarSeg');
     const pill = document.getElementById('sbarSegPill');
     if(!seg || !pill) return;
-    const btn = seg.querySelector('.sbar-seg-btn.active');
+    let btn = seg.querySelector('.sbar-seg-btn.active');
     if(!btn){ pill.classList.remove('vis'); return; }
+    // Si le bouton actif est dans le dropdown vertical, la pill se cale sur "Aujourd'hui"
+    if(btn.closest('.sbar-seg-more')) btn = seg.querySelector('.sbar-seg-today') || btn;
     pill.style.transform = `translateX(${btn.offsetLeft - 3}px)`;
     pill.style.width = btn.offsetWidth + 'px';
     pill.classList.add('vis');
-    if(scroll) btn.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' });
+    if(scroll && !btn.closest('.sbar-seg-more'))
+      btn.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' });
   }
 
   // Petit « accordéon » : rejoue la révélation grid-rows de la rangée sources
@@ -8294,10 +8323,11 @@ body.focus-mode .focus-exit{ display:flex; }
     return n;
   }
 
-  function _srcmBuildSources(cat){
+  // Construit les chips de sources (niveau 2)
+  function _srcmBuildSourceChips(cat){
     const srcs = _srcmCatSources(cat);
-    if(!srcs.length) return '';
-    const chips = srcs.map((s, i) => {
+    if(!srcs.length) return '<p style="padding:20px 0;color:var(--text-muted);font-size:13px">Aucune source</p>';
+    return srcs.map(s => {
       const domain = (()=>{ try{ return new URL(s.url).hostname.replace(/^www\./,''); }catch(e){ return ''; } })();
       const initial = (s.name||'?').trim()[0].toUpperCase();
       const fav1 = domain ? `https://icon.horse/icon/${domain}` : '';
@@ -8309,98 +8339,67 @@ body.focus-mode .focus-exit{ display:flex; }
              alt="" loading="lazy" decoding="async">`
         : '';
       const badge = s.unread > 0 ? `<span class="srcm-logo-n">${s.unread}</span>` : '';
-      const delay = `style="animation-delay:${i*38}ms"`;
-      return `<button class="srcm-logo-chip" type="button" data-url="${escAttr(s.url)}" ${delay}>
+      return `<button class="srcm-logo-chip" type="button" data-url="${escAttr(s.url)}">
         <div class="srcm-logo-av"><span class="srcm-logo-init">${initial}</span>${imgHtml}</div>
         <span class="srcm-logo-name">${escHtml(s.name)}</span>
         ${badge}
       </button>`;
     }).join('');
-    return `<div class="srcm-cat-sources">${chips}</div>`;
   }
 
-  function _srcmRenderNav(){
+  function _srcmRenderNav(dir){
+    // dir: 'forward' = slide depuis la droite, 'back' = slide depuis la gauche, undefined = entrée initiale
     const nav = document.getElementById('srcmNav'); if(!nav) return;
-    const { order } = _smartCatMap();
-    const ALL = _allArticles||[];
+    nav.classList.remove('slide-in','slide-out');
+    nav.scrollTop = 0;
 
-    const mk = (label, cat) => {
-      const isSel = cat===null ? !_srcmCat : _srcmCat===cat;
-      const isDimmed = _srcmCat !== null && !isSel && cat !== null;
-      const cls = [isSel?' sel':'', isDimmed?' dimmed':''].join('');
-      const pool = cat ? ALL.filter(a => _smartCatUrls(cat).has(a.feedUrl||'')) : ALL;
-      const unread = pool.filter(a => window._RS && !window._RS.has(a.link)).length;
-      const meta = unread > 0 ? unread : pool.length;
-      let html = `<button class="srcm-cat-item${cls}" type="button" data-cat="${cat===null?'':escAttr(cat)}">
-        <span class="srcm-cat-item-label">${escHtml(label)}</span>
-        <span class="srcm-cat-item-meta">${meta||''}</span>
-      </button>`;
-      if(isSel && cat !== null) html += _srcmBuildSources(cat);
-      return html;
-    };
-    let html = mk('Tout', null);
-    html += order.map(c => mk(c, c)).join('');
-    nav.innerHTML = html;
+    if(_srcmCat !== null){
+      // ── Niveau 2 : sources du dossier ──
+      nav.innerHTML = `
+        <button class="srcm-back-btn" type="button" id="srcmBackBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+          <span class="srcm-back-cat">${escHtml(_srcmCat)}</span>
+        </button>
+        <div class="srcm-logo-list">${_srcmBuildSourceChips(_srcmCat)}</div>`;
+      requestAnimationFrame(() => nav.classList.add('slide-in'));
+    } else {
+      // ── Niveau 1 : liste des dossiers ──
+      const { order } = _smartCatMap();
+      const ALL = _allArticles||[];
+      const mk = (label, cat) => {
+        const pool = cat ? ALL.filter(a => _smartCatUrls(cat).has(a.feedUrl||'')) : ALL;
+        const unread = pool.filter(a => window._RS && !window._RS.has(a.link)).length;
+        const meta = unread > 0 ? unread : pool.length;
+        return `<button class="srcm-cat-item" type="button" data-cat="${cat===null?'':escAttr(cat)}">
+          <span class="srcm-cat-item-label">${escHtml(label)}</span>
+          <span class="srcm-cat-item-meta">${meta||''}</span>
+        </button>`;
+      };
+      let html = mk('Tout', null);
+      html += order.map(c => mk(c, c)).join('');
+      nav.innerHTML = html;
 
-    requestAnimationFrame(() => _srcmAnimateCats(nav));
-  }
-
-  function _srcmAnimateCats(nav){
-    const isolated = _srcmCat !== null;
-
-    if(isolated){
-      // Mode isolé : pas de parallaxe (elle chevaucherait le bloc de sources).
-      // On réinitialise tout résidu de transform, puis on amène le dossier en vue.
-      nav.querySelectorAll('.srcm-cat-item').forEach(it => {
-        it.style.transition = 'none'; it.style.transform = 'none'; it.style.opacity = '';
-      });
-      const sel = nav.querySelector('.srcm-cat-item.sel');
-      const srcs = nav.querySelector('.srcm-cat-sources');
-      if(sel){
+      if(dir === 'back'){
+        requestAnimationFrame(() => nav.classList.add('slide-out'));
+      } else {
+        // Entrée initiale : cascade verticale
         requestAnimationFrame(() => {
-          // Amener le dossier sélectionné en haut pour révéler ses sources dessous
-          nav.scrollTo({ top: Math.max(0, sel.offsetTop - 8), behavior:'smooth' });
-        });
-      }
-      if(srcs){
-        // Réveil des chips (l'animation CSS srcmSrcsIn + le delay inline gèrent l'entrée)
-        srcs.querySelectorAll('.srcm-logo-chip').forEach(c => { c.style.opacity=''; });
-      }
-      return;
-    }
-
-    // Mode liste complète : entrée décalée avec profondeur
-    const items = nav.querySelectorAll('.srcm-cat-item');
-    items.forEach((item, i) => {
-      item.style.opacity = '0';
-      item.style.transform = `translateY(${16 + i * 8}px)`;
-      item.style.transition = 'none';
-      requestAnimationFrame(() => requestAnimationFrame(() => {
-        item.style.transition = [
-          `opacity .52s cubic-bezier(.22,1,.36,1) ${i*46}ms`,
-          `transform .58s cubic-bezier(.34,1.38,.64,1) ${i*46}ms`
-        ].join(',');
-        item.style.opacity = '1';
-        item.style.transform = 'none';
-      }));
-    });
-
-    // Parallaxe au scroll — attachée une seule fois (sinon accumulation de handlers)
-    if(!nav._srcmScrollBound){
-      nav._srcmScrollBound = true;
-      let _rafId = null;
-      nav.addEventListener('scroll', () => {
-        if(_srcmCat !== null) return; // désactivée en mode isolé
-        if(_rafId) return;
-        _rafId = requestAnimationFrame(() => {
-          _rafId = null;
-          const s = nav.scrollTop;
-          nav.querySelectorAll('.srcm-cat-item:not(.dimmed)').forEach((item, i) => {
-            const shift = s * (0.05 + i * 0.016);
-            item.style.transform = `translateY(${-shift}px)`;
+          const items = nav.querySelectorAll('.srcm-cat-item');
+          items.forEach((item, i) => {
+            item.style.opacity = '0';
+            item.style.transform = `translateY(${14 + i*7}px)`;
+            item.style.transition = 'none';
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+              item.style.transition = [
+                `opacity .5s cubic-bezier(.22,1,.36,1) ${i*42}ms`,
+                `transform .56s cubic-bezier(.34,1.38,.64,1) ${i*42}ms`
+              ].join(',');
+              item.style.opacity = '1';
+              item.style.transform = 'none';
+            }));
           });
         });
-      }, {passive:true});
+      }
     }
   }
 
@@ -8646,20 +8645,18 @@ body.focus-mode .focus-exit{ display:flex; }
     const prev = document.getElementById('srcmPreview');
     if(ov) ov.addEventListener('click', e=>{ if(e.target===ov) _srcModalClose(); });
     if(nav) nav.addEventListener('click', e=>{
-      // Clic sur un logo source → filtre source + ferme
+      // Niveau 2 : retour → niveau 1
+      if(e.target.closest('#srcmBackBtn')){
+        _srcmCat = null; _srcmRenderNav('back'); _srcmRenderPreview(); return;
+      }
+      // Niveau 2 : clic sur une source → filtre + ferme
       const logo = e.target.closest('.srcm-logo-chip');
       if(logo){ _smartPickCat(_srcmCat||''); _smartPickSource(logo.dataset.url); _srcModalClose(); return; }
-
+      // Niveau 1 : clic sur un dossier
       const b = e.target.closest('.srcm-cat-item'); if(!b) return;
       const cat = b.dataset.cat || null;
-
-      if(cat === null){
-        // "Tout" → reset + ferme
-        _smartPickCat(''); _srcModalClose(); return;
-      }
-      // Toggle isolation : même cat → collapse, autre cat → expand
-      _srcmCat = (_srcmCat === cat) ? null : cat;
-      _srcmRenderNav(); _srcmRenderPreview();
+      if(cat === null){ _smartPickCat(''); _srcModalClose(); return; }
+      _srcmCat = cat; _srcmRenderNav('forward'); _srcmRenderPreview();
     });
     if(prev){
       prev.addEventListener('click', e=>{
