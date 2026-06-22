@@ -2473,7 +2473,8 @@ button, .ob-btn, .ob-btn-ghost,
 
 /* — Segment de filtres intelligents (pastille glissante) — */
 .sbar-seg{
-  position:relative; display:flex; gap:0; padding:3px; isolation:isolate;
+  position:relative; display:inline-flex; gap:0; padding:3px; isolation:isolate;
+  width:fit-content; max-width:100%; align-self:flex-start;
   background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.06);
   border-radius:999px;
   overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none; -webkit-overflow-scrolling:touch;
@@ -2513,8 +2514,6 @@ button, .ob-btn, .ob-btn-ghost,
   display:flex; gap:4px; overflow-x:auto; padding:2px 2px 0;
   scrollbar-width:none; -ms-overflow-style:none; -webkit-overflow-scrolling:touch;
   scroll-snap-type:x proximity;
-  -webkit-mask-image:linear-gradient(90deg, transparent 0, #000 12px, #000 calc(100% - 12px), transparent 100%);
-          mask-image:linear-gradient(90deg, transparent 0, #000 12px, #000 calc(100% - 12px), transparent 100%);
 }
 .sbar-cats::-webkit-scrollbar{ display:none; }
 .sbar-cat{
@@ -3937,10 +3936,10 @@ body.focus-mode .focus-exit{ display:flex; }
 }
 .sbar-srail-item:active{ transform:scale(.86); transition:transform .08s ease-in; }
 .sbar-srail-item .savatar{
-  width:80%; height:80%; border-radius:50%; overflow:hidden;
+  width:100%; height:100%; border-radius:50%; overflow:hidden;
   background:transparent; display:flex; align-items:center; justify-content:center;
 }
-.sbar-srail-item .savatar img{ width:80%; height:80%; object-fit:contain; display:block; }
+.sbar-srail-item .savatar img{ width:100%; height:100%; object-fit:cover; border-radius:50%; display:block; }
 .sbar-srail-item.sel{ box-shadow:0 6px 18px rgba(10,132,255,.35); }
 .sbar-srail-item.sel .savatar{ box-shadow:0 0 0 2px rgba(255,255,255,.5); border-radius:50%; }
 /* Pastille « Toutes les sources » (icône grille) */
