@@ -4531,7 +4531,6 @@ body.focus-mode .focus-exit{ display:flex; }
               <a class="sub-link sub-link-sm qmenu-mode-item" data-qmode="week"         onclick="qmenuSetSmartMode('week')">Cette semaine</a>
               <a class="sub-link sub-link-sm qmenu-mode-item" data-qmode="month"        onclick="qmenuSetSmartMode('month')">Ce mois</a>
               <div class="qmenu-sub-section-label" style="margin-top:10px">Collections intelligentes</div>
-              <a class="sub-link sub-link-sm qmenu-mode-item" data-qmode="trending"     onclick="qmenuSetSmartMode('trending')">Tendances</a>
               <a class="sub-link sub-link-sm qmenu-mode-item" data-qmode="breaking"     onclick="qmenuSetSmartMode('breaking')">Dernière heure</a>
               <a class="sub-link sub-link-sm qmenu-mode-item" data-qmode="hidden_gems"  onclick="qmenuSetSmartMode('hidden_gems')">Pépites oubliées</a>
               <a class="sub-link sub-link-sm qmenu-mode-item" data-qmode="growing"      onclick="qmenuSetSmartMode('growing')">En progression</a>
@@ -5324,6 +5323,7 @@ body.focus-mode .focus-exit{ display:flex; }
           <span class="sbar-seg-pill" id="sbarSegPill" aria-hidden="true"></span>
           <button class="sbar-seg-btn" type="button" data-mode="all">Tout <span class="sbar-seg-n"></span></button>
           <button class="sbar-seg-btn" type="button" data-mode="unread">Non lus <span class="sbar-seg-n"></span></button>
+          <button class="sbar-seg-btn" type="button" data-mode="trending">Tendances <span class="sbar-seg-n"></span></button>
         </div>
         <div class="sbar-cats" id="sbarCats"></div>
         <div class="sbar-srcs-wrap" id="sbarSrcsWrap"><div class="sbar-srcs-inner">
@@ -8426,10 +8426,55 @@ body.focus-mode .focus-exit{ display:flex; }
       default:           return () => true;
     }
   }
+  // Collections triées par score décroissant (les meilleures en tête)
+  const _SMART_RANKED = new Set(['trending','breaking','hidden_gems','growing','recommended','exclusive','signalStrong','multiSource']);
+  // Score d'un article pour un mode donné (plus haut = plus pertinent)
+  function _modeScore(a, mode, ctx){
+    const { now, ts } = ctx;
+    const pub = a.pubDate || 0;
+    const cov = _artCoverage(a, ts);
+    const fresh = Math.max(0, 1 - (now - pub) / (7 * 86400000)); // 0..1 sur 7 j
+    const seOn = window._SE && _SE.isActive && _SE.isActive();
+    const se = seOn ? _SE.score(a) : 0;
+    const qual = (a.summary || '').replace(/<[^>]+>/g, ' ').trim().length;
+    const mins = _readMins(a);
+    switch(mode){
+      // Tendances : volume de couverture × fraîcheur
+      case 'trending':    return cov * 100 + fresh * 60;
+      // Dernière heure : pure fraîcheur, pondérée par l'autorité (couverture)
+      case 'breaking':    return fresh * 200 + cov * 20;
+      // Pépites oubliées : qualité + lecture longue − popularité
+      case 'hidden_gems': return Math.min(qual, 400) / 4 + mins * 6 - cov * 25 + se * 30;
+      // En progression : couverture émergente × fraîcheur récente (48 h)
+      case 'growing':     return cov * 50 + Math.max(0, 1 - (now - pub) / 172800000) * 80;
+      // Pour vous : score d'affinité du moteur de scoring
+      case 'recommended': return se * 100 + fresh * 30;
+      // Sous les radars : qualité − popularité (exclusivité)
+      case 'exclusive':   return Math.min(qual, 400) / 5 + mins * 4 - cov * 30 + fresh * 20;
+      // Signal fort / sources multiples : couverture d'abord
+      case 'signalStrong':
+      case 'multiSource': return cov * 80 + fresh * 30;
+      default:            return pub / 1e10;
+    }
+  }
   function _smartApplyMode(arts, mode){
     if(!mode || mode === 'all') return arts;
-    const pred = _fltPredicate(mode, _fltContext());
-    return arts.filter(pred);
+    const ctx = _fltContext();
+    const pred = _fltPredicate(mode, ctx);
+    const out = arts.filter(pred);
+    if(_SMART_RANKED.has(mode)){
+      return out
+        .map(a => ({ a, s: _modeScore(a, mode, ctx) }))
+        .sort((x, y) => y.s - x.s)
+        .map(o => o.a);
+    }
+    return out;
+  }
+
+  // Tri par date — sauf si une collection intelligente impose son propre ranking
+  function _smartDateSort(arr){
+    if(_SMART_RANKED.has(_smartMode)) return arr;
+    return arr.sort((a, b) => (b.pubDate || 0) - (a.pubDate || 0));
   }
 
   // Filtre global appliqué par chaque vue (source > catégorie, + mode, empilés)
@@ -8481,7 +8526,9 @@ body.focus-mode .focus-exit{ display:flex; }
     const ms3days = _smartModeMs('3days');
     const msWeek  = _smartModeMs('week');
     const msMonth = _smartModeMs('month');
-    let unread = 0, today = 0, d3 = 0, week = 0, month = 0;
+    const ctx = _fltContext();
+    const now = ctx.now;
+    let unread = 0, today = 0, d3 = 0, week = 0, month = 0, trending = 0;
     for(const a of pool){
       const pub = a.pubDate || 0;
       if(window._RS && !window._RS.has(a.link)) unread++;
@@ -8489,8 +8536,9 @@ body.focus-mode .focus-exit{ display:flex; }
       if(pub >= ms3days) d3++;
       if(pub >= msWeek)  week++;
       if(pub >= msMonth) month++;
+      if(pub >= now - 86400000 && _artCoverage(a, ctx.ts) >= 2) trending++;
     }
-    return { all: pool.length, unread, today, '3days': d3, week, month };
+    return { all: pool.length, unread, today, '3days': d3, week, month, trending };
   }
 
   const _GRID_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.6"/><rect x="14" y="3" width="7" height="7" rx="1.6"/><rect x="3" y="14" width="7" height="7" rx="1.6"/><rect x="14" y="14" width="7" height="7" rx="1.6"/></svg>';
@@ -9579,7 +9627,7 @@ body.focus-mode .focus-exit{ display:flex; }
 
     // Filtrage éventuel par source (rail global)
     const pool    = _railApplyFilter(_allArticles);
-    const deduped = _dedup([...pool].sort((a,b)=>b.pubDate-a.pubDate));
+    const deduped = _dedup(_smartDateSort([...pool]));
     _editionArts  = deduped.slice(0, 60);
 
     // Jitter fix : ne re-rendre que si le contenu a changé
@@ -10464,7 +10512,7 @@ body.focus-mode .focus-exit{ display:flex; }
   function _renderGrille(){
     const wrap = document.getElementById('grilleGrid');
     if(!wrap) return;
-    const arts = typeof _allArticles !== 'undefined' ? _dedup(_railApplyFilter([..._allArticles]).sort((a,b)=>b.pubDate-a.pubDate)) : [];
+    const arts = typeof _allArticles !== 'undefined' ? _dedup(_smartDateSort(_railApplyFilter([..._allArticles]))) : [];
     _grilleArts = arts.slice(0,60);
     if(!_grilleArts.length){
       wrap.innerHTML = '<div style="grid-column:1/-1;padding:60px 0;text-align:center;color:var(--text-muted);font-size:14px;font-family:var(--font-inter)">Aucun article disponible</div>';
@@ -10675,7 +10723,7 @@ body.focus-mode .focus-exit{ display:flex; }
     const list = document.getElementById('seqList');
     if(!list) return;
     const arts = typeof _allArticles !== 'undefined'
-      ? _dedup(_railApplyFilter([..._allArticles]).sort((a,b)=>b.pubDate-a.pubDate))
+      ? _dedup(_smartDateSort(_railApplyFilter([..._allArticles])))
       : [];
     _seqArts = arts.slice(0, 100);
     if(!_seqArts.length){
@@ -10700,7 +10748,7 @@ body.focus-mode .focus-exit{ display:flex; }
   function _renderListe(){
     const wrap = document.getElementById('listeList');
     if(!wrap) return;
-    const arts = typeof _allArticles !== 'undefined' ? _dedup(_railApplyFilter([..._allArticles]).sort((a,b)=>b.pubDate-a.pubDate)) : [];
+    const arts = typeof _allArticles !== 'undefined' ? _dedup(_smartDateSort(_railApplyFilter([..._allArticles]))) : [];
     _listeArts = arts.slice(0, 100);
     if(!_listeArts.length){
       wrap.innerHTML = '<div style="padding:60px 0;text-align:center;color:var(--text-muted);font-size:14px;font-family:var(--font-inter)">Aucun article disponible</div>';
