@@ -2501,13 +2501,7 @@ button, .ob-btn, .ob-btn-ghost,
   transition:color .24s ease;
 }
 .sbar-seg-btn.active{ color:var(--bg); }
-.sbar-seg-n{
-  font-family:var(--font-inter); font-size:9.5px; font-weight:700; line-height:1;
-  padding:2px 5px; border-radius:999px; min-width:15px; text-align:center;
-  background:rgba(255,255,255,.1); color:var(--text-muted);
-  transition:background .24s ease, color .24s ease;
-}
-.sbar-seg-btn.active .sbar-seg-n{ background:rgba(0,0,0,.14); color:var(--bg); }
+/* (compteurs chiffrés du segment retirés — libellés seuls, charte « intelligence invisible ») */
 
 /* — Modes de lecture (déplacés dans le menu Affichage) — */
 
@@ -3967,13 +3961,11 @@ body.focus-mode .focus-exit{ display:flex; }
 [data-theme="light"] .sbar-srail-all.sel{ color:#fff; }
 /* Pastille non-lus sur un logo */
 .sbar-srail-dot{
-  position:absolute; top:-1px; right:-1px; z-index:2;
-  min-width:16px; height:16px; padding:0 4px; border-radius:999px;
-  background:var(--accent); color:#fff;
-  font-family:var(--font-inter); font-size:9px; font-weight:700; line-height:16px;
-  text-align:center; box-shadow:0 0 0 2px var(--bg);
+  position:absolute; top:1px; right:1px; z-index:2;
+  width:9px; height:9px; border-radius:50%;
+  background:var(--accent); box-shadow:0 0 0 2px var(--bg);
 }
-.sbar-srail-item.sel .sbar-srail-dot{ background:#fff; color:var(--accent); }
+.sbar-srail-item.sel .sbar-srail-dot{ background:#fff; }
 /* Étiquette de la source active sous le rail */
 .sbar-srail-label{
   display:block; text-align:center; min-height:15px;
@@ -4403,15 +4395,8 @@ body.focus-mode .focus-exit{ display:flex; }
               <a class="sub-link sub-link-sm qmenu-mode-item" data-qmode="week"         onclick="qmenuSetSmartMode('week')">Cette semaine</a>
               <a class="sub-link sub-link-sm qmenu-mode-item" data-qmode="month"        onclick="qmenuSetSmartMode('month')">Ce mois</a>
               <div class="qmenu-sub-section-label" style="margin-top:10px">Collections intelligentes</div>
-              <a class="sub-link sub-link-sm qmenu-mode-item" data-qmode="breaking"     onclick="qmenuSetSmartMode('breaking')">Dernière heure</a>
-              <a class="sub-link sub-link-sm qmenu-mode-item" data-qmode="hidden_gems"  onclick="qmenuSetSmartMode('hidden_gems')">Pépites oubliées</a>
-              <a class="sub-link sub-link-sm qmenu-mode-item" data-qmode="growing"      onclick="qmenuSetSmartMode('growing')">En progression</a>
               <a class="sub-link sub-link-sm qmenu-mode-item" data-qmode="recommended"  onclick="qmenuSetSmartMode('recommended')">Pour vous</a>
-              <a class="sub-link sub-link-sm qmenu-mode-item" data-qmode="exclusive"    onclick="qmenuSetSmartMode('exclusive')">Sous les radars</a>
-              <div class="qmenu-sub-section-label" style="margin-top:10px">Signal</div>
-              <a class="sub-link sub-link-sm qmenu-mode-item" data-qmode="signalStrong" onclick="qmenuSetSmartMode('signalStrong')">Signal fort</a>
-              <a class="sub-link sub-link-sm qmenu-mode-item" data-qmode="multiSource"  onclick="qmenuSetSmartMode('multiSource')">Sources multiples</a>
-              <a class="sub-link sub-link-sm qmenu-mode-item" data-qmode="quick5"       onclick="qmenuSetSmartMode('quick5')">À lire en 5 min</a>
+              <a class="sub-link sub-link-sm qmenu-mode-item" data-qmode="breaking"     onclick="qmenuSetSmartMode('breaking')">Dernière heure</a>
             </div>
           </div>
 
@@ -5193,9 +5178,9 @@ body.focus-mode .focus-exit{ display:flex; }
       <div id="smartBar" class="sbar" hidden>
         <div class="sbar-seg" id="sbarSeg">
           <span class="sbar-seg-pill" id="sbarSegPill" aria-hidden="true"></span>
-          <button class="sbar-seg-btn" type="button" data-mode="all">Tout <span class="sbar-seg-n"></span></button>
-          <button class="sbar-seg-btn" type="button" data-mode="unread">Non lus <span class="sbar-seg-n"></span></button>
-          <button class="sbar-seg-btn" type="button" data-mode="trending">Tendances <span class="sbar-seg-n"></span></button>
+          <button class="sbar-seg-btn" type="button" data-mode="all">Tout</button>
+          <button class="sbar-seg-btn" type="button" data-mode="unread">Non lus</button>
+          <button class="sbar-seg-btn" type="button" data-mode="trending">Tendances</button>
         </div>
         <div class="sbar-cats" id="sbarCats"></div>
         <div class="sbar-srcs-wrap" id="sbarSrcsWrap"><div class="sbar-srcs-inner">
@@ -8545,17 +8530,9 @@ body.focus-mode .focus-exit{ display:flex; }
       try{ localStorage.removeItem('bf_rail_filter'); }catch(e){}
     }
 
-    // Segment + compteurs (Tout / Non lus) + état du bouton Filtres
-    const counts = _smartCounts();
+    // Segment (Tout / Non lus / Tendances) — libellés seuls, sans compteurs chiffrés
     const seg = document.getElementById('sbarSeg');
-    if(seg){
-      seg.querySelectorAll('.sbar-seg-btn[data-mode]').forEach(btn => {
-        const m = btn.dataset.mode;
-        const nEl = btn.querySelector('.sbar-seg-n');
-        if(nEl){ const v = counts[m] || 0; nEl.textContent = v > 999 ? '999+' : v; }
-      });
-      _smartSyncSegment();
-    }
+    if(seg) _smartSyncSegment();
 
     // Onglets catégories — pilule glissante (mix-blend) ; « Tout » en tête
     const cats = document.getElementById('sbarCats');
@@ -8600,7 +8577,7 @@ body.focus-mode .focus-exit{ display:flex; }
           const inner = it.all
             ? _GRID_SVG
             : `<span class="savatar"><img src="${escAttr(getFavicon(it.url))}" alt="" onerror="this.style.opacity='.25'"></span>`;
-          const dot = (!it.all && it.unread) ? `<span class="sbar-srail-dot">${it.unread > 99 ? '99+' : it.unread}</span>` : '';
+          const dot = (!it.all && it.unread) ? `<span class="sbar-srail-dot"></span>` : '';
           const cls = 'sbar-srail-item' + (it.all ? ' sbar-srail-all' : '') + sel;
           return `<button class="${cls}" type="button" data-url="${escAttr(it.url)}" title="${escAttr(it.name)}">${inner}${dot}</button>`;
         }).join('');
