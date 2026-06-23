@@ -79,7 +79,7 @@ Vue active persistée dans `localStorage('bf_view')`, défaut : `'editions'`.
 - **"Le brief du jour"** : digest par clustering Jaccard
 - **Scoring engine** : `_SE` IIFE — IndexedDB `bf_scoring_v1` (sourceAffinity, topicWeights, manualBoosts)
 - **Read state** : `window._RS` Set<url> — IndexedDB pour la persistance
-- **Podcast — lecteur unifié** : bouton `.sbar-podcast` (haut de la Smart Bar) → page `#podListenPage` (`openPodListen`). Deux sections : épisodes audio (`audioUrl`) + « Lire à voix haute » (articles via SpeechSynthesis TTS fr-FR). Mini-player commun route audio/TTS (`_plMode`) : `#plAudio`, seek, play/pause, ±15 s. Distinct de `#podcastPage` (galerie découverte/abonnement)
+- **Podcast — page unifiée (Apple + éditorial)** : bouton `.sbar-podcast` (Smart Bar) = **seule entrée** → `#podListenPage` (`openPodListen`). Grand titre `.pl-bigtitle` (DM Serif) ; hero « À la une » ; carrousel `.pl-rail`/`.pl-card` « Nouveaux épisodes » (vignettes carrées 150px façon Apple) ; liste « Lire à voix haute » (articles via SpeechSynthesis TTS fr-FR) ; bloc `.pl-discover` → galerie `#podcastPage` (`openPodcast`, **retirée du menu latéral**). Mini-player commun route audio/TTS (`_plMode`) : `#plAudio`, seek, play/pause, ±15 s. Fns : `_plBuild`/`_plRailCard`/`_plEpCard`/`_plDiscoverBtn`/`_plPlay`/`_plPlayTTS`/`_plSyncPlaying`.
 - **Écriture localStorage tolérante au quota** : `window._safeSet(key,val)` purge les caches `bf_fc_*` (régénérables) puis réessaie — protège `reader.folders`/`reader.feedMeta` (sinon dossiers/flux perdus au redémarrage quand le quota est saturé)
 - **Saisie fiable** : `window._bfPrompt(title, def)` (modal `#bfpOverlay`) remplace `prompt()` (neutralisé en PWA standalone iOS) — utilisé par `createFolder`/`renameFolder`
 
@@ -120,6 +120,7 @@ let _srcsOpen      = false;  // rail des sources à la demande (replié par déf
 ### Statut exact
 
 - **Dernière chose faite :**
+  - **Refonte page Podcast** (`176cd7c`) : choix utilisateur = mix Apple Podcasts + éditorial, **une seule page via la Smart Bar**. Grand titre DM Serif, hero, carrousel de vignettes « Nouveaux épisodes », liste TTS « Lire à voix haute », bloc « Découvrir » vers la galerie. Entrée Podcasts retirée du menu latéral.
   - Lot multi-tâches (`1998c33`→`a30d645`) :
     - **Bug « redémarre à l'ajout, dossiers/flux perdus »** : cause = quota localStorage saturé (`persist()` avalait l'échec) → `_safeSet` (purge `bf_fc_*` + réessai) (`2063824`). Le crash mémoire lui-même reste un sujet ouvert, mais les données ne sont plus perdues.
     - **Page Podcast — lecteur unifié** : bouton Smart Bar + `#podListenPage` + mini-player ; audio (podcasts) **et** lecture vocale TTS des articles (`98152ef`, `a30d645`). Voir Composants.
