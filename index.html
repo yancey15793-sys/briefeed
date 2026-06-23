@@ -5185,6 +5185,10 @@ body.focus-mode .focus-exit{ display:flex; }
 
       <!-- Smart Bar — segment intelligent + catégories (tiret animé) + sources (accordéon) -->
       <div id="smartBar" class="sbar" hidden>
+        <button class="sbar-podcast" id="sbarPodcastBtn" type="button" onclick="openPodListen()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 14v-2a9 9 0 0 1 18 0v2"/><rect x="2.5" y="13" width="4.5" height="8" rx="2"/><rect x="17" y="13" width="4.5" height="8" rx="2"/></svg>
+          <span>Podcast</span>
+        </button>
         <div class="sbar-seg" id="sbarSeg">
           <span class="sbar-seg-pill" id="sbarSegPill" aria-hidden="true"></span>
           <button class="sbar-seg-btn" type="button" data-mode="all">Tout</button>
@@ -7764,6 +7768,108 @@ body.focus-mode .focus-exit{ display:flex; }
   window.closePodcast = closePodcast;
   document.getElementById('podcastBack').addEventListener('click', closePodcast);
   // (Escape géré centralement par closeTopLayer)
+
+  // ── PODCAST — lecteur d'épisodes audio (articles avec audioUrl) ──
+  let _plCur = null;                       // lien de l'épisode en cours
+  const _plAudioEl = ()=> document.getElementById('plAudio');
+  function _plEpisodes(){ return (_allArticles||[]).filter(a=>a && a.audioUrl).slice(0,80); }
+  function _plArtCss(a){ return a.imageUrl ? `background-image:url('${String(a.imageUrl).replace(/'/g,"\\'")}')` : `background:linear-gradient(135deg,rgba(10,132,255,.3),rgba(12,242,230,.15))`; }
+  function openPodListen(){
+    if(typeof closeSB==='function') closeSB();
+    _plBuild();
+    const p=document.getElementById('podListenPage'); if(!p) return;
+    p.classList.add('open'); p.setAttribute('aria-hidden','false');
+    if(typeof lockScroll==='function') lockScroll();
+    if(typeof navArm==='function') navArm();
+  }
+  function closePodListen(){
+    const p=document.getElementById('podListenPage');
+    if(!p || !p.classList.contains('open')) return;
+    p.classList.remove('open'); p.setAttribute('aria-hidden','true');
+    if(typeof unlockScroll==='function') unlockScroll();
+  }
+  window.openPodListen = openPodListen;
+  window.closePodListen = closePodListen;
+
+  function _plBuild(){
+    const body=document.getElementById('plBody'); if(!body) return;
+    const eps=_plEpisodes();
+    if(!eps.length){
+      body.innerHTML = `<div class="pl-empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14v-2a9 9 0 0 1 18 0v2"/><rect x="2.5" y="13" width="4.5" height="8" rx="2"/><rect x="17" y="13" width="4.5" height="8" rx="2"/></svg>
+        <div class="pl-empty-t">Aucun épisode pour l'instant</div>
+        <div class="pl-empty-d">Abonnez-vous à des podcasts (flux audio) pour écouter leurs épisodes ici.</div>
+        <button class="pl-empty-btn" onclick="closePodListen();if(window.openPodcast)openPodcast();">Découvrir des podcasts</button>
+      </div>`;
+      return;
+    }
+    const hero=eps[0], rest=eps.slice(1);
+    let html = `<div class="pl-hero">
+      <div class="pl-hero-art" style="${_plArtCss(hero)}"></div>
+      <div class="pl-hero-kicker">À la une</div>
+      <div class="pl-hero-title">${escHtml(hero.title||'')}</div>
+      <div class="pl-hero-src">${escHtml(hero.source||'')} · ${relTime(hero.pubDate)}</div>
+      <button class="pl-hero-play" onclick="_plPlay('${String(hero.link||'').replace(/'/g,"\\'")}')"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Écouter</button>
+    </div>`;
+    html += `<div class="pl-sec-title">Épisodes récents</div><div class="pl-list">`;
+    html += rest.map(a=>{
+      const dur = a.audioDuration ? ' · '+escHtml(String(a.audioDuration)) : '';
+      return `<div class="pl-ep" data-link="${escAttr(a.link)}" onclick="_plPlay('${String(a.link||'').replace(/'/g,"\\'")}')">
+        <div class="pl-ep-art" style="${_plArtCss(a)}"></div>
+        <div class="pl-ep-body">
+          <div class="pl-ep-title">${escHtml(a.title||'')}</div>
+          <div class="pl-ep-meta">${escHtml(a.source||'')} · ${relTime(a.pubDate)}${dur}</div>
+        </div>
+        <button class="pl-ep-play" aria-label="Lecture"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+      </div>`;
+    }).join('') + `</div>`;
+    body.innerHTML = html;
+    _plSyncPlaying();
+  }
+
+  function _plPlay(link){
+    const a=_plEpisodes().find(x=>x.link===link);
+    if(!a || !a.audioUrl) return;
+    const au=_plAudioEl(); if(!au) return;
+    if(_plCur===link){ _plToggle(); return; }
+    _plCur=link;
+    au.src=a.audioUrl; au.play().catch(()=>{});
+    const pp=document.getElementById('plPlayer'); if(pp) pp.hidden=false;
+    const art=document.getElementById('plPpArt'); if(art) art.style.cssText=_plArtCss(a);
+    const t=document.getElementById('plPpTitle'); if(t) t.textContent=a.title||'';
+    const s=document.getElementById('plPpSrc'); if(s) s.textContent=a.source||'';
+    _plSetIcon(true); _plSyncPlaying();
+  }
+  function _plToggle(){
+    const au=_plAudioEl(); if(!au || !au.src) return;
+    if(au.paused){ au.play().catch(()=>{}); } else { au.pause(); }
+  }
+  function _plSetIcon(playing){
+    const ic=document.getElementById('plPlayIcon'); if(!ic) return;
+    ic.innerHTML = playing ? '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>' : '<path d="M8 5v14l11-7z"/>';
+  }
+  function _plSyncPlaying(){
+    const playing = !!_plCur && _plAudioEl() && !_plAudioEl().paused;
+    document.querySelectorAll('#plBody .pl-ep').forEach(el=>el.classList.toggle('playing', el.dataset.link===_plCur));
+    return playing;
+  }
+  window._plPlay = _plPlay;
+
+  (function _plWire(){
+    const back=document.getElementById('plBack'); if(back) back.addEventListener('click', closePodListen);
+    const playBtn=document.getElementById('plPlayBtn'); if(playBtn) playBtn.addEventListener('click', _plToggle);
+    const b15=document.getElementById('plBack15'); if(b15) b15.addEventListener('click', ()=>{ const a=_plAudioEl(); if(a) a.currentTime=Math.max(0,a.currentTime-15); });
+    const f15=document.getElementById('plFwd15'); if(f15) f15.addEventListener('click', ()=>{ const a=_plAudioEl(); if(a) a.currentTime=Math.min(a.duration||1e9,a.currentTime+15); });
+    const bar=document.getElementById('plPpBar');
+    if(bar) bar.addEventListener('click', (e)=>{ const a=_plAudioEl(); if(!a||!a.duration) return; const r=bar.getBoundingClientRect(); a.currentTime=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))*a.duration; });
+    const au=_plAudioEl();
+    if(au){
+      au.addEventListener('timeupdate', ()=>{ const p=document.getElementById('plPpProg'); if(p&&au.duration) p.style.width=(au.currentTime/au.duration*100)+'%'; });
+      au.addEventListener('play',  ()=>{ _plSetIcon(true);  _plSyncPlaying(); });
+      au.addEventListener('pause', ()=>{ _plSetIcon(false); _plSyncPlaying(); });
+      au.addEventListener('ended', ()=>{ _plSetIcon(false); });
+    }
+  })();
 
   // ═══════════════════════════════════════════════════════════════
   //  MOTEUR RSS — IDB + 12 proxies + parse + score + render
@@ -11292,7 +11398,7 @@ body.focus-mode .focus-exit{ display:flex; }
       const modal=document.getElementById('artModal');
       if(modal&&modal.style.display==='flex') return false;
       // Pages plein écran ouvertes ?
-      for(const id of ['folderPage','feedPage','discoverPage','podcastPage','prefsPage','bfListPage']){
+      for(const id of ['folderPage','feedPage','discoverPage','podcastPage','podListenPage','prefsPage','bfListPage']){
         const el=document.getElementById(id);
         if(el && el.classList.contains('open')) return false;
       }
@@ -11478,6 +11584,86 @@ body.focus-mode .focus-exit{ display:flex; }
   }
 
 </script>
+  <!-- ═══════════════════════════════════════════════════════════
+       PODCAST — Lecteur d'épisodes audio
+       ═══════════════════════════════════════════════════════════ -->
+  <style>
+    .pl-page{ position:fixed; inset:0; z-index:320; background:var(--bg); display:flex; flex-direction:column;
+      opacity:0; visibility:hidden; transform:translateY(16px) scale(.992);
+      transition:opacity .4s ease, transform .55s cubic-bezier(.16,1,.3,1), visibility .4s ease; }
+    .pl-page.open{ opacity:1; visibility:visible; transform:none; }
+    .pl-topbar{ flex:none; display:flex; align-items:center; gap:10px; padding:max(14px,env(safe-area-inset-top)) 16px 10px; }
+    .pl-back{ width:34px; height:34px; border-radius:50%; border:none; background:rgba(127,127,127,.14); color:var(--text); display:flex; align-items:center; justify-content:center; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+    .pl-back svg{ width:20px; height:20px; }
+    .pl-title{ font-family:var(--font-inter); font-size:19px; font-weight:800; letter-spacing:-.02em; color:var(--text); }
+    .pl-body{ flex:1; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:6px 16px 132px; scrollbar-width:none; }
+    .pl-body::-webkit-scrollbar{ display:none; }
+    .pl-hero{ position:relative; border-radius:22px; overflow:hidden; margin-bottom:22px; padding:20px;
+      background:linear-gradient(160deg, rgba(10,132,255,.22), rgba(12,242,230,.10)); border:1px solid rgba(255,255,255,.06); }
+    .pl-hero-art{ width:118px; height:118px; border-radius:16px; background:#111 center/cover no-repeat; box-shadow:0 12px 30px rgba(0,0,0,.4); margin-bottom:14px; }
+    .pl-hero-kicker{ font-family:var(--font-inter); font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--accent); margin-bottom:6px; }
+    .pl-hero-title{ font-family:var(--font-title); font-size:22px; font-weight:700; line-height:1.2; color:var(--text); margin-bottom:8px; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+    .pl-hero-src{ font-family:var(--font-inter); font-size:13px; color:var(--text-muted); margin-bottom:16px; }
+    .pl-hero-play{ display:inline-flex; align-items:center; gap:8px; border:none; border-radius:999px; background:var(--text); color:var(--bg); font-family:var(--font-inter); font-size:14px; font-weight:700; padding:11px 20px; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+    .pl-hero-play svg{ width:16px; height:16px; }
+    .pl-sec-title{ font-family:var(--font-inter); font-size:13px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; color:var(--text-muted); margin:0 2px 12px; }
+    .pl-ep{ display:flex; gap:13px; align-items:center; padding:11px 0; border-top:1px solid var(--border); cursor:pointer; }
+    .pl-ep:first-child{ border-top:none; }
+    .pl-ep-art{ width:58px; height:58px; flex:none; border-radius:12px; background:#111 center/cover no-repeat; box-shadow:0 3px 10px rgba(0,0,0,.25); }
+    .pl-ep-body{ flex:1; min-width:0; }
+    .pl-ep-title{ font-family:var(--font-inter); font-size:14.5px; font-weight:700; letter-spacing:-.01em; color:var(--text); line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-bottom:4px; }
+    .pl-ep-meta{ font-family:var(--font-inter); font-size:11.5px; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .pl-ep-play{ width:38px; height:38px; flex:none; border-radius:50%; border:1.5px solid var(--border); background:transparent; color:var(--text); display:flex; align-items:center; justify-content:center; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+    .pl-ep-play svg{ width:16px; height:16px; }
+    .pl-ep.playing .pl-ep-play{ background:var(--accent); border-color:var(--accent); color:#fff; }
+    .pl-ep.playing .pl-ep-title{ color:var(--accent); }
+    .pl-empty{ text-align:center; padding:70px 20px; color:var(--text-muted); }
+    .pl-empty svg{ width:78px; height:78px; opacity:.35; margin-bottom:14px; }
+    .pl-empty-t{ font-family:var(--font-inter); font-size:16px; font-weight:700; color:var(--text); margin-bottom:6px; }
+    .pl-empty-d{ font-family:var(--font-inter); font-size:13.5px; line-height:1.5; max-width:280px; margin:0 auto 18px; }
+    .pl-empty-btn{ border:none; border-radius:999px; background:var(--accent); color:#fff; font-family:var(--font-inter); font-size:14px; font-weight:700; padding:11px 22px; cursor:pointer; }
+    .pl-player{ position:absolute; left:12px; right:12px; bottom:max(14px,env(safe-area-inset-bottom)); z-index:5; display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:18px; background:rgba(28,28,30,.86); -webkit-backdrop-filter:blur(22px) saturate(180%); backdrop-filter:blur(22px) saturate(180%); border:1px solid rgba(255,255,255,.1); box-shadow:0 16px 40px rgba(0,0,0,.5); }
+    [data-theme="light"] .pl-player{ background:rgba(255,255,255,.82); border-color:rgba(0,0,0,.08); }
+    .pl-player[hidden]{ display:none; }
+    .pl-pp-art{ width:46px; height:46px; flex:none; border-radius:10px; background:#111 center/cover no-repeat; }
+    .pl-pp-meta{ flex:1; min-width:0; }
+    .pl-pp-title{ font-family:var(--font-inter); font-size:13px; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .pl-pp-src{ font-family:var(--font-inter); font-size:11px; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:5px; }
+    .pl-pp-bar{ height:4px; border-radius:2px; background:rgba(127,127,127,.3); cursor:pointer; position:relative; }
+    .pl-pp-prog{ position:absolute; left:0; top:0; bottom:0; width:0; border-radius:2px; background:var(--accent); }
+    .pl-pp-btn{ flex:none; border:none; background:none; color:var(--text); cursor:pointer; display:flex; align-items:center; justify-content:center; padding:4px; -webkit-tap-highlight-color:transparent; }
+    .pl-pp-play{ width:42px; height:42px; border-radius:50%; background:var(--text); color:var(--bg); }
+    .pl-pp-play svg{ width:20px; height:20px; }
+    .pl-pp-skip{ font-family:var(--font-inter); font-size:10px; font-weight:800; color:var(--text-muted); width:30px; }
+    /* Bouton Podcast de la Smart Bar */
+    .sbar-podcast{ align-self:center; display:inline-flex; align-items:center; gap:7px; border:1px solid var(--border);
+      background:rgba(255,255,255,.05); color:var(--text); border-radius:999px; padding:7px 15px 7px 13px;
+      font-family:var(--font-inter); font-size:12.5px; font-weight:700; letter-spacing:-.01em; cursor:pointer;
+      -webkit-tap-highlight-color:transparent; transition:transform .12s ease, background .2s ease; }
+    .sbar-podcast:active{ transform:scale(.95); }
+    .sbar-podcast svg{ width:16px; height:16px; }
+    [data-theme="light"] .sbar-podcast{ background:rgba(0,0,0,.04); border-color:rgba(0,0,0,.09); }
+  </style>
+  <div class="pl-page" id="podListenPage" aria-hidden="true">
+    <div class="pl-topbar">
+      <button class="pl-back" id="plBack" aria-label="Fermer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <span class="pl-title">Podcast</span>
+    </div>
+    <div class="pl-body" id="plBody"></div>
+    <div class="pl-player" id="plPlayer" hidden>
+      <div class="pl-pp-art" id="plPpArt"></div>
+      <div class="pl-pp-meta">
+        <div class="pl-pp-title" id="plPpTitle"></div>
+        <div class="pl-pp-src" id="plPpSrc"></div>
+        <div class="pl-pp-bar" id="plPpBar"><div class="pl-pp-prog" id="plPpProg"></div></div>
+      </div>
+      <button class="pl-pp-btn pl-pp-skip" id="plBack15" aria-label="Reculer 15 secondes">&minus;15</button>
+      <button class="pl-pp-btn pl-pp-play" id="plPlayBtn" aria-label="Lecture / Pause"><svg id="plPlayIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+      <button class="pl-pp-btn pl-pp-skip" id="plFwd15" aria-label="Avancer 15 secondes">+15</button>
+    </div>
+    <audio id="plAudio" preload="none"></audio>
+  </div>
+
   <!-- Boîte de saisie fiable (remplace prompt(), bloqué en PWA standalone iOS) -->
   <style>
     .bfp-overlay{ position:fixed; inset:0; z-index:9200; display:none; align-items:center; justify-content:center;
