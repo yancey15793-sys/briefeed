@@ -2047,6 +2047,8 @@ button, .ob-btn, .ob-btn-ghost,
 }
 [data-theme="light"] .seq-num{
   background-image:linear-gradient(180deg, rgba(0,0,0,.62) 0%, rgba(0,0,0,.3) 100%);
+  -webkit-background-clip:text; background-clip:text;
+  -webkit-text-fill-color:transparent;
 }
 .seq-item.is-read{ opacity:.42; }
 .seq-item.is-read .seq-title{ font-weight:600; color:var(--text-muted); }
@@ -8734,6 +8736,10 @@ body.focus-mode .focus-exit{ display:flex; }
       const it = e.target.closest('.sbar-srail-item');
       if(it) _smartPickSource(it.dataset.url || '');
     });
+    // Recalcule les pilules une fois la police Inter chargée (évite un décalage de taille au FOUT)
+    if(document.fonts && document.fonts.ready){
+      document.fonts.ready.then(()=>{ _smartMoveCatPill(); _smartMovePill(false); });
+    }
   }
 
   // ── Fenêtre Sources « style Sunday » ─────────────────────────────
