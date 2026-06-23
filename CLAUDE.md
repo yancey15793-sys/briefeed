@@ -13,6 +13,26 @@ Direction : éditorial, premium, dark-mode natif, interface française.
 
 **Nom du projet : "Briefeed"** — B majuscule, "feed" attaché, jamais "BrieFeed" ni "BRIEFEED".
 
+## ⭐ Vision produit — principe directeur (À RESPECTER avant toute décision)
+
+Briefeed reste avant tout un **lecteur de flux RSS élégant, rapide et minimaliste**. L'objectif n'est PAS d'en faire une plateforme d'analyse complexe ni un tableau de bord surchargé de données. L'utilisateur doit toujours avoir l'impression de **simplement consulter ses actualités**, sans être confronté à la complexité du moteur qui organise l'information. **L'intelligence doit être invisible.**
+
+- Chaque amélioration doit **réduire la charge cognitive**, jamais l'augmenter. Toute fonctionnalité ajoutant panneaux, métriques, graphiques, statistiques ou niveaux de navigation doit être remise en question.
+- Les **articles** demeurent l'élément central. Les algorithmes servent uniquement à améliorer leur présentation, leur ordre et leur découverte.
+- Collections existantes (Tendances, Pépites oubliées, Dernière heure, En progression, Pour vous) : les rendre **plus intelligentes sans changer leur apparence ni leur rôle** — leur simplicité visuelle est préservée.
+- **Regroupement par sujet discret** : ne jamais mettre en avant la notion de cluster / événement / agrégation. Quand un sujet est couvert par plusieurs médias, l'utilisateur perçoit simplement qu'il existe d'autres sources s'il souhaite approfondir.
+- Privilégier **clarté, espace, calme visuel, rapidité de lecture**. Chaque écran doit sembler plus léger que la concurrence. S'inspirer d'**Apple News**, du journalisme premium et du design éditorial — pas des plateformes d'analyse de données.
+
+**Réduire le bruit** : moins de doublons · moins de décisions · moins de navigation · moins d'éléments visuels concurrents.
+**Augmenter la valeur perçue** : meilleurs articles · meilleures priorités · meilleures découvertes · meilleure compréhension de l'actualité.
+
+Le produit doit donner l'impression d'un **rédacteur en chef personnel** qui organise silencieusement l'information — pas d'une IA qui cherche à démontrer sa puissance.
+
+- Fonctionnalité impressionnante mais à **complexité visible → rejetée**.
+- Fonctionnalité presque **invisible mais qui améliore fortement la lecture → privilégiée**.
+
+Succès mesuré non par le nombre de fonctionnalités visibles, mais par la sensation que l'utilisateur **trouve systématiquement l'information importante avec moins d'effort que partout ailleurs**.
+
 ## Stack & architecture
 
 - Fichier unique `index.html` (HTML/CSS/JS inline) — pas de build step
@@ -139,7 +159,7 @@ let _railInstant   = false;  // true → bypass rAF + .reveal pour filtre instan
 6. **Communication** : prose concise, sans emojis. SVG autorisé pour les icônes/illustrations.
 7. **Langue** : travail et échanges en français.
 8. **Nom du projet** : toujours "Briefeed" — jamais "BrieFeed" ni "BRIEFEED".
-9. **Philosophie** : mono-fichier, minimal, premium dark UI.
+9. **Philosophie** : mono-fichier, minimal, premium dark UI. Toute décision produit/UI se mesure d'abord à la **Vision produit** (en tête du fichier) — dans le doute, **simplifier** (réduire le bruit, préserver le calme visuel ; l'intelligence reste invisible).
 
 ---
 
