@@ -73,7 +73,7 @@ Vue active persistée dans `localStorage('bf_view')`, défaut : `'editions'`.
 
 ## Composants notables déjà construits
 
-- **Smart Bar** : `#smartBar.sbar` — segment (Tout/Non lus/Tendances) + catégories pilule pleine ; rail de sources **à la demande** (re-tap onglet actif) ; voir section EN COURS
+- **Smart Bar** : `#smartBar.sbar` — segment (Tout/Non lus/Tendances) + catégories pilule pleine ; rail de sources **à la demande** via bouton dédié `#sbarSrcsBtn` ; voir section EN COURS
 - **Menu morph** : `#qmenu.morph-menu` — bouton 3-points → panneau verre 320×540, 5 accordéons, persistance localStorage
 - **Sidebar** : accordéons style Apple, effet focus-dim en cascade
 - **"Le brief du jour"** : digest par clustering Jaccard
@@ -90,8 +90,8 @@ Composant à 3 niveaux empilés :
 
 ```
 #sbarSeg      — segment (Tout / Non lus / Tendances, sans compteurs), pastille glissante
-#sbarCats     — onglets dossiers (pilule pleine `.sbar-cat-pill`, texte actif inversé, « Tout » en tête + chevron indice)
-#sbarSrcsWrap — rail sources « à la demande » : replié par défaut, ouvert au re-tap de l'onglet actif (accordéon grid-rows) → #sbarSrcs
+#sbarCats     — onglets dossiers (pilule pleine `.sbar-cat-pill`, texte actif inversé, « Tout » en tête), en rangée `.sbar-cats-row` avec le bouton sources à droite
+#sbarSrcsWrap — rail sources « à la demande » : replié par défaut, ouvert via le bouton `#sbarSrcsBtn` (accordéon grid-rows) → #sbarSrcs
 ```
 
 **État global :**
@@ -117,6 +117,7 @@ let _srcsOpen      = false;  // rail des sources à la demande (replié par déf
 ### Statut exact
 
 - **Dernière chose faite :**
+  - Menu allégé + déclencheur sources (`334cc13`) : retrait du tri (Date/Source/Pertinence) — l'accordéon devient « FILTRES », tri par date par défaut. Le rail de sources s'ouvre désormais via un **bouton dédié** `#sbarSrcsBtn` (icône logos) à droite des chips ; re-tap/chevron abandonnés (peu découvrables).
   - Passe « charte » — réduction du bruit (`e787ada`, `044c471`) :
     - Segment sans compteurs chiffrés ; pastilles non-lus des logos → simple point discret ; menu resserré aux collections fortes (Pour vous, Dernière heure ; Tendances reste dans le segment) — les autres modes (Pépites, En progression, Sous les radars, Signal fort, Sources multiples, À lire en 5 min) restent calculés en coulisse, juste plus exposés.
     - Rail de sources **à la demande** : replié par défaut, ouvert au re-tap de l'onglet actif (`_smartSetSrcsOpen`/`_smartToggleSrcs`), chevron indice sur l'onglet actif ; `_smartRevealSrcs` retiré.
