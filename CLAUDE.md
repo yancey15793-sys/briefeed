@@ -79,6 +79,8 @@ Vue active persistée dans `localStorage('bf_view')`, défaut : `'editions'`.
 - **"Le brief du jour"** : digest par clustering Jaccard
 - **Scoring engine** : `_SE` IIFE — IndexedDB `bf_scoring_v1` (sourceAffinity, topicWeights, manualBoosts)
 - **Read state** : `window._RS` Set<url> — IndexedDB pour la persistance
+- **Podcast — lecteur** : bouton `.sbar-podcast` (haut de la Smart Bar) → page `#podListenPage` (`openPodListen`) ; liste des épisodes audio (`_allArticles` avec `audioUrl`) + mini-player sticky (`#plAudio`, seek, play/pause, ±15 s). Distinct de `#podcastPage` (galerie découverte/abonnement)
+- **Saisie fiable** : `window._bfPrompt(title, def)` (modal `#bfpOverlay`) remplace `prompt()` (neutralisé en PWA standalone iOS) — utilisé par `createFolder`/`renameFolder`
 
 ---
 
@@ -117,6 +119,12 @@ let _srcsOpen      = false;  // rail des sources à la demande (replié par déf
 ### Statut exact
 
 - **Dernière chose faite :**
+  - Lot multi-tâches (`1998c33`→`98152ef`) :
+    - **Page Podcast** (lecteur d'épisodes audio) : bouton Smart Bar + `#podListenPage` + mini-player. Voir Composants.
+    - **Vue Tendances** rendue en **séquentiel** (corps + numérotation) ; ranking trending préservé (`_smartDateSort` no-op sur modes rankés).
+    - **Doublon « Tout »** retiré des chips (le segment garde le sien) ; re-tap sur le dossier actif revient à toutes catégories.
+    - **Logos** : `getFavicon` passe de Google s2 à **DuckDuckGo icons** (vrais logos, ex. L'Équipe) + cache SW.
+    - **Bug création dossier** : `prompt()` neutralisé en PWA standalone iOS → modal `_bfPrompt`. (Probablement débloque aussi l'ajout de flux — à reconfirmer.)
   - Menu allégé + déclencheur sources (`334cc13`) : retrait du tri (Date/Source/Pertinence) — l'accordéon devient « FILTRES », tri par date par défaut. Le rail de sources s'ouvre désormais via un **bouton dédié** `#sbarSrcsBtn` (icône logos) à droite des chips ; re-tap/chevron abandonnés (peu découvrables).
   - Passe « charte » — réduction du bruit (`e787ada`, `044c471`) :
     - Segment sans compteurs chiffrés ; pastilles non-lus des logos → simple point discret ; menu resserré aux collections fortes (Pour vous, Dernière heure ; Tendances reste dans le segment) — les autres modes (Pépites, En progression, Sous les radars, Signal fort, Sources multiples, À lire en 5 min) restent calculés en coulisse, juste plus exposés.
