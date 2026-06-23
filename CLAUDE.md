@@ -29,8 +29,8 @@ Direction : éditorial, premium, dark-mode natif, interface française.
 
 - Fonds : `#000` / `#07090b`
 - Accent : **Apple blue** `#0a84ff` (dark) / `#0071e3` (light)
-- Sélecteur du rail de logos flottants (blob `.sbar-srail-blob` + halo `.sbar-srail-item.sel`) : **cyan** `#0cf2e6` (dark + light)
-- Chips de catégorie (`.sbar-cat`) : pilule blanche glissante `.sbar-cat-pill` en `mix-blend-mode:difference` (texte inversé en négatif) + fondu latéral au scroll
+- Sélecteur du rail de logos flottants : blob `.sbar-srail-blob` **cyan** `#0cf2e6` + anneau de l'item actif `.sbar-srail-item.sel` (gap couleur fond + ring `#0cf2e6` + glow), dark/light
+- Chips de catégorie (`.sbar-cat`) : pilule **pleine** glissante `.sbar-cat-pill` (`background:var(--text)`, sous le texte) ; texte actif inversé `var(--bg)` — rendu net en sombre comme en clair, + fondu latéral. Texte 12,5px
 - Nav bar du bas — item actif : **blanc** `#fff` en dark (avant bleu `#0091FF`) ; mode clair inchangé (`#0088FF`)
 - Typo : Inter (UI), DM Serif Display (titres éditoriaux), Oswald 700 uppercase (noms de dossiers)
 - Spring easing : `cubic-bezier(.34,1.56,.64,1)` · Pill segment : `cubic-bezier(.34,1.4,.64,1)`
@@ -70,7 +70,7 @@ Composant à 3 niveaux empilés :
 
 ```
 #sbarSeg      — segment scrollable horizontal (6 modes, pastille glissante springée)
-#sbarCats     — onglets dossiers (pilule blanche `.sbar-cat-pill` en mix-blend difference, « Tout » en tête)
+#sbarCats     — onglets dossiers (pilule pleine glissante `.sbar-cat-pill`, texte actif inversé, « Tout » en tête)
 #sbarSrcsWrap — accordéon CSS (grid-rows 0fr→1fr) → #sbarSrcs
 ```
 
@@ -96,9 +96,12 @@ let _railInstant   = false;  // true → bypass rAF + .reveal pour filtre instan
 ### Statut exact
 
 - **Dernière chose faite :**
-  - Chips de catégorie redessinées : pilule blanche glissante `.sbar-cat-pill` en `mix-blend-mode:difference` (texte inversé en négatif), positionnée en JS via `_smartMoveCatPill` (garde de signature `#sbarCats` pour glissement animé), + fondu latéral ; nav bar item actif passé du bleu `#0091FF` au blanc. Adaptation Safari : ni `anchor()` ni `scroll-timeline` (`87c7ad0`)
-  - Couleur du sélecteur des logos flottants → cyan `#0cf2e6` (blob + halo, dark/light) (`6addd6c`)
-  - Allègement du `MutationObserver` des carrousels Browse : `childList` + debounce rAF au lieu d'observer tous les changements de classe du `document.body` — même init, charge CPU continue fortement réduite (`ccb52c1`)
+  - Smart Bar — affinements (`c43dbe1`, `1056c96`) :
+    - Chips de catégorie : **pilule pleine** glissante `.sbar-cat-pill` (`var(--text)` sous le texte, texte actif inversé `var(--bg)`) — abandon du `mix-blend difference` qui rendait une pilule noire en mode clair ; rendu net dans les deux thèmes. Positionnée en JS (`_smartMoveCatPill`), garde de signature `#sbarCats` pour glissement animé.
+    - Tailles de texte réduites : chips 12,5px · segment 11px (hauteur 30) · étiquette source 10px.
+    - Sélecteur des logos : anneau cyan (gap + ring `#0cf2e6` + glow), uniforme avatars + pastille « Toutes ».
+    - Fix : numérotation `.seq-num` invisible en mode clair — la surcharge `[data-theme=light]` redéclarait `background:` (raccourci) qui réinitialise `background-clip` à `border-box` → passage à `background-image:`.
+  - Plus tôt : nav bar item actif bleu `#0091FF` → blanc (`87c7ad0`) · sélecteur logos cyan `#0cf2e6` (`6addd6c`) · allègement du `MutationObserver` des carrousels Browse (`childList` + debounce rAF) (`ccb52c1`)
 - **Bloquant actuel / bug en cours — « l'app redémarre toute seule » (iPhone) :**
   - Symptôme rapporté : rechargement spontané, aléatoire, surtout *en revenant sur l'app*, présent depuis longtemps (pas une régression récente).
   - Diagnostic : **aucun `location.reload()` dans le code** → c'est iOS/WebKit qui recharge la WebView (crash mémoire ou purge de l'app en arrière-plan). Vues bornées (60–100 cartes), pas de fuite DOM ni de boucle. Facteur restant = **empreinte mémoire GPU** (verre `backdrop-filter` ×45, filtre SVG `#srailGoo` permanent sur le rail).
