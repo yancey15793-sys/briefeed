@@ -2509,7 +2509,7 @@ button, .ob-btn, .ob-btn-ghost,
 .sbar-cats{
   position:relative;
   display:flex; gap:2px; overflow-x:auto; padding:4px;
-  width:100%;
+  flex:1 1 auto; min-width:0;
   scrollbar-width:none; -ms-overflow-style:none; -webkit-overflow-scrolling:touch;
   scroll-snap-type:x proximity;
   /* Fondu latéral aux deux bords */
@@ -2528,14 +2528,19 @@ button, .ob-btn, .ob-btn-ghost,
   color:var(--text); white-space:nowrap; transition:color .3s ease;
 }
 .sbar-cat.sel .sbar-cat-label{ color:var(--bg); font-weight:700; }
-/* Indice « sources » sur l'onglet actif : re-tap pour déplier le rail */
-.sbar-cat.sel::after{
-  content:''; width:5px; height:5px; margin-left:6px; flex:none;
-  border-right:1.6px solid var(--bg); border-bottom:1.6px solid var(--bg);
-  transform:translateY(-1px) rotate(45deg); opacity:.55;
-  transition:transform .32s cubic-bezier(.34,1.4,.64,1);
+/* Rangée catégories + bouton « sources » (déclencheur du rail à la demande) */
+.sbar-cats-row{ display:flex; align-items:center; gap:6px; width:100%; }
+.sbar-srcs-btn{
+  flex:none; width:30px; height:30px; border-radius:50%;
+  border:1px solid var(--border); background:rgba(255,255,255,.05);
+  color:var(--text-muted); display:flex; align-items:center; justify-content:center;
+  cursor:pointer; -webkit-tap-highlight-color:transparent;
+  transition:color .2s ease, background .2s ease, border-color .2s ease, transform .12s ease;
 }
-.sbar-cats.srcs-open .sbar-cat.sel::after{ transform:translateY(1px) rotate(225deg); }
+.sbar-srcs-btn:active{ transform:scale(.9); }
+.sbar-srcs-btn svg{ width:16px; height:16px; display:block; }
+.sbar-srcs-btn.active{ color:var(--bg); background:var(--text); border-color:var(--text); }
+[data-theme="light"] .sbar-srcs-btn{ background:rgba(0,0,0,.04); border-color:rgba(0,0,0,.09); }
 @media(hover:hover){
   .sbar-cat:not(.sel):hover{ background:rgba(255,255,255,.08); }
   [data-theme="light"] .sbar-cat:not(.sel):hover{ background:rgba(0,0,0,.06); }
@@ -4386,17 +4391,13 @@ body.focus-mode .focus-exit{ display:flex; }
             </div>
           </div>
 
-          <!-- TRI & FILTRAGE -->
+          <!-- FILTRES -->
           <div class="accordion-group" data-acc="sort">
             <div class="accordion-header" onclick="qmenuAcc(this)">
-              <span>TRI &amp; FILTRAGE</span><div class="chevron"></div>
+              <span>FILTRES</span><div class="chevron"></div>
             </div>
             <div class="accordion-content">
-              <div class="qmenu-sub-section-label">Trier par</div>
-              <a class="sub-link sub-link-sm qmenu-sort-item active" data-sort="date" onclick="qmenuSetSort('date')">Date</a>
-              <a class="sub-link sub-link-sm qmenu-sort-item" data-sort="source" onclick="qmenuSetSort('source')">Source</a>
-              <a class="sub-link sub-link-sm qmenu-sort-item" data-sort="relevance" onclick="qmenuSetSort('relevance')">Pertinence</a>
-              <div class="qmenu-sub-section-label" style="margin-top:10px">Mode de lecture</div>
+              <div class="qmenu-sub-section-label">Mode de lecture</div>
               <a class="sub-link sub-link-sm qmenu-mode-item" data-qmode="all"          onclick="qmenuSetSmartMode('all')">Tout</a>
               <a class="sub-link sub-link-sm qmenu-mode-item" data-qmode="unread"       onclick="qmenuSetSmartMode('unread')">Non lus</a>
               <a class="sub-link sub-link-sm qmenu-mode-item" data-qmode="today"        onclick="qmenuSetSmartMode('today')">Aujourd'hui</a>
@@ -5190,7 +5191,12 @@ body.focus-mode .focus-exit{ display:flex; }
           <button class="sbar-seg-btn" type="button" data-mode="unread">Non lus</button>
           <button class="sbar-seg-btn" type="button" data-mode="trending">Tendances</button>
         </div>
-        <div class="sbar-cats" id="sbarCats"></div>
+        <div class="sbar-cats-row">
+          <div class="sbar-cats" id="sbarCats"></div>
+          <button class="sbar-srcs-btn" id="sbarSrcsBtn" type="button" aria-label="Filtrer par source" title="Sources">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="12" r="5" opacity=".5"/><circle cx="15" cy="12" r="5"/></svg>
+          </button>
+        </div>
         <div class="sbar-srcs-wrap collapsed" id="sbarSrcsWrap"><div class="sbar-srcs-inner">
           <div class="sbar-srail" id="sbarSrcs"></div>
           <span class="sbar-srail-label" id="sbarSrailLabel"></span>
@@ -8654,8 +8660,8 @@ body.focus-mode .focus-exit{ display:flex; }
     _srcsOpen = !!open;
     const wrap = document.getElementById('sbarSrcsWrap');
     if(wrap) wrap.classList.toggle('collapsed', !_srcsOpen);
-    const cats = document.getElementById('sbarCats');
-    if(cats) cats.classList.toggle('srcs-open', _srcsOpen);
+    const btn = document.getElementById('sbarSrcsBtn');
+    if(btn) btn.classList.toggle('active', _srcsOpen);
   }
   function _smartToggleSrcs(){ _smartSetSrcsOpen(!_srcsOpen); }
 
@@ -8717,13 +8723,11 @@ body.focus-mode .focus-exit{ display:flex; }
     if(cats) cats.addEventListener('click', e => {
       const b = e.target.closest('.sbar-cat');
       if(!b) return;
-      if((b.dataset.cat || '') === (_smartCat || '')){
-        _smartToggleSrcs();                 // re-tap sur l'onglet actif : ouvre/ferme les sources
-      } else {
-        _smartPickCat(b.dataset.cat);       // change de dossier (le rail garde son état)
-        b.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' });
-      }
+      _smartPickCat(b.dataset.cat);
+      b.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' });
     });
+    const srcsBtn = document.getElementById('sbarSrcsBtn');
+    if(srcsBtn) srcsBtn.addEventListener('click', _smartToggleSrcs);
     if(srcs) srcs.addEventListener('click', e => {
       const it = e.target.closest('.sbar-srail-item');
       if(it) _smartPickSource(it.dataset.url || '');
