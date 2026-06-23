@@ -7800,61 +7800,95 @@ body.focus-mode .focus-exit{ display:flex; }
     const p=document.getElementById('podListenPage');
     if(!p || !p.classList.contains('open')) return;
     p.classList.remove('open'); p.setAttribute('aria-hidden','true');
+    try{ if(typeof _plStopAll==='function'){ _plStopAll(); _plCur=null; _plSetIcon(false); } }catch(e){}
     if(typeof unlockScroll==='function') unlockScroll();
   }
   window.openPodListen = openPodListen;
   window.closePodListen = closePodListen;
 
+  function _plEpCard(a, tts){
+    const icon = tts
+      ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14v-2a9 9 0 0 1 18 0v2"/><rect x="2.5" y="13" width="4.5" height="8" rx="2"/><rect x="17" y="13" width="4.5" height="8" rx="2"/></svg>`
+      : `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`;
+    const dur = (!tts && a.audioDuration) ? ' · '+escHtml(String(a.audioDuration)) : '';
+    return `<div class="pl-ep" data-link="${escAttr(a.link)}" onclick="_plPlay('${String(a.link||'').replace(/'/g,"\\'")}')"><div class="pl-ep-art" style="${_plArtCss(a)}"></div><div class="pl-ep-body"><div class="pl-ep-title">${escHtml(a.title||'')}</div><div class="pl-ep-meta">${escHtml(a.source||'')} · ${relTime(a.pubDate)}${dur}</div></div><button class="pl-ep-play" aria-label="${tts?'Lire':'Lecture'}">${icon}</button></div>`;
+  }
   function _plBuild(){
     const body=document.getElementById('plBody'); if(!body) return;
     const eps=_plEpisodes();
-    if(!eps.length){
+    const ttsArts=(_allArticles||[]).filter(a=>a && !a.audioUrl).slice(0,24);
+    if(!eps.length && !ttsArts.length){
       body.innerHTML = `<div class="pl-empty">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14v-2a9 9 0 0 1 18 0v2"/><rect x="2.5" y="13" width="4.5" height="8" rx="2"/><rect x="17" y="13" width="4.5" height="8" rx="2"/></svg>
-        <div class="pl-empty-t">Aucun épisode pour l'instant</div>
-        <div class="pl-empty-d">Abonnez-vous à des podcasts (flux audio) pour écouter leurs épisodes ici.</div>
+        <div class="pl-empty-t">Rien à écouter pour l'instant</div>
+        <div class="pl-empty-d">Ajoutez des flux, ou abonnez-vous à des podcasts pour écouter ici.</div>
         <button class="pl-empty-btn" onclick="closePodListen();if(window.openPodcast)openPodcast();">Découvrir des podcasts</button>
       </div>`;
       return;
     }
-    const hero=eps[0], rest=eps.slice(1);
-    let html = `<div class="pl-hero">
-      <div class="pl-hero-art" style="${_plArtCss(hero)}"></div>
-      <div class="pl-hero-kicker">À la une</div>
-      <div class="pl-hero-title">${escHtml(hero.title||'')}</div>
-      <div class="pl-hero-src">${escHtml(hero.source||'')} · ${relTime(hero.pubDate)}</div>
-      <button class="pl-hero-play" onclick="_plPlay('${String(hero.link||'').replace(/'/g,"\\'")}')"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Écouter</button>
-    </div>`;
-    html += `<div class="pl-sec-title">Épisodes récents</div><div class="pl-list">`;
-    html += rest.map(a=>{
-      const dur = a.audioDuration ? ' · '+escHtml(String(a.audioDuration)) : '';
-      return `<div class="pl-ep" data-link="${escAttr(a.link)}" onclick="_plPlay('${String(a.link||'').replace(/'/g,"\\'")}')">
-        <div class="pl-ep-art" style="${_plArtCss(a)}"></div>
-        <div class="pl-ep-body">
-          <div class="pl-ep-title">${escHtml(a.title||'')}</div>
-          <div class="pl-ep-meta">${escHtml(a.source||'')} · ${relTime(a.pubDate)}${dur}</div>
-        </div>
-        <button class="pl-ep-play" aria-label="Lecture"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+    let html='';
+    if(eps.length){
+      const hero=eps[0], rest=eps.slice(1);
+      html += `<div class="pl-hero">
+        <div class="pl-hero-art" style="${_plArtCss(hero)}"></div>
+        <div class="pl-hero-kicker">À la une</div>
+        <div class="pl-hero-title">${escHtml(hero.title||'')}</div>
+        <div class="pl-hero-src">${escHtml(hero.source||'')} · ${relTime(hero.pubDate)}</div>
+        <button class="pl-hero-play" onclick="_plPlay('${String(hero.link||'').replace(/'/g,"\\'")}')"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Écouter</button>
       </div>`;
-    }).join('') + `</div>`;
+      if(rest.length){
+        html += `<div class="pl-sec-title">Épisodes récents</div><div class="pl-list">`;
+        html += rest.map(a=>_plEpCard(a,false)).join('') + `</div>`;
+      }
+    }
+    if(ttsArts.length){
+      html += `<div class="pl-sec-title" style="margin-top:${eps.length?'26px':'4px'}">Lire à voix haute</div><div class="pl-list">`;
+      html += ttsArts.map(a=>_plEpCard(a,true)).join('') + `</div>`;
+    }
     body.innerHTML = html;
     _plSyncPlaying();
   }
 
+  let _plMode=null, _plTtsLen=0;
+  function _plStripHtml(s){ const d=document.createElement('div'); d.innerHTML=String(s||''); return (d.textContent||d.innerText||'').replace(/\s+/g,' ').trim(); }
+  function _plStopAll(){
+    try{ const au=_plAudioEl(); if(au) au.pause(); }catch(e){}
+    try{ if(window.speechSynthesis) speechSynthesis.cancel(); }catch(e){}
+  }
+  function _plPlayTTS(a){
+    if(!('speechSynthesis' in window)) return;
+    const body=_plStripHtml(a.description||a.contentEncoded||'');
+    const text=(((a.title||'')+'. '+body).slice(0,7000)) || (a.title||'Article');
+    _plTtsLen=text.length||1;
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text);
+    u.lang='fr-FR'; u.rate=1; u.pitch=1;
+    u.onboundary=(e)=>{ const p=document.getElementById('plPpProg'); if(p&&_plTtsLen) p.style.width=Math.min(100,(e.charIndex/_plTtsLen*100))+'%'; };
+    u.onend=()=>{ _plSetIcon(false); const p=document.getElementById('plPpProg'); if(p) p.style.width='100%'; };
+    speechSynthesis.speak(u);
+  }
   function _plPlay(link){
-    const a=_plEpisodes().find(x=>x.link===link);
-    if(!a || !a.audioUrl) return;
-    const au=_plAudioEl(); if(!au) return;
+    const a=(_allArticles||[]).find(x=>x && x.link===link);
+    if(!a) return;
     if(_plCur===link){ _plToggle(); return; }
+    _plStopAll();
     _plCur=link;
-    au.src=a.audioUrl; au.play().catch(()=>{});
     const pp=document.getElementById('plPlayer'); if(pp) pp.hidden=false;
     const art=document.getElementById('plPpArt'); if(art) art.style.cssText=_plArtCss(a);
     const t=document.getElementById('plPpTitle'); if(t) t.textContent=a.title||'';
-    const s=document.getElementById('plPpSrc'); if(s) s.textContent=a.source||'';
+    const s=document.getElementById('plPpSrc'); if(s) s.textContent=(a.audioUrl?'':'Lecture vocale · ')+(a.source||'');
+    const prog=document.getElementById('plPpProg'); if(prog) prog.style.width='0%';
+    if(a.audioUrl){ _plMode='audio'; const au=_plAudioEl(); if(au){ au.src=a.audioUrl; au.play().catch(()=>{}); } }
+    else { _plMode='tts'; _plPlayTTS(a); }
     _plSetIcon(true); _plSyncPlaying();
   }
   function _plToggle(){
+    if(_plMode==='tts'){
+      if(!window.speechSynthesis) return;
+      if(speechSynthesis.paused){ speechSynthesis.resume(); _plSetIcon(true); }
+      else if(speechSynthesis.speaking){ speechSynthesis.pause(); _plSetIcon(false); }
+      return;
+    }
     const au=_plAudioEl(); if(!au || !au.src) return;
     if(au.paused){ au.play().catch(()=>{}); } else { au.pause(); }
   }
