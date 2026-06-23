@@ -7782,7 +7782,7 @@ body.focus-mode .focus-exit{ display:flex; }
     return Math.floor(diff/86400) + ' j';
   }
   function getFaviconDomain(url){ try{ return new URL(url).hostname.replace(/^www\./,''); }catch(e){ return url; } }
-  function getFavicon(url){ return 'https://www.google.com/s2/favicons?domain='+getFaviconDomain(url)+'&sz=64'; }
+  function getFavicon(url){ return 'https://icons.duckduckgo.com/ip3/'+getFaviconDomain(url)+'.ico'; }
   function showBadge(msg, ok=false){
     const b = document.getElementById('refreshBadge'); if(!b) return;
     clearTimeout(b._t);

@@ -57,6 +57,7 @@ self.addEventListener('fetch', event => {
     // Favicons (Google s2 + icon.horse) → cache 7 jours
     if (
         (url.hostname === 'www.google.com' && url.pathname.includes('s2/favicons')) ||
+        url.hostname === 'icons.duckduckgo.com' ||
         url.hostname === 'icon.horse'
     ) {
         event.respondWith(
