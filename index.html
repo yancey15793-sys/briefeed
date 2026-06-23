@@ -8584,9 +8584,6 @@ body.focus-mode .focus-exit{ display:flex; }
         // Reconstruction (liste de dossiers modifiée)
         const prevLeft = cats.scrollLeft;
         let html = `<span class="sbar-cat-pill" id="sbarCatPill" aria-hidden="true"></span>`;
-        html += `<button class="sbar-cat${_smartCat ? '' : ' sel'}" type="button" data-cat="">
-          <span class="sbar-cat-label">Tout</span>
-        </button>`;
         html += order.map(c => `<button class="sbar-cat${_smartCat === c ? ' sel' : ''}" type="button" data-cat="${escAttr(c)}">
           <span class="sbar-cat-label">${escHtml(c)}</span>
         </button>`).join('');
@@ -8750,7 +8747,9 @@ body.focus-mode .focus-exit{ display:flex; }
     if(cats) cats.addEventListener('click', e => {
       const b = e.target.closest('.sbar-cat');
       if(!b) return;
-      _smartPickCat(b.dataset.cat);
+      const cat = b.dataset.cat || '';
+      // re-tap sur le dossier actif → revient à « toutes les catégories »
+      _smartPickCat(cat === (_smartCat || '') ? '' : cat);
       b.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' });
     });
     const srcsBtn = document.getElementById('sbarSrcsBtn');
@@ -9561,12 +9560,14 @@ body.focus-mode .focus-exit{ display:flex; }
   function _renderCurrentView(){
     // Fallback si une vue supprimée était en localStorage
     if(!order.includes(_currentView)){ _currentView='editions'; try{localStorage.setItem('bf_view','editions');}catch(e){} }
-    views.forEach(v => { v.hidden = v.dataset.view !== _currentView; });
+    // Mode Tendances : toujours la vue séquentielle (corps + numérotation) ; ranking conservé
+    const effView = (_smartMode === 'trending') ? 'sequential' : _currentView;
+    views.forEach(v => { v.hidden = v.dataset.view !== effView; });
     _renderSrcRail();   // rail partagé visible sur toutes les vues
-    if(_currentView === 'editions')    _renderEditions();
-    else if(_currentView === 'grille') _renderGrille();
-    else if(_currentView === 'sequential') _renderSequential();
-    else if(_currentView === 'liste')  _renderListe();
+    if(effView === 'editions')    _renderEditions();
+    else if(effView === 'grille') _renderGrille();
+    else if(effView === 'sequential') _renderSequential();
+    else if(effView === 'liste')  _renderListe();
     if(window.BF_SMART && BF_SMART.renderSidebar){ try{ BF_SMART.renderSidebar(); }catch(e){} }
   }
 
