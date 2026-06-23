@@ -73,7 +73,7 @@ Vue active persistée dans `localStorage('bf_view')`, défaut : `'editions'`.
 
 ## Composants notables déjà construits
 
-- **Smart Bar** : `#smartBar.sbar` — 3 niveaux (segment 6 modes + catégories pilule mix-blend + sources accordéon) ; voir section EN COURS
+- **Smart Bar** : `#smartBar.sbar` — segment (Tout/Non lus/Tendances) + catégories pilule pleine ; rail de sources **à la demande** (re-tap onglet actif) ; voir section EN COURS
 - **Menu morph** : `#qmenu.morph-menu` — bouton 3-points → panneau verre 320×540, 5 accordéons, persistance localStorage
 - **Sidebar** : accordéons style Apple, effet focus-dim en cascade
 - **"Le brief du jour"** : digest par clustering Jaccard
@@ -89,9 +89,9 @@ Vue active persistée dans `localStorage('bf_view')`, défaut : `'editions'`.
 Composant à 3 niveaux empilés :
 
 ```
-#sbarSeg      — segment scrollable horizontal (6 modes, pastille glissante springée)
-#sbarCats     — onglets dossiers (pilule pleine glissante `.sbar-cat-pill`, texte actif inversé, « Tout » en tête)
-#sbarSrcsWrap — accordéon CSS (grid-rows 0fr→1fr) → #sbarSrcs
+#sbarSeg      — segment (Tout / Non lus / Tendances, sans compteurs), pastille glissante
+#sbarCats     — onglets dossiers (pilule pleine `.sbar-cat-pill`, texte actif inversé, « Tout » en tête + chevron indice)
+#sbarSrcsWrap — rail sources « à la demande » : replié par défaut, ouvert au re-tap de l'onglet actif (accordéon grid-rows) → #sbarSrcs
 ```
 
 **État global :**
@@ -100,13 +100,14 @@ let _railFilterUrl = null;   // URL source active (null = Toutes)
 let _smartCat      = null;   // dossier actif (null = Tout)
 let _smartMode     = 'all';  // 'all'|'unread'|'today'|'3days'|'week'|'month'
 let _railInstant   = false;  // true → bypass rAF + .reveal pour filtre instantané
+let _srcsOpen      = false;  // rail des sources à la demande (replié par défaut)
 ```
 
 **Modes temporels** (`_smartModeMs(mode)`) : `today` depuis minuit · `3days` J-2 · `week` J-6 · `month` depuis le 1er.
 
 **Empilement** (`_railApplyFilter`) : source → catégorie → mode (ordre strict, tous cumulables).
 
-**Fonctions clés :** `_renderSrcRail()` · `_smartSetMode()` · `_smartPickCat()` · `_smartPickSource()` · `_smartCounts()` · `_smartMovePill(scroll?)` · `_smartMoveCatPill()` · `_smartRevealSrcs()`
+**Fonctions clés :** `_renderSrcRail()` · `_smartSetMode()` · `_smartPickCat()` · `_smartPickSource()` · `_smartMovePill(scroll?)` · `_smartMoveCatPill()` · `_smartSetSrcsOpen()` · `_smartToggleSrcs()`
 
 ### Séparateurs entre articles
 
@@ -116,6 +117,10 @@ let _railInstant   = false;  // true → bypass rAF + .reveal pour filtre instan
 ### Statut exact
 
 - **Dernière chose faite :**
+  - Passe « charte » — réduction du bruit (`e787ada`, `044c471`) :
+    - Segment sans compteurs chiffrés ; pastilles non-lus des logos → simple point discret ; menu resserré aux collections fortes (Pour vous, Dernière heure ; Tendances reste dans le segment) — les autres modes (Pépites, En progression, Sous les radars, Signal fort, Sources multiples, À lire en 5 min) restent calculés en coulisse, juste plus exposés.
+    - Rail de sources **à la demande** : replié par défaut, ouvert au re-tap de l'onglet actif (`_smartSetSrcsOpen`/`_smartToggleSrcs`), chevron indice sur l'onglet actif ; `_smartRevealSrcs` retiré.
+    - Score 0–100 (`.art-score-badge`) et rail de logos animé NON touchés (pistes a/e non retenues pour l'instant).
   - Smart Bar — affinements (`c43dbe1`, `1056c96`) :
     - Chips de catégorie : **pilule pleine** glissante `.sbar-cat-pill` (`var(--text)` sous le texte, texte actif inversé `var(--bg)`) — abandon du `mix-blend difference` qui rendait une pilule noire en mode clair ; rendu net dans les deux thèmes. Positionnée en JS (`_smartMoveCatPill`), garde de signature `#sbarCats` pour glissement animé.
     - Tailles de texte réduites : chips 12,5px · segment 11px (hauteur 30) · étiquette source 10px.
