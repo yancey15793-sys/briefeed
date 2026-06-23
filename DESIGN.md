@@ -1,334 +1,368 @@
-# Système de design inspiré d'Apple
+# Design System Inspired by Mastercard
 
-> Category: Médias & Grand public
-> Électronique grand public. Espaces blancs premium, SF Pro, imagerie cinématographique.
-> Catégorie : Médias et grand public > Électronique grand public. Écrans de haute qualité, produits SF Pro, technologies d’imagerie cinématographique.
+> Category: Fintech & Crypto
+> Global payments network. Warm cream canvas, orbital pill shapes, editorial warmth.
 
-## 1. Thème visuel & atmosphère
-## 1. Thème visuel et atmosphère
+## 1. Visual Theme & Atmosphere
 
-Le langage web d'Apple est un système éditorial de précision qui alterne entre un calme proche de la galerie et des blocs d'information à densité commerciale. Le ton visuel reste sobre : de larges toiles neutres, un chrome discret et une imagerie produit à laquelle est confiée presque tout le poids expressif. L'interface est conçue pour s'effacer afin que le matériel, les matières et les options de finition deviennent le premier plan narratif.
-Le langage web d’Apple est un système de mise en page très précis. Il alterne entre des éléments visuels sobres, proches de ceux que l’on trouve dans une galerie d’art, et des blocs d’information de nature commerciale. Le style visuel reste sobre : des couleurs neutres, un usage discret du chrome, et des images qui jouent un rôle essentiel dans la transmission des informations. L’interface a été conçue de manière à se faire oublier, afin que les matériaux, les finitions et les options de personnalisation deviennent le centre de l’attention.
+Mastercard's experience reads like a warm, editorial magazine built from soft stone and signal orange. The canvas is a muted putty-cream (`#F3F0EE`) — not white, not gray, but a color that feels like the paper of a premium annual report. On top of that canvas, everything that matters is shaped like a stadium, a pill, or a perfect circle. The dominant visual gesture is the **oversized radius**: heroes carry 40-point corners, cards go fully pill-shaped, service images are cropped into circular orbits, and buttons either complete the pill or fit snugly at 20 points. There are almost no sharp corners anywhere on the page.
 
-À travers les cinq pages analysées, le rythme est cohérent sans être monolithique. Les surfaces marketing (page d'accueil et Environnement) recourent à un chapitrage cinématographique noir-et-lumière, tandis que les surfaces commerciales (parcours Store et Shop) introduisent un espacement plus serré, davantage de contrôles utilitaires et des piles de cartes plus denses sans rompre la grammaire de marque fondamentale. Le résultat est un seul système à deux régimes : mode vitrine et mode transaction.
+The second gesture is **orbit and trajectory**. Circular image masks don't sit still — they're connected by thin, hand-drawn-feeling orange arcs that span entire viewport widths, implying a constellation of services rather than a list. Each circle has a small attached "satellite" — a white micro-CTA holding an arrow icon — docked onto its perimeter like a moon. This is the most distinctive thing about Mastercard's current design language: the circles feel like they're in motion even though the page is still.
 
-La typographie est le stabilisateur. SF Pro Display porte la hiérarchie hero et merchandising avec des interlignes compacts et un crénage maîtrisé, tandis que SF Pro Text gère les métadonnées produit, la navigation, les filtres et l'UI de sélection dense. La typographie reste discrète, mais l'amplitude d'échelle est suffisamment large pour soutenir aussi bien le message hero de type affiche que les micro-libellés utilitaires.
+Typography is rendered entirely in **MarkForMC**, Mastercard's proprietary geometric sans. Headlines are set at a medium weight (500) with tight negative letter-spacing (-2%), giving them confidence without shouting. Body copy runs at the same family in a slightly lighter weight (450) — a weight you rarely see on the web, chosen because it reads softer than regular 400 without feeling thin. The whole system — warm cream surfaces, pill shapes, circular portraits, traced-orange orbits, black CTAs — feels simultaneously institutional (a 60-year-old payments network) and editorial (a modern brand magazine), which is exactly the tension Mastercard wants to hold.
 
 **Key Characteristics:**
-- Rythme binaire des sections : scènes noires profondes (`#000000`) alternant avec des champs neutres pâles (`#f5f5f7`)
-- Une seule famille d'accent bleu pour la sémantique d'action et de lien (`#0071e3`, `#0066cc`, `#2997ff`)
-- Deux modes de fonctionnement dans un même système : modules de vitrine cinématographique et configurateurs commerciaux denses
-- Forte dépendance à l'imagerie et aux finitions de matières ; le chrome d'UI reste visuellement mince
-- Métriques de titre serrées (SF Pro Display, semibold) associées à une typographie de corps/lien compacte (SF Pro Text)
-- Géométrie en pilule et en capsule comme langage d'action signature (`18px` à `980px` et contrôles circulaires)
-- Profondeur employée avec parcimonie ; le contraste et la séparation des surfaces font l'essentiel du travail de superposition
-- Rythme multi-pages par blocs de couleur : chapitres hero noirs -> champs merchandising neutres pâles -> surfaces commerciales blanches utilitaires -> micro-surfaces sombres pour les contrôles
-**Caractéristiques principales :**  
-– Rythme binaire des éléments visuels : des zones noires profondes (`#000000`) se succèdent à des zones de couleur claire et neutre (`#f5f5f7`).  
-– Une seule gamme de couleurs bleues pour exprimer les actions et les liens entre les éléments du design (`#0071e3`, `#0066cc`, `#2997ff`).  
-– Deux modes de fonctionnement au sein du même système : des modules visuels destinés à l’exposition de contenus cinématographiques, et des éléments conçus pour des fins commerciales.  
-– Une grande importance est accordée à l’image et aux finitions des matériaux utilisés ; les éléments en chrome restent visuellement discrets.  
-– Les caractères utilisés pour les titres sont de taille compacte (SF Pro Display, style semi-épais), tandis que le texte principal est écrit avec des caractères de taille normale (SF Pro Text).  
-– Des formes géométriques simples, comme des sphères ou des capsules, sont utilisées comme éléments de design distinctifs (tailles allant de 18px à 980px).  
-– La profondeur des éléments visuels est utilisée de manière modérée ; le contraste et la séparation des surfaces constituent les principaux éléments du design.  
-– Un rythme visuel basé sur des blocs de couleur : des sections noires pour les éléments importants, suivies de zones de couleur claire pour les éléments commerciaux.-> Surfaces commerciales blanches et fonctionnelles -> Micro-surfaces sombres destinées aux commandes de contrôle
+- Warm cream canvas (`#F3F0EE`) replaces traditional white — every surface is tinted, never sterile
+- Extreme border-radius as design language: 40px, 99px, 1000px dominate; anything square is a cookie-banner third-party
+- Circular image portraits with attached white satellite-CTAs and traced-orange orbital paths
+- Ghost "watermark" headlines (cream-on-cream text at heading scale) layered behind circle portraits
+- Black primary CTAs with 20px radius in the body — the cookie-banner orange is kept to consent flows
+- Floating pill-shaped navigation that docks below the viewport top with rounded shoulders
+- Eyebrow labels with a tiny accent dot + uppercase bold tracking — used as the section-category signal
+- Dark warm-black footer (`#141413`) with four-column link layout and large conversational headline
 
-## 2. Palette de couleurs & rôles
+## 2. Color Palette & Roles
 
-> **Source Pages:** `https://www.apple.com/`, `https://www.apple.com/environment/`, `https://www.apple.com/store`, `https://www.apple.com/shop/buy-iphone/iphone-17-pro`, `https://www.apple.com/shop/accessories/all`
-**Pages sources :** `https://www.apple.com/`, `https://www.apple.com/environment/`, `https://www.apple.com/store`, `https://www.apple.com/shop/buy-iphone/iphone-17-pro`, `https://www.apple.com/shop/accessories/all`
+### Primary
+- **Mastercard Red** (`#EB001B`): The left circle of the Mastercard mark — used only in the brand logo, never as a UI color.
+- **Mastercard Yellow** (`#F79E1B`): The right circle of the Mastercard mark — used only in the brand logo, never as a UI color.
+- **Ink Black** (`#141413`): The warm near-black used for primary CTAs, headline text on cream, and the footer surface. Slightly warm (the `13` blue value pulls toward the cream) so it never feels jet-black on the warm canvas.
 
-### Primaires
-- **Noir absolu** (`#000000`) : Toiles hero immersives, chapitres produit à forte dramaturgie, ancrages d'UI profonds.
-- **Gris Apple pâle** (`#f5f5f7`) : Surface claire principale pour les bandes de fonctionnalités, les blocs de comparaison et les transitions éditoriales.
-- **Encre quasi-noire** (`#1d1d1f`) : Couleur de texte principal et de contrôle à remplissage sombre sur les toiles claires.
+### Secondary & Accent
+- **Signal Orange** (`#CF4500`): The burnt/rust CTA orange used on consent actions and eyebrow dots. Deeper than the brand yellow, brighter than ink — it's the page's single aggressive color and must be used sparingly.
+- **Light Signal Orange** (`#F37338`): A lighter carroty orange used for carousel active indicators and decorative orbital arcs. Always acts as an attention cue, never as body color.
+- **Clay Brown** (`#9A3A0A`): The deep rust used for secondary link-style buttons (e.g., cookie details). Sits between ink and signal orange.
 
-### Secondaires & accent
-- **Bleu d'action Apple** (`#0071e3`) : Remplissage d'action principal et accent de marque signalant le focus.
-- **Bleu de lien de corps** (`#0066cc`) : Couleur de lien en ligne optimisée pour la lisibilité des textes longs.
-- **Bleu de lien à haute luminance** (`#2997ff`) : Traitement de lien lumineux sur les scènes plus sombres lorsqu'un contraste plus marqué est requis.
-### Couleurs secondaires et de mise en évidence – **Bleu d’action Apple** (`#0071e3`) : Couleur utilisée pour mettre en évidence les éléments importants de l’interface, ainsi que pour signaler les éléments sur lesquels l’attention doit se porter.  
-– **Bleu de lien** (`#0066cc`) : Couleur idéale pour les liens, afin d’améliorer la lisibilité des textes longs.  
-– **Bleu de lien à haute luminosité** (`#2997ff`) : Couleur utilisée pour les liens dans les scènes sombres, lorsque un contraste plus marqué est nécessaire.
+### Surface & Background
+- **Canvas Cream** (`#F3F0EE`): The page canvas. Warm, putty-toned, the default body background. All editorial sections sit on this.
+- **Lifted Cream** (`#FCFBFA`): One step lighter than canvas — used for nested "raised" sections that want to feel like paper laid on paper.
+- **White** (`#FFFFFF`): Reserved for the floating navigation pill, modal cards, secondary button fills, and small satellite-CTA circles attached to image portraits.
+- **Soft Bone** (`#F4F4F4`): A cool-gray alternative surface used inside a handful of component subregions.
 
-### Surface & arrière-plan
-- **Toile blanc pur** (`#ffffff`) : Arrière-plans de listes commerce/produit et sections transactionnelles denses.
-- **Surface graphite A** (`#272729`) : Couche de contexte des cartes sombres et des contrôles multimédias.
-- **Surface graphite B** (`#262629`) : Couche utilitaire sombre légèrement plus profonde pour les regroupements de contrôles.
-- **Surface graphite C** (`#28282b`) : Surfaces sombres de support surélevées.
-- **Surface graphite D** (`#2a2a2c`) : Le palier surélevé le plus sombre, utilisé pour la séparation dans les scènes sombres plus riches.
+### Neutrals & Text
+- **Ink Black** (`#141413`): Primary headline and body text color.
+- **Charcoal** (`#262627`): A slightly softer black used for some text alternates.
+- **Slate Gray** (`#696969`): Muted secondary text — eyebrow label alternative, disabled states, "Privacy Choices" bottom-row text.
+- **Granite** (`#555555`) and **Graphite** (`#565656`): Deeper gray for inline body accents and link alternates.
+- **Dust Taupe** (`#D1CDC7`): Very muted cream-gray used for disabled or "whisper" text (e.g., placeholder-like empty state labels). Low contrast on cream; use only for subdued content.
 
-### Neutres & texte
-- **Gris neutre secondaire** (`#6e6e73`) : Texte secondaire de corps, descriptions d'aide, métadonnées tertiaires.
-- **Gris de bordure doux** (`#d2d2d7`) : Séparateurs, contours subtils et confinement utilitaire atténué.
-- **Gris de bordure intermédiaire** (`#86868b`) : Contours de champ plus marqués dans les contextes de configuration produit et de filtre.
-- **Gris foncé utilitaire** (`#424245`) : Croisement texte/surface neutre-sombre dans les contextes store.
-### Couleurs neutres et texte – **Gris neutre secondaire** (`#6e6e73`) : Textes secondaires, descriptions d’aide, métadonnées de niveau intermédiaire.  
-– **Gris de bordure doux** (`#d2d2d7`) : Éléments de séparation, contours subtils, et éléments visuels servant à structurer le contenu.  
-– **Gris de bordure intermédiaire** (`#86868b`) : Contours plus marqués dans les contextes liés à la configuration des produits ou aux filtres.  
-– **Gris foncé utilitaire** (`#424245`) : Utilisé pour séparer le texte des surfaces de couleur sombre, notamment dans les contextes liés aux vitrines commerciales.
+### Semantic & Accent
+- **Link Blue** (`#3860BE`): A deep, slightly dusty blue used for inline links and informational callouts. Saturated enough to read as a link without being neon.
+- **Priceless Red + Yellow**: The full-color Mastercard logo mark is the only place the brand's red and yellow appear together; they lock the identity to the page without acting as a UI palette.
 
-### Sémantique & accent
-- **Signal de sélection/focus** (`#0071e3`) : Signal partagé de focus et d'état sélectionné à travers les contextes marketing et commerce.
-- **Erreur/Avertissement/Succès** : Aucune palette sémantique distincte n'était visible de manière cohérente dans l'ensemble de surfaces extrait.
+### Gradient System
+Mastercard uses no programmatic gradients in the core UI. The visual impression of "gradient" comes from two places:
+- **Circular image portraits** where a warm-orange photo subject (a card, a sunflower, a beverage) fades to the cream canvas at its edge
+- **Deep card shadows** on elevated content (`rgba(0,0,0,0.08) 0px 24px 48px`) that create a soft halo beneath pill-shaped media
 
-### Système de dégradés
-- Les pages extraites sont très majoritairement pilotées par des surfaces pleines. La richesse visuelle vient de la photographie et du rendu des finitions plutôt que de dégradés d'UI persistants.
-### Système de dégradés – Les pages affichées sont pour l’essentiel constituées de surfaces uniformes. La richesse visuelle provient de la photographie et du rendu des finitions, et non des effets de dégradés visuels présents dans l’interface utilisateur.
+## 3. Typography Rules
 
-## 3. Règles typographiques
+### Font Family
+- **Primary**: `MarkForMC` — Mastercard's proprietary geometric sans. Every headline, body paragraph, button, nav link, and footer link on the page.
+- **Secondary**: `MarkOffcForMC` — an "Official" cut used in a minority of contexts (legal text, some forms).
+- **Fallback stack**: `SofiaSans, Arial, sans-serif` — Sofia Sans is a reasonable open-source stand-in; Arial is the final web-safe fallback.
 
-### Famille de police
-- **Famille Display :** `SF Pro Display`, replis `SF Pro Icons, Helvetica Neue, Helvetica, Arial, sans-serif`
-- **Famille Text :** `SF Pro Text`, replis `SF Pro Icons, Helvetica Neue, Helvetica, Arial, sans-serif`
-- **Répartition d'usage :** La famille Display gère les titres hero/produit et les titres merchandising ; la famille Text gère la navigation, les contrôles, les libellés et le texte commerce dense.
+### Hierarchy
 
-### Hiérarchie
-| Rôle | Taille | Graisse | Interligne | Espacement des lettres | Notes |
+| Role | Size | Weight | Line Height | Letter Spacing | Notes |
 |------|------|--------|-------------|----------------|-------|
-| Hero Display XL | 80px | 600 | 1.00-1.05 | -1.2px | Échelle hero Environnement/store |
-| Hero Display L | 56px | 600 | 1.07 | -0.28px | Moments hero de la page d'accueil |
-| Section Display | 48px | 500-600 | 1.08 | -0.144px | Titres de chapitre majeurs |
-| Product Heading | 40px | 600 | 1.10 | normal | Titres de section produit et campagne |
-| Feature Display | 38px | 600 | 1.21 | 0.152px | Accroches appareil et merchandising |
-| Promo Display | 32px | 300-600 | 1.09-1.13 | 0.128px à 0.352px | Sous-heros au niveau module |
-| Card/Product Title | 28px | 600 | 1.14 | 0.196px | Nommage au niveau tuile et texte clé |
-| Utility Heading | 24px | 600 | 1.17 | 0.216px / -0.2px | En-têtes de configurateur et de contenu groupé |
-| Link/Action Heading | 21px | 600 | 1.14-1.38 | 0.231px | Liens promotionnels plus grands |
-| Subhead | 19px | 600 | 1.21 | 0.228px | Introductions de section compactes |
-| Body Primary | 17px | 400 | 1.47 | -0.374px | Corps standard et descriptions commerce |
-| Body Emphasis | 17px | 600 | 1.24 | -0.374px | Libellés mis en avant et valeurs clés |
-| Control Label | 14px | 400-600 | 1.29-1.47 | -0.224px | Boutons, libellés d'aide, texte de nav compact |
-| Micro UI | 12px | 400-600 | 1.00-1.33 | -0.12px | Mentions fines, micro-libellés |
-| Legal/Meta | 10px | 400 | 1.30-1.47 | -0.08px | Métadonnées denses et texte de support légal |
-### Hiérarchie | Rôle | Taille | Épaisseur des caractères | Écart entre les lignes | Écart entre les lettres | Remarques |
-|------|------|--------|-------------------|-------------------|-------------------|-------|
-| Hero Display XL | 80px | 600 | 1,00–1,05 | -1,2px | Taille adaptée à l’environnement/au magasin | |
-| Hero Display L | 56px | 600 | 1,07 | -0,28px | Utilisé pour les éléments visuels importants sur la page d’accueil | |
-| Section Display | 48px | 500–600 | 1,08 | -0,144px | Utilisé pour les titres de sections importantes | |
-| Product Heading | 40px | 600 | 1,10 | Normale | Utilisé pour les titres de produits et de promotions | |
-| Feature Display | 38px | 600 | 1,21 | 0,152px | Utilisé pour les informations relatives aux produits | |
-| Promo Display | 32px | 300–600 | 1,09–1,13 | 0,128px à 0,352px | Utilisé pour les éléments visuels secondaires au niveau des modules | |
-| Card/Product Title | 28px | 600 | 1,14 | 0, | Utilisé pour les titres des produits | |196px | Titres et textes clés | | Titres d’organisation du contenu | 24px | 600 | 1,17 | 0,216px / -0,2px | Titres des sections et des contenus regroupés | | Liens/Actions | 21px | 600 | 1,14–1,38 | 0,231px | Liens promotionnels plus grands | | Sous-titres | 19px | 600 | 1,21 | 0,228px | Introductions de sections concises | | Texte principal | 17px | 400 | 1,47 | -0,374px | Texte standard et descriptions des produits | | Textes en surbrillance | 17px | 600 | 1,24 | -0,374px | Éléments mis en évidence et informations clés | | Légendes des éléments de contrôle | 14px | 400–600 | 1,29–1,47 | -0,224px | Boutons, légendes d’aide, textes de navigation | | Interface micro | 12px | 400–600 | 1,00–1,33 | -0,12px | Éléments de petite taille, légendes minimalistes | | Informations juridiques/Métadonnées | 10px | 400 | 1,30–1,47 | -0,08px | Métadonnées détaillées et textes juridiques |
+| H1 (hero) | 64px | 500 | 64px | -1.28px (-2%) | Set to `1:1` line-height for very tight vertical rhythm on multi-line hero |
+| H2 (section) | 36px | 500 | 44px | -0.72px (-2%) | Used in ghost-watermark headline treatments and section titles |
+| H3 (card title) | 24px | 500 | 28.8px (1.2) | -0.48px (-2%) | Titles inside service/solution cards |
+| H4 (subhead) | 14px | 700 | 18.2px (1.3) | normal | Rarely used in marketing surfaces |
+| Eyebrow (H5) | 14px | 700 | 14px | 0.56px (+4%) | Uppercase, paired with a tiny accent dot (e.g., "• SERVICES") |
+| Body paragraph | 16px | 450 | 22.4px (1.4) | normal | The half-step 450 weight is MarkForMC's signature — softer than 500, firmer than 400 |
+| Nav link / Button label | 16px | 500 | 16px | -0.48px (-3%) | Tight, compact, no text-transform |
+| Footer link | 14px | 450 | ~20px | normal | Lighter weight on dark footer for airier density |
+| Footer column header | 12–14px | 700 | 14px | 0.56px (+4%) | Uppercase, muted gray, short tracking |
 
-### Principes
-- **Continuité entre types de page :** Le même ADN typographique couvre les lancements cinématographiques et les parcours d'achat produit, évitant une scission de marque entre marketing et commerce.
-- **Compression à grande échelle :** Les paliers Display utilisent un interlignage serré et un crénage maîtrisé pour donner une impression usinée et axée produit.
-- **Densité lisible à profondeur commerce :** SF Pro Text équilibre compacité et rythme vertical suffisant pour les longues listes produit et les matrices d'options.
-- **Échelle de graisses mesurée :** 600 est la graisse d'emphase dominante ; 700 apparaît de manière sélective ; 300 est utilisé avec parcimonie pour le contraste dans les lignes plus grandes.
+### Principles
+- **Weight 450 is load-bearing**. Most brands use 400/500/700; Mastercard uses 450 for body copy, which creates an unusually soft reading tone. Replacing it with 400 flattens the identity.
+- **Tight negative tracking on headlines** (-2%) gives display text its editorial density — the words lock together rather than breathe.
+- **Uppercase tracking only on the eyebrow scale** (14px / 700 / +4% tracking). Don't use uppercase anywhere else; no shouty section titles.
+- **One-font system**. Resist the urge to add a second typeface for contrast. The contrast comes from scale, weight, and letter-spacing, not from a serif or display accent.
+- **Line-height ratio drops with size**. H1 is 1:1, H3 is 1.2, body is 1.4. Tight display, comfortable reading.
 
-### Note sur les substituts de police
-- Substituts librement disponibles les plus proches : `Inter` pour une implémentation riche en texte et des métriques de type `SF Pro Display-like` approchées avec `Inter Tight` pour les titres.
-- Lors d'une substitution, augmentez légèrement l'interligne (+0.02 à +0.06) sur les tailles de corps et réduisez l'intensité du crénage négatif pour préserver la lisibilité.
-### Remarques concernant les polices de remplacement – Polices de remplacement facilement disponibles dans les environs : `Inter` est idéale pour des textes riches en informations, tandis que `Inter Tight` convient mieux pour les titres. Lors du remplacement d’une police, augmentez légèrement l’espacement entre les lignes (+0,02 à +0,06) et réduisez l’intensité du contraste pour conserver la lisibilité du texte.
+### Note on Font Substitutes
+MarkForMC is proprietary and licensed. When rebuilding a matching aesthetic without access to the original:
+- **Sofia Sans** (Google Fonts) is the closest open-source match — it's already in Mastercard's declared fallback stack.
+- **Inter** at weights 450/500/700 works as a generic stand-in; expect slightly taller x-height and looser letter shapes.
+- **Neue Haas Grotesk** or **Geist** can approximate the geometric feel for commercial projects.
+- Whichever substitute is used, preserve the **-2% letter-spacing on headlines** and the **450 body weight** (use `font-weight: 450` with variable fonts, or substitute `font-weight: 400` and tighten the letter-spacing by ~-0.5% to compensate).
 
-## 4. Styles des composants
+## 4. Component Stylings
 
-### Boutons
-- **Action à remplissage primaire :** fond `#0071e3`, texte `#ffffff`, rayon de 8px, padding horizontal compact (couramment 8px 15px). Utilisé pour les actions décisives d'achat/progression.
-- **Action à remplissage sombre :** fond `#1d1d1f`, texte `#ffffff`, rayon de 8px. Utilisé lorsque les surfaces claires nécessitent un primaire sobre à fort contraste.
-- **Famille d'actions en pilule/capsule :** grandes actions en capsule à rayons de `18px`-`56px` et liens en pilule extrême à `980px`. Établit la silhouette d'appel à l'action douce mais précise d'Apple.
-- **Coques de filtre/bouton utilitaires :** coques claires (`#fafafc` ou blanc translucide) avec des bordures grises subtiles (`#d2d2d7` / `#86868b`) pour les contextes de configuration denses.
-- **Comportement enfoncé :** les contrôles actifs réduisent couramment l'échelle ou décalent légèrement le remplissage pour signaler une confirmation d'appui physique.
-### Boutons – **Actions à remplissage primaire :** Arrière-plan de couleur `#0071e3`, texte de couleur `#ffffff`. Rayon de 8 px ; marge horizontale réduite (généralement 8 px x 15 px). Utilisés pour les actions liées aux achats ou aux progrès dans l’utilisation d’une application.  
-– **Actions à remplissage sombre :** Arrière-plan de couleur `#1d1d1f`, texte de couleur `#ffffff`. Rayon de 8 px. Utilisées lorsque des surfaces claires nécessitent un contraste élevé entre les couleurs.  
-– **Famille de boutons en forme de “capsule” :** Boutons de grande taille, avec un rayon allant de 18 px à 56 px ; liens en forme de “capsule” de taille 980 px. Ces boutons respectent le style épuré et précis caractéristique d’Apple.  
-– **Boutons de filtre/utiles :** Couleurs claires (`#fafafc` ou blanc translucide) avec des bords gris discrets (`#d2d2d7` / `#86868b`), idéaux pour les contextes de configuration complexes.  
-– **Effet de “fonctionnement enfoncé” :** Les éléments actifs affichent généralement un arrière-plan plus foncé ou un léger décalage pour indiquer que l’action a été effectuée.
+### Buttons
 
-### Cartes & conteneurs
-- **Cartes éditoriales/produit :** cartes claires sur des champs `#f5f5f7` ou blancs, avec un cadrage minimal et une composition axée image.
-- **Cartes utilitaires sombres :** paliers graphite (`#272729` à `#2a2a2c`) utilisés pour les superpositions, les contrôles multimédias et les modules à contexte sombre.
-- **Panneaux de configurateur :** conteneurs arrondis (souvent 12px-18px) avec une définition de bordure claire mais sobre.
-- **Modules carrousel/spotlight :** coques arrondies plus grandes (`28px`-`36px`) pour les couloirs de contenu mis en avant.
+**Primary — Ink Pill**
+- Background: Ink Black (`#141413`)
+- Text: Canvas Cream (`#F3F0EE`) — not pure white
+- Border: 1.5px solid Ink Black (same as bg, creates crisp edge)
+- Radius: 20px
+- Padding: 6px 24px
+- Font: MarkForMC 16px / weight 500 / letter-spacing -0.32px
+- Default: as above; solid warm-black pill on cream canvas
+- Active / pressed: subtle inward-shrink or 2px offset (not a hover variant)
+- Use for: all marketing CTAs in the page body ("Learn more", "Explore", "Discover")
 
-### Champs & formulaires
-- **Champs de saisie commerce :** arrière-plans translucides ou blancs, texte sombre (`#1d1d1f`), confinement piloté par la bordure (`#86868b`).
-- **Contrôles de sélection :** une géométrie de contrôle de type circulaire/interrupteur apparaît fréquemment dans les interfaces de sélection produit.
-- **Stratégie de densité :** les champs de formulaire restent visuellement discrets pour laisser dominer l'imagerie d'appareil et la hiérarchie de prix.
-### Champs et formulaires – **Champs de saisie liés au commerce :** arrière-plans transparents ou blancs, texte de couleur foncée (`#1d1d1f`). Le contenu des champs est encadré par une bordure de couleur `#86868b`. – **Contrôles de sélection :** Des éléments de type cercle ou interrupteur sont fréquemment utilisés pour permettre la sélection des produits. – **Stratégie de mise en page :** Les champs de formulaire restent visuellement discrets, afin de laisser la priorité à l’image du produit et à l’affichage des prix.
+**Secondary — Outlined Pill**
+- Background: White (`#FFFFFF`)
+- Text: Ink Black (`#141413`)
+- Border: 1.5px solid Ink Black
+- Radius: 20px
+- Padding: 6px 24px
+- Font: MarkForMC 16px / weight 450 / line-height 20.8px
+- Default: white-on-cream pill with crisp ink outline
+- Active / pressed: subtle compression
+- Use for: secondary actions paired with a primary, or standalone utility CTAs
+
+**Consent / Signal — Orange Pill**
+- Background: Signal Orange (`#CF4500`)
+- Text: White (`#FFFFFF`)
+- Border: 0
+- Radius: 24px
+- Padding: 1px 30px (very tight vertical, wide horizontal)
+- Font: MarkForMC 13px / weight 400 / letter-spacing 0.13px
+- Default: as above; bright rust pill with white text
+- Use for: cookie consent, privacy preference, and other legally-distinct confirmations. **Do not** use this orange for marketing CTAs — it reads as a compliance color.
+
+**Satellite — Circular Micro-CTA**
+- Background: White (`#FFFFFF`)
+- Icon: Ink Black arrow (`→`) at ~20px
+- Border: none
+- Radius: 50% (perfect circle)
+- Size: ~50–60px diameter
+- Shadow: none or very subtle (the portrait's shadow carries the elevation)
+- Default: docks onto the bottom-right edge of a circular portrait, protruding partway outside the portrait's circle
+- Use for: the primary entry point into service/solution cards; always paired with a circular portrait
+
+**Icon-Only Circle Button (carousel, play/pause)**
+- Background: transparent or white
+- Icon: 10–20px centered
+- Border: 1px solid Ink Black (when on cream) or none (when over media)
+- Radius: 50%
+- Size: 40px diameter minimum for carousel controls; 80px for hero video play
+- Use for: carousel pagination/play-pause, hero video play, search toggle
+
+### Cards & Containers
+
+**Hero Media Frame (Stadium)**
+- Background: Dark video or full-bleed imagery (typically black `#000000` or `#2B2B2B` behind video)
+- Radius: 40px all corners (creates a stadium shape on wide viewports)
+- Width: ~full viewport minus ~48px gutter on each side
+- Height: ~60–70% of viewport
+- Shadow: none (sits directly on canvas)
+- Corners: the extreme 40px radius on a media element is the most iconic Mastercard gesture — do not round less
+
+**Service / Solution Portrait Card**
+- Shape: Perfect circle (radius 50%) or ellipse (radius 999px / 1000px)
+- Diameter: 260–340px desktop; ~220px mobile
+- Image crop: square source, cropped to circle
+- Attached element: White satellite circular CTA (see above) docked bottom-right, ~40% outside the portrait
+- Eyebrow below: accent dot + uppercase label (e.g., "• SERVICES", "• SOLUTIONS")
+- Title below: H3 (24px / weight 500 / -2% tracking), 1–2 lines max
+- Decorative orbit: thin ~1px Light Signal Orange curved line spanning from this card outward to the next, implying connection
+
+**Pill Carousel Card**
+- Radius: 1000px (full pill) or 40px corners (rounded stadium)
+- Width: ~40–60% of viewport
+- Height: ~380–420px (portrait-pill orientation)
+- Content: full-bleed photography with small overlaid chip labels
+- Chip inside: White pill (~ 999px radius), Ink Black text, padding 8px 20px, used for category tags like "Story"
+- Large inline CTA inside: Ink Pill button, oversized (padding 16px 40px, radius 40px)
+
+**Ghost Watermark Text Block**
+- Font: MarkForMC 72–128px / weight 500 / tight -2% tracking
+- Color: Canvas Cream slightly darkened (`#E8E2DA` or similar — cream-on-cream)
+- Position: layered behind portrait circles, bleeding off the viewport edge
+- Purpose: sets section theme without competing with foreground copy
+
+### Inputs & Forms
+Minimal form surface on the marketing page. The search input in the nav header is:
+- Initial state: a 48px circular button with a magnifier icon
+- Expanded state: horizontal input field, border `1px solid` Ink Black at ~50% opacity, radius 999px, padding 12px 24px, white background
+
+**Country/language selector (footer)**
+- Background: Ink Black (same as footer)
+- Text: White
+- Border: 1px solid `rgba(255,255,255,0.4)`
+- Radius: 999px (full pill)
+- Icon: downward chevron on the right
 
 ### Navigation
-- **Nav marketing globale :** barre sombre translucide compacte avec des liens de petite taille et une iconographie sobre.
-- **Couches de nav Store/sous-boutique :** barres utilitaires supplémentaires, puces et contrôles segmentés pour affiner par catégorie et produit.
-- **Hiérarchie des liens :** les bleus de lien restent le signal interactif principal tandis que le texte neutre soutient les ensembles de navigation denses.
 
-### Traitement des images
-- **Photographie axée objet :** le matériel et les accessoires sont mis au premier plan sur des surfaces pleines maîtrisées.
-- **Rendu de finition haute fidélité :** les détails réfléchissants/de matière sont centraux dans la persuasion visuelle.
-- **Cadrage mixte :** les scènes hero pleine page coexistent avec des cartes commerce arrondies et des vignettes merchandising serrées.
-### Traitement des images – **Photographie axée sur l’objet :** Le matériel et les accessoires sont mis en avant sur des surfaces entières, de manière maîtrisée.  
-– **Résolution d’une grande fidélité :** Les détails réfléchissants ou à texture particulière jouent un rôle essentiel dans l’effet visuel global.  
-– **Cadrage mixte :** Les scènes représentant des produits occupent toute la page, tout en coexistant avec des images de produits commercialisables, présentées sous forme de cartes ou de vignettes.
+**Floating Nav Pill (desktop)**
+- Container: white-to-translucent-white pill floating below the very top of the viewport with a ~24px top margin
+- Radius: 999px / 1000px (full pill)
+- Padding: ~16px 40px internal
+- Shadow: very soft (`rgba(0, 0, 0, 0.04) 0px 4px 24px 0px`) — just enough to lift it off the cream canvas
+- Content: Mastercard logo left, primary link group center ("For you", "For business", "For the world", "For innovators", "News and trends"), search icon right
+- Link spacing: ~48–56px gap between primary links
+- Link style: Ink Black, weight 500, 16px, no underline, no pill surround until active
 
-### Autres composants distinctifs
-- **Matrice de configurateur produit :** piles d'options et sélecteurs combinant puces, contrôles de type radio et blocs contextuels de prix/résumé.
-- **Points/flèches de contrôle de carrousel :** vocabulaire de contrôle circulaire dans des superpositions atténuées pour la progression de la galerie.
-- **Panneaux narratifs Environnement :** chapitres narratifs qui mêlent typographie éditoriale et visuels produit/environnement cinématographiques.
+**Mobile Nav**
+- The same pill shape but collapsed to: logo + hamburger menu button + search icon only
+- Menu opens into a full-screen overlay with the primary links stacked vertically
 
-## 5. Principes de mise en page
+### Image Treatment
 
-### Système d'espacement
-- L'unité de base est effectivement `8px`, mais le système prend en charge des micro-paliers denses pour un alignement de précision.
-- Valeurs d'espacement fréquemment réutilisées à travers les pages : `2`, `4`, `6`, `7`, `8`, `9`, `10`, `12`, `14`, `17`, `20` px.
-- Constantes de rythme universelles visibles dans les parcours marketing comme commerce : échafaudage par unité de `8px` avec des intervalles utilitaires de `14-20px` pour le padding des composants et l'espacement des listes.
+- **Aspect ratios used**: 1:1 (all service portraits — cropped to circle), ~3:4 or ~4:5 (carousel pill cards), 16:9 or wider (hero video frame)
+- **Full-bleed vs padded**: Hero is viewport-wide with gutters; service portraits are always centered in their column with generous whitespace around; footer imagery is rare
+- **Masking**: Aggressive circular masking is the defining treatment — square source images are cropped to perfect circles of matching diameter. Never use rectangular service imagery.
+- **Lazy loading**: Standard `loading="lazy"` with a soft blur-up transition from a cream-tinted placeholder, preserving the warm palette during load
 
-### Grille & conteneur
-- **Pages vitrine :** grandes colonnes centrales avec une large respiration horizontale et des chapitres de couleur pleine largeur.
-- **Pages commerce :** grilles de produits et de contrôles multi-colonnes plus serrées avec un empilement modulaire fréquent.
-- **Comportement du conteneur :** noyau lisible contraint avec de généreuses marges extérieures aux largeurs desktop.
-### Grilles et conteneurs – **Pages d’accueil :** grandes colonnes centrales, avec un grand espace horizontal entre les éléments, et des sections de couleur qui occupent toute la largeur de la page. – **Pages de présentation des produits :** grilles à plusieurs colonnes, avec un agencement plus compact des éléments ; les produits sont souvent disposés en couches superposées. – **Comportement du conteneur :** le contenu principal reste lisible, grâce à des marges suffisamment larges, même sur les écrans d’ordinateur de bureau.
+### Decorative Orbital Lines
 
-### Philosophie de l'espace blanc
-- **Cadence des scènes :** les chapitres visuels majeurs utilisent une large respiration haut/bas.
-- **Compaction de l'information au besoin :** les pages commerce compriment délibérément l'espacement pour exposer davantage d'informations actionnables par fenêtre d'affichage.
-- **Séparation pilotée par le contraste :** les transitions de section reposent davantage sur les changements de surface que sur des séparateurs décoratifs.
+A signature motif: thin (~1–1.5px) single-weight curved lines in Light Signal Orange (`#F37338`) tracing arcs between circular portraits. These lines:
+- Imply connection between service cards without literal arrows
+- Span widths from ~200px up to full-viewport arcs
+- Feel hand-drawn (subtle irregularity) rather than perfect CSS curves
+- Appear only in sections with circular portrait content — never on pill sections, never in the footer
 
-### Échelle des rayons de bordure
-- **5px :** liens/étiquettes utilitaires minuscules et petites coques mineures.
-- **8px-12px :** contrôles standard et champs compacts.
-- **16px-18px :** cartes, cadres de module et panneaux commerce.
-- **28px-36px :** conteneurs de module et de spotlight plus grands.
-- **56px / 100px / 980px :** capsules, grandes pilules et formes de CTA allongées signatures.
-- **50% :** contrôles multimédias et de sélection circulaires.
-### Échelle des rayons de bordure  
-– **5px :** Liens/étiquettes de petite taille, ainsi que éléments graphiques de taille réduite.  
-– **8px–12px :** Composants de contrôle standard et champs d’entrée de petite taille.  
-– **16px–18px :** Cartes, cadres de modules et éléments graphiques liés aux fonctions commerciales.  
-– **28px–36px :** Conteneurs de modules et éléments graphiques de plus grande taille.  
-– **56px / 100px / 980px :** Éléments graphiques de grande taille, tels que des boutons de commande allongés.  
-– **50% :** Composants multimédias et éléments de sélection de forme circulaire.
+### Footer
 
-## 6. Profondeur & élévation
+- Background: Ink Black (`#141413`)
+- Text: White
+- Padding: 48px horizontal 100px / bottom 148px (very tall bottom space)
+- Structure: large conversational H2 ("We're always here when you need us") left-aligned, then a 4-column link grid below
+- Column headers: uppercase, muted, weight 700, letter-spacing +4%
+- Link rows: white, weight 450, 14px; entries prefixed with a small icon (support bubble, card, map pin, question mark) for the "NEED HELP?" column
+- External link marker: a small upper-right arrow (`↗`) after link text
+- Bottom row (below a 1px white-at-opacity divider): copyright + privacy small-print + country-language pill dropdown + four social icons (LinkedIn, Facebook, X, YouTube)
 
-| Niveau | Traitement | Usage |
-|------|-----------|-----|
-| Niveau 0 | Surfaces neutres plates (`#ffffff`, `#f5f5f7`, `#000000`) | Scènes narratives et produit principales |
-| Niveau 1 | Confinement subtil par bordure (`#d2d2d7`, `#86868b`) | Filtres, champs de saisie, cartes utilitaires |
-| Niveau 2 | Ombre douce (`rgba(0,0,0,0.08)` à `rgba(0,0,0,0.22)` lorsqu'elle est présente) | Cartes mises en avant et modules merchandising surélevés |
-| Niveau 3 | Échelonnement de surface sombre (`#272729` -> `#2a2a2c`) | Superpositions, contrôles multimédias, grappes utilitaires sombres |
-| Accessibilité | Signal de focus bleu (`#0071e3`) | Emphase clavier et sélection |
-| Niveau | Traitement | Usage |
-|------|-----------|-----|
-| Niveau 0 | Surfaces neutres et plates (`#ffffff`, `#f5f5f7`, `#000000`) | Scènes narratives et éléments visuels principaux |
-| Niveau 1 | Contours subtils (`#d2d2d7`, `#86868b`) | Filtres, champs de saisie, éléments graphiques d’aide |
-| Niveau 2 | Ombres douces (`rgba(0,0,0,0.08)` à `rgba(0,0,0,0.22)`) | Éléments graphiques mis en évidence, modules de vente |
-| Niveau 3 | Degrés de couleur sombre croissants (`#272729` -> `#2a2a2c`) | Superpositions d’éléments graphiques, contrôles multimédias, éléments visuels sombres |
+## 5. Layout Principles
 
-| Accessibilité | Signal de focus bleu (`#0071e3`) | Indicateurs liés à la saisie au clavier et à la sélection d’éléments |
+### Spacing System
+- **Base unit**: 8px (confirmed by dembrandt extraction and computed styles)
+- **Scale**: 8 / 16 / 24 / 32 / 48 / 64 / 96 / 128 (powers of 8)
+- **Section vertical padding**: ~96–128px between major sections on desktop; ~48–64px on mobile
+- **Card internal padding**: 32–40px on desktop, ~24px on mobile
+- **Nav top margin**: ~24px from viewport top (the pill floats, doesn't touch)
 
-La profondeur est volontairement sobre. Apple privilégie le contraste tonal, l'échelonnement de surface et la hiérarchie compositionnelle plutôt que de lourdes piles d'ombres.
+### Grid & Container
+- **Max content width**: ~1200–1280px centered, with ~48–100px horizontal gutter
+- **Column pattern**: 12-column implied, but practical layouts use 2-up asymmetric (large headline left, supporting text right), 1-up full-bleed (hero, video), or staggered single-portrait placement (service cards sit in varying grid positions creating the "constellation" feel)
+- **Footer grid**: 4 equal columns on desktop, collapses to single column accordion on mobile
 
-### Profondeur décorative
-- La profondeur décorative est principalement créée par le réalisme photographique et le rendu des matières, et non par des effets d'UI synthétiques.
-- Les superpositions translucides et les barres utilitaires de type verre apportent une légère stratification atmosphérique dans la navigation et les contrôles.
-### Profondeur décorative – La profondeur décorative est principalement créée par le réalisme photographique et la manière dont les matériaux sont représentés, et non par des effets visuels synthétiques. Les superpositions transparentes ainsi que les éléments décoratifs en forme de barres en verre contribuent à créer une atmosphère plus agréable lors de la navigation et de l’utilisation des différentes fonctionnalités de l’interface.
+### Whitespace Philosophy
+Mastercard treats whitespace as structure, not absence. A typical service section has:
+- A ghost headline occupying the top ~40% of the section (mostly empty cream)
+- A single circular portrait positioned ~60% down, asymmetric to left or right
+- ~300–500px of blank canvas between the portrait and the next section
+This deliberate emptiness tells the eye "slow down, read one thing at a time" — the opposite of dense dashboard UIs.
 
-## 7. À faire et à éviter
+### Border Radius Scale
 
-### À faire
-- Utilisez la triade neutre (`#000000`, `#f5f5f7`, `#ffffff`) comme fondation structurelle.
-- Réservez les accents bleus à une véritable sémantique d'action et de navigation.
-- Gardez la typographie serrée et délibérée, surtout aux échelles Display.
-- Maintenez le langage géométrique capsule/cercle pour les contrôles et les actions clés.
-- Laissez l'imagerie produit porter la dramaturgie visuelle ; gardez le chrome discret.
-- Utilisez un confinement piloté par la bordure dans les contextes commerce denses plutôt qu'un ornement de carte lourd.
-- Préservez une séparation claire entre les modules vitrine et les modules transactionnels tout en gardant les tokens fondamentaux partagés.
-### À faire :  
-– Utilisez la triade de couleurs neutres (`#000000`, `#f5f5f7`, `#ffffff`) comme fondement visuel de l’ensemble du design.  
-– Réservez les couleurs bleues à des fonctions liées aux actions et à la navigation.  
-– Maintenez une typographie dense et bien organisée, surtout aux échelles d’affichage grandes.  
-– Utilisez des formes géométriques comme les cercles pour représenter les éléments de contrôle et les actions essentielles.  
-– Laissez l’image du produit jouer un rôle important dans la composition visuelle ; utilisez le chrome de manière discrète.  
-– Dans les contextes commerciaux complexes, privilégiez des bordures bien définies plutôt que des décorations trop complexes.  
-– Assurez une séparation claire entre les éléments visuels liés à l’exposition des produits et ceux liés aux transactions, tout en conservant des éléments communs à tous les modules.
+| Radius | Use |
+|--------|-----|
+| 3–6px | Tiny decorative elements, cookie banner micro-chips |
+| 20px | Primary and secondary body CTAs (the signature button radius) |
+| 24px | Consent/orange pill buttons, modal inner chips |
+| 40px | Hero media frames, large section container corners, H2 pill labels |
+| 50% | Circular portraits, icon-only buttons, satellite CTAs |
+| 99px / 999px / 1000px | Full pill shapes — navigation, carousel cards, footer country selector, primary inline chips |
 
-### À éviter
-- N'introduisez pas de larges palettes d'accent secondaires qui rivalisent avec le bleu Apple.
-- N'abusez pas des ombres, des effets de lueur ou des dégradés décoratifs dans le chrome d'UI fondamental.
-- Ne mélangez pas des familles de police sans rapport et ne relâchez pas le crénage sans discernement.
-- N'aplatissez pas tous les coins à un rayon unique ; Apple utilise des paliers de rayon intentionnels.
-- Ne surchargez pas les modules commerce de bordures épaisses ou d'effets visuels tapageurs.
-- Ne supprimez pas la cadence de contraste neutre entre les chapitres sombres et clairs.
-- Ne traitez pas les parcours marketing et d'achat comme des systèmes de design distincts.
+The scale is unusual: most systems use 4/8/12/16. Mastercard skips those and commits to **either small (≤6), medium-large (20–40), or full-pill (99+)**. The middle ground of 8–12 is absent, which is why the UI feels either "precise and utility" or "soft and editorial" with no in-between.
 
-## 8. Comportement responsive
-## 8. Comportement adaptatif/Responsive
+## 6. Depth & Elevation
 
-### Points de rupture
-| Nom | Largeur | Changements clés |
+| Level | Treatment | Use |
+|-------|-----------|-----|
+| 0 | No shadow | The default — 95% of surfaces sit directly on cream canvas |
+| 1 | `rgba(0, 0, 0, 0.04) 0px 4px 24px 0px` | Floating nav pill — barely-there lift |
+| 2 | `rgba(0, 0, 0, 0.08) 0px 24px 48px 0px` | Hero media frames, elevated cards — a soft large-radius halo rather than a hard drop |
+| 3 | `rgba(0, 0, 0, 0.25) 0px 70px 110px 0px` | Rare; dramatic elevation on a feature tile |
+
+### Shadow Philosophy
+Mastercard uses shadows as **atmospheric cushioning**, not directional light. The Level 2 shadow has a 48px spread and only 8% opacity — it barely exists as dark pixels but creates a "the card is breathing above the canvas" feel. There are almost no hard-edged, tight shadows anywhere in the system. Border lines are preferred over shadows for functional delineation (form inputs, footer divider).
+
+### Decorative Depth
+- **Orbital arcs** (Light Signal Orange, ~1px): trace connective paths across sections
+- **Ghost watermark headlines**: cream-on-cream text gives sections an almost-pressed-paper quality
+- **Circle-image fade**: warm-toned photography at the edge of circular portraits dissolves into the canvas, implying soft atmospheric depth
+
+## 7. Do's and Don'ts
+
+### Do
+- Use Canvas Cream (`#F3F0EE`) as the default body background — never pure white
+- Mask service/feature imagery as perfect circles, not rectangles or rounded rectangles
+- Attach a white satellite CTA to the bottom-right of each circular portrait
+- Set headlines in MarkForMC weight 500 with -2% letter-spacing
+- Use weight 450 (not 400) for body paragraphs
+- Keep primary CTAs as Ink Black pills (20px radius) with cream text
+- Use Signal Orange only on consent, legal, or compliance actions
+- Float the nav as a rounded white pill below the viewport top, not flush at y=0
+- Build page rhythm from three surface tones: canvas cream → lifted cream → ink footer
+- Use thin Light Signal Orange arcs between service cards to imply connection
+
+### Don't
+- Don't use pure white as a page background — it breaks the warm editorial tone
+- Don't round image frames at 8–16px — Mastercard either uses full-pill, 40px, or full-circle. In-between radii look generic
+- Don't use Signal Orange for marketing CTAs — it reads as cookie-consent orange and dilutes the legal color signal
+- Don't mix typefaces — no serif accent, no script, no secondary display font
+- Don't crowd the nav with more than six top-level links — the pill is meant to feel airy
+- Don't drop hard shadows — all elevation should use 48px+ spread and ≤10% opacity
+- Don't use uppercase for anything larger than the 14px eyebrow label
+- Don't omit the tiny accent dot before eyebrow labels — it's the identity
+- Don't place circular portraits on a grid — their magic comes from asymmetric placement
+
+## 8. Responsive Behavior
+
+### Breakpoints
+
+| Name | Width | Key Changes |
 |------|-------|-------------|
-| Small Mobile | 374px et moins | Contrôles commerce resserrés, piles produit en une colonne |
-| Mobile | 375px-640px | Modules en une colonne, rangées d'action compactes, sélecteurs condensés |
-| Tablet | 641px-833px | Cartes élargies et transitions mixtes 1-2 colonnes |
-| Tablet Wide | 834px-1023px | Merchandising multi-colonnes plus stable, blocs de texte plus grands |
-| Desktop | 1024px-1240px | Mises en page commerce complètes et structures de comparaison produit |
-| Desktop Wide | 1241px-1440px | Expansion du hero marketing et espacement de section plus large |
-| Large Desktop | 1441px+ | Respiration de chapitre maximale et composition éditoriale large |
+| Mobile | ≤ 767px | Nav pill shows logo + menu + search only; primary links hide behind hamburger; service portraits stack single-column centered; hero headline drops from 64px to ~40px; footer columns collapse into a vertical accordion |
+| Tablet | 768–1023px | Nav pill shows 2–3 primary links truncated; service portraits arrange 2-up; hero headline ~48px |
+| Desktop | ≥ 1024px | Full nav with 5 primary links centered; service portraits asymmetrically placed with decorative orbital lines; hero headline 64px |
+| Wide | ≥ 1440px | Content max-width caps at ~1280px; gutters grow symmetrically; orbital lines extend further |
 
-### Zones tactiles
-- Les actions primaires et secondaires sont généralement présentées dans des géométries pilule/bouton adaptées au tap.
-- Les contrôles multimédias et de sélection circulaires s'alignent sur une intention tactile minimale dans les contextes mobiles.
-- L'UI commerce dense utilise des libellés compacts mais maintient des zones de contact claires via le padding de forme environnant.
-### Zones tactiles – Les actions primaires et secondaires sont généralement représentées sous forme de formes géométriques simples, comme des boutons ou des icônes, afin de faciliter la manipulation par tapotement. Les commandes multimédias et les éléments de sélection circulaires sont conçus de manière à minimiser les exigences en termes de manipulation tactile dans les contextes mobiles. L’interface utilisateur destinée au commerce en ligne utilise des éléments visuels compacts, tout en assurant des zones de contact claires grâce à des bordures bien définies.
+### Touch Targets
+All interactive elements comfortably exceed 44×44px. The satellite CTA (circle + arrow) is ~50–60px. The nav pill buttons are ~48px tall. Mobile hamburger and search are 48×48px. No link or button drops below 40px in any breakpoint.
 
-### Stratégie de repliement
-- La typographie du hero marketing se réduit en paliers discrets tout en préservant le contraste de hiérarchie.
-- Les grilles produit et commerce passent du multi-colonnes à des cartes empilées avec une visibilité persistante des sélecteurs.
-- La navigation utilitaire se comprime en regroupements de liens/contrôles plus simples tout en préservant les actions clés.
-- Les grappes d'options/configuration deviennent séquencées verticalement pour garder le parcours d'achat linéaire sur les petits écrans.
+### Collapsing Strategy
+- **Nav**: full pill → compact pill with hamburger. Pill shape is preserved across breakpoints — always rounded, always floating.
+- **Service grid**: asymmetric constellation → 2-up → 1-up stack. Orbital arcs are removed on mobile (they only work with asymmetric placement).
+- **Spacing**: section vertical padding compresses from 128px to 48px on mobile.
+- **Content**: two-column hero (headline left / supporting text right) becomes stacked (headline on top, supporting text below).
+- **Footer**: 4 columns → 1 column accordion with chevron toggles per section.
 
-### Comportement des images
-- L'imagerie produit préserve le ratio et la centralité à travers les points de rupture.
-- Les visuels hero restent dominants sur mobile, le texte étant repositionné autour de la priorité au média.
-- Les vignettes commerce restent lisibles grâce à une logique de recadrage plus serrée et un empilement de cartes plus dense.
-- Les modules axés image continuent d'ancrer le rythme à mesure que la densité de mise en page augmente.
-### Comportement des images – L’imagerie conservé le rapport de proportionnalité entre les éléments visuels, ainsi que leur emplacement central, même en cas de changements dans la disposition des éléments sur l’écran. – Les images principales restent dominantes sur les appareils mobiles ; le texte est alors réorganisé de manière à mettre en valeur l’image principale. – Les informations commerciales restent lisibles grâce à une mise en page plus compacte et à une disposition plus dense des éléments visuels. – Les modules axés sur l’image continuent de jouer un rôle important dans la structuration de la page, même lorsque la densité de la mise en page augmente.
+### Image Behavior
+Circular portraits scale proportionally (maintaining the perfect circle at every size). Hero video frames maintain their 40px radius at every breakpoint, but the frame itself shrinks with the viewport. Lazy loading is standard with a cream-tinted blur-up placeholder, preserving the palette during load.
 
-## 9. Guide de prompt pour agent
+## 9. Agent Prompt Guide
 
-### Référence rapide des couleurs
-- Bleu d'action principal : **Bleu d'action Apple** (`#0071e3`)
-- Bleu de lien en ligne : **Bleu de lien de corps** (`#0066cc`)
-- Toile de chapitre sombre : **Noir absolu** (`#000000`)
-- Toile de chapitre clair : **Gris Apple pâle** (`#f5f5f7`)
-- Texte principal sur fond clair : **Encre quasi-noire** (`#1d1d1f`)
-- Texte secondaire : **Gris neutre secondaire** (`#6e6e73`)
-- Bordure commerce douce : **Gris de bordure doux** (`#d2d2d7`)
-- Bordure commerce marquée : **Gris de bordure intermédiaire** (`#86868b`)
-### Aperçu rapide des couleurs
-– Bleu principal pour les éléments d’action : **Bleu Apple** (`#0071e3`)
-– Bleu utilisé pour les liens en ligne : **Bleu de lien de corps** (`#0066cc`)
-– Fond sombre des chapitres : **Noir absolu** (`#000000`)
-– Fond clair des chapitres : **Gris Apple pâle** (`#f5f5f7`)
-– Texte principal sur fond clair : **Encre quasi-noire** (`#1d1d1f`)
-– Texte secondaire : **Gris neutre secondaire** (`#6e6e73`)
-– Bordures douces : **Gris de bordure doux** (`#d2d2d7`)
-– Bordures plus marquées : **Gris de bordure intermédiaire** (`#86868b`)
+### Quick Color Reference
+- Primary CTA: "Ink Black (`#141413`) — the warm near-black used for primary pill buttons and footer"
+- Background: "Canvas Cream (`#F3F0EE`) — warm putty body canvas, never pure white"
+- Lifted surface: "Lifted Cream (`#FCFBFA`) — one step lighter than canvas for nested sections"
+- Heading text: "Ink Black (`#141413`)"
+- Body text: "Ink Black (`#141413`) at weight 450"
+- Muted text: "Slate Gray (`#696969`)"
+- Signal / Consent: "Signal Orange (`#CF4500`) — reserve for cookie consent and legal actions"
+- Accent arc: "Light Signal Orange (`#F37338`) — orbital decorative lines only"
+- Border / Outline: "Ink Black at 1.5px for pill buttons; 1px at low opacity elsewhere"
+- Footer: "Ink Black (`#141413`) with White text"
 
-### Exemples de prompts de composant
-- « Concevoir un hero produit de style Apple sur une toile noire (`#000000`) avec un titre SF Pro Display semibold (48-56px), un texte de support concis et deux CTA en capsule utilisant `#0071e3` et `#1d1d1f`. »
-- « Créer un panneau de configuration commerce sur blanc (`#ffffff`) avec des cartes arrondies de 18px, des champs à bordure `#86868b`, un corps SF Pro Text de 17px et des sélecteurs d'options compacts. »
-- « Construire une grille de cartes merchandising alternant des surfaces `#f5f5f7` et blanches, avec des cartes axées image, des ombres sobres et des métadonnées SF Pro Text de 14-17px. »
-- « Générer une grappe de contrôles de carrousel utilisant des boutons circulaires (rayon de 50%), des superpositions gris atténué et un retour d'état actif clair pour la navigation dans la galerie. »
-- « Composer un rythme de page mixte marketing + commerce : chapitre vitrine sombre -> chapitre de fonctionnalité clair -> module de liste produit dense tout en réservant les accents bleus aux seules actions et liens. »
+### Example Component Prompts
+- "Create a circular portrait card 300px in diameter, with a square photograph cropped to a perfect circle. Attach a 56px white satellite button with a dark arrow icon at the bottom-right, so it protrudes ~40% outside the portrait. Below the portrait, add an eyebrow label with a Light Signal Orange dot and uppercase 'SERVICES' text in MarkForMC weight 700 at 14px. Below the eyebrow, set a 24px / weight 500 title in Ink Black."
+- "Design a primary CTA button: Ink Black (`#141413`) background, Canvas Cream (`#F3F0EE`) text, 20px border-radius, 6px vertical and 24px horizontal padding, MarkForMC font at 16px weight 500 with -2% letter-spacing."
+- "Build a floating navigation pill: white background with `rgba(0, 0, 0, 0.04) 0px 4px 24px 0px` shadow, 999px border-radius, ~16px vertical and 40px horizontal internal padding. Position it 24px below the viewport top, centered, with the Mastercard logo at the left, five primary links centered with 48px gap, and a circular 48px search button at the right."
+- "Create a hero media frame: 40px border-radius on all corners, full viewport width minus 48px gutters, ~60% viewport height, dark background for video content. Place it directly on the cream canvas with no shadow."
+- "Design a footer: Ink Black (`#141413`) background, white text, 4-column link grid with uppercase muted column headers at 14px weight 700 +4% tracking. Include a large conversational H2 above the grid, a 1px white-at-30%-opacity horizontal divider below, and a bottom row with copyright, legal small-print links, a pill-shaped country selector, and four social icons."
 
-### Guide d'itération
-1. Verrouillez d'abord la fondation neutre (`#000000`, `#f5f5f7`, `#ffffff`) avant de régler les accents.
-2. Gardez les accents bleus rares et intentionnels ; si tout est bleu, la hiérarchie s'effondre.
-3. Réglez la typographie dans cet ordre : échelle Display, lisibilité du corps, puis micro-libellés.
-4. Faites correspondre le rayon à la classe de composant (champ, carte, capsule, cercle) plutôt qu'un arrondi unique pour tout.
-5. Augmentez la densité progressivement lors du passage des sections vitrine aux sections commerce.
-6. Vérifiez que l'imagerie produit demeure la couche visuelle la plus forte après chaque révision.
-### Guide d’itération 1 :
-1. Verrouillez d’abord les couleurs de fond neutres (`#000000`, `#f5f5f7`, `#ffffff`) avant de régler les détails liés aux accents colorés.
-2. Conservez les couleurs bleues utilisées de manière intentionnelle ; si tout est bleu, la hiérarchie des éléments visuels s’effondre.
-3. Configurez la typographie dans cet ordre : échelle de visualisation, lisibilité du texte principal, puis des petits éléments textuels.
-4. Adaptez le rayon des formes en fonction de la catégorie du composant (champ, carte, cercle, etc.), plutôt que d’utiliser un seul rayon uniforme pour tous les éléments.
-5. Augmentez progressivement la densité visuelle en passant des sections présentatives aux sections commerciales.
-6. Assurez que l’image reste le élément visuel le plus marquant après chaque modification.
+### Iteration Guide
+When refining existing screens generated with this design system:
+1. Focus on ONE component at a time — don't redesign multiple surfaces in parallel
+2. Reference specific color names AND hex codes from this document
+3. Use natural language ("warm putty cream", "stadium pill", "circular portrait with satellite CTA") alongside technical values
+4. Describe the desired "feel" (editorial, soft, institutional) alongside specific measurements
+5. When in doubt, reach for one of three radii: 20px (buttons), 40px (hero/stadium), or 999px (pill/nav)
+6. Default backgrounds to Canvas Cream (`#F3F0EE`), not white — this single change shifts the entire mood toward Mastercard
 
-### Lacunes connues
-- Des couleurs d'état sémantiques distinctes (erreur/avertissement/succès) n'étaient pas visibles de manière cohérente dans l'ensemble de pages extrait.
-- Certains micro-états d'interaction varient selon le module et ne sont pas représentés comme des tokens système universels.
-- Quelques modules commerce exposent des surcharges typographiques spécifiques au contexte qui n'apparaissent pas sur les cinq pages.
+### Known Gaps
+- The live page uses MarkForMC, a proprietary licensed typeface. Sofia Sans is the closest open-source substitute and is listed in Mastercard's own fallback stack.
+- Tablet breakpoint specifics (768–1023px) were inferred from desktop and mobile captures; intermediate layouts may vary per section.
+- The exact "whisper" cream tone used for ghost-watermark headlines behind circular portraits reads between `#E8E2DA` and `#D1CDC7` in captures; the precise value varies per section.
+- Third-party consent orange (`#CF4500`) is Mastercard's documented consent signal and should not be confused with any marketing CTA color.
+- The Mastercard logo mark (red `#EB001B` + yellow `#F79E1B`) is a brand asset, not a UI palette entry.
