@@ -6142,13 +6142,40 @@ body.focus-mode .focus-exit{ display:flex; }
   }
   function escapeHtml(s){ return s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
-  function createFolder(){
-    const name = (prompt('Nom du dossier :') || '').trim();
+  // Boîte de saisie fiable (window.prompt est neutralisé en PWA standalone iOS)
+  window._bfPrompt = function(title, defaultValue){
+    return new Promise(resolve => {
+      const ov = document.getElementById('bfpOverlay');
+      const input = document.getElementById('bfpInput');
+      const titleEl = document.getElementById('bfpTitle');
+      const okBtn = document.getElementById('bfpOk');
+      const cancelBtn = document.getElementById('bfpCancel');
+      if(!ov || !input){ resolve(null); return; }
+      titleEl.textContent = title || '';
+      input.value = defaultValue || '';
+      ov.style.display = 'flex';
+      requestAnimationFrame(()=> ov.classList.add('open'));
+      setTimeout(()=>{ try{ input.focus(); input.select(); }catch(e){} }, 120);
+      const done = (val)=>{
+        ov.classList.remove('open');
+        setTimeout(()=>{ ov.style.display='none'; }, 220);
+        okBtn.onclick = cancelBtn.onclick = input.onkeydown = ov.onclick = null;
+        resolve(val);
+      };
+      okBtn.onclick = ()=> done((input.value || '').trim() || null);
+      cancelBtn.onclick = ()=> done(null);
+      input.onkeydown = (e)=>{ if(e.key==='Enter'){ e.preventDefault(); done((input.value||'').trim()||null); } else if(e.key==='Escape'){ done(null); } };
+      ov.onclick = (e)=>{ if(e.target===ov) done(null); };
+    });
+  };
+
+  async function createFolder(){
+    const name = await window._bfPrompt('Nouveau dossier', '');
     if (!name) return;
     folders.push({ name, feeds: [], open: true }); persist(); render();
   }
-  function renameFolder(i){
-    const name = (prompt('Renommer le dossier :', folders[i].name) || '').trim();
+  async function renameFolder(i){
+    const name = await window._bfPrompt('Renommer le dossier', folders[i] ? folders[i].name : '');
     if (!name) return;
     folders[i].name = name; persist(); render();
   }
@@ -11450,6 +11477,37 @@ body.focus-mode .focus-exit{ display:flex; }
   }
 
 </script>
+  <!-- Boîte de saisie fiable (remplace prompt(), bloqué en PWA standalone iOS) -->
+  <style>
+    .bfp-overlay{ position:fixed; inset:0; z-index:9200; display:none; align-items:center; justify-content:center;
+      padding:24px; background:rgba(0,0,0,.5); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px);
+      opacity:0; transition:opacity .2s ease; }
+    .bfp-overlay.open{ display:flex; opacity:1; }
+    .bfp-card{ width:100%; max-width:320px; background:var(--bg-elev); border:1px solid var(--border);
+      border-radius:18px; padding:18px; box-shadow:0 24px 60px rgba(0,0,0,.5);
+      transform:scale(.95) translateY(8px); transition:transform .26s cubic-bezier(.34,1.4,.64,1); }
+    .bfp-overlay.open .bfp-card{ transform:scale(1) translateY(0); }
+    .bfp-title{ font-family:var(--font-inter); font-size:15px; font-weight:700; color:var(--text); margin-bottom:12px; }
+    .bfp-input{ width:100%; box-sizing:border-box; background:var(--bg); border:1px solid var(--border);
+      border-radius:10px; padding:11px 13px; font-size:16px; color:var(--text); font-family:var(--font-inter); outline:none; }
+    .bfp-input:focus{ border-color:var(--accent); }
+    .bfp-actions{ display:flex; gap:8px; margin-top:14px; }
+    .bfp-btn{ flex:1; padding:11px; border-radius:10px; border:none; font-family:var(--font-inter);
+      font-size:14px; font-weight:700; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+    .bfp-cancel{ background:rgba(127,127,127,.16); color:var(--text); }
+    .bfp-ok{ background:var(--accent); color:#fff; }
+  </style>
+  <div class="bfp-overlay" id="bfpOverlay">
+    <div class="bfp-card" role="dialog" aria-modal="true">
+      <div class="bfp-title" id="bfpTitle"></div>
+      <input class="bfp-input" id="bfpInput" type="text" autocapitalize="sentences" autocorrect="off" autocomplete="off" enterkeyhint="done">
+      <div class="bfp-actions">
+        <button class="bfp-btn bfp-cancel" id="bfpCancel" type="button">Annuler</button>
+        <button class="bfp-btn bfp-ok" id="bfpOk" type="button">Valider</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ═══════════════════════════════════════════════════════════
        ADD FEED MODAL — bottom sheet RSS auto-détection
        ═══════════════════════════════════════════════════════════ -->
