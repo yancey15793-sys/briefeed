@@ -6072,7 +6072,21 @@ body.focus-mode .focus-exit{ display:flex; }
   const FKEY = 'reader.folders';
   let folders = [];
   try { folders = JSON.parse(localStorage.getItem(FKEY) || '[]'); } catch(e){}
-  const persist = () => { try { localStorage.setItem(FKEY, JSON.stringify(folders)); } catch(e){} };
+  // Purge des caches d'articles (régénérables) pour libérer le quota localStorage
+  function _purgeRegenerableCaches(){
+    try{
+      const kill=[];
+      for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k && k.indexOf('bf_fc_')===0) kill.push(k); }
+      kill.forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} });
+      return kill.length;
+    }catch(e){ return 0; }
+  }
+  // Écriture localStorage tolérante au quota : libère les caches régénérables puis réessaie
+  window._safeSet = function(key, val){
+    try { localStorage.setItem(key, val); return true; }
+    catch(e){ _purgeRegenerableCaches(); try { localStorage.setItem(key, val); return true; } catch(e2){ return false; } }
+  };
+  const persist = () => { window._safeSet(FKEY, JSON.stringify(folders)); };
 
   const ICON_CHEV = '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>';
   const ICON_EDIT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
@@ -6580,7 +6594,7 @@ body.focus-mode .focus-exit{ display:flex; }
     }
 
     // Sauvegarder le nom + type AVANT render() pour que la sidebar affiche le bon nom
-    if(url && name) { try{ const m=JSON.parse(localStorage.getItem('reader.feedMeta')||'{}'); m[url]={name, type, originalUrl:rawUrl}; localStorage.setItem('reader.feedMeta',JSON.stringify(m)); }catch(e){} }
+    if(url && name) { try{ const m=JSON.parse(localStorage.getItem('reader.feedMeta')||'{}'); m[url]={name, type, originalUrl:rawUrl}; window._safeSet('reader.feedMeta',JSON.stringify(m)); }catch(e){} }
     persist();
     render();
     afDismiss();
