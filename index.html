@@ -921,12 +921,12 @@ button, .ob-btn, .ob-btn-ghost,
 .nav-item:active{opacity:.7;transition:opacity .1s;}
 /* Dark inactif — blanc semi-transparent */
 .nav-item svg{width:20px;height:20px;fill:none;stroke:rgba(255,255,255,.46);stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;transition:stroke .22s;flex-shrink:0;}
-/* Dark actif — Figma exact #0091FF */
-.nav-item.active svg{stroke:#0091FF;}
+/* Dark actif — blanc */
+.nav-item.active svg{stroke:#fff;}
 /* Label inactif */
 .nav-item .nav-label{font-size:9.5px;font-weight:600;letter-spacing:-.1px;color:rgba(255,255,255,.46);line-height:1;white-space:nowrap;transition:color .22s;}
-/* Label actif — Figma exact #0091FF */
-.nav-item.active .nav-label{color:#0091FF;font-weight:700;}
+/* Label actif — blanc */
+.nav-item.active .nav-label{color:#fff;font-weight:700;}
 .nav-badge{position:absolute;top:2px;right:4px;background:#ed1149;color:#fff;font-size:9px;font-weight:800;min-width:14px;height:14px;padding:0 3px;border-radius:7px;display:flex;align-items:center;justify-content:center;border:1.5px solid transparent;line-height:1;z-index:4;}
 .nav-badge.hidden{display:none;}
 .nav-pill-indicator{
@@ -2509,34 +2509,45 @@ button, .ob-btn, .ob-btn-ghost,
 
 /* — Modes de lecture (déplacés dans le menu Affichage) — */
 
-/* — Catégories : onglets avec tiret animé (style « Sunday ») — */
+/* — Catégories : pilule blanche glissante en mix-blend-mode difference
+     (reprend le design « anchor + difference », adapté pour Safari/iOS) — */
 .sbar-cats{
-  display:flex; gap:4px; overflow-x:auto; padding:2px 2px 0;
+  position:relative; isolation:isolate; background:var(--bg);
+  display:flex; gap:2px; overflow-x:auto; padding:4px;
   width:100%;
   scrollbar-width:none; -ms-overflow-style:none; -webkit-overflow-scrolling:touch;
   scroll-snap-type:x proximity;
+  /* Fondu latéral aux deux bords (équivalent compatible du masque scroll-driven) */
+  -webkit-mask-image:linear-gradient(90deg,transparent 0,#fff 16px,#fff calc(100% - 16px),transparent 100%);
+          mask-image:linear-gradient(90deg,transparent 0,#fff 16px,#fff calc(100% - 16px),transparent 100%);
 }
 .sbar-cats::-webkit-scrollbar{ display:none; }
 .sbar-cat{
-  flex:0 0 auto; scroll-snap-align:start; position:relative;
-  display:inline-flex; flex-direction:column; align-items:center; gap:6px;
-  padding:6px 4px 8px; border:none; background:none; cursor:pointer;
-  -webkit-tap-highlight-color:transparent;
+  flex:0 0 auto; scroll-snap-align:center; position:relative; z-index:1;
+  display:inline-flex; align-items:center; justify-content:center;
+  padding:6px 14px; border:none; background:none; cursor:pointer;
+  border-radius:100px; -webkit-tap-highlight-color:transparent;
 }
 .sbar-cat-label{
   font-family:var(--font-inter); font-size:14px; font-weight:600; letter-spacing:-.02em;
-  color:var(--text-muted); white-space:nowrap;
-  transition:color .3s var(--sunday-ease, cubic-bezier(.19,1,.22,1));
+  color:var(--text); white-space:nowrap;
 }
-.sbar-cat.sel .sbar-cat-label{ color:var(--text); font-weight:700; }
-/* Le tiret « Sunday » — s'allonge sous l'onglet actif */
-.sbar-cat-dash{
-  width:9px; height:3px; border-radius:2px; background:#3a3a3c;
-  transition:width .42s var(--sunday-ease, cubic-bezier(.19,1,.22,1)),
-             background .3s ease;
+.sbar-cat.sel .sbar-cat-label{ font-weight:700; }
+@media(hover:hover){
+  .sbar-cat:not(.sel):hover{ background:rgba(255,255,255,.08); }
+  [data-theme="light"] .sbar-cat:not(.sel):hover{ background:rgba(0,0,0,.06); }
 }
-[data-theme="light"] .sbar-cat-dash{ background:#d1d1d6; }
-.sbar-cat.sel .sbar-cat-dash{ width:22px; background:#0a84ff; }
+/* La pilule — blanche, glisse sous l'onglet actif et inverse le texte (négatif) */
+.sbar-cat-pill{
+  position:absolute; top:0; left:0; width:0; height:0;
+  border-radius:100px; background:#fff;
+  mix-blend-mode:difference; pointer-events:none;
+  z-index:2; opacity:0;
+  transition:transform .42s cubic-bezier(.34,1.4,.64,1),
+             width .42s cubic-bezier(.34,1.4,.64,1),
+             opacity .22s ease;
+}
+.sbar-cat-pill.vis{ opacity:1; }
 
 /* — Sources : panneau révélé en accordéon (grid-rows) au changement de catégorie — */
 .sbar-srcs-wrap{
@@ -8543,18 +8554,31 @@ body.focus-mode .focus-exit{ display:flex; }
       _smartSyncSegment();
     }
 
-    // Onglets catégories (tiret « Sunday ») — « Tout » en tête
+    // Onglets catégories — pilule glissante (mix-blend) ; « Tout » en tête
     const cats = document.getElementById('sbarCats');
     if(cats){
-      const prevLeft = cats.scrollLeft;
-      let html = `<button class="sbar-cat${_smartCat ? '' : ' sel'}" type="button" data-cat="">
-        <span class="sbar-cat-label">Tout</span><span class="sbar-cat-dash"></span>
-      </button>`;
-      html += order.map(c => `<button class="sbar-cat${_smartCat === c ? ' sel' : ''}" type="button" data-cat="${escAttr(c)}">
-        <span class="sbar-cat-label">${escHtml(c)}</span><span class="sbar-cat-dash"></span>
-      </button>`).join('');
-      cats.innerHTML = html;
-      cats.scrollLeft = prevLeft;
+      const catSig = order.join('|');
+      if(cats.dataset.sig !== catSig){
+        // Reconstruction (liste de dossiers modifiée)
+        const prevLeft = cats.scrollLeft;
+        let html = `<span class="sbar-cat-pill" id="sbarCatPill" aria-hidden="true"></span>`;
+        html += `<button class="sbar-cat${_smartCat ? '' : ' sel'}" type="button" data-cat="">
+          <span class="sbar-cat-label">Tout</span>
+        </button>`;
+        html += order.map(c => `<button class="sbar-cat${_smartCat === c ? ' sel' : ''}" type="button" data-cat="${escAttr(c)}">
+          <span class="sbar-cat-label">${escHtml(c)}</span>
+        </button>`).join('');
+        cats.innerHTML = html;
+        cats.dataset.sig = catSig;
+        cats.scrollLeft = prevLeft;
+        requestAnimationFrame(()=> _smartMoveCatPill());
+      } else {
+        // Même liste : on glisse la pilule + on met à jour la sélection
+        cats.querySelectorAll('.sbar-cat').forEach(b => {
+          b.classList.toggle('sel', (b.dataset.cat || '') === (_smartCat || ''));
+        });
+        _smartMoveCatPill();
+      }
     }
 
     // Rail « liquid glass » : logos flottants + blob springé sous l'actif
@@ -8619,6 +8643,20 @@ body.focus-mode .focus-exit{ display:flex; }
     pill.style.width = btn.offsetWidth + 'px';
     pill.classList.add('vis');
     if(scroll) btn.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' });
+  }
+
+  // Pilule glissante des catégories (blanche, mix-blend-mode difference) sous l'onglet actif
+  function _smartMoveCatPill(){
+    const cats = document.getElementById('sbarCats');
+    const pill = document.getElementById('sbarCatPill');
+    if(!cats || !pill) return;
+    const btn = cats.querySelector('.sbar-cat.sel');
+    if(!btn){ pill.classList.remove('vis'); return; }
+    pill.style.transform = `translateX(${btn.offsetLeft}px)`;
+    pill.style.width  = btn.offsetWidth + 'px';
+    pill.style.height = btn.offsetHeight + 'px';
+    pill.style.top    = btn.offsetTop + 'px';
+    pill.classList.add('vis');
   }
 
   // Petit « accordéon » : rejoue la révélation grid-rows de la rangée sources
@@ -8689,6 +8727,7 @@ body.focus-mode .focus-exit{ display:flex; }
       const b = e.target.closest('.sbar-cat');
       if(!b) return;
       _smartPickCat(b.dataset.cat);
+      b.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' });
     });
     if(srcs) srcs.addEventListener('click', e => {
       const it = e.target.closest('.sbar-srail-item');
