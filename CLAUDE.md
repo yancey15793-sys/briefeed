@@ -30,6 +30,8 @@ Direction : éditorial, premium, dark-mode natif, interface française.
 - Fonds : `#000` / `#07090b`
 - Accent : **Apple blue** `#0a84ff` (dark) / `#0071e3` (light)
 - Sélecteur du rail de logos flottants (blob `.sbar-srail-blob` + halo `.sbar-srail-item.sel`) : **cyan** `#0cf2e6` (dark + light)
+- Chips de catégorie (`.sbar-cat`) : pilule blanche glissante `.sbar-cat-pill` en `mix-blend-mode:difference` (texte inversé en négatif) + fondu latéral au scroll
+- Nav bar du bas — item actif : **blanc** `#fff` en dark (avant bleu `#0091FF`) ; mode clair inchangé (`#0088FF`)
 - Typo : Inter (UI), DM Serif Display (titres éditoriaux), Oswald 700 uppercase (noms de dossiers)
 - Spring easing : `cubic-bezier(.34,1.56,.64,1)` · Pill segment : `cubic-bezier(.34,1.4,.64,1)`
 - Scroll-reveal : `.reveal` → `.reveal.in` (opacity 0→1 + translateY 20px→0, 0.58 s, IntersectionObserver)
@@ -51,7 +53,7 @@ Vue active persistée dans `localStorage('bf_view')`, défaut : `'editions'`.
 
 ## Composants notables déjà construits
 
-- **Smart Bar** : `#smartBar.sbar` — 3 niveaux (segment 6 modes + catégories tiret Sunday + sources accordéon) ; voir section EN COURS
+- **Smart Bar** : `#smartBar.sbar` — 3 niveaux (segment 6 modes + catégories pilule mix-blend + sources accordéon) ; voir section EN COURS
 - **Menu morph** : `#qmenu.morph-menu` — bouton 3-points → panneau verre 320×540, 5 accordéons, persistance localStorage
 - **Sidebar** : accordéons style Apple, effet focus-dim en cascade
 - **"Le brief du jour"** : digest par clustering Jaccard
@@ -68,7 +70,7 @@ Composant à 3 niveaux empilés :
 
 ```
 #sbarSeg      — segment scrollable horizontal (6 modes, pastille glissante springée)
-#sbarCats     — onglets dossiers (tiret Sunday animé, « Tout » en tête)
+#sbarCats     — onglets dossiers (pilule blanche `.sbar-cat-pill` en mix-blend difference, « Tout » en tête)
 #sbarSrcsWrap — accordéon CSS (grid-rows 0fr→1fr) → #sbarSrcs
 ```
 
@@ -84,7 +86,7 @@ let _railInstant   = false;  // true → bypass rAF + .reveal pour filtre instan
 
 **Empilement** (`_railApplyFilter`) : source → catégorie → mode (ordre strict, tous cumulables).
 
-**Fonctions clés :** `_renderSrcRail()` · `_smartSetMode()` · `_smartPickCat()` · `_smartPickSource()` · `_smartCounts()` · `_smartMovePill(scroll?)` · `_smartRevealSrcs()`
+**Fonctions clés :** `_renderSrcRail()` · `_smartSetMode()` · `_smartPickCat()` · `_smartPickSource()` · `_smartCounts()` · `_smartMovePill(scroll?)` · `_smartMoveCatPill()` · `_smartRevealSrcs()`
 
 ### Séparateurs entre articles
 
@@ -94,6 +96,7 @@ let _railInstant   = false;  // true → bypass rAF + .reveal pour filtre instan
 ### Statut exact
 
 - **Dernière chose faite :**
+  - Chips de catégorie redessinées : pilule blanche glissante `.sbar-cat-pill` en `mix-blend-mode:difference` (texte inversé en négatif), positionnée en JS via `_smartMoveCatPill` (garde de signature `#sbarCats` pour glissement animé), + fondu latéral ; nav bar item actif passé du bleu `#0091FF` au blanc. Adaptation Safari : ni `anchor()` ni `scroll-timeline` (`87c7ad0`)
   - Couleur du sélecteur des logos flottants → cyan `#0cf2e6` (blob + halo, dark/light) (`6addd6c`)
   - Allègement du `MutationObserver` des carrousels Browse : `childList` + debounce rAF au lieu d'observer tous les changements de classe du `document.body` — même init, charge CPU continue fortement réduite (`ccb52c1`)
 - **Bloquant actuel / bug en cours — « l'app redémarre toute seule » (iPhone) :**
