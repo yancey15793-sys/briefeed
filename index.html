@@ -2528,6 +2528,14 @@ button, .ob-btn, .ob-btn-ghost,
   color:var(--text); white-space:nowrap; transition:color .3s ease;
 }
 .sbar-cat.sel .sbar-cat-label{ color:var(--bg); font-weight:700; }
+/* Indice « sources » sur l'onglet actif : re-tap pour déplier le rail */
+.sbar-cat.sel::after{
+  content:''; width:5px; height:5px; margin-left:6px; flex:none;
+  border-right:1.6px solid var(--bg); border-bottom:1.6px solid var(--bg);
+  transform:translateY(-1px) rotate(45deg); opacity:.55;
+  transition:transform .32s cubic-bezier(.34,1.4,.64,1);
+}
+.sbar-cats.srcs-open .sbar-cat.sel::after{ transform:translateY(1px) rotate(225deg); }
 @media(hover:hover){
   .sbar-cat:not(.sel):hover{ background:rgba(255,255,255,.08); }
   [data-theme="light"] .sbar-cat:not(.sel):hover{ background:rgba(0,0,0,.06); }
@@ -5183,7 +5191,7 @@ body.focus-mode .focus-exit{ display:flex; }
           <button class="sbar-seg-btn" type="button" data-mode="trending">Tendances</button>
         </div>
         <div class="sbar-cats" id="sbarCats"></div>
-        <div class="sbar-srcs-wrap" id="sbarSrcsWrap"><div class="sbar-srcs-inner">
+        <div class="sbar-srcs-wrap collapsed" id="sbarSrcsWrap"><div class="sbar-srcs-inner">
           <div class="sbar-srail" id="sbarSrcs"></div>
           <span class="sbar-srail-label" id="sbarSrailLabel"></span>
         </div></div>
@@ -8151,6 +8159,7 @@ body.focus-mode .focus-exit{ display:flex; }
   let _smartMode     = 'all';    // 'all' | 'unread' | 'today' | '3days' | 'week' | 'month'
   let _railBound     = false;    // écouteurs attachés une fois
   let _railInstant   = false;    // true → prochain rendu sans animation
+  let _srcsOpen      = false;    // rail des sources « à la demande » (replié par défaut)
   try{ _railFilterUrl = localStorage.getItem('bf_rail_filter') || null; }catch(e){}
   try{ _smartCat = localStorage.getItem('bf_smart_cat') || null; }catch(e){}
   try{ _smartMode = localStorage.getItem('bf_smart_mode') || 'all'; }catch(e){}
@@ -8640,12 +8649,15 @@ body.focus-mode .focus-exit{ display:flex; }
   }
 
   // Petit « accordéon » : rejoue la révélation grid-rows de la rangée sources
-  function _smartRevealSrcs(){
+  // Rail des sources « à la demande » : replié par défaut, ouvert au re-tap de la catégorie active
+  function _smartSetSrcsOpen(open){
+    _srcsOpen = !!open;
     const wrap = document.getElementById('sbarSrcsWrap');
-    if(!wrap) return;
-    wrap.classList.add('collapsed');
-    requestAnimationFrame(()=>{ requestAnimationFrame(()=>{ wrap.classList.remove('collapsed'); }); });
+    if(wrap) wrap.classList.toggle('collapsed', !_srcsOpen);
+    const cats = document.getElementById('sbarCats');
+    if(cats) cats.classList.toggle('srcs-open', _srcsOpen);
   }
+  function _smartToggleSrcs(){ _smartSetSrcsOpen(!_srcsOpen); }
 
   // Sélection d'un filtre — rendu instantané
   function _smartSetMode(mode){
@@ -8668,7 +8680,6 @@ body.focus-mode .focus-exit{ display:flex; }
       else localStorage.removeItem('bf_smart_cat');
       localStorage.removeItem('bf_rail_filter');
     }catch(e){}
-    _smartRevealSrcs();
     _railInstant = true;
     _renderCurrentView();
   }
@@ -8706,8 +8717,12 @@ body.focus-mode .focus-exit{ display:flex; }
     if(cats) cats.addEventListener('click', e => {
       const b = e.target.closest('.sbar-cat');
       if(!b) return;
-      _smartPickCat(b.dataset.cat);
-      b.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' });
+      if((b.dataset.cat || '') === (_smartCat || '')){
+        _smartToggleSrcs();                 // re-tap sur l'onglet actif : ouvre/ferme les sources
+      } else {
+        _smartPickCat(b.dataset.cat);       // change de dossier (le rail garde son état)
+        b.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' });
+      }
     });
     if(srcs) srcs.addEventListener('click', e => {
       const it = e.target.closest('.sbar-srail-item');
