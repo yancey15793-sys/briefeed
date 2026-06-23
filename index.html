@@ -2493,8 +2493,8 @@ button, .ob-btn, .ob-btn-ghost,
 .sbar-seg-btn{
   position:relative; z-index:1; flex:0 0 auto;
   display:inline-flex; align-items:center; justify-content:center; gap:5px;
-  height:32px; padding:0 12px; border:none; background:none; cursor:pointer;
-  font-family:var(--font-inter); font-size:12px; font-weight:600; letter-spacing:-.016em;
+  height:30px; padding:0 11px; border:none; background:none; cursor:pointer;
+  font-family:var(--font-inter); font-size:11px; font-weight:600; letter-spacing:-.016em;
   color:var(--text-muted); white-space:nowrap; -webkit-tap-highlight-color:transparent;
   transition:color .24s ease;
 }
@@ -2509,40 +2509,38 @@ button, .ob-btn, .ob-btn-ghost,
 
 /* — Modes de lecture (déplacés dans le menu Affichage) — */
 
-/* — Catégories : pilule blanche glissante en mix-blend-mode difference
-     (reprend le design « anchor + difference », adapté pour Safari/iOS) — */
+/* — Catégories : pilule pleine glissante (rendu propre en sombre comme en clair) — */
 .sbar-cats{
-  position:relative; isolation:isolate; background:var(--bg);
+  position:relative;
   display:flex; gap:2px; overflow-x:auto; padding:4px;
   width:100%;
   scrollbar-width:none; -ms-overflow-style:none; -webkit-overflow-scrolling:touch;
   scroll-snap-type:x proximity;
-  /* Fondu latéral aux deux bords (équivalent compatible du masque scroll-driven) */
-  -webkit-mask-image:linear-gradient(90deg,transparent 0,#fff 16px,#fff calc(100% - 16px),transparent 100%);
-          mask-image:linear-gradient(90deg,transparent 0,#fff 16px,#fff calc(100% - 16px),transparent 100%);
+  /* Fondu latéral aux deux bords */
+  -webkit-mask-image:linear-gradient(90deg,transparent 0,#fff 14px,#fff calc(100% - 14px),transparent 100%);
+          mask-image:linear-gradient(90deg,transparent 0,#fff 14px,#fff calc(100% - 14px),transparent 100%);
 }
 .sbar-cats::-webkit-scrollbar{ display:none; }
 .sbar-cat{
   flex:0 0 auto; scroll-snap-align:center; position:relative; z-index:1;
   display:inline-flex; align-items:center; justify-content:center;
-  padding:6px 14px; border:none; background:none; cursor:pointer;
+  padding:5px 12px; border:none; background:none; cursor:pointer;
   border-radius:100px; -webkit-tap-highlight-color:transparent;
 }
 .sbar-cat-label{
-  font-family:var(--font-inter); font-size:14px; font-weight:600; letter-spacing:-.02em;
-  color:var(--text); white-space:nowrap;
+  font-family:var(--font-inter); font-size:12.5px; font-weight:600; letter-spacing:-.02em;
+  color:var(--text); white-space:nowrap; transition:color .3s ease;
 }
-.sbar-cat.sel .sbar-cat-label{ font-weight:700; }
+.sbar-cat.sel .sbar-cat-label{ color:var(--bg); font-weight:700; }
 @media(hover:hover){
   .sbar-cat:not(.sel):hover{ background:rgba(255,255,255,.08); }
   [data-theme="light"] .sbar-cat:not(.sel):hover{ background:rgba(0,0,0,.06); }
 }
-/* La pilule — blanche, glisse sous l'onglet actif et inverse le texte (négatif) */
+/* La pilule — pleine (var(--text)), glisse sous l'onglet actif ; le texte actif s'inverse */
 .sbar-cat-pill{
   position:absolute; top:0; left:0; width:0; height:0;
-  border-radius:100px; background:#fff;
-  mix-blend-mode:difference; pointer-events:none;
-  z-index:2; opacity:0;
+  border-radius:100px; background:var(--text);
+  pointer-events:none; z-index:0; opacity:0;
   transition:transform .42s cubic-bezier(.34,1.4,.64,1),
              width .42s cubic-bezier(.34,1.4,.64,1),
              opacity .22s ease;
@@ -3954,8 +3952,11 @@ body.focus-mode .focus-exit{ display:flex; }
   background:transparent; display:flex; align-items:center; justify-content:center;
 }
 .sbar-srail-item .savatar img{ width:100%; height:100%; object-fit:cover; border-radius:50%; display:block; }
-.sbar-srail-item.sel{ box-shadow:0 6px 18px rgba(12,242,230,.35); }
-.sbar-srail-item.sel .savatar{ box-shadow:0 0 0 2px rgba(255,255,255,.5); border-radius:50%; }
+.sbar-srail-item.sel{
+  border-color:transparent;
+  box-shadow:0 0 0 2px var(--bg), 0 0 0 3.5px #0cf2e6, 0 5px 16px rgba(12,242,230,.45);
+}
+.sbar-srail-item.sel .savatar{ border-radius:50%; }
 /* Pastille « Toutes les sources » (icône grille) */
 .sbar-srail-all{ color:var(--text); }
 .sbar-srail-all svg{ width:21px; height:21px; }
@@ -3974,7 +3975,7 @@ body.focus-mode .focus-exit{ display:flex; }
 /* Étiquette de la source active sous le rail */
 .sbar-srail-label{
   display:block; text-align:center; min-height:15px;
-  font-family:var(--font-inter); font-size:11px; font-weight:600;
+  font-family:var(--font-inter); font-size:10px; font-weight:600;
   letter-spacing:.01em; color:var(--text-muted);
   padding:0 8px 4px; opacity:0; transition:opacity .24s ease;
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
