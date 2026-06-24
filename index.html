@@ -11873,11 +11873,12 @@ body.focus-mode .focus-exit{ display:flex; }
     .pl-back{ display:inline-flex; align-items:center; gap:4px; height:34px; padding:0 14px 0 9px; border-radius:999px; border:none; background:rgba(127,127,127,.14); color:var(--text); font-family:var(--font-inter); font-size:14px; font-weight:600; cursor:pointer; -webkit-tap-highlight-color:transparent; }
     .pl-back svg{ width:20px; height:20px; }
     .pl-title{ font-family:var(--font-inter); font-size:19px; font-weight:800; letter-spacing:-.02em; color:var(--text); }
-    /* Onglets Abonnements / Découvrir */
-    .pl-tabs{ flex:none; display:flex; gap:26px; padding:6px 18px 0; border-bottom:1px solid var(--border); }
-    .pl-tab{ position:relative; border:none; background:none; cursor:pointer; padding:0 0 10px; font-family:var(--font-inter); font-size:16px; font-weight:700; letter-spacing:-.01em; color:var(--text-muted); -webkit-tap-highlight-color:transparent; transition:color .2s; }
+    /* Onglets Abonnements / Découvrir — reprend le composant existant (.pc-tab) */
+    .pl-tabs{ flex:none; display:flex; padding:6px 16px 0; border-bottom:1px solid var(--border); }
+    .pl-tab{ flex:1; position:relative; border:none; background:none; cursor:pointer; padding:10px 0 16px; font-family:var(--font-inter); font-size:20px; font-weight:800; letter-spacing:-.025em; color:var(--text-muted); -webkit-tap-highlight-color:transparent; transition:color .25s; }
     .pl-tab.active{ color:var(--text); }
-    .pl-tab.active::after{ content:""; position:absolute; left:0; right:0; bottom:-1px; height:2px; border-radius:2px; background:var(--text); }
+    .pl-tab::after{ content:""; position:absolute; left:50%; bottom:-1px; width:0; height:2.5px; border-radius:2px; background:var(--text); transform:translateX(-50%); transition:width .3s cubic-bezier(.32,.72,0,1); }
+    .pl-tab.active::after{ width:46%; }
     /* Carrousel « Mes podcasts » (source) */
     .pl-pod{ flex:none; width:128px; scroll-snap-align:start; cursor:pointer; }
     .pl-pod-art{ position:relative; width:128px; height:128px; border-radius:16px; background:#111 center/cover no-repeat; box-shadow:var(--shadow-soft); }
