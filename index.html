@@ -40,18 +40,23 @@ if(!AbortSignal.timeout){
    Reproduction fidèle du design envoyé (developer.apple.com)
    =========================================================== */
 :root{
-  --text:        #EDEDF0;   /* Cool white — légèrement bleuté vs F5F5F7 beige */
-  --text-muted:  #8A8A95;   /* Cool gray  — remplace #AAA trop chaud           */
-  --border:      #18181F;   /* Indigo-dark — cohérent avec la teinte bleue      */
-  --bg:          #0B0C0F;   /* Quasi-noir bleuté — Linear/Stripe, pas #000 pur  */
-  --bg-elev:     #111318;   /* Surface élevée — légèrement plus chaude          */
-  --accent:      #0a84ff;   /* Apple blue dark (inchangé)                       */
+  --text:        #F3F0EE;   /* Canvas Cream — texte clair chaud (Mastercard)    */
+  --text-muted:  #9A958C;   /* Taupe chaud — texte secondaire muet              */
+  --border:      #2A2724;   /* Bordure chaude sombre                            */
+  --bg:          #141413;   /* Ink Black warm — fond chaud (Mastercard)         */
+  --bg-elev:     #1C1A18;   /* Surface levée chaude                             */
+  --accent:      #0a84ff;   /* Apple blue — liens / focus (inchangé)            */
 
   /* Kit signature — mix Apple (discipline) + éditorial Mastercard (chaleur) */
-  --r-field:12px; --r-card:18px; --r-container:28px; --r-pill:999px;
-  --surface-card:#101218;            /* carte levée (cadence de surfaces)      */
-  --eyebrow-dot:#0cf2e6;             /* point cyan des eyebrows                */
-  --ghost:rgba(255,255,255,.05);     /* filigrane ghost watermark             */
+  --r-field:20px; --r-card:24px; --r-container:40px; --r-pill:999px;
+  --shadow-soft:0 20px 48px rgba(0,0,0,.4);    /* halo atmosphérique (sombre)  */
+  /* Liquid Glass (Safari-safe) : reflet spéculaire + bordure + halo, sans filtre SVG */
+  --lg-tint:rgba(255,255,255,.06); --lg-border:rgba(255,255,255,.18);
+  --lg-spec:inset 0 1px .5px rgba(255,255,255,.5), inset 0 -1.5px 1px rgba(0,0,0,.22);
+  --lg-elev:0 14px 42px rgba(0,0,0,.5);
+  --surface-card:#1C1A18;            /* carte levée chaude (cadence)           */
+  --eyebrow-dot:#F37338;             /* point Signal Orange (eyebrow Mastercard)*/
+  --ghost:rgba(243,240,238,.05);     /* filigrane crème                        */
 
   --font-inter:       'Inter',        -apple-system, system-ui, sans-serif;
   --font-geist:       'Geist',        -apple-system, system-ui, sans-serif;
@@ -78,15 +83,19 @@ html[data-font="serif"]        { --font-ui:var(--font-inter); --font-title:var(-
 
 /* Mode clair — variables inversées */
 [data-theme="light"]{
-  --text:        #1d1d1f;
-  --text-muted:  #6e6e73;
-  --border:      #d2d2d7;
-  --bg:          #ffffff;
-  --bg-elev:     #f5f5f7;
+  --text:        #141413;   /* Ink Black warm */
+  --text-muted:  #696969;   /* Slate Gray */
+  --border:      #D1CDC7;   /* Dust Taupe */
+  --bg:          #F3F0EE;   /* Canvas Cream — jamais de blanc pur */
+  --bg-elev:     #FCFBFA;   /* Lifted Cream */
   --accent:      #0066cc;
-  --surface-card:#fbfbfd;
-  --eyebrow-dot:#0071e3;
-  --ghost:rgba(0,0,0,.05);
+  --surface-card:#FCFBFA;
+  --eyebrow-dot:#CF4500;    /* Signal Orange (lisible sur crème) */
+  --ghost:rgba(20,20,19,.05);
+  --shadow-soft:0 24px 48px rgba(0,0,0,.08);   /* halo doux Mastercard (clair) */
+  --lg-tint:rgba(255,255,255,.62); --lg-border:rgba(255,255,255,.75);
+  --lg-spec:inset 0 1px .5px rgba(255,255,255,.9), inset 0 -1.5px 1px rgba(0,0,0,.05);
+  --lg-elev:0 14px 42px rgba(0,0,0,.12);
 }
 
 /* ═══ KIT SIGNATURE — eyebrow à point · ghost watermark · carte levée (mix Apple + éditorial) ═══ */
@@ -1193,16 +1202,17 @@ button, .ob-btn, .ob-btn-ghost,
 
 /* Card regroupant des items */
 .sp-card{
-  background:rgba(255,255,255,.04);
-  border-radius:18px;
-  border:1px solid rgba(255,255,255,.06);
+  background:var(--surface-card);
+  border-radius:var(--r-card);
+  border:1px solid var(--border);
+  box-shadow:var(--shadow-soft);
   overflow:hidden;
   margin:0;
 }
 [data-theme="light"] .sp-card{
-  background:#ffffff;
-  border:1px solid rgba(0,0,0,.08);
-  box-shadow:0 1px 6px rgba(0,0,0,.04);
+  background:#FFFFFF;
+  border:1px solid var(--border);
+  box-shadow:var(--shadow-soft);
 }
 
 /* Séparateur entre items */
@@ -1313,16 +1323,15 @@ button, .ob-btn, .ob-btn-ghost,
 
 /* Valeur / action à droite d'un item (panneaux Compte, Contenu…) */
 .pp-value{ font-size:13.5px; font-weight:500; color:var(--text-muted); letter-spacing:-0.01em; }
+/* Bouton d'action — « Ink Pill » Mastercard (fort contraste, radius 20px) */
 .pp-action{
-  border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06);
-  color:var(--text); font-family:var(--font-ui); font-size:13px; font-weight:600;
-  padding:7px 14px; border-radius:8px; cursor:pointer; letter-spacing:-0.01em;
-  transition:background .2s, transform .15s;
+  border:none; background:var(--text);
+  color:var(--bg); font-family:var(--font-ui); font-size:13px; font-weight:700;
+  padding:7px 20px; border-radius:var(--r-field); cursor:pointer; letter-spacing:-0.01em;
+  transition:opacity .2s, transform .15s;
 }
-.pp-action:hover{ background:rgba(255,255,255,.12); }
+.pp-action:hover{ opacity:.86; }
 .pp-action:active{ transform:scale(.96); }
-[data-theme="light"] .pp-action{ background:#f2f2f7; border:1px solid rgba(0,0,0,.08); color:#1d1d1f; }
-[data-theme="light"] .pp-action:hover{ background:#e5e5ea; }
 
 /* ===========================================================
    PAGE PRÉFÉRENCES — plein écran, layout Settings Apple
@@ -1739,17 +1748,19 @@ button, .ob-btn, .ob-btn-ghost,
 }
 .af-sheet{
   width:100%;max-width:520px;
-  background:#111111;
-  border-radius:22px 22px 0 0;
+  background:rgba(28,26,24,.72);
+  -webkit-backdrop-filter:blur(30px) saturate(180%); backdrop-filter:blur(30px) saturate(180%);
+  border-radius:28px 28px 0 0;
+  border:.5px solid var(--lg-border); border-bottom:none;
   display:flex;flex-direction:column;
   transform:translateY(110%);
   transition:transform .44s cubic-bezier(.32,.72,0,1);
-  box-shadow:0 -24px 72px rgba(0,0,0,.6);
+  box-shadow:var(--lg-spec), 0 -24px 72px rgba(0,0,0,.6);
   overflow:hidden;max-height:92dvh;overflow-y:auto;scrollbar-width:none;
 }
 .af-sheet::-webkit-scrollbar{display:none;}
 .af-overlay.open .af-sheet{transform:translateY(0);}
-[data-theme="light"] .af-sheet{background:#ffffff;}
+[data-theme="light"] .af-sheet{background:rgba(250,248,245,.82);}
 /* Handle */
 .af-handle{width:36px;height:4px;border-radius:2px;background:rgba(255,255,255,.22);margin:10px auto 4px;flex-shrink:0;}
 [data-theme="light"] .af-handle{background:rgba(0,0,0,.18);}
@@ -2291,11 +2302,11 @@ button, .ob-btn, .ob-btn-ghost,
 .morph-menu{
   /* Dark par défaut */
   width:44px; height:44px;
-  background:rgba(28,28,30,.82);
+  background:rgba(28,26,24,.82);
   -webkit-backdrop-filter:blur(22px) saturate(180%);
   backdrop-filter:blur(22px) saturate(180%);
-  border:1px solid rgba(255,255,255,.08);
-  box-shadow:0 6px 18px rgba(0,0,0,.35), 0 1px 3px rgba(0,0,0,.25);
+  border:.5px solid var(--lg-border);
+  box-shadow:var(--lg-spec), 0 6px 22px rgba(0,0,0,.4);
   border-radius:999px;
   overflow:hidden;
   transform-origin:top right;
@@ -2511,7 +2522,7 @@ button, .ob-btn, .ob-btn-ghost,
 .sbar-seg{
   position:relative; display:inline-flex; gap:0; padding:3px; isolation:isolate;
   width:fit-content; max-width:100%;
-  background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.06);
+  background:var(--lg-tint); border:.5px solid var(--lg-border); box-shadow:var(--lg-spec);
   border-radius:999px;
   overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none; -webkit-overflow-scrolling:touch;
 }
@@ -11745,8 +11756,8 @@ body.focus-mode .focus-exit{ display:flex; }
     .pl-empty-t{ font-family:var(--font-inter); font-size:16px; font-weight:700; color:var(--text); margin-bottom:6px; }
     .pl-empty-d{ font-family:var(--font-inter); font-size:13.5px; line-height:1.5; max-width:280px; margin:0 auto 18px; }
     .pl-empty-btn{ border:none; border-radius:999px; background:var(--accent); color:#fff; font-family:var(--font-inter); font-size:14px; font-weight:700; padding:11px 22px; cursor:pointer; }
-    .pl-player{ position:absolute; left:12px; right:12px; bottom:max(14px,env(safe-area-inset-bottom)); z-index:5; display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:18px; background:rgba(28,28,30,.86); -webkit-backdrop-filter:blur(22px) saturate(180%); backdrop-filter:blur(22px) saturate(180%); border:1px solid rgba(255,255,255,.1); box-shadow:0 16px 40px rgba(0,0,0,.5); }
-    [data-theme="light"] .pl-player{ background:rgba(255,255,255,.82); border-color:rgba(0,0,0,.08); }
+    .pl-player{ position:absolute; left:12px; right:12px; bottom:max(14px,env(safe-area-inset-bottom)); z-index:5; display:flex; align-items:center; gap:11px; padding:11px 13px; border-radius:24px; background:rgba(28,26,24,.82); -webkit-backdrop-filter:blur(22px) saturate(180%); backdrop-filter:blur(22px) saturate(180%); border:.5px solid var(--lg-border); box-shadow:var(--lg-spec), var(--lg-elev); }
+    [data-theme="light"] .pl-player{ background:rgba(255,255,255,.7); }
     .pl-player[hidden]{ display:none; }
     .pl-pp-art{ width:46px; height:46px; flex:none; border-radius:10px; background:#111 center/cover no-repeat; }
     .pl-pp-meta{ flex:1; min-width:0; }
@@ -11760,7 +11771,7 @@ body.focus-mode .focus-exit{ display:flex; }
     .pl-pp-skip{ font-family:var(--font-inter); font-size:10px; font-weight:800; color:var(--text-muted); width:30px; }
     /* Bouton Podcast de la Smart Bar */
     .sbar-podcast{ flex:none; display:inline-flex; align-items:center; gap:6px; height:36px; box-sizing:border-box;
-      border:1px solid var(--border); background:rgba(255,255,255,.05); color:var(--text); border-radius:999px;
+      border:.5px solid var(--lg-border); background:var(--lg-tint); box-shadow:var(--lg-spec); color:var(--text); border-radius:999px;
       padding:0 13px 0 11px; font-family:var(--font-inter); font-size:11.5px; font-weight:700; letter-spacing:-.01em;
       cursor:pointer; white-space:nowrap; -webkit-tap-highlight-color:transparent; transition:transform .12s ease, background .2s ease; }
     .sbar-podcast:active{ transform:scale(.95); }
@@ -11793,9 +11804,10 @@ body.focus-mode .focus-exit{ display:flex; }
       padding:24px; background:rgba(0,0,0,.5); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px);
       opacity:0; transition:opacity .2s ease; }
     .bfp-overlay.open{ display:flex; opacity:1; }
-    .bfp-card{ width:100%; max-width:320px; background:var(--bg-elev); border:1px solid var(--border);
-      border-radius:18px; padding:18px; box-shadow:0 24px 60px rgba(0,0,0,.5);
+    .bfp-card{ width:100%; max-width:320px; background:rgba(28,26,24,.82); -webkit-backdrop-filter:blur(24px) saturate(180%); backdrop-filter:blur(24px) saturate(180%); border:.5px solid var(--lg-border);
+      border-radius:24px; padding:18px; box-shadow:var(--lg-spec), 0 24px 60px rgba(0,0,0,.5);
       transform:scale(.95) translateY(8px); transition:transform .26s cubic-bezier(.34,1.4,.64,1); }
+    [data-theme="light"] .bfp-card{ background:rgba(250,248,245,.9); }
     .bfp-overlay.open .bfp-card{ transform:scale(1) translateY(0); }
     .bfp-title{ font-family:var(--font-inter); font-size:15px; font-weight:700; color:var(--text); margin-bottom:12px; }
     .bfp-input{ width:100%; box-sizing:border-box; background:var(--bg); border:1px solid var(--border);
