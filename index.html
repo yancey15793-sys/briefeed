@@ -11612,6 +11612,126 @@ body.focus-mode .focus-exit{ display:flex; }
   })();
 
 
+  /* ═══ LIQUID GLASS — réfraction réelle (technique Outpace/Aave) ════════════════
+     backdrop-filter:url(#filtre) ne réfracte que sur Chromium desktop ; iOS/Safari
+     ignorent le url() (tant mieux pour la mémoire GPU). On génère une displacement
+     map optique (dôme squircle convexe + loi de Snell n=1.5) en blob URL, un filtre
+     feDisplacementMap par élément (id frais, Safari met en cache par id), appliqué au
+     backdrop. Hors Chromium desktop : no-op total, les composants gardent leur verre
+     CSS (reflet spéculaire + bordure). */
+  (function(){
+    const ua = navigator.userAgent || '';
+    const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const isChromium = !!window.chrome && /Chrome|Chromium|Edg/.test(ua) && !/OPR|SamsungBrowser/.test(ua);
+    const ENABLED = isChromium && !isIOS && !!document.createElementNS;
+    if(!ENABLED){ window._bfGlass = { add(){}, refresh(){}, enabled:false }; return; }
+
+    const NS = 'http://www.w3.org/2000/svg';
+    let defs = null;
+    function ensureDefs(){
+      if(defs) return defs;
+      const svg = document.createElementNS(NS,'svg');
+      svg.setAttribute('aria-hidden','true');
+      svg.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden;pointer-events:none';
+      defs = document.createElementNS(NS,'defs');
+      svg.appendChild(defs); document.body.appendChild(svg);
+      return defs;
+    }
+    // SDF d'un rectangle arrondi (origine au centre) : <0 dedans, 0 au bord.
+    function sdf(px,py,hw,hh,r){
+      const qx = Math.abs(px) - (hw - r), qy = Math.abs(py) - (hh - r);
+      return Math.hypot(Math.max(qx,0),Math.max(qy,0)) + Math.min(Math.max(qx,qy),0) - r;
+    }
+    // Displacement map : pente du dôme squircle → Snell → bend, projeté sur la normale.
+    function makeMapURL(w,h,radius,band,gain){
+      const cv = document.createElement('canvas'); cv.width=w; cv.height=h;
+      const ctx = cv.getContext('2d'); const img = ctx.createImageData(w,h); const d = img.data;
+      const hw=w/2, hh=h/2, r=Math.max(1,Math.min(radius,hw,hh)), eps=1;
+      for(let y=0;y<h;y++) for(let x=0;x<w;x++){
+        const px=x-hw+0.5, py=y-hh+0.5;
+        let depth = (-sdf(px,py,hw,hh,r))/band; depth = depth<0?0:depth>1?1:depth;
+        const denom = Math.pow(1 - Math.pow(1-depth,4), 0.75) || 1e-4;
+        const slope = Math.pow(1-depth,3)/denom;
+        const thetaI = Math.atan(slope);
+        const thetaT = Math.asin(Math.min(1, Math.sin(thetaI)/1.5));
+        const bend = Math.sin(thetaI - thetaT);
+        let nx = sdf(px+eps,py,hw,hh,r) - sdf(px-eps,py,hw,hh,r);
+        let ny = sdf(px,py+eps,hw,hh,r) - sdf(px,py-eps,hw,hh,r);
+        const nl = Math.hypot(nx,ny) || 1; nx/=nl; ny/=nl;
+        const off = bend*gain;
+        const i=(y*w+x)*4;
+        d[i]   = Math.max(0,Math.min(255, 128 + nx*off));
+        d[i+1] = Math.max(0,Math.min(255, 128 + ny*off));
+        d[i+2] = 128; d[i+3] = 255;
+      }
+      ctx.putImageData(img,0,0);
+      return new Promise(res=>{ try{ cv.toBlob(b=> res(b?URL.createObjectURL(b):cv.toDataURL())); }catch(e){ res(cv.toDataURL()); } });
+    }
+    let seq=0;
+    async function apply(el, opt){
+      opt = opt||{};
+      const rect = el.getBoundingClientRect();
+      const w = Math.round(rect.width), h = Math.round(rect.height);
+      if(w<8 || h<8) return;
+      const key = w+'x'+h;
+      if(el._bfGlassKey === key) return;               // taille inchangée → on garde
+      el._bfGlassKey = key;
+      const cs = getComputedStyle(el);
+      const radius = parseFloat(opt.radius!=null?opt.radius:cs.borderTopLeftRadius) || 20;
+      const band = opt.band || Math.max(10, Math.min(w,h)*0.5);
+      const gain = opt.gain || 150;
+      const scale = opt.scale!=null ? opt.scale : 26;
+      const blur = opt.blur!=null ? opt.blur : 5;
+      const sat = opt.saturate!=null ? opt.saturate : 170;
+      let url;
+      try{ url = await makeMapURL(w,h,radius,band,gain); }catch(e){ el._bfGlassKey=null; return; }
+      const D = ensureDefs();
+      if(el._bfGlassId){ const old=document.getElementById(el._bfGlassId); if(old) old.remove(); }
+      if(el._bfGlassURL){ try{ URL.revokeObjectURL(el._bfGlassURL); }catch(e){} }
+      const id = 'bflg'+(++seq); el._bfGlassId=id; el._bfGlassURL=url;
+      const f = document.createElementNS(NS,'filter');
+      f.setAttribute('id',id);
+      f.setAttribute('x','-20%'); f.setAttribute('y','-20%'); f.setAttribute('width','140%'); f.setAttribute('height','140%');
+      f.setAttribute('color-interpolation-filters','sRGB');
+      const fe = document.createElementNS(NS,'feImage');
+      fe.setAttribute('preserveAspectRatio','none');
+      fe.setAttribute('x','0'); fe.setAttribute('y','0'); fe.setAttribute('width',w); fe.setAttribute('height',h);
+      fe.setAttribute('result','map'); fe.setAttribute('href',url);
+      fe.setAttributeNS('http://www.w3.org/1999/xlink','xlink:href',url);
+      const dm = document.createElementNS(NS,'feDisplacementMap');
+      dm.setAttribute('in','SourceGraphic'); dm.setAttribute('in2','map');
+      dm.setAttribute('scale',scale); dm.setAttribute('xChannelSelector','R'); dm.setAttribute('yChannelSelector','G');
+      f.appendChild(fe); f.appendChild(dm); D.appendChild(f);
+      el.style.backdropFilter = 'blur('+blur+'px) saturate('+sat+'%) url(#'+id+')';
+    }
+    const watched = [];
+    function add(selector, opt){ watched.push({selector, opt:opt||{}}); }
+    let rafPend = false;
+    function refresh(){
+      if(rafPend) return; rafPend = true;
+      requestAnimationFrame(()=>{ rafPend=false;
+        watched.forEach(wt=>{ try{ document.querySelectorAll(wt.selector).forEach(el=>apply(el, wt.opt)); }catch(e){} });
+      });
+    }
+    let rt=null;
+    window.addEventListener('resize', ()=>{ clearTimeout(rt); rt=setTimeout(()=>{ watched.forEach(wt=>document.querySelectorAll(wt.selector).forEach(el=>{ el._bfGlassKey=null; })); refresh(); }, 220); });
+    window._bfGlass = { add, refresh, apply, enabled:true };
+  })();
+
+  // Cibles du Liquid Glass réfractif (no-op hors Chromium desktop)
+  if(window._bfGlass && _bfGlass.enabled){
+    _bfGlass.add('#plPlayer:not([hidden])', { blur:8, scale:22, saturate:180 });
+    _bfGlass.add('#sbarSeg',   { blur:4, scale:16 });
+    _bfGlass.add('.af-sheet',  { blur:14, scale:26, radius:28 });
+    _bfGlass.add('.morph-menu',{ blur:10, scale:18 });
+    _bfGlass.add('.bfp-card',  { blur:14, scale:22, radius:24 });
+    const kick = ()=> _bfGlass.refresh();
+    if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', kick); else kick();
+    window.addEventListener('load', kick);
+    // Rattrape les composants qui s'affichent après un clic (mini-player, modales)
+    document.addEventListener('click', ()=>{ setTimeout(kick, 360); }, true);
+  }
+
   // ── PRELOAD IMAGES — IntersectionObserver (élimine le vide blanc) ───────
   (function _initImagePreload(){
     if(!('IntersectionObserver' in window)) return;
