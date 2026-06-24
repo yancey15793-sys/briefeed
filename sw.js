@@ -3,7 +3,7 @@
 // Cache-first pour l'app shell, network pour les flux
 // ═══════════════════════════════════════════════════
 
-const CACHE_NAME = 'briefeed-v2';
+const CACHE_NAME = 'briefeed-v3';
 
 // Ressources à mettre en cache au premier lancement
 const SHELL_ASSETS = [
@@ -87,18 +87,17 @@ self.addEventListener('fetch', event => {
         return;
     }
 
-    // App shell (index.html) → cache instantané + mise à jour arrière-plan
+    // App shell (index.html) → RÉSEAU d'abord (voir les MAJ aussitôt),
+    // cache en secours uniquement hors-ligne
     if (url.origin === self.location.origin || event.request.mode === 'navigate') {
         event.respondWith(
-            caches.open(CACHE_NAME).then(cache =>
-                cache.match(event.request).then(cached => {
-                    const networkFetch = fetch(event.request).then(response => {
-                        if (response.ok) cache.put(event.request, response.clone());
-                        return response;
-                    }).catch(() => cached);
-                    return cached || networkFetch;
-                })
-            )
+            fetch(event.request).then(response => {
+                if (response.ok) {
+                    const clone = response.clone();
+                    caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+                }
+                return response;
+            }).catch(() => caches.open(CACHE_NAME).then(cache => cache.match(event.request)))
         );
         return;
     }
