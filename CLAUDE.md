@@ -56,6 +56,7 @@ Succès mesuré non par le nombre de fonctionnalités visibles, mais par la sens
 - Spring easing : `cubic-bezier(.34,1.56,.64,1)` · Pill segment : `cubic-bezier(.34,1.4,.64,1)`
 - Scroll-reveal : `.reveal` → `.reveal.in` (opacity 0→1 + translateY 20px→0, 0.58 s, IntersectionObserver)
 - Wordmark Briefeed : Inter 700 uppercase
+- **Kit signature** (mix Apple discipline + éditorial Mastercard, dosage équilibré — dark épuré préservé, sans crème/orange/orbites) : tokens `--r-field/card/container/pill` (échelle de rayons), `--surface-card` (cadence de surfaces), `--eyebrow-dot` (cyan dark / bleu clair), `--ghost` (filigrane) ; classes `.bf-eyebrow` (label uppercase + point d'accent), `.bf-display` (DM Serif serré), `.bf-ghost` (watermark géant), `.bf-sig-card`. Appliqué : Préférences (titre DM Serif + ghost « Réglages », eyebrows sur `.sp-section-label`, onglet actif `#ff3c32`→`--accent`), Podcast (`.pl-sec-title` à point, ghost « Écouter », `.pl-bigtitle` DM Serif), lecteur d'article (`.art-modal-date` à point). À harmoniser plus tard : `#newArtsPill` reste en rouge `#ff3c32` (hors palette).
 
 ## Vues existantes
 
@@ -120,6 +121,7 @@ let _srcsOpen      = false;  // rail des sources à la demande (replié par déf
 ### Statut exact
 
 - **Dernière chose faite :**
+  - **Kit signature design** (`3e5b1fc`) : analyse des systèmes Apple + Mastercard fournis par l'utilisateur, mixés avec notre dark épuré (dosage « équilibré »). Tokens + classes réutilisables (voir Design tokens), appliqués à 3 écrans (Préférences, Podcast, lecteur d'article). Prochaine étape : étendre aux autres vues (Magazine/Liste) + harmoniser `#newArtsPill`.
   - **Refonte page Podcast** (`176cd7c`) : choix utilisateur = mix Apple Podcasts + éditorial, **une seule page via la Smart Bar**. Grand titre DM Serif, hero, carrousel de vignettes « Nouveaux épisodes », liste TTS « Lire à voix haute », bloc « Découvrir » vers la galerie. Entrée Podcasts retirée du menu latéral.
   - Lot multi-tâches (`1998c33`→`a30d645`) :
     - **Bug « redémarre à l'ajout, dossiers/flux perdus »** : cause = quota localStorage saturé (`persist()` avalait l'échec) → `_safeSet` (purge `bf_fc_*` + réessai) (`2063824`). Le crash mémoire lui-même reste un sujet ouvert, mais les données ne sont plus perdues.
