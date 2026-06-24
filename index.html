@@ -2503,6 +2503,9 @@ button, .ob-btn, .ob-btn-ghost,
    ══════════════════════════════════════════════════════════ */
 .sbar{ align-self:center; width:min(100%, 341.25px); margin:6px 0 18px; display:flex; flex-direction:column; gap:15px; align-items:center; }
 .sbar[hidden]{ display:none; }
+/* Rangée segment + bouton Podcast (même ligne) */
+.sbar-seg-row{ display:flex; align-items:center; justify-content:center; gap:8px; width:100%; }
+.sbar-seg-row .sbar-seg{ min-width:0; }
 
 /* — Segment de filtres intelligents (pastille glissante) — */
 .sbar-seg{
@@ -5216,15 +5219,17 @@ body.focus-mode .focus-exit{ display:flex; }
 
       <!-- Smart Bar — segment intelligent + catégories (tiret animé) + sources (accordéon) -->
       <div id="smartBar" class="sbar" hidden>
-        <button class="sbar-podcast" id="sbarPodcastBtn" type="button" onclick="openPodListen()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 14v-2a9 9 0 0 1 18 0v2"/><rect x="2.5" y="13" width="4.5" height="8" rx="2"/><rect x="17" y="13" width="4.5" height="8" rx="2"/></svg>
-          <span>Podcast</span>
-        </button>
-        <div class="sbar-seg" id="sbarSeg">
-          <span class="sbar-seg-pill" id="sbarSegPill" aria-hidden="true"></span>
-          <button class="sbar-seg-btn" type="button" data-mode="all">Tout</button>
-          <button class="sbar-seg-btn" type="button" data-mode="unread">Non lus</button>
-          <button class="sbar-seg-btn" type="button" data-mode="trending">Tendances</button>
+        <div class="sbar-seg-row">
+          <div class="sbar-seg" id="sbarSeg">
+            <span class="sbar-seg-pill" id="sbarSegPill" aria-hidden="true"></span>
+            <button class="sbar-seg-btn" type="button" data-mode="all">Tout</button>
+            <button class="sbar-seg-btn" type="button" data-mode="unread">Non lus</button>
+            <button class="sbar-seg-btn" type="button" data-mode="trending">Tendances</button>
+          </div>
+          <button class="sbar-podcast" id="sbarPodcastBtn" type="button" onclick="openPodListen()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 14v-2a9 9 0 0 1 18 0v2"/><rect x="2.5" y="13" width="4.5" height="8" rx="2"/><rect x="17" y="13" width="4.5" height="8" rx="2"/></svg>
+            <span>Podcast</span>
+          </button>
         </div>
         <div class="sbar-cats-row">
           <div class="sbar-cats" id="sbarCats"></div>
@@ -11754,10 +11759,10 @@ body.focus-mode .focus-exit{ display:flex; }
     .pl-pp-play svg{ width:20px; height:20px; }
     .pl-pp-skip{ font-family:var(--font-inter); font-size:10px; font-weight:800; color:var(--text-muted); width:30px; }
     /* Bouton Podcast de la Smart Bar */
-    .sbar-podcast{ align-self:center; display:inline-flex; align-items:center; gap:7px; border:1px solid var(--border);
-      background:rgba(255,255,255,.05); color:var(--text); border-radius:999px; padding:7px 15px 7px 13px;
-      font-family:var(--font-inter); font-size:12.5px; font-weight:700; letter-spacing:-.01em; cursor:pointer;
-      -webkit-tap-highlight-color:transparent; transition:transform .12s ease, background .2s ease; }
+    .sbar-podcast{ flex:none; display:inline-flex; align-items:center; gap:6px; height:36px; box-sizing:border-box;
+      border:1px solid var(--border); background:rgba(255,255,255,.05); color:var(--text); border-radius:999px;
+      padding:0 13px 0 11px; font-family:var(--font-inter); font-size:11.5px; font-weight:700; letter-spacing:-.01em;
+      cursor:pointer; white-space:nowrap; -webkit-tap-highlight-color:transparent; transition:transform .12s ease, background .2s ease; }
     .sbar-podcast:active{ transform:scale(.95); }
     .sbar-podcast svg{ width:16px; height:16px; }
     [data-theme="light"] .sbar-podcast{ background:rgba(0,0,0,.04); border-color:rgba(0,0,0,.09); }
