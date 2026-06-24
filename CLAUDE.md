@@ -47,8 +47,8 @@ Succès mesuré non par le nombre de fonctionnalités visibles, mais par la sens
 
 ## Design tokens
 
-- Fonds : `#000` / `#07090b`
-- Accent : **Apple blue** `#0a84ff` (dark) / `#0071e3` (light)
+- **Palette « Mastercard fidèle »** (bascule, `c84a971`) : sombre = ink chaud `--bg:#141413` / `--bg-elev:#1C1A18`, texte crème `#F3F0EE`, muted taupe `#9A958C`, bordure `#2A2724` ; clair = crème `--bg:#F3F0EE` / lifted `#FCFBFA`, ink `#141413`, Dust Taupe `#D1CDC7`. Point eyebrow Signal Orange `#F37338` (dark) / `#CF4500` (clair). Rayons fidèles `--r-field:20` · `--r-card:24` · `--r-container:40` · `--r-pill:999` (suppression du 8-16 générique). Ombre atmosphérique `--shadow-soft`. Boutons d'action `.pp-action` → Ink Pill ; cartes `.sp-card` → grand rayon + halo. À étendre : Smart Bar/nav en pill flottant, modales, autres boutons.
+- Accent : **Apple blue** `#0a84ff` (dark) / `#0071e3`→`#0066cc` (light) — désormais réservé liens/focus (Mastercard garde l'ink pour les CTAs)
 - Sélecteur du rail de logos flottants : blob `.sbar-srail-blob` **cyan** `#0cf2e6` + anneau de l'item actif `.sbar-srail-item.sel` (gap couleur fond + ring `#0cf2e6` + glow), dark/light
 - Chips de catégorie (`.sbar-cat`) : pilule **pleine** glissante `.sbar-cat-pill` (`background:var(--text)`, sous le texte) ; texte actif inversé `var(--bg)` — rendu net en sombre comme en clair, + fondu latéral. Texte 12,5px
 - Nav bar du bas — item actif : **blanc** `#fff` en dark (avant bleu `#0091FF`) ; mode clair inchangé (`#0088FF`)
