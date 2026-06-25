@@ -111,6 +111,8 @@ html[data-font="serif"]        { --font-ui:var(--font-inter); --font-title:var(-
   letter-spacing:-.04em; color:var(--ghost); }
 .bf-sig-card{ background:var(--surface-card); border:1px solid var(--border);
   border-radius:var(--r-card); }
+/* Regroupement de sujet — métadonnée discrète (niveau 1), jamais un bloc */
+.bf-group{ color:var(--text-muted); font-weight:500; white-space:nowrap; }
 
 *{ box-sizing:border-box; margin:0; padding:0; }
 html{
@@ -8445,6 +8447,7 @@ body.focus-mode .focus-exit{ display:flex; }
   }
 
   function _dedup(arts){
+    for(const a of arts){ if(a._group) a._group=null; }   // regroupement recalculé à chaque passe
     // 1) Dédup exact par lien — O(n)
     const byLink = new Set(); const stage = [];
     for(const a of arts){ if(a.link && byLink.has(a.link)) continue; if(a.link) byLink.add(a.link); stage.push(a); }
@@ -8467,13 +8470,13 @@ body.focus-mode .focus-exit{ display:flex; }
       const toks = _tokens(a.title);
       const cand = new Set();
       toks.forEach(t=>{ const arr = index.get(t); if(arr) arr.forEach(i=>cand.add(i)); });
-      let dup = false;
+      let dup = false, dupIdx = -1;
       for(const i of cand){
         const b = res[i]; let inter = 0;
         toks.forEach(w=>{ if(b._toks.has(w)) inter++; });
-        if(inter/(toks.size + b._toks.size - inter || 1) >= 0.55){ dup = true; break; }
+        if(inter/(toks.size + b._toks.size - inter || 1) >= 0.55){ dup = true; dupIdx = i; break; }
       }
-      if(dup) continue;
+      if(dup){ const rep=res[dupIdx]; (rep._group || (rep._group=[])).push(a); continue; }
       a._toks = toks; const idx = res.length; res.push(a);
       toks.forEach(t=>{ let arr = index.get(t); if(!arr){ arr=[]; index.set(t,arr); } arr.push(idx); });
     }
@@ -10805,6 +10808,13 @@ body.focus-mode .focus-exit{ display:flex; }
   window._extractKeywords = _extractKeywords;
 
   // Carte « Ordered List » — vue Édition
+  // Métadonnée discrète de regroupement (niveau 1 — jamais un bloc graphique)
+  function _groupMeta(a){
+    const n = a && a._group ? a._group.length : 0;
+    if(n<1) return '';
+    return ` <span class="bf-group">· ${n} autre${n>1?'s':''} source${n>1?'s':''}</span>`;
+  }
+  window._groupMeta = _groupMeta;
   function _edlCardHtml(a, i){
     const isRead = _RS.has(a.link);
     const fig = a.imageUrl
@@ -10819,7 +10829,7 @@ body.focus-mode .focus-exit{ display:flex; }
       ${fig}
       <div class="edl-title">${escHtml(a.title||'')}</div>
       ${sub ? `<div class="edl-sub">${escHtml(sub.slice(0,150))}</div>` : ''}
-      <div class="edl-date">${escHtml(_seqDateStr(a.pubDate))}</div>
+      <div class="edl-date">${escHtml(_seqDateStr(a.pubDate))}${_groupMeta(a)}</div>
       ${tags}
     </div>`;
   }
@@ -10854,7 +10864,7 @@ body.focus-mode .focus-exit{ display:flex; }
     return `<div class="seq-item reveal${isRead?' is-read':''}" data-seq-idx="${i}" onclick="_seqOpen(${i})">
       <span class="seq-num">${String(i+1).padStart(2,'0')}</span>
       <div class="seq-body">
-        <div class="seq-source"><span class="seq-fav"><img src="${escAttr(fav)}" onerror="this.style.opacity='.3'"></span>${escHtml(a.source||'')} · ${relTime(a.pubDate)}</div>
+        <div class="seq-source"><span class="seq-fav"><img src="${escAttr(fav)}" onerror="this.style.opacity='.3'"></span>${escHtml(a.source||'')} · ${relTime(a.pubDate)}${_groupMeta(a)}</div>
         <div class="seq-title">${escHtml(a.title||'')}</div>
       </div>
       ${thumb}
@@ -10904,7 +10914,7 @@ body.focus-mode .focus-exit{ display:flex; }
       return `<div class="list-item reveal" onclick="_listeOpen(${i})" style="position:relative">
         ${thumb}
         <div class="list-body">
-          <div class="list-source"><div class="list-fav"><img src="${escAttr(fav)}" onerror="this.style.opacity='.3'"></div>${escHtml(a.source)} · ${relTime(a.pubDate)}</div>
+          <div class="list-source"><div class="list-fav"><img src="${escAttr(fav)}" onerror="this.style.opacity='.3'"></div>${escHtml(a.source)} · ${relTime(a.pubDate)}${_groupMeta(a)}</div>
           ${_titleWithShare(escHtml(a.title), a.link, a.title, 'list-title')}
         </div>
       </div>`;
