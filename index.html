@@ -7822,7 +7822,7 @@ body.focus-mode .focus-exit{ display:flex; }
     if(dec) dec.hidden = tab!=='decouvrir';
     if(abo) abo.hidden = tab!=='abonne';
     if(tab==='abonne' && abo && typeof _plBuildAbos==='function'){ abo.innerHTML = _plBuildAbos(); if(typeof _plSyncPlaying==='function') _plSyncPlaying(); }
-    if(tab==='decouvrir' && dec && typeof _plBuildDiscover==='function'){ dec.innerHTML = _plBuildDiscover(); }
+    if(tab==='decouvrir' && dec && typeof _plBuildDiscover==='function'){ dec.innerHTML = _plBuildDiscover(); const c0=dec.querySelector('.pl-disc-chip.sel'); if(c0 && typeof _plDiscoverCat==='function') _plDiscoverCat(c0); }
     const body = document.getElementById('pcBody');
     if(body) body.scrollTop = 0;
   }
@@ -7928,13 +7928,16 @@ body.focus-mode .focus-exit{ display:flex; }
     const esc=String(a.link||'').replace(/'/g,"\\'");
     return `<div class="pl-cont" data-link="${escAttr(a.link)}" onclick="_plPlay('${esc}')"><div class="pl-cont-art" style="${_plArtCss(a)}"></div><div class="pl-cont-body"><div class="pl-cont-title">${escHtml(a.title||'')}</div><div class="pl-cont-bar"><span class="pl-cont-prog" style="width:${pct}%"></span></div><div class="pl-cont-rem">${_plFmtRem((p.d||0)-(p.t||0))}</div></div></div>`;
   }
+  const PC_CATS=[['Actualités','actualité'],['Société','société'],['Culture','culture'],['Histoire','histoire'],['Sciences','science'],['Sport','sport'],['Économie','économie'],['Humour','humour'],['True crime','true crime'],['Politique','politique']];
   function _plBuildDiscover(){
+    const chips=PC_CATS.map(([label,term],i)=>`<button class="pl-disc-chip${i===0?' sel':''}" type="button" data-term="${escAttr(term)}" onclick="_plDiscoverCat(this)">${escHtml(label)}</button>`).join('');
     return `<div class="pl-disc-search">
         <svg class="pl-disc-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
         <input type="search" id="plDiscInput" placeholder="Rechercher un podcast…" autocapitalize="none" autocorrect="off" enterkeyhint="search" onkeydown="if(event.key==='Enter'){event.preventDefault();_plDiscoverSearch();}">
       </div>
       ${_plAddRssHtml()}
-      <div id="plDiscResults" class="pl-disc-results">
+      <div class="pl-disc-chips">${chips}</div>
+      <div id="plDiscResults" class="pl-disc-results"><div class="pl-disc-msg">Chargement…</div>
         <div class="pl-soon"><div class="pl-soon-t">Découvrir</div><div class="pl-soon-d">Cherchez un podcast par nom ou par thème — annuaire Apple Podcasts (gratuit). Tendances et catégories suivront.</div></div>
       </div>`;
   }
@@ -7966,9 +7969,22 @@ body.focus-mode .focus-exit{ display:flex; }
     const list=await _plItunes(term,{limit:24});
     if(!list){ res.innerHTML='<div class="pl-disc-msg">Recherche indisponible pour l\'instant (réseau). Réessayez.</div>'; return; }
     if(!list.length){ res.innerHTML='<div class="pl-disc-msg">Aucun podcast pour « '+escHtml(term)+' ».</div>'; return; }
+    document.querySelectorAll('.pl-disc-chip').forEach(c=>c.classList.remove('sel'));
     res.innerHTML='<div class="pl-it-grid">'+list.map(_plItunesCard).join('')+'</div>';
   }
   window._plDiscoverSearch=_plDiscoverSearch;
+  // Annuaire par catégorie (chips) : remplit Découvrir avec de vrais podcasts FR via iTunes.
+  async function _plDiscoverCat(el){
+    const res=document.getElementById('plDiscResults'); if(!res) return;
+    const term=(el && el.dataset && el.dataset.term) ? el.dataset.term : 'actualité';
+    document.querySelectorAll('.pl-disc-chip').forEach(c=>c.classList.toggle('sel', c===el));
+    res.innerHTML='<div class="pl-disc-msg">Chargement…</div>';
+    const list=await _plItunes(term,{limit:24});
+    if(!list){ res.innerHTML='<div class="pl-disc-msg">Annuaire indisponible pour l\'instant (réseau). Réessayez.</div>'; return; }
+    if(!list.length){ res.innerHTML='<div class="pl-disc-msg">Aucun podcast dans cette catégorie.</div>'; return; }
+    res.innerHTML='<div class="pl-it-grid">'+list.map(_plItunesCard).join('')+'</div>';
+  }
+  window._plDiscoverCat=_plDiscoverCat;
   // Abonnement : ajoute le flux du podcast (réutilise la logique de afSubmit)
   function _plSubscribe(feedUrl, name){
     if(!feedUrl || typeof folders==='undefined') return false;
@@ -12230,6 +12246,11 @@ body.focus-mode .focus-exit{ display:flex; }
     .pl-disc-search input{ width:100%; box-sizing:border-box; height:44px; padding:0 14px 0 42px; border-radius:var(--r-field); border:1px solid var(--border); background:var(--surface-card); color:var(--text); font-family:var(--font-inter); font-size:15px; outline:none; -webkit-appearance:none; }
     .pl-disc-search input::placeholder{ color:var(--text-muted); }
     .pl-disc-ic{ position:absolute; left:14px; top:50%; transform:translateY(-50%); width:18px; height:18px; color:var(--text-muted); pointer-events:none; }
+    .pl-disc-chips{ display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; margin:0 0 18px; padding:2px; }
+    .pl-disc-chips::-webkit-scrollbar{ display:none; }
+    .pl-disc-chip{ flex:none; border:1px solid var(--border); background:var(--surface-card); color:var(--text-muted); font-family:var(--font-inter); font-size:13px; font-weight:700; padding:8px 15px; border-radius:999px; cursor:pointer; white-space:nowrap; -webkit-tap-highlight-color:transparent; transition:transform .12s ease; }
+    .pl-disc-chip:active{ transform:scale(.95); }
+    .pl-disc-chip.sel{ background:var(--text); color:var(--bg); border-color:var(--text); }
     .pl-disc-msg{ text-align:center; color:var(--text-muted); font-family:var(--font-inter); font-size:14px; padding:40px 20px; line-height:1.5; }
     .pl-it-grid{ display:flex; flex-direction:column; gap:15px; }
     .pl-it{ display:flex; align-items:center; gap:13px; }
