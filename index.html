@@ -3303,6 +3303,12 @@ button, .ob-btn, .ob-btn-ghost,
 .art-ctx-item:hover{ background:rgba(127,127,127,.08); }
 .art-ctx-item:active{ background:rgba(127,127,127,.14); transform:scale(.99); }
 .art-ctx-src{ font-family:var(--font-inter); font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); }
+.art-ctx-meta{ display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
+.art-ctx-meta .art-ctx-src{ flex:none; }
+.art-ctx-time{ font-family:var(--font-inter); font-size:10.5px; font-weight:600; letter-spacing:.01em; color:var(--text-muted); opacity:.85; }
+.art-ctx-time::before{ content:''; display:inline-block; width:3px; height:3px; border-radius:50%; background:currentColor; vertical-align:middle; margin-right:8px; opacity:.6; }
+.art-ctx-tag{ font-family:var(--font-inter); font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--text-muted); border:1px solid var(--border); border-radius:var(--r-pill,999px); padding:1px 7px; line-height:1.6; }
+.art-ctx-tag-nuance{ color:var(--eyebrow-dot); border-color:var(--eyebrow-dot); opacity:.85; }
 .art-ctx-title{ font-family:var(--font-inter); font-size:14px; font-weight:600; line-height:1.35; color:var(--text); letter-spacing:-.01em; }
 .art-reader-text{
   font-family:var(--font-title),Georgia,serif;
@@ -8482,21 +8488,25 @@ body.focus-mode .focus-exit{ display:flex; }
     //    qui reconstruisait deux Set à chaque paire). Sémantique conservée :
     //    on garde la 1re occurrence et on jette les suivantes similaires (≥.55).
     const res = []; const index = new Map(); // token -> [indices dans res]
+    const WIN = 72*3600*1000;   // fenêtre temporelle : un même événement = dates proches
     for(const a of stage){
       const toks = _tokens(a.title);
+      const at = +new Date(a.pubDate||0);
       const cand = new Set();
       toks.forEach(t=>{ const arr = index.get(t); if(arr) arr.forEach(i=>cand.add(i)); });
       let dup = false, dupIdx = -1;
       for(const i of cand){
-        const b = res[i]; let inter = 0;
+        const b = res[i];
+        if(at && b._t && Math.abs(at - b._t) > WIN) continue;   // trop éloignés → pas le même sujet
+        let inter = 0;
         toks.forEach(w=>{ if(b._toks.has(w)) inter++; });
         if(inter/(toks.size + b._toks.size - inter || 1) >= 0.55){ dup = true; dupIdx = i; break; }
       }
       if(dup){ const rep=res[dupIdx]; (rep._group || (rep._group=[])).push(a); continue; }
-      a._toks = toks; const idx = res.length; res.push(a);
+      a._toks = toks; a._t = at; const idx = res.length; res.push(a);
       toks.forEach(t=>{ let arr = index.get(t); if(!arr){ arr=[]; index.set(t,arr); } arr.push(idx); });
     }
-    res.forEach(a=>{ delete a._toks; }); // champ temporaire nettoyé
+    res.forEach(a=>{ delete a._toks; delete a._t; }); // champs temporaires nettoyés
     return res;
   }
 
@@ -10828,22 +10838,63 @@ body.focus-mode .focus-exit{ display:flex; }
   window._extractKeywords = _extractKeywords;
 
   // Carte « Ordered List » — vue Édition
+  // Sources DISTINCTES du regroupement (hors source du représentant) — base
+  // commune au compteur du flux (niveau 1) et au panneau Contexte (niveau 3),
+  // pour que « N autres sources » dise toujours la vérité (médias distincts,
+  // pas un simple nombre d'articles re-publiés).
+  function _groupSources(a){
+    const grp = (a && a._group) ? a._group : [];
+    if(!grp.length) return [];
+    const own = (a.source||'').trim().toLowerCase();
+    const seen = new Set(); const out = [];
+    for(const g of grp){
+      const s = (g.source||'').trim(); const k = s.toLowerCase();
+      if(!k || k===own || seen.has(k)) continue;
+      seen.add(k); out.push(s);
+    }
+    return out;
+  }
+  window._groupSources = _groupSources;
   // Métadonnée discrète de regroupement (niveau 1 — jamais un bloc graphique)
   function _groupMeta(a){
-    const n = a && a._group ? a._group.length : 0;
+    const n = _groupSources(a).length;
     if(n<1) return '';
     return ` <span class="bf-group">· ${n} autre${n>1?'s':''} source${n>1?'s':''}</span>`;
   }
   window._groupMeta = _groupMeta;
-  // Niveau 3 — panneau « Contexte » (déroulant, opt-in) du lecteur d'article
+  // Niveau 3 — panneau « Contexte » (déroulant, opt-in) du lecteur d'article.
+  // Une seule entrée par média distinct (le plus récent), classées en
+  // chronologie ; pastille discrète pour les médias liés (audio/podcast) et
+  // pour les angles divergents (démenti / nuance / fact-check). Aucun bloc
+  // graphique : l'intelligence reste invisible, le calme visuel préservé.
+  const _CTX_CONTRA = /(d[ée]ment|d[ée]menti|conteste|r[ée]fute|r[ée]fut|nuance|contredit|infox|rumeur|contrairement|mise au point|fact[\s-]?check|fausse?\s|d[ée]bunk)/i;
   function _groupContextHtml(a){
     const grp = (a && a._group) ? a._group : [];
     if(!grp.length) return '';
-    const items = grp.map(g=>{
+    const own = (a.source||'').trim().toLowerCase();
+    // Dédup par source : on garde l'article le plus récent de chaque autre média
+    const bySrc = new Map();
+    for(const g of grp){
+      const s = (g.source||'').trim(); const k = s.toLowerCase();
+      if(!k || k===own) continue;
+      const prev = bySrc.get(k);
+      if(!prev || (+new Date(g.pubDate||0)) > (+new Date(prev.pubDate||0))) bySrc.set(k, g);
+    }
+    let list = Array.from(bySrc.values());
+    if(!list.length) return '';   // que des re-publications du même média → pas de contexte
+    // Chronologie : du plus récent au plus ancien (cohérent avec le reste de l'app)
+    list.sort((x,y)=> (+new Date(y.pubDate||0)) - (+new Date(x.pubDate||0)));
+    const items = list.map(g=>{
       const esc = String(g.link||'').replace(/'/g,"\\'");
-      return `<button class="art-ctx-item" type="button" onclick="_openCtxArt('${esc}')"><span class="art-ctx-src">${escHtml(g.source||'')}</span><span class="art-ctx-title">${escHtml(g.title||'')}</span></button>`;
+      const t = relTime(g.pubDate);
+      const media  = g.audioUrl ? `<span class="art-ctx-tag art-ctx-tag-media">Audio</span>` : '';
+      const nuance = _CTX_CONTRA.test(g.title||'') ? `<span class="art-ctx-tag art-ctx-tag-nuance">Nuance</span>` : '';
+      return `<button class="art-ctx-item" type="button" onclick="_openCtxArt('${esc}')">`
+        + `<span class="art-ctx-meta"><span class="art-ctx-src">${escHtml(g.source||'')}</span>`
+        + (t?`<span class="art-ctx-time">${escHtml(t)}</span>`:'') + media + nuance + `</span>`
+        + `<span class="art-ctx-title">${escHtml(g.title||'')}</span></button>`;
     }).join('');
-    const n = grp.length;
+    const n = list.length;
     return `<div class="art-ctx" id="artCtx">
       <button class="art-ctx-head" type="button" aria-expanded="false" onclick="_toggleCtx(this)">
         <span class="art-ctx-label"><span class="art-ctx-dot"></span>CONTEXTE</span>
