@@ -3288,6 +3288,22 @@ button, .ob-btn, .ob-btn-ghost,
 .art-modal-source-name{ font-family:var(--font-inter); font-size:12px; font-weight:700; color:var(--text); text-transform:uppercase; letter-spacing:.04em; }
 /* Reader content */
 .art-reader-section{ position:relative; z-index:1; padding:4px 0 20px; }
+/* Niveau 3 — Contexte (déroulant opt-in, ouverture spring bezier) */
+.art-ctx{ position:relative; z-index:1; margin:6px 0 26px; border-top:1px solid var(--border); }
+.art-ctx-head{ width:100%; display:flex; align-items:center; gap:11px; padding:18px 2px 16px; background:none; border:none; cursor:pointer; -webkit-tap-highlight-color:transparent; text-align:left; }
+.art-ctx-label{ display:inline-flex; align-items:center; gap:7px; font-family:var(--font-inter); font-size:11px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--text-muted); flex:none; }
+.art-ctx-dot{ width:6px; height:6px; border-radius:50%; background:var(--eyebrow-dot); box-shadow:0 0 10px var(--eyebrow-dot); }
+.art-ctx-sub{ flex:1; min-width:0; font-family:var(--font-inter); font-size:13.5px; color:var(--text); font-weight:600; letter-spacing:-.01em; }
+.art-ctx-chev{ width:18px; height:18px; flex:none; color:var(--text-muted); transition:transform .42s cubic-bezier(.34,1.4,.64,1); }
+.art-ctx.open .art-ctx-chev{ transform:rotate(180deg); }
+.art-ctx-wrap{ display:grid; grid-template-rows:0fr; transition:grid-template-rows .44s cubic-bezier(.34,1.4,.64,1); }
+.art-ctx.open .art-ctx-wrap{ grid-template-rows:1fr; }
+.art-ctx-inner{ overflow:hidden; min-height:0; display:flex; flex-direction:column; gap:2px; padding-bottom:4px; }
+.art-ctx-item{ display:flex; flex-direction:column; gap:3px; padding:11px 12px; border-radius:14px; background:none; border:none; cursor:pointer; text-align:left; -webkit-tap-highlight-color:transparent; transition:background .2s ease, transform .12s ease; }
+.art-ctx-item:hover{ background:rgba(127,127,127,.08); }
+.art-ctx-item:active{ background:rgba(127,127,127,.14); transform:scale(.99); }
+.art-ctx-src{ font-family:var(--font-inter); font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); }
+.art-ctx-title{ font-family:var(--font-inter); font-size:14px; font-weight:600; line-height:1.35; color:var(--text); letter-spacing:-.01em; }
 .art-reader-text{
   font-family:var(--font-title),Georgia,serif;
   font-size:var(--reader-font-size,17px); line-height:1.72; color:var(--text);
@@ -10378,6 +10394,10 @@ body.focus-mode .focus-exit{ display:flex; }
     const readerSection = document.getElementById('artReaderSection');
     if(readerSection) _loadArtReader(a, readerSection);
 
+    // Niveau 3 — Contexte (autres sources du sujet), opt-in, replié par défaut
+    const ctxEl = document.getElementById('artModalContext');
+    if(ctxEl) ctxEl.innerHTML = (typeof _groupContextHtml==='function') ? _groupContextHtml(a) : '';
+
     // Ouvrir — on annule une éventuelle animation de fermeture en cours.
     // Si le modal était déjà ouvert ou en train de se fermer, son verrou de
     // scroll est toujours actif : on ne re-verrouille pas (sinon fuite).
@@ -10815,6 +10835,38 @@ body.focus-mode .focus-exit{ display:flex; }
     return ` <span class="bf-group">· ${n} autre${n>1?'s':''} source${n>1?'s':''}</span>`;
   }
   window._groupMeta = _groupMeta;
+  // Niveau 3 — panneau « Contexte » (déroulant, opt-in) du lecteur d'article
+  function _groupContextHtml(a){
+    const grp = (a && a._group) ? a._group : [];
+    if(!grp.length) return '';
+    const items = grp.map(g=>{
+      const esc = String(g.link||'').replace(/'/g,"\\'");
+      return `<button class="art-ctx-item" type="button" onclick="_openCtxArt('${esc}')"><span class="art-ctx-src">${escHtml(g.source||'')}</span><span class="art-ctx-title">${escHtml(g.title||'')}</span></button>`;
+    }).join('');
+    const n = grp.length;
+    return `<div class="art-ctx" id="artCtx">
+      <button class="art-ctx-head" type="button" aria-expanded="false" onclick="_toggleCtx(this)">
+        <span class="art-ctx-label"><span class="art-ctx-dot"></span>CONTEXTE</span>
+        <span class="art-ctx-sub">Aussi couvert par ${n} autre${n>1?'s':''} source${n>1?'s':''}</span>
+        <svg class="art-ctx-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="art-ctx-wrap"><div class="art-ctx-inner">${items}</div></div>
+    </div>`;
+  }
+  window._groupContextHtml = _groupContextHtml;
+  function _toggleCtx(btn){
+    const box = btn && btn.closest ? btn.closest('.art-ctx') : null;
+    if(!box) return;
+    const open = box.classList.toggle('open');
+    btn.setAttribute('aria-expanded', open?'true':'false');
+  }
+  window._toggleCtx = _toggleCtx;
+  function _openCtxArt(link){
+    const a = (typeof _allArticles!=='undefined' ? _allArticles : []).find(x=>x && x.link===link);
+    if(a && typeof _showArtModal==='function') _showArtModal(a);
+    else if(link){ try{ window.open(link,'_blank','noopener'); }catch(e){} }
+  }
+  window._openCtxArt = _openCtxArt;
   function _edlCardHtml(a, i){
     const isRead = _RS.has(a.link);
     const fig = a.imageUrl
@@ -12231,6 +12283,7 @@ body.focus-mode .focus-exit{ display:flex; }
 
         <!-- Reader content -->
         <div class="art-reader-section" id="artReaderSection"></div>
+        <div id="artModalContext"></div>
       </div>
 
       <!-- Toolbar sticky bas -->
