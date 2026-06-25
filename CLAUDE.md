@@ -138,6 +138,8 @@ let _srcsOpen      = false;  // rail des sources à la demande (replié par déf
     - **Vue Tendances** rendue en **séquentiel** (corps + numérotation) ; ranking trending préservé (`_smartDateSort` no-op sur modes rankés).
     - **Doublon « Tout »** retiré des chips (le segment garde le sien) ; re-tap sur le dossier actif revient à toutes catégories.
     - **Logos** : `getFavicon` passe de Google s2 à **DuckDuckGo icons** (vrais logos, ex. L'Équipe) + cache SW.
+  - **Logos + images robustes** (`782d884`) : `getFavicon` renvoie désormais le logo de marque **Clearbit** (`logo.clearbit.com`) au lieu du favicon `.ico` minuscule ; repli automatique sur DuckDuckGo si absent. Écouteur `error` global (phase capture, `_bfImgFallback`) : logo manquant → favicon ; image éditoriale bloquée par hotlink (403 Referer — L'Équipe, Libération…) → re-fetch via proxy `wsrv.nl` (côté serveur, sans Referer). En cas de 2e échec, le `onerror` d'origine reprend la main (placeholder propre). Aucune modification des onerror inline de chaque vue.
+  - **Audit taste-skill Pre-Flight** : Briefeed passe 9/10 règles (IntersectionObserver ✓, prefers-reduced-motion ✓, motion motivée ✓, empty states ✓, pas de filler verbs ✓…). Seul point corrigé : em-dash `—` → `·` ligne 5178 (Préférences, compteur vide). À adopter comme guardrail pour toute nouvelle UI : vérifier les 24 points du Pre-Flight avant livraison.
     - **Bug création dossier** : `prompt()` neutralisé en PWA standalone iOS → modal `_bfPrompt`. (Probablement débloque aussi l'ajout de flux — à reconfirmer.)
   - Menu allégé + déclencheur sources (`334cc13`) : retrait du tri (Date/Source/Pertinence) — l'accordéon devient « FILTRES », tri par date par défaut. Le rail de sources s'ouvre désormais via un **bouton dédié** `#sbarSrcsBtn` (icône logos) à droite des chips ; re-tap/chevron abandonnés (peu découvrables).
   - Passe « charte » — réduction du bruit (`e787ada`, `044c471`) :
@@ -157,6 +159,7 @@ let _srcsOpen      = false;  // rail des sources à la demande (replié par déf
 - **Prochaine étape prévue :**
   - Si le redémarrage persiste : **suspendre effets + timers en arrière-plan** via `visibilitychange` (JS, invisible en usage — cible le « en revenant dessus ») — à valider avec l'utilisateur.
   - Pistes Smart Bar : indicateur "filtres actifs combinés" · affinement vue Browse (bulles logos par dossier) · intégration Balados/Podcasts
+  - Logos/images : si Clearbit s'avère peu fiable (couverture FR impartaite), envisager table manuelle FR pour les sources clés. `wsrv.nl` peut aussi être utilisé en mode systématique (`&w=400&output=webp`) pour réduire la mémoire image — piste pour le bug « l'app redémarre ».
 
 ---
 
