@@ -7928,6 +7928,37 @@ body.focus-mode .focus-exit{ display:flex; }
     const esc=String(a.link||'').replace(/'/g,"\\'");
     return `<div class="pl-cont" data-link="${escAttr(a.link)}" onclick="_plPlay('${esc}')"><div class="pl-cont-art" style="${_plArtCss(a)}"></div><div class="pl-cont-body"><div class="pl-cont-title">${escHtml(a.title||'')}</div><div class="pl-cont-bar"><span class="pl-cont-prog" style="width:${pct}%"></span></div><div class="pl-cont-rem">${_plFmtRem((p.d||0)-(p.t||0))}</div></div></div>`;
   }
+  // « Nouveaux épisodes » — pochette de carrousel (épisode récent non lu). Unité = l'épisode.
+  function _plNewEpCard(a){
+    const esc=String(a.link||'').replace(/'/g,"\\'");
+    return `<button class="pc-cl-item" type="button" data-link="${escAttr(a.link)}" onclick="_plPlay('${esc}')">
+      <span class="pc-cl-cover" style="${_plArtCss(a)}"><span class="pc-cl-play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span></span>
+      <span class="pc-cl-title">${escHtml(a.title||'')}</span>
+      <span class="pc-cl-src">${escHtml(a.source||'')}</span>
+    </button>`;
+  }
+  // « Toutes vos émissions » — un show abonné (pochette + éditeur + dernier épisode + play). Unité = l'émission.
+  function _plShowRow(o){
+    const a=o.art||{}, esc=String(a.link||'').replace(/'/g,"\\'");
+    const meta = `${o.count} épisode${o.count>1?'s':''} · ${relTime(o.latest)}`;
+    return `<button class="pc-show" type="button" data-link="${escAttr(a.link)}" onclick="_plPlay('${esc}')">
+      <span class="pc-show-cover" style="${_plArtCss(a)}"></span>
+      <span class="pc-show-meta">
+        <span class="pc-show-pub">${escHtml(meta)}</span>
+        <span class="pc-show-title">${escHtml(o.source||'')}</span>
+        <span class="pc-show-desc">${escHtml(a.title||'')}</span>
+      </span>
+      <span class="pc-show-play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>
+    </button>`;
+  }
+  // Action « Tout marquer comme lu » de la section Nouveaux épisodes.
+  window._plMarkAllEpRead=function(){
+    const fresh=_plEpisodes().filter(a=> a && !(window._RS && window._RS.has(a.link)));
+    if(window._RS && _RS.markMany) _RS.markMany(fresh.map(a=>a.link));
+    else if(window._RS && _RS.mark) fresh.forEach(a=>_RS.mark(a.link));
+    const abo=document.getElementById('pcPaneAbonne');
+    if(abo){ abo.innerHTML=_plBuildAbos(); if(typeof _plSyncPlaying==='function') _plSyncPlaying(); }
+  };
   const PC_CATS=[['Actualités','actualité'],['Société','société'],['Culture','culture'],['Histoire','histoire'],['Sciences','science'],['Sport','sport'],['Économie','économie'],['Humour','humour'],['True crime','true crime'],['Politique','politique']];
   function _plBuildDiscover(){
     const chips=PC_CATS.map(([label,term],i)=>`<button class="pl-disc-chip${i===0?' sel':''}" type="button" data-term="${escAttr(term)}" onclick="_plDiscoverCat(this)">${escHtml(label)}</button>`).join('');
@@ -8097,14 +8128,23 @@ body.focus-mode .focus-exit{ display:flex; }
       </div>`;
     }
     let html='';
+    // Continuer l'écoute — reprise en cours, conditionnel et discret, en tête (standard des apps audio).
     const cont=_plContinue();
     if(cont.length){
-      html += `<div class="pl-sec-title">Continuer l'écoute</div><div class="pl-rail">` + cont.map(_plContCard).join('') + `</div>`;
+      html += `<div class="pc-sec-head"><span class="pc-sec-t">Continuer l'écoute</span></div>`;
+      html += `<div class="pl-rail">` + cont.map(_plContCard).join('') + `</div>`;
     }
-    html += `<div class="pl-sec-title"${cont.length?' style="margin-top:4px"':''}>Derniers épisodes</div><div class="pl-list">` + eps.slice(0,30).map(a=>_plEpCard(a,false)).join('') + `</div>`;
+    // Nouveaux épisodes — épisodes récents NON LUS, en carrousel de pochettes + « Tout marquer comme lu ».
+    const fresh = eps.filter(a=> a && !(window._RS && window._RS.has(a.link))).slice(0,16);
+    if(fresh.length){
+      html += `<div class="pc-sec-head"${cont.length?' style="margin-top:8px"':''}><span class="pc-sec-t">Nouveaux épisodes</span><button class="pc-sec-act" type="button" onclick="_plMarkAllEpRead()">Tout marquer comme lu</button></div>`;
+      html += `<div class="pc-carousel">` + fresh.map(_plNewEpCard).join('') + `</div>`;
+    }
+    // Toutes vos émissions — tous les podcasts abonnés (les shows), en liste verticale.
     const pods=_plMyPods();
     if(pods.length){
-      html += `<div class="pl-sec-title" style="margin-top:6px">Mes podcasts</div><div class="pl-rail">` + pods.map(_plPodCard).join('') + `</div>`;
+      html += `<div class="pc-sec-head"${fresh.length?'':' style="margin-top:2px"'}><span class="pc-sec-t">Toutes vos émissions</span></div>`;
+      html += `<div class="pc-shows">` + pods.map(_plShowRow).join('') + `</div>`;
     }
     return html;
   }
@@ -12283,6 +12323,37 @@ body.focus-mode .focus-exit{ display:flex; }
     .pl-ep-play svg{ width:16px; height:16px; }
     .pl-ep.playing .pl-ep-play{ background:var(--accent); border-color:var(--accent); color:#fff; }
     .pl-ep.playing .pl-ep-title{ color:var(--accent); }
+    /* ── Onglet Abonné — sections à rôles distincts (squelette V2) ── */
+    .pc-sec-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin:0 2px 14px; }
+    .pc-sec-t{ font-family:var(--font-inter); font-size:17px; font-weight:800; letter-spacing:-.02em; color:var(--text); }
+    .pc-sec-act{ flex:none; border:none; background:none; color:var(--text-muted); font-family:var(--font-inter); font-size:12.5px; font-weight:600; cursor:pointer; padding:4px 0; -webkit-tap-highlight-color:transparent; transition:color .2s ease, transform .12s ease; }
+    .pc-sec-act:active{ transform:scale(.94); color:var(--text); }
+    /* Carrousel « Nouveaux épisodes » */
+    .pc-carousel{ display:flex; gap:16px; overflow-x:auto; scroll-snap-type:x proximity; scrollbar-width:none; margin:0 -16px 26px; padding:4px 16px 6px; }
+    .pc-carousel::-webkit-scrollbar{ display:none; }
+    .pc-cl-item{ flex:none; width:144px; scroll-snap-align:start; display:flex; flex-direction:column; gap:11px; border:none; background:none; padding:0; cursor:pointer; text-align:left; -webkit-tap-highlight-color:transparent; animation:pcRise .5s cubic-bezier(.34,1.56,.64,1) both; }
+    .pc-cl-cover{ position:relative; width:144px; height:144px; border-radius:var(--r-card); background:#111 center/cover no-repeat; box-shadow:var(--shadow-soft); transition:transform .26s cubic-bezier(.34,1.56,.64,1); }
+    .pc-cl-item:active .pc-cl-cover{ transform:scale(.95); }
+    .pc-cl-play{ position:absolute; right:9px; bottom:9px; width:34px; height:34px; border-radius:50%; background:rgba(0,0,0,.6); display:flex; align-items:center; justify-content:center; opacity:0; transform:translateY(6px) scale(.8); transition:opacity .24s ease, transform .3s cubic-bezier(.34,1.56,.64,1); }
+    .pc-cl-item:hover .pc-cl-play, .pc-cl-item:active .pc-cl-play{ opacity:1; transform:none; }
+    .pc-cl-play svg{ width:15px; height:15px; color:#fff; margin-left:1px; }
+    .pc-cl-title{ font-family:var(--font-inter); font-size:13.5px; font-weight:700; line-height:1.3; color:var(--text); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+    .pc-cl-src{ font-family:var(--font-inter); font-size:11.5px; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    /* Liste « Toutes vos émissions » */
+    .pc-shows{ display:flex; flex-direction:column; }
+    .pc-show{ display:flex; align-items:center; gap:16px; width:100%; border:none; background:none; text-align:left; padding:14px 8px; border-radius:18px; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:background .2s ease, transform .12s ease; animation:pcRise .5s cubic-bezier(.34,1.56,.64,1) both; }
+    .pc-show:active{ transform:scale(.985); background:var(--surface-card); }
+    @media (hover:hover){ .pc-show:hover{ background:var(--surface-card); } }
+    .pc-show-cover{ flex:none; width:64px; height:64px; border-radius:14px; background:#111 center/cover no-repeat; box-shadow:var(--shadow-soft); }
+    .pc-show-meta{ flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; }
+    .pc-show-pub{ font-family:var(--font-inter); font-size:10.5px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .pc-show-title{ font-family:var(--font-inter); font-size:15.5px; font-weight:700; letter-spacing:-.01em; color:var(--text); line-height:1.25; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .pc-show-desc{ font-family:var(--font-inter); font-size:12.5px; color:var(--text-muted); line-height:1.35; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; }
+    .pc-show-play{ flex:none; width:40px; height:40px; border-radius:50%; background:var(--text); display:flex; align-items:center; justify-content:center; transition:transform .14s ease; }
+    .pc-show:active .pc-show-play{ transform:scale(.9); }
+    .pc-show-play svg{ width:16px; height:16px; color:var(--bg); margin-left:1px; }
+    @keyframes pcRise{ from{ opacity:0; transform:translateY(14px); } to{ opacity:1; transform:none; } }
+    @media (prefers-reduced-motion:reduce){ .pc-cl-item, .pc-show{ animation:none; } .pc-cl-cover, .pc-cl-play, .pc-show, .pc-show-play, .pc-sec-act{ transition:none; } }
     /* Grand titre éditorial (mix Apple Podcasts + Briefeed) */
     .pl-titlewrap{ position:relative; }
     .pl-titlewrap .bf-ghost{ font-size:clamp(56px,16vw,104px); top:-12px; left:-3px; }
