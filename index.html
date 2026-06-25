@@ -8149,7 +8149,9 @@ body.focus-mode .focus-exit{ display:flex; }
     else { _plSetIcon(false); au.pause(); }
   }
   function _plSetIcon(playing){
-    const btn=document.getElementById('plPlayBtn'); if(btn) btn.classList.toggle('playing', !!playing);
+    // setAttribute('d') sur un <path> SVG est fiable partout (innerHTML/display sur <svg> ne l'est pas sur Safari iOS).
+    const p=document.getElementById('plPlayPath');
+    if(p) p.setAttribute('d', playing ? 'M6 5h4v14H6zM14 5h4v14h-4z' : 'M8 5v14l11-7z');
   }
   function _plSyncPlaying(){
     const playing = !!_plCur && _plAudioEl() && !_plAudioEl().paused;
@@ -8346,6 +8348,13 @@ body.focus-mode .focus-exit{ display:flex; }
   // ── 6. Parseur XML/Atom ───────────────────────────────────────
   function parseXML(doc){
     const items=[];
+    // Artwork du flux (niveau channel) : repli pour les épisodes de podcast sans image propre.
+    let channelImg='';
+    try{
+      const ci=doc.querySelector('channel > itunes\\:image, feed > itunes\\:image');
+      channelImg=(ci && ci.getAttribute('href'))||'';
+      if(!channelImg){ const iu=doc.querySelector('channel > image > url'); if(iu) channelImg=(iu.textContent||'').trim(); }
+    }catch(e){}
     doc.querySelectorAll('item,entry').forEach(el=>{
       const g=n=>{const e=el.querySelector(n);return e?e.textContent.trim():''};
       const a=(s,at)=>{const e=el.querySelector(s);return e?e.getAttribute(at):null};
@@ -8361,6 +8370,7 @@ body.focus-mode .focus-exit{ display:flex; }
         'media:content': mc.length?(mc.find(c=>_looksImg(c.url,c.type,c.medium,false))||mc[0]):null,
         'media:thumbnail': mt.length?mt[0]:null,
         'itunes:image': (()=>{const ii=el.querySelector('itunes\\:image');return ii?{href:ii.getAttribute('href')}:null})(),
+        _channelImg: channelImg,
         author: g('dc\\:creator')||g('author')||g('itunes\\:author')||'',
         categories: (()=>{const out=[];el.querySelectorAll('category').forEach(c=>{let t=(c.textContent||'').trim(); if(!t) t=(c.getAttribute('term')||'').trim(); if(t) out.push(t);});return out;})(),
       });
@@ -8396,6 +8406,8 @@ body.focus-mode .focus-exit{ display:flex; }
     const raw = item['content:encoded'] || item.description || '';
     const m = raw.match(/<img[^>]+src=["']([^"']+)["']/i);
     if(m && m[1] && /^https?:/.test(m[1])) return m[1];
+    // Dernier recours : artwork du podcast (niveau channel) — couvre les épisodes sans image propre.
+    if(item._channelImg && /^https?:/.test(item._channelImg)) return item._channelImg;
     return null;
   }
 
@@ -12309,10 +12321,6 @@ body.focus-mode .focus-exit{ display:flex; }
     .pl-pp-btn{ flex:none; border:none; background:none; color:var(--text); cursor:pointer; display:flex; align-items:center; justify-content:center; padding:4px; -webkit-tap-highlight-color:transparent; }
     .pl-pp-play{ width:42px; height:42px; border-radius:50%; background:var(--text); color:var(--bg); }
     .pl-pp-play svg{ width:20px; height:20px; }
-    /* Bascule play/pause par classe (innerHTML sur <svg> ne se rend pas sur Safari iOS) */
-    #plPlayIcon .pl-ic-pause{ display:none; }
-    #plPlayBtn.playing .pl-ic-play{ display:none; }
-    #plPlayBtn.playing .pl-ic-pause{ display:inline; }
     .pl-pp-skip{ font-family:var(--font-inter); font-size:10px; font-weight:800; color:var(--text-muted); width:30px; }
     /* Bouton Podcast de la Smart Bar */
     .sbar-podcast{ flex:none; display:inline-flex; align-items:center; gap:6px; height:36px; box-sizing:border-box;
@@ -12332,7 +12340,7 @@ body.focus-mode .focus-exit{ display:flex; }
       <div class="pl-pp-bar" id="plPpBar"><div class="pl-pp-prog" id="plPpProg"></div></div>
     </div>
     <button class="pl-pp-btn pl-pp-skip" id="plBack15" aria-label="Reculer 15 secondes">&minus;15</button>
-    <button class="pl-pp-btn pl-pp-play" id="plPlayBtn" aria-label="Lecture / Pause"><svg id="plPlayIcon" viewBox="0 0 24 24" fill="currentColor"><path class="pl-ic-play" d="M8 5v14l11-7z"/><path class="pl-ic-pause" d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg></button>
+    <button class="pl-pp-btn pl-pp-play" id="plPlayBtn" aria-label="Lecture / Pause"><svg id="plPlayIcon" viewBox="0 0 24 24" fill="currentColor"><path id="plPlayPath" d="M8 5v14l11-7z"/></svg></button>
     <button class="pl-pp-btn pl-pp-skip" id="plFwd15" aria-label="Avancer 15 secondes">+15</button>
   </div>
   <audio id="plAudio" preload="none"></audio>
