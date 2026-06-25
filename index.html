@@ -7988,17 +7988,64 @@ body.focus-mode .focus-exit{ display:flex; }
     else { btn.textContent='Erreur'; }
   }
   window._plSubscribeBtn=_plSubscribeBtn;
+
+  // Ajout direct d'un flux RSS de podcast — bouton + déroulant, en tête de l'onglet Abonné.
+  function _plAddRssHtml(){
+    return `<div class="pl-addrss" id="plAddRss">
+      <button class="pl-addrss-toggle" type="button" aria-expanded="false" onclick="_plToggleAddRss()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Ajouter un flux RSS
+      </button>
+      <div class="pl-addrss-form">
+        <div class="pl-addrss-inner">
+          <div class="pl-addrss-row">
+            <input class="pl-addrss-input" id="plAddRssInput" type="url" inputmode="url" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="URL du flux RSS du podcast" onkeydown="if(event.key==='Enter'){event.preventDefault();_plAddRss();}">
+            <button class="pl-addrss-go" type="button" onclick="_plAddRss()">Ajouter</button>
+          </div>
+          <div class="pl-addrss-msg" id="plAddRssMsg"></div>
+        </div>
+      </div>
+    </div>`;
+  }
+  function _plToggleAddRss(){
+    const w=document.getElementById('plAddRss'); if(!w) return;
+    const open=w.classList.toggle('open');
+    const t=w.querySelector('.pl-addrss-toggle'); if(t) t.setAttribute('aria-expanded', open?'true':'false');
+    if(open){ const i=document.getElementById('plAddRssInput'); if(i) setTimeout(()=>{try{i.focus();}catch(e){}},140); }
+  }
+  window._plToggleAddRss=_plToggleAddRss;
+  function _plAddRss(){
+    const i=document.getElementById('plAddRssInput'); if(!i) return;
+    const msg=document.getElementById('plAddRssMsg');
+    const say=(t)=>{ if(msg) msg.textContent=t; };
+    let url=(i.value||'').trim();
+    if(!url){ say('Collez l’URL d’un flux RSS de podcast.'); return; }
+    if(!/^https?:\/\//i.test(url)) url='https://'+url;
+    let name='Podcast';
+    try{ name=new URL(url).hostname.replace(/^www\./,''); }catch(e){ say('URL invalide.'); return; }
+    const r=(typeof _plSubscribe==='function') ? _plSubscribe(url, name) : false;
+    if(r==='exists'){ say('Déjà abonné à ce flux.'); return; }
+    if(!r){ say('Impossible d’ajouter ce flux.'); return; }
+    i.value=''; say('Abonné. Les épisodes apparaîtront ici sous peu.');
+    // Rebuild différé : laisse le temps au flux de se charger, puis rafraîchit l'onglet Abonné.
+    setTimeout(()=>{
+      const abo=document.getElementById('pcPaneAbonne');
+      if(abo && !abo.hidden){ abo.innerHTML=_plBuildAbos(); if(typeof _plSyncPlaying==='function') _plSyncPlaying(); }
+    }, 3000);
+  }
+  window._plAddRss=_plAddRss;
+
   function _plBuildAbos(){
     const eps=_plEpisodes();
+    const addBar=_plAddRssHtml();
     if(!eps.length){
-      return `<div class="pl-empty">
+      return addBar + `<div class="pl-empty">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14v-2a9 9 0 0 1 18 0v2"/><rect x="2.5" y="13" width="4.5" height="8" rx="2"/><rect x="17" y="13" width="4.5" height="8" rx="2"/></svg>
         <div class="pl-empty-t">Aucun abonnement audio</div>
         <div class="pl-empty-d">Ajoutez des flux de podcasts pour retrouver leurs épisodes ici.</div>
         <button class="pl-empty-btn" onclick="if(window.pcSetTab)pcSetTab('decouvrir')">Découvrir des podcasts</button>
       </div>`;
     }
-    let html='';
+    let html=addBar;
     const cont=_plContinue();
     if(cont.length){
       html += `<div class="pl-sec-title">Continuer l'écoute</div><div class="pl-rail">` + cont.map(_plContCard).join('') + `</div>`;
@@ -8119,7 +8166,16 @@ body.focus-mode .focus-exit{ display:flex; }
     return Math.floor(diff/86400) + ' j';
   }
   function getFaviconDomain(url){ try{ return new URL(url).hostname.replace(/^www\./,''); }catch(e){ return url; } }
-  function getFavicon(url){ return 'https://logo.clearbit.com/'+getFaviconDomain(url)+'?size=128'; }
+  // Domaines où le logo de marque Clearbit déçoit (couverture FR imparfaite / mauvais recadrage) :
+  // on y force le favicon DuckDuckGo, fiable. À compléter au fil des sources signalées.
+  const _LOGO_FORCE_DDG = new Set([
+    // 'exemple.fr',
+  ]);
+  function getFavicon(url){
+    const d = getFaviconDomain(url);
+    if(_LOGO_FORCE_DDG.has(d)) return 'https://icons.duckduckgo.com/ip3/'+d+'.ico';
+    return 'https://logo.clearbit.com/'+d+'?size=128';
+  }
   // Repli logo + récupération d'images bloquées. Écouteur global en phase capture : il agit
   // AVANT le onerror inline de chaque <img>, donc sans toucher au rendu de chaque vue.
   //  1) logo Clearbit absent          → repli sur le favicon DuckDuckGo (domaine lu dans l'URL) ;
@@ -9097,6 +9153,7 @@ body.focus-mode .focus-exit{ display:flex; }
     _smartSyncSegment();
     _railInstant = true;
     _renderCurrentView();
+    _stMain(true);   // changement de mode = on repart du haut du flux
   }
 
   // Sélection d'une catégorie (cat='' = Tout) — révèle ses sources + filtre instantané
@@ -9112,6 +9169,7 @@ body.focus-mode .focus-exit{ display:flex; }
     }catch(e){}
     _railInstant = true;
     _renderCurrentView();
+    _stMain(true);   // changement de catégorie = on repart du haut du flux
   }
 
   // Sélection d'une source (url='' = Toutes) — toggle + rendu instantané
@@ -9128,6 +9186,7 @@ body.focus-mode .focus-exit{ display:flex; }
     }catch(e){}
     _railInstant = true;
     _renderCurrentView();
+    _stMain(true);   // changement de source = on repart du haut du flux
   }
 
   // Alias conservé pour les appels externes éventuels
@@ -10499,12 +10558,7 @@ body.focus-mode .focus-exit{ display:flex; }
         modal.style.transition=''; modal.style.transform=''; modal.style.opacity='';
         _artCloseTimer = null; _artClosing = false;
         unlockScroll();
-        // Si aucune sous-page n'est visible, remonter doucement dans le flux
-        const fp = document.getElementById('feedPage');
-        const dp = document.getElementById('folderPage');
-        if(!(fp&&fp.classList.contains('open')) && !(dp&&dp.classList.contains('open'))){
-          _stMain(false);
-        }
+        // Retour d'article : conserver la position de défilement (ne pas remonter).
       }, 300);
       if(_artAbort){ try{_artAbort.abort();}catch(e){} _artAbort=null; }
       const fv = document.querySelector('.view[data-view="favoris"]');
@@ -12185,6 +12239,23 @@ body.focus-mode .focus-exit{ display:flex; }
     .pl-empty-t{ font-family:var(--font-inter); font-size:16px; font-weight:700; color:var(--text); margin-bottom:6px; }
     .pl-empty-d{ font-family:var(--font-inter); font-size:13.5px; line-height:1.5; max-width:280px; margin:0 auto 18px; }
     .pl-empty-btn{ border:none; border-radius:999px; background:var(--accent); color:#fff; font-family:var(--font-inter); font-size:14px; font-weight:700; padding:11px 22px; cursor:pointer; }
+    /* Barre d'ajout de flux RSS de podcast — bouton + déroulant */
+    .pl-addrss{ margin:2px 2px 20px; }
+    .pl-addrss-toggle{ display:inline-flex; align-items:center; gap:7px; border:1px solid var(--border); background:var(--bg-elev); color:var(--text); font-family:var(--font-inter); font-size:13px; font-weight:700; padding:9px 16px; border-radius:999px; cursor:pointer; transition:transform .12s ease, border-color .2s ease; }
+    .pl-addrss-toggle:active{ transform:scale(.95); }
+    .pl-addrss-toggle svg{ width:15px; height:15px; stroke-width:2.4; transition:transform .32s cubic-bezier(.34,1.4,.64,1); }
+    .pl-addrss.open .pl-addrss-toggle{ border-color:var(--accent); }
+    .pl-addrss.open .pl-addrss-toggle svg{ transform:rotate(135deg); }
+    .pl-addrss-form{ display:grid; grid-template-rows:0fr; transition:grid-template-rows .34s cubic-bezier(.34,1.4,.64,1); }
+    .pl-addrss.open .pl-addrss-form{ grid-template-rows:1fr; }
+    .pl-addrss-inner{ overflow:hidden; min-height:0; }
+    .pl-addrss-row{ display:flex; gap:8px; padding-top:11px; }
+    .pl-addrss-input{ flex:1; min-width:0; border:1px solid var(--border); background:var(--bg); color:var(--text); border-radius:14px; padding:11px 14px; font-family:var(--font-inter); font-size:14px; }
+    .pl-addrss-input:focus{ outline:none; border-color:var(--accent); }
+    .pl-addrss-go{ border:none; border-radius:14px; background:var(--text); color:var(--bg); font-family:var(--font-inter); font-size:13.5px; font-weight:700; padding:0 18px; cursor:pointer; white-space:nowrap; transition:transform .12s ease; }
+    .pl-addrss-go:active{ transform:scale(.95); }
+    .pl-addrss-msg{ font-family:var(--font-inter); font-size:12.5px; line-height:1.4; color:var(--text-muted); padding:9px 2px 0; }
+    .pl-addrss-msg:empty{ display:none; }
     .pl-player{ position:fixed; left:12px; right:12px; bottom:calc(env(safe-area-inset-bottom,0px) + 74px); z-index:460; display:flex; align-items:center; gap:11px; padding:11px 13px; border-radius:24px; background:rgba(28,26,24,.82); -webkit-backdrop-filter:blur(22px) saturate(180%); backdrop-filter:blur(22px) saturate(180%); border:.5px solid var(--lg-border); box-shadow:var(--lg-spec), var(--lg-elev); }
     [data-theme="light"] .pl-player{ background:rgba(255,255,255,.7); }
     .pl-player[hidden]{ display:none; }
