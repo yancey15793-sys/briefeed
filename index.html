@@ -7794,9 +7794,12 @@ body.focus-mode .focus-exit{ display:flex; }
     const abo = document.getElementById('pcPaneAbonne');
     if(dec) dec.hidden = tab!=='decouvrir';
     if(abo) abo.hidden = tab!=='abonne';
+    if(tab==='abonne' && abo && typeof _plBuildAbos==='function'){ abo.innerHTML = _plBuildAbos(); if(typeof _plSyncPlaying==='function') _plSyncPlaying(); }
+    if(tab==='decouvrir' && dec && typeof _plBuildDiscover==='function'){ dec.innerHTML = _plBuildDiscover(); }
     const body = document.getElementById('pcBody');
     if(body) body.scrollTop = 0;
   }
+  window.pcSetTab = pcSetTab;
   document.querySelectorAll('.pc-tab').forEach(b=>{
     b.addEventListener('click', ()=> pcSetTab(b.dataset.pctab));
   });
@@ -7812,10 +7815,9 @@ body.focus-mode .focus-exit{ display:flex; }
   });
 
   const pcPage = document.getElementById('podcastPage');
-  function openPodcast(){
+  function openPodcast(tab){
     closeSB();
-    pcSetTab('decouvrir');
-    pcBuildCatalog();
+    pcSetTab(tab||'abonne');
     pcPage.classList.add('open'); pcPage.setAttribute('aria-hidden','false');
     lockScroll();
     navArm();
@@ -7835,20 +7837,11 @@ body.focus-mode .focus-exit{ display:flex; }
   const _plAudioEl = ()=> document.getElementById('plAudio');
   function _plEpisodes(){ return (_allArticles||[]).filter(a=>a && a.audioUrl).slice(0,80); }
   function _plArtCss(a){ return a.imageUrl ? `background-image:url('${String(a.imageUrl).replace(/'/g,"\\'")}')` : `background:linear-gradient(135deg,rgba(10,132,255,.3),rgba(12,242,230,.15))`; }
-  function openPodListen(){
-    if(typeof closeSB==='function') closeSB();
-    _plBuild();
-    const p=document.getElementById('podListenPage'); if(!p) return;
-    p.classList.add('open'); p.setAttribute('aria-hidden','false');
-    if(typeof lockScroll==='function') lockScroll();
-    if(typeof navArm==='function') navArm();
-  }
+  // La page Podcast est désormais #podcastPage (onglets Abonné/Découvrir).
+  function openPodListen(){ if(typeof openPodcast==='function') openPodcast('abonne'); }
   function closePodListen(){
-    const p=document.getElementById('podListenPage');
-    if(!p || !p.classList.contains('open')) return;
-    p.classList.remove('open'); p.setAttribute('aria-hidden','true');
     try{ if(typeof _plStopAll==='function'){ _plStopAll(); _plCur=null; _plSetIcon(false); } }catch(e){}
-    if(typeof unlockScroll==='function') unlockScroll();
+    if(typeof closePodcast==='function') closePodcast();
   }
   window.openPodListen = openPodListen;
   window.closePodListen = closePodListen;
@@ -7871,43 +7864,142 @@ body.focus-mode .focus-exit{ display:flex; }
         <svg class="pl-discover-ch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
       </button>`;
   }
+  let _plTab = 'abos';
+  let _plPos = {};
+  try{ _plPos = JSON.parse(localStorage.getItem('bf_pl_pos')||'{}'); }catch(e){}
+  function _plSavePos(link,t,d){
+    if(!link||!d||!isFinite(d)||t<5) return;
+    if(t > d*0.97){ delete _plPos[link]; } else { _plPos[link] = {t:Math.round(t), d:Math.round(d)}; }
+    try{ if(window._safeSet) _safeSet('bf_pl_pos', JSON.stringify(_plPos)); else localStorage.setItem('bf_pl_pos', JSON.stringify(_plPos)); }catch(e){}
+  }
+  // Podcasts suivis = sources distinctes ayant des épisodes audio
+  function _plMyPods(){
+    const map = new Map();
+    _plEpisodes().forEach(a=>{
+      const k = a.source || a.feedUrl || a.link || '?';
+      let o = map.get(k);
+      if(!o){ o = { source:a.source||k, art:a, count:0, latest:a.pubDate }; map.set(k,o); }
+      o.count++;
+      if(!o.art.imageUrl && a.imageUrl) o.art = a;
+    });
+    return [...map.values()].sort((x,y)=> (new Date(y.latest||0)) - (new Date(x.latest||0)));
+  }
+  function _plContinue(){ return _plEpisodes().filter(a=> a && _plPos[a.link] && _plPos[a.link].t>0).slice(0,12); }
+  function _plFmtRem(sec){
+    sec = Math.max(0, Math.round(sec));
+    const m = Math.round(sec/60);
+    return m<1 ? 'Bientôt terminé' : (m<60 ? m+' min restantes' : (Math.floor(m/60)+' h '+(m%60)+' min'));
+  }
+  function _plPodCard(o){
+    const a=o.art, esc=String(a.link||'').replace(/'/g,"\\'");
+    const badge = o.count>0 ? `<span class="pl-pod-badge">${o.count>9?'9+':o.count}</span>` : '';
+    return `<div class="pl-pod" data-link="${escAttr(a.link)}" onclick="_plPlay('${esc}')"><div class="pl-pod-art" style="${_plArtCss(a)}">${badge}</div><div class="pl-pod-name">${escHtml(o.source||'')}</div><div class="pl-pod-meta">${o.count} épisode${o.count>1?'s':''}</div></div>`;
+  }
+  function _plContCard(a){
+    const p=_plPos[a.link]||{t:0,d:0}, pct = p.d ? Math.min(100, p.t/p.d*100) : 0;
+    const esc=String(a.link||'').replace(/'/g,"\\'");
+    return `<div class="pl-cont" data-link="${escAttr(a.link)}" onclick="_plPlay('${esc}')"><div class="pl-cont-art" style="${_plArtCss(a)}"></div><div class="pl-cont-body"><div class="pl-cont-title">${escHtml(a.title||'')}</div><div class="pl-cont-bar"><span class="pl-cont-prog" style="width:${pct}%"></span></div><div class="pl-cont-rem">${_plFmtRem((p.d||0)-(p.t||0))}</div></div></div>`;
+  }
+  function _plBuildDiscover(){
+    return `<div class="pl-disc-search">
+        <svg class="pl-disc-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
+        <input type="search" id="plDiscInput" placeholder="Rechercher un podcast…" autocapitalize="none" autocorrect="off" enterkeyhint="search" onkeydown="if(event.key==='Enter'){event.preventDefault();_plDiscoverSearch();}">
+      </div>
+      <div id="plDiscResults" class="pl-disc-results">
+        <div class="pl-soon"><div class="pl-soon-t">Découvrir</div><div class="pl-soon-d">Cherchez un podcast par nom ou par thème — annuaire Apple Podcasts (gratuit). Tendances et catégories suivront.</div></div>
+      </div>`;
+  }
+  // Recherche dans l'annuaire Apple Podcasts (iTunes Search, gratuit). Direct (CORS) + proxies en secours.
+  async function _plItunes(term, opt){
+    opt = opt||{};
+    const url = 'https://itunes.apple.com/search?term='+encodeURIComponent(term)+'&media=podcast&entity=podcast&limit='+(opt.limit||24);
+    const tries = [
+      ()=> fetch(url, {signal:AbortSignal.timeout(7000)}),
+      ()=> fetch('https://corsproxy.io/?'+encodeURIComponent(url), {signal:AbortSignal.timeout(7000)}),
+      ()=> fetch('https://api.codetabs.com/v1/proxy?quest='+encodeURIComponent(url), {signal:AbortSignal.timeout(8000)}),
+      ()=> fetch('https://api.allorigins.win/raw?url='+encodeURIComponent(url), {signal:AbortSignal.timeout(8000)})
+    ];
+    for(const t of tries){
+      try{ const r=await t(); if(r&&r.ok){ const j=await r.json(); if(j&&j.results) return j.results; } }catch(e){}
+    }
+    return null;
+  }
+  function _plItunesCard(r){
+    const art=(r.artworkUrl600||r.artworkUrl100||'').replace(/'/g,'');
+    const feed=r.feedUrl||'', name=r.collectionName||r.trackName||'', artist=r.artistName||'';
+    return `<div class="pl-it"><div class="pl-it-art"${art?` style="background-image:url('${art}')"`:''}></div><div class="pl-it-info"><div class="pl-it-name">${escHtml(name)}</div><div class="pl-it-by">${escHtml(artist)}</div></div><button class="pl-it-sub" data-feed="${escAttr(feed)}" data-name="${escAttr(name)}" ${feed?'':'disabled'} onclick="_plSubscribeBtn(this)">S'abonner</button></div>`;
+  }
+  async function _plDiscoverSearch(){
+    const inp=document.getElementById('plDiscInput'), res=document.getElementById('plDiscResults');
+    if(!inp||!res) return;
+    const term=inp.value.trim(); if(!term) return;
+    res.innerHTML='<div class="pl-disc-msg">Recherche…</div>';
+    const list=await _plItunes(term,{limit:24});
+    if(!list){ res.innerHTML='<div class="pl-disc-msg">Recherche indisponible pour l\'instant (réseau). Réessayez.</div>'; return; }
+    if(!list.length){ res.innerHTML='<div class="pl-disc-msg">Aucun podcast pour « '+escHtml(term)+' ».</div>'; return; }
+    res.innerHTML='<div class="pl-it-grid">'+list.map(_plItunesCard).join('')+'</div>';
+  }
+  window._plDiscoverSearch=_plDiscoverSearch;
+  // Abonnement : ajoute le flux du podcast (réutilise la logique de afSubmit)
+  function _plSubscribe(feedUrl, name){
+    if(!feedUrl || typeof folders==='undefined') return false;
+    try{
+      let fi=folders.findIndex(f=> (f.name||'').toLowerCase()==='podcasts');
+      if(fi<0){ if(folders.length) fi=0; else { folders.push({name:'Podcasts',feeds:[],open:true}); fi=0; } }
+      folders[fi].feeds=folders[fi].feeds||[];
+      if(folders[fi].feeds.includes(feedUrl)) return 'exists';
+      folders[fi].feeds.push(feedUrl); folders[fi].open=true;
+      try{ const m=JSON.parse(localStorage.getItem('reader.feedMeta')||'{}'); m[feedUrl]={name:name||'Podcast', type:'rss', originalUrl:feedUrl}; if(window._safeSet)_safeSet('reader.feedMeta',JSON.stringify(m)); else localStorage.setItem('reader.feedMeta',JSON.stringify(m)); }catch(e){}
+      if(typeof persist==='function') persist();
+      if(typeof render==='function') render();
+      if(typeof _syncRSSFeeds==='function') _syncRSSFeeds();
+      if(typeof loadAllFeeds==='function') loadAllFeeds(true);
+      return true;
+    }catch(e){ return false; }
+  }
+  function _plSubscribeBtn(btn){
+    if(!btn) return; const r=_plSubscribe(btn.dataset.feed, btn.dataset.name);
+    if(r==='exists'){ btn.textContent='Déjà abonné'; btn.disabled=true; }
+    else if(r){ btn.textContent='Abonné ✓'; btn.disabled=true; btn.classList.add('done'); }
+    else { btn.textContent='Erreur'; }
+  }
+  window._plSubscribeBtn=_plSubscribeBtn;
+  function _plBuildAbos(){
+    const eps=_plEpisodes();
+    if(!eps.length){
+      return `<div class="pl-empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14v-2a9 9 0 0 1 18 0v2"/><rect x="2.5" y="13" width="4.5" height="8" rx="2"/><rect x="17" y="13" width="4.5" height="8" rx="2"/></svg>
+        <div class="pl-empty-t">Aucun abonnement audio</div>
+        <div class="pl-empty-d">Ajoutez des flux de podcasts pour retrouver leurs épisodes ici.</div>
+        <button class="pl-empty-btn" onclick="if(window.pcSetTab)pcSetTab('decouvrir')">Découvrir des podcasts</button>
+      </div>`;
+    }
+    let html='';
+    const cont=_plContinue();
+    if(cont.length){
+      html += `<div class="pl-sec-title">Continuer l'écoute</div><div class="pl-rail">` + cont.map(_plContCard).join('') + `</div>`;
+    }
+    html += `<div class="pl-sec-title"${cont.length?' style="margin-top:4px"':''}>Derniers épisodes</div><div class="pl-list">` + eps.slice(0,30).map(a=>_plEpCard(a,false)).join('') + `</div>`;
+    const pods=_plMyPods();
+    if(pods.length){
+      html += `<div class="pl-sec-title" style="margin-top:6px">Mes podcasts</div><div class="pl-rail">` + pods.map(_plPodCard).join('') + `</div>`;
+    }
+    const ttsArts=(_allArticles||[]).filter(a=>a && !a.audioUrl).slice(0,16);
+    if(ttsArts.length){
+      html += `<div class="pl-sec-title" style="margin-top:6px">Lire à voix haute</div><div class="pl-list">` + ttsArts.map(a=>_plEpCard(a,true)).join('') + `</div>`;
+    }
+    return html;
+  }
   function _plBuild(){
     const body=document.getElementById('plBody'); if(!body) return;
-    const eps=_plEpisodes();
-    const ttsArts=(_allArticles||[]).filter(a=>a && !a.audioUrl).slice(0,24);
-    const head = `<div class="pl-titlewrap"><span class="bf-ghost" aria-hidden="true">Écouter</span><div class="pl-bigtitle">Podcasts</div></div><div class="pl-bigsub">Écouter et lire à voix haute</div>`;
-    if(!eps.length && !ttsArts.length){
-      body.innerHTML = head + `<div class="pl-empty">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14v-2a9 9 0 0 1 18 0v2"/><rect x="2.5" y="13" width="4.5" height="8" rx="2"/><rect x="17" y="13" width="4.5" height="8" rx="2"/></svg>
-        <div class="pl-empty-t">Rien à écouter pour l'instant</div>
-        <div class="pl-empty-d">Ajoutez des flux, ou abonnez-vous à des podcasts pour écouter ici.</div>
-        <button class="pl-empty-btn" onclick="closePodListen();if(window.openPodcast)openPodcast();">Découvrir des podcasts</button>
-      </div>`;
-      return;
-    }
-    let html = head;
-    if(eps.length){
-      const hero=eps[0], rest=eps.slice(1);
-      html += `<div class="pl-hero">
-        <div class="pl-hero-art" style="${_plArtCss(hero)}"></div>
-        <div class="pl-hero-kicker">À la une</div>
-        <div class="pl-hero-title">${escHtml(hero.title||'')}</div>
-        <div class="pl-hero-src">${escHtml(hero.source||'')} · ${relTime(hero.pubDate)}</div>
-        <button class="pl-hero-play" onclick="_plPlay('${String(hero.link||'').replace(/'/g,"\\'")}')"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Écouter</button>
-      </div>`;
-      if(rest.length){
-        html += `<div class="pl-sec-title">Nouveaux épisodes</div><div class="pl-rail">`;
-        html += rest.map(a=>_plRailCard(a)).join('') + `</div>`;
-      }
-    }
-    if(ttsArts.length){
-      html += `<div class="pl-sec-title"${eps.length?' style="margin-top:4px"':''}>Lire à voix haute</div><div class="pl-list">`;
-      html += ttsArts.map(a=>_plEpCard(a,true)).join('') + `</div>`;
-    }
-    html += _plDiscoverBtn();
-    body.innerHTML = html;
+    const tabs=document.getElementById('plTabs');
+    if(tabs) tabs.querySelectorAll('.pl-tab').forEach(t=>t.classList.toggle('active', t.dataset.pltab===_plTab));
+    body.innerHTML = (_plTab==='discover') ? _plBuildDiscover() : _plBuildAbos();
+    body.scrollTop = 0;
     _plSyncPlaying();
   }
+  function _plSetTab(tab){ if(tab===_plTab) return; _plTab=tab; _plBuild(); }
+  window._plSetTab = _plSetTab;
 
   let _plMode=null, _plTtsLen=0;
   function _plStripHtml(s){ const d=document.createElement('div'); d.innerHTML=String(s||''); return (d.textContent||d.innerText||'').replace(/\s+/g,' ').trim(); }
@@ -7938,7 +8030,7 @@ body.focus-mode .focus-exit{ display:flex; }
     const t=document.getElementById('plPpTitle'); if(t) t.textContent=a.title||'';
     const s=document.getElementById('plPpSrc'); if(s) s.textContent=(a.audioUrl?'':'Lecture vocale · ')+(a.source||'');
     const prog=document.getElementById('plPpProg'); if(prog) prog.style.width='0%';
-    if(a.audioUrl){ _plMode='audio'; const au=_plAudioEl(); if(au){ au.src=a.audioUrl; au.play().catch(()=>{}); } }
+    if(a.audioUrl){ _plMode='audio'; const au=_plAudioEl(); if(au){ au.src=a.audioUrl; const _rp=_plPos[a.link]; if(_rp&&_rp.t>0){ const _sk=()=>{ try{au.currentTime=_rp.t;}catch(e){} au.removeEventListener('loadedmetadata',_sk); }; au.addEventListener('loadedmetadata',_sk); } au.play().catch(()=>{}); } }
     else { _plMode='tts'; _plPlayTTS(a); }
     _plSetIcon(true); _plSyncPlaying();
   }
@@ -7958,13 +8050,15 @@ body.focus-mode .focus-exit{ display:flex; }
   }
   function _plSyncPlaying(){
     const playing = !!_plCur && _plAudioEl() && !_plAudioEl().paused;
-    document.querySelectorAll('#plBody .pl-ep, #plBody .pl-card').forEach(el=>el.classList.toggle('playing', el.dataset.link===_plCur));
+    document.querySelectorAll('#pcPaneAbonne .pl-ep, #pcPaneAbonne .pl-cont, #pcPaneAbonne .pl-pod').forEach(el=>el.classList.toggle('playing', el.dataset.link===_plCur));
     return playing;
   }
   window._plPlay = _plPlay;
 
   (function _plWire(){
     const back=document.getElementById('plBack'); if(back) back.addEventListener('click', closePodListen);
+    const tabs=document.getElementById('plTabs');
+    if(tabs) tabs.querySelectorAll('.pl-tab').forEach(t=> t.addEventListener('click', ()=> _plSetTab(t.dataset.pltab)));
     const playBtn=document.getElementById('plPlayBtn'); if(playBtn) playBtn.addEventListener('click', _plToggle);
     const b15=document.getElementById('plBack15'); if(b15) b15.addEventListener('click', ()=>{ const a=_plAudioEl(); if(a) a.currentTime=Math.max(0,a.currentTime-15); });
     const f15=document.getElementById('plFwd15'); if(f15) f15.addEventListener('click', ()=>{ const a=_plAudioEl(); if(a) a.currentTime=Math.min(a.duration||1e9,a.currentTime+15); });
@@ -7972,10 +8066,15 @@ body.focus-mode .focus-exit{ display:flex; }
     if(bar) bar.addEventListener('click', (e)=>{ const a=_plAudioEl(); if(!a||!a.duration) return; const r=bar.getBoundingClientRect(); a.currentTime=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))*a.duration; });
     const au=_plAudioEl();
     if(au){
-      au.addEventListener('timeupdate', ()=>{ const p=document.getElementById('plPpProg'); if(p&&au.duration) p.style.width=(au.currentTime/au.duration*100)+'%'; });
+      let _lastSave=0;
+      au.addEventListener('timeupdate', ()=>{
+        const p=document.getElementById('plPpProg'); if(p&&au.duration) p.style.width=(au.currentTime/au.duration*100)+'%';
+        const now=Date.now();
+        if(_plMode==='audio' && _plCur && now-_lastSave>4000){ _lastSave=now; _plSavePos(_plCur, au.currentTime, au.duration); }
+      });
       au.addEventListener('play',  ()=>{ _plSetIcon(true);  _plSyncPlaying(); });
-      au.addEventListener('pause', ()=>{ _plSetIcon(false); _plSyncPlaying(); });
-      au.addEventListener('ended', ()=>{ _plSetIcon(false); });
+      au.addEventListener('pause', ()=>{ _plSetIcon(false); _plSyncPlaying(); if(_plMode==='audio' && _plCur) _plSavePos(_plCur, au.currentTime, au.duration); });
+      au.addEventListener('ended', ()=>{ _plSetIcon(false); if(_plCur){ delete _plPos[_plCur]; try{ if(window._safeSet)_safeSet('bf_pl_pos',JSON.stringify(_plPos)); else localStorage.setItem('bf_pl_pos',JSON.stringify(_plPos)); }catch(e){} } });
     }
   })();
 
@@ -11612,6 +11711,126 @@ body.focus-mode .focus-exit{ display:flex; }
   })();
 
 
+  /* ═══ LIQUID GLASS — réfraction réelle (technique Outpace/Aave) ════════════════
+     backdrop-filter:url(#filtre) ne réfracte que sur Chromium desktop ; iOS/Safari
+     ignorent le url() (tant mieux pour la mémoire GPU). On génère une displacement
+     map optique (dôme squircle convexe + loi de Snell n=1.5) en blob URL, un filtre
+     feDisplacementMap par élément (id frais, Safari met en cache par id), appliqué au
+     backdrop. Hors Chromium desktop : no-op total, les composants gardent leur verre
+     CSS (reflet spéculaire + bordure). */
+  (function(){
+    const ua = navigator.userAgent || '';
+    const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const isChromium = !!window.chrome && /Chrome|Chromium|Edg/.test(ua) && !/OPR|SamsungBrowser/.test(ua);
+    const ENABLED = isChromium && !isIOS && !!document.createElementNS;
+    if(!ENABLED){ window._bfGlass = { add(){}, refresh(){}, enabled:false }; return; }
+
+    const NS = 'http://www.w3.org/2000/svg';
+    let defs = null;
+    function ensureDefs(){
+      if(defs) return defs;
+      const svg = document.createElementNS(NS,'svg');
+      svg.setAttribute('aria-hidden','true');
+      svg.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden;pointer-events:none';
+      defs = document.createElementNS(NS,'defs');
+      svg.appendChild(defs); document.body.appendChild(svg);
+      return defs;
+    }
+    // SDF d'un rectangle arrondi (origine au centre) : <0 dedans, 0 au bord.
+    function sdf(px,py,hw,hh,r){
+      const qx = Math.abs(px) - (hw - r), qy = Math.abs(py) - (hh - r);
+      return Math.hypot(Math.max(qx,0),Math.max(qy,0)) + Math.min(Math.max(qx,qy),0) - r;
+    }
+    // Displacement map : pente du dôme squircle → Snell → bend, projeté sur la normale.
+    function makeMapURL(w,h,radius,band,gain){
+      const cv = document.createElement('canvas'); cv.width=w; cv.height=h;
+      const ctx = cv.getContext('2d'); const img = ctx.createImageData(w,h); const d = img.data;
+      const hw=w/2, hh=h/2, r=Math.max(1,Math.min(radius,hw,hh)), eps=1;
+      for(let y=0;y<h;y++) for(let x=0;x<w;x++){
+        const px=x-hw+0.5, py=y-hh+0.5;
+        let depth = (-sdf(px,py,hw,hh,r))/band; depth = depth<0?0:depth>1?1:depth;
+        const denom = Math.pow(1 - Math.pow(1-depth,4), 0.75) || 1e-4;
+        const slope = Math.pow(1-depth,3)/denom;
+        const thetaI = Math.atan(slope);
+        const thetaT = Math.asin(Math.min(1, Math.sin(thetaI)/1.5));
+        const bend = Math.sin(thetaI - thetaT);
+        let nx = sdf(px+eps,py,hw,hh,r) - sdf(px-eps,py,hw,hh,r);
+        let ny = sdf(px,py+eps,hw,hh,r) - sdf(px,py-eps,hw,hh,r);
+        const nl = Math.hypot(nx,ny) || 1; nx/=nl; ny/=nl;
+        const off = bend*gain;
+        const i=(y*w+x)*4;
+        d[i]   = Math.max(0,Math.min(255, 128 + nx*off));
+        d[i+1] = Math.max(0,Math.min(255, 128 + ny*off));
+        d[i+2] = 128; d[i+3] = 255;
+      }
+      ctx.putImageData(img,0,0);
+      return new Promise(res=>{ try{ cv.toBlob(b=> res(b?URL.createObjectURL(b):cv.toDataURL())); }catch(e){ res(cv.toDataURL()); } });
+    }
+    let seq=0;
+    async function apply(el, opt){
+      opt = opt||{};
+      const rect = el.getBoundingClientRect();
+      const w = Math.round(rect.width), h = Math.round(rect.height);
+      if(w<8 || h<8) return;
+      const key = w+'x'+h;
+      if(el._bfGlassKey === key) return;               // taille inchangée → on garde
+      el._bfGlassKey = key;
+      const cs = getComputedStyle(el);
+      const radius = parseFloat(opt.radius!=null?opt.radius:cs.borderTopLeftRadius) || 20;
+      const band = opt.band || Math.max(10, Math.min(w,h)*0.5);
+      const gain = opt.gain || 150;
+      const scale = opt.scale!=null ? opt.scale : 26;
+      const blur = opt.blur!=null ? opt.blur : 5;
+      const sat = opt.saturate!=null ? opt.saturate : 170;
+      let url;
+      try{ url = await makeMapURL(w,h,radius,band,gain); }catch(e){ el._bfGlassKey=null; return; }
+      const D = ensureDefs();
+      if(el._bfGlassId){ const old=document.getElementById(el._bfGlassId); if(old) old.remove(); }
+      if(el._bfGlassURL){ try{ URL.revokeObjectURL(el._bfGlassURL); }catch(e){} }
+      const id = 'bflg'+(++seq); el._bfGlassId=id; el._bfGlassURL=url;
+      const f = document.createElementNS(NS,'filter');
+      f.setAttribute('id',id);
+      f.setAttribute('x','-20%'); f.setAttribute('y','-20%'); f.setAttribute('width','140%'); f.setAttribute('height','140%');
+      f.setAttribute('color-interpolation-filters','sRGB');
+      const fe = document.createElementNS(NS,'feImage');
+      fe.setAttribute('preserveAspectRatio','none');
+      fe.setAttribute('x','0'); fe.setAttribute('y','0'); fe.setAttribute('width',w); fe.setAttribute('height',h);
+      fe.setAttribute('result','map'); fe.setAttribute('href',url);
+      fe.setAttributeNS('http://www.w3.org/1999/xlink','xlink:href',url);
+      const dm = document.createElementNS(NS,'feDisplacementMap');
+      dm.setAttribute('in','SourceGraphic'); dm.setAttribute('in2','map');
+      dm.setAttribute('scale',scale); dm.setAttribute('xChannelSelector','R'); dm.setAttribute('yChannelSelector','G');
+      f.appendChild(fe); f.appendChild(dm); D.appendChild(f);
+      el.style.backdropFilter = 'blur('+blur+'px) saturate('+sat+'%) url(#'+id+')';
+    }
+    const watched = [];
+    function add(selector, opt){ watched.push({selector, opt:opt||{}}); }
+    let rafPend = false;
+    function refresh(){
+      if(rafPend) return; rafPend = true;
+      requestAnimationFrame(()=>{ rafPend=false;
+        watched.forEach(wt=>{ try{ document.querySelectorAll(wt.selector).forEach(el=>apply(el, wt.opt)); }catch(e){} });
+      });
+    }
+    let rt=null;
+    window.addEventListener('resize', ()=>{ clearTimeout(rt); rt=setTimeout(()=>{ watched.forEach(wt=>document.querySelectorAll(wt.selector).forEach(el=>{ el._bfGlassKey=null; })); refresh(); }, 220); });
+    window._bfGlass = { add, refresh, apply, enabled:true };
+  })();
+
+  // Cibles du Liquid Glass réfractif (no-op hors Chromium desktop)
+  if(window._bfGlass && _bfGlass.enabled){
+    _bfGlass.add('#plPlayer:not([hidden])', { blur:8, scale:22, saturate:180 });
+    _bfGlass.add('#sbarSeg',   { blur:4, scale:16 });
+    _bfGlass.add('.af-sheet',  { blur:14, scale:26, radius:28 });
+    _bfGlass.add('.morph-menu',{ blur:10, scale:18 });
+    _bfGlass.add('.bfp-card',  { blur:14, scale:22, radius:24 });
+    const kick = ()=> _bfGlass.refresh();
+    if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', kick); else kick();
+    window.addEventListener('load', kick);
+    // Rattrape les composants qui s'affichent après un clic (mini-player, modales)
+    document.addEventListener('click', ()=>{ setTimeout(kick, 360); }, true);
+  }
+
   // ── PRELOAD IMAGES — IntersectionObserver (élimine le vide blanc) ───────
   (function _initImagePreload(){
     if(!('IntersectionObserver' in window)) return;
@@ -11701,9 +11920,48 @@ body.focus-mode .focus-exit{ display:flex; }
       transition:opacity .4s ease, transform .55s cubic-bezier(.16,1,.3,1), visibility .4s ease; }
     .pl-page.open{ opacity:1; visibility:visible; transform:none; }
     .pl-topbar{ flex:none; display:flex; align-items:center; gap:10px; padding:max(14px,env(safe-area-inset-top)) 16px 10px; }
-    .pl-back{ width:34px; height:34px; border-radius:50%; border:none; background:rgba(127,127,127,.14); color:var(--text); display:flex; align-items:center; justify-content:center; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+    .pl-back{ display:inline-flex; align-items:center; gap:4px; height:34px; padding:0 14px 0 9px; border-radius:999px; border:none; background:rgba(127,127,127,.14); color:var(--text); font-family:var(--font-inter); font-size:14px; font-weight:600; cursor:pointer; -webkit-tap-highlight-color:transparent; }
     .pl-back svg{ width:20px; height:20px; }
     .pl-title{ font-family:var(--font-inter); font-size:19px; font-weight:800; letter-spacing:-.02em; color:var(--text); }
+    /* Onglets Abonnements / Découvrir — reprend le composant existant (.pc-tab) */
+    .pl-tabs{ flex:none; display:flex; padding:6px 16px 0; border-bottom:1px solid var(--border); }
+    .pl-tab{ flex:1; position:relative; border:none; background:none; cursor:pointer; padding:10px 0 16px; font-family:var(--font-inter); font-size:20px; font-weight:800; letter-spacing:-.025em; color:var(--text-muted); -webkit-tap-highlight-color:transparent; transition:color .25s; }
+    .pl-tab.active{ color:var(--text); }
+    .pl-tab::after{ content:""; position:absolute; left:50%; bottom:-1px; width:0; height:2.5px; border-radius:2px; background:var(--text); transform:translateX(-50%); transition:width .3s cubic-bezier(.32,.72,0,1); }
+    .pl-tab.active::after{ width:46%; }
+    /* Carrousel « Mes podcasts » (source) */
+    .pl-pod{ flex:none; width:128px; scroll-snap-align:start; cursor:pointer; }
+    .pl-pod-art{ position:relative; width:128px; height:128px; border-radius:16px; background:#111 center/cover no-repeat; box-shadow:var(--shadow-soft); }
+    .pl-pod-badge{ position:absolute; top:-6px; right:-6px; min-width:20px; height:20px; padding:0 6px; border-radius:999px; background:var(--accent); color:#fff; font-family:var(--font-inter); font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(0,0,0,.4); }
+    .pl-pod-name{ font-family:var(--font-inter); font-size:12.5px; font-weight:700; color:var(--text); line-height:1.3; margin-top:9px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+    .pl-pod-meta{ font-family:var(--font-inter); font-size:11px; color:var(--text-muted); margin-top:2px; }
+    /* Carrousel « Continuer l'écoute » */
+    .pl-cont{ flex:none; width:230px; scroll-snap-align:start; cursor:pointer; box-sizing:border-box; background:var(--surface-card); border:1px solid var(--border); border-radius:18px; padding:12px; display:flex; gap:11px; align-items:center; }
+    .pl-cont-art{ width:52px; height:52px; flex:none; border-radius:11px; background:#111 center/cover no-repeat; }
+    .pl-cont-body{ flex:1; min-width:0; }
+    .pl-cont-title{ font-family:var(--font-inter); font-size:13px; font-weight:700; color:var(--text); line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+    .pl-cont-bar{ height:3px; border-radius:2px; background:rgba(127,127,127,.3); margin-top:7px; position:relative; overflow:hidden; }
+    .pl-cont-prog{ position:absolute; left:0; top:0; bottom:0; border-radius:2px; background:var(--accent); }
+    .pl-cont-rem{ font-family:var(--font-inter); font-size:10.5px; color:var(--text-muted); margin-top:5px; }
+    /* Onglet Découvrir — provisoire (API iTunes au prochain lot) */
+    .pl-soon{ text-align:center; padding:54px 22px; color:var(--text-muted); }
+    .pl-soon-t{ font-family:var(--font-dm); font-size:24px; color:var(--text); margin-bottom:8px; }
+    .pl-soon-d{ font-family:var(--font-inter); font-size:13.5px; line-height:1.55; max-width:290px; margin:0 auto 18px; }
+    /* Découvrir — recherche annuaire Apple Podcasts */
+    .pl-disc-search{ position:relative; margin:14px 2px 16px; }
+    .pl-disc-search input{ width:100%; box-sizing:border-box; height:44px; padding:0 14px 0 42px; border-radius:var(--r-field); border:1px solid var(--border); background:var(--surface-card); color:var(--text); font-family:var(--font-inter); font-size:15px; outline:none; -webkit-appearance:none; }
+    .pl-disc-search input::placeholder{ color:var(--text-muted); }
+    .pl-disc-ic{ position:absolute; left:14px; top:50%; transform:translateY(-50%); width:18px; height:18px; color:var(--text-muted); pointer-events:none; }
+    .pl-disc-msg{ text-align:center; color:var(--text-muted); font-family:var(--font-inter); font-size:14px; padding:40px 20px; line-height:1.5; }
+    .pl-it-grid{ display:flex; flex-direction:column; gap:15px; }
+    .pl-it{ display:flex; align-items:center; gap:13px; }
+    .pl-it-art{ width:60px; height:60px; flex:none; border-radius:13px; background:#111 center/cover no-repeat; box-shadow:var(--shadow-soft); }
+    .pl-it-info{ flex:1; min-width:0; }
+    .pl-it-name{ font-family:var(--font-inter); font-size:14.5px; font-weight:700; color:var(--text); line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+    .pl-it-by{ font-family:var(--font-inter); font-size:12px; color:var(--text-muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .pl-it-sub{ flex:none; border:none; background:var(--text); color:var(--bg); font-family:var(--font-inter); font-size:12.5px; font-weight:700; padding:8px 15px; border-radius:var(--r-field); cursor:pointer; white-space:nowrap; -webkit-tap-highlight-color:transparent; }
+    .pl-it-sub:disabled{ opacity:.5; cursor:default; }
+    .pl-it-sub.done{ background:var(--accent); color:#fff; opacity:1; }
     .pl-body{ flex:1; min-height:0; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; padding:6px 16px 132px; scrollbar-width:none; }
     .pl-body::-webkit-scrollbar{ display:none; }
     .pl-hero{ position:relative; border-radius:22px; overflow:hidden; margin-bottom:22px; padding:20px;
@@ -11756,7 +12014,7 @@ body.focus-mode .focus-exit{ display:flex; }
     .pl-empty-t{ font-family:var(--font-inter); font-size:16px; font-weight:700; color:var(--text); margin-bottom:6px; }
     .pl-empty-d{ font-family:var(--font-inter); font-size:13.5px; line-height:1.5; max-width:280px; margin:0 auto 18px; }
     .pl-empty-btn{ border:none; border-radius:999px; background:var(--accent); color:#fff; font-family:var(--font-inter); font-size:14px; font-weight:700; padding:11px 22px; cursor:pointer; }
-    .pl-player{ position:absolute; left:12px; right:12px; bottom:max(14px,env(safe-area-inset-bottom)); z-index:5; display:flex; align-items:center; gap:11px; padding:11px 13px; border-radius:24px; background:rgba(28,26,24,.82); -webkit-backdrop-filter:blur(22px) saturate(180%); backdrop-filter:blur(22px) saturate(180%); border:.5px solid var(--lg-border); box-shadow:var(--lg-spec), var(--lg-elev); }
+    .pl-player{ position:fixed; left:12px; right:12px; bottom:calc(env(safe-area-inset-bottom,0px) + 74px); z-index:460; display:flex; align-items:center; gap:11px; padding:11px 13px; border-radius:24px; background:rgba(28,26,24,.82); -webkit-backdrop-filter:blur(22px) saturate(180%); backdrop-filter:blur(22px) saturate(180%); border:.5px solid var(--lg-border); box-shadow:var(--lg-spec), var(--lg-elev); }
     [data-theme="light"] .pl-player{ background:rgba(255,255,255,.7); }
     .pl-player[hidden]{ display:none; }
     .pl-pp-art{ width:46px; height:46px; flex:none; border-radius:10px; background:#111 center/cover no-repeat; }
@@ -11778,25 +12036,20 @@ body.focus-mode .focus-exit{ display:flex; }
     .sbar-podcast svg{ width:16px; height:16px; }
     [data-theme="light"] .sbar-podcast{ background:rgba(0,0,0,.04); border-color:rgba(0,0,0,.09); }
   </style>
-  <div class="pl-page" id="podListenPage" aria-hidden="true">
-    <div class="pl-topbar">
-      <button class="pl-back" id="plBack" aria-label="Fermer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
-      <span class="pl-title">Podcast</span>
+  <!-- Mini-player global (audio + TTS) — flotte au-dessus de toutes les pages -->
+  <div class="pl-player" id="plPlayer" hidden>
+    <div class="pl-pp-art" id="plPpArt"></div>
+    <div class="pl-pp-meta">
+      <div class="pl-pp-title" id="plPpTitle"></div>
+      <div class="pl-pp-src" id="plPpSrc"></div>
+      <div class="pl-pp-bar" id="plPpBar"><div class="pl-pp-prog" id="plPpProg"></div></div>
     </div>
-    <div class="pl-body" id="plBody"></div>
-    <div class="pl-player" id="plPlayer" hidden>
-      <div class="pl-pp-art" id="plPpArt"></div>
-      <div class="pl-pp-meta">
-        <div class="pl-pp-title" id="plPpTitle"></div>
-        <div class="pl-pp-src" id="plPpSrc"></div>
-        <div class="pl-pp-bar" id="plPpBar"><div class="pl-pp-prog" id="plPpProg"></div></div>
-      </div>
-      <button class="pl-pp-btn pl-pp-skip" id="plBack15" aria-label="Reculer 15 secondes">&minus;15</button>
-      <button class="pl-pp-btn pl-pp-play" id="plPlayBtn" aria-label="Lecture / Pause"><svg id="plPlayIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
-      <button class="pl-pp-btn pl-pp-skip" id="plFwd15" aria-label="Avancer 15 secondes">+15</button>
-    </div>
-    <audio id="plAudio" preload="none"></audio>
+    <button class="pl-pp-btn pl-pp-skip" id="plBack15" aria-label="Reculer 15 secondes">&minus;15</button>
+    <button class="pl-pp-btn pl-pp-play" id="plPlayBtn" aria-label="Lecture / Pause"><svg id="plPlayIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+    <button class="pl-pp-btn pl-pp-skip" id="plFwd15" aria-label="Avancer 15 secondes">+15</button>
   </div>
+  <audio id="plAudio" preload="none"></audio>
+
 
   <!-- Boîte de saisie fiable (remplace prompt(), bloqué en PWA standalone iOS) -->
   <style>
