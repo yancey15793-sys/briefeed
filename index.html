@@ -8119,7 +8119,35 @@ body.focus-mode .focus-exit{ display:flex; }
     return Math.floor(diff/86400) + ' j';
   }
   function getFaviconDomain(url){ try{ return new URL(url).hostname.replace(/^www\./,''); }catch(e){ return url; } }
-  function getFavicon(url){ return 'https://icons.duckduckgo.com/ip3/'+getFaviconDomain(url)+'.ico'; }
+  function getFavicon(url){ return 'https://logo.clearbit.com/'+getFaviconDomain(url)+'?size=128'; }
+  // Repli logo + récupération d'images bloquées. Écouteur global en phase capture : il agit
+  // AVANT le onerror inline de chaque <img>, donc sans toucher au rendu de chaque vue.
+  //  1) logo Clearbit absent          → repli sur le favicon DuckDuckGo (domaine lu dans l'URL) ;
+  //  2) image éditoriale qui refuse de s'afficher (hotlink 403 chez L'Équipe, Libération, etc.)
+  //     → re-fetch via le proxy d'image wsrv.nl (récupère côté serveur, sans Referer gênant).
+  // En cas de 2e échec, on laisse le onerror inline d'origine reprendre la main (placeholder / estompage).
+  (function(){
+    if(window._bfImgFallback) return; window._bfImgFallback = true;
+    document.addEventListener('error', function(e){
+      const img = e.target;
+      if(!img || img.tagName !== 'IMG') return;
+      const src = img.currentSrc || img.src || '';
+      if(!src || src.indexOf('data:') === 0) return;
+      const cb = src.match(/logo\.clearbit\.com\/([^/?#]+)/);
+      if(cb){
+        if(img.dataset.bfLogo) return;          // déjà replié → laisser le onerror inline
+        img.dataset.bfLogo = '1';
+        img.src = 'https://icons.duckduckgo.com/ip3/' + cb[1] + '.ico';
+        e.stopImmediatePropagation(); e.preventDefault();
+        return;
+      }
+      if(img.dataset.bfProxied) return;         // déjà retentée → laisser le onerror inline
+      if(/icons\.duckduckgo\.com|google\.com\/s2|gstatic\.com|icon\.horse|wsrv\.nl|images\.weserv\.nl/.test(src)) return;
+      img.dataset.bfProxied = '1';
+      img.src = 'https://wsrv.nl/?url=' + encodeURIComponent(src);
+      e.stopImmediatePropagation(); e.preventDefault();
+    }, true);
+  })();
   function showBadge(msg, ok=false){
     const b = document.getElementById('refreshBadge'); if(!b) return;
     clearTimeout(b._t);
