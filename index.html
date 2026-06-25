@@ -111,6 +111,8 @@ html[data-font="serif"]        { --font-ui:var(--font-inter); --font-title:var(-
   letter-spacing:-.04em; color:var(--ghost); }
 .bf-sig-card{ background:var(--surface-card); border:1px solid var(--border);
   border-radius:var(--r-card); }
+/* Regroupement de sujet — métadonnée discrète (niveau 1), jamais un bloc */
+.bf-group{ color:var(--text-muted); font-weight:500; white-space:nowrap; }
 
 *{ box-sizing:border-box; margin:0; padding:0; }
 html{
@@ -3286,6 +3288,28 @@ button, .ob-btn, .ob-btn-ghost,
 .art-modal-source-name{ font-family:var(--font-inter); font-size:12px; font-weight:700; color:var(--text); text-transform:uppercase; letter-spacing:.04em; }
 /* Reader content */
 .art-reader-section{ position:relative; z-index:1; padding:4px 0 20px; }
+/* Niveau 3 — Contexte (déroulant opt-in, ouverture spring bezier) */
+.art-ctx{ position:relative; z-index:1; margin:6px 0 26px; border-top:1px solid var(--border); }
+.art-ctx-head{ width:100%; display:flex; align-items:center; gap:11px; padding:18px 2px 16px; background:none; border:none; cursor:pointer; -webkit-tap-highlight-color:transparent; text-align:left; }
+.art-ctx-label{ display:inline-flex; align-items:center; gap:7px; font-family:var(--font-inter); font-size:11px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--text-muted); flex:none; }
+.art-ctx-dot{ width:6px; height:6px; border-radius:50%; background:var(--eyebrow-dot); box-shadow:0 0 10px var(--eyebrow-dot); }
+.art-ctx-sub{ flex:1; min-width:0; font-family:var(--font-inter); font-size:13.5px; color:var(--text); font-weight:600; letter-spacing:-.01em; }
+.art-ctx-chev{ width:18px; height:18px; flex:none; color:var(--text-muted); transition:transform .42s cubic-bezier(.34,1.4,.64,1); }
+.art-ctx.open .art-ctx-chev{ transform:rotate(180deg); }
+.art-ctx-wrap{ display:grid; grid-template-rows:0fr; transition:grid-template-rows .44s cubic-bezier(.34,1.4,.64,1); }
+.art-ctx.open .art-ctx-wrap{ grid-template-rows:1fr; }
+.art-ctx-inner{ overflow:hidden; min-height:0; display:flex; flex-direction:column; gap:2px; padding-bottom:4px; }
+.art-ctx-item{ display:flex; flex-direction:column; gap:3px; padding:11px 12px; border-radius:14px; background:none; border:none; cursor:pointer; text-align:left; -webkit-tap-highlight-color:transparent; transition:background .2s ease, transform .12s ease; }
+.art-ctx-item:hover{ background:rgba(127,127,127,.08); }
+.art-ctx-item:active{ background:rgba(127,127,127,.14); transform:scale(.99); }
+.art-ctx-src{ font-family:var(--font-inter); font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); }
+.art-ctx-meta{ display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
+.art-ctx-meta .art-ctx-src{ flex:none; }
+.art-ctx-time{ font-family:var(--font-inter); font-size:10.5px; font-weight:600; letter-spacing:.01em; color:var(--text-muted); opacity:.85; }
+.art-ctx-time::before{ content:''; display:inline-block; width:3px; height:3px; border-radius:50%; background:currentColor; vertical-align:middle; margin-right:8px; opacity:.6; }
+.art-ctx-tag{ font-family:var(--font-inter); font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--text-muted); border:1px solid var(--border); border-radius:var(--r-pill,999px); padding:1px 7px; line-height:1.6; }
+.art-ctx-tag-nuance{ color:var(--eyebrow-dot); border-color:var(--eyebrow-dot); opacity:.85; }
+.art-ctx-title{ font-family:var(--font-inter); font-size:14px; font-weight:600; line-height:1.35; color:var(--text); letter-spacing:-.01em; }
 .art-reader-text{
   font-family:var(--font-title),Georgia,serif;
   font-size:var(--reader-font-size,17px); line-height:1.72; color:var(--text);
@@ -8445,6 +8469,7 @@ body.focus-mode .focus-exit{ display:flex; }
   }
 
   function _dedup(arts){
+    for(const a of arts){ if(a._group) a._group=null; }   // regroupement recalculé à chaque passe
     // 1) Dédup exact par lien — O(n)
     const byLink = new Set(); const stage = [];
     for(const a of arts){ if(a.link && byLink.has(a.link)) continue; if(a.link) byLink.add(a.link); stage.push(a); }
@@ -8463,21 +8488,25 @@ body.focus-mode .focus-exit{ display:flex; }
     //    qui reconstruisait deux Set à chaque paire). Sémantique conservée :
     //    on garde la 1re occurrence et on jette les suivantes similaires (≥.55).
     const res = []; const index = new Map(); // token -> [indices dans res]
+    const WIN = 72*3600*1000;   // fenêtre temporelle : un même événement = dates proches
     for(const a of stage){
       const toks = _tokens(a.title);
+      const at = +new Date(a.pubDate||0);
       const cand = new Set();
       toks.forEach(t=>{ const arr = index.get(t); if(arr) arr.forEach(i=>cand.add(i)); });
-      let dup = false;
+      let dup = false, dupIdx = -1;
       for(const i of cand){
-        const b = res[i]; let inter = 0;
+        const b = res[i];
+        if(at && b._t && Math.abs(at - b._t) > WIN) continue;   // trop éloignés → pas le même sujet
+        let inter = 0;
         toks.forEach(w=>{ if(b._toks.has(w)) inter++; });
-        if(inter/(toks.size + b._toks.size - inter || 1) >= 0.55){ dup = true; break; }
+        if(inter/(toks.size + b._toks.size - inter || 1) >= 0.55){ dup = true; dupIdx = i; break; }
       }
-      if(dup) continue;
-      a._toks = toks; const idx = res.length; res.push(a);
+      if(dup){ const rep=res[dupIdx]; (rep._group || (rep._group=[])).push(a); continue; }
+      a._toks = toks; a._t = at; const idx = res.length; res.push(a);
       toks.forEach(t=>{ let arr = index.get(t); if(!arr){ arr=[]; index.set(t,arr); } arr.push(idx); });
     }
-    res.forEach(a=>{ delete a._toks; }); // champ temporaire nettoyé
+    res.forEach(a=>{ delete a._toks; delete a._t; }); // champs temporaires nettoyés
     return res;
   }
 
@@ -10375,6 +10404,10 @@ body.focus-mode .focus-exit{ display:flex; }
     const readerSection = document.getElementById('artReaderSection');
     if(readerSection) _loadArtReader(a, readerSection);
 
+    // Niveau 3 — Contexte (autres sources du sujet), opt-in, replié par défaut
+    const ctxEl = document.getElementById('artModalContext');
+    if(ctxEl) ctxEl.innerHTML = (typeof _groupContextHtml==='function') ? _groupContextHtml(a) : '';
+
     // Ouvrir — on annule une éventuelle animation de fermeture en cours.
     // Si le modal était déjà ouvert ou en train de se fermer, son verrou de
     // scroll est toujours actif : on ne re-verrouille pas (sinon fuite).
@@ -10805,6 +10838,86 @@ body.focus-mode .focus-exit{ display:flex; }
   window._extractKeywords = _extractKeywords;
 
   // Carte « Ordered List » — vue Édition
+  // Sources DISTINCTES du regroupement (hors source du représentant) — base
+  // commune au compteur du flux (niveau 1) et au panneau Contexte (niveau 3),
+  // pour que « N autres sources » dise toujours la vérité (médias distincts,
+  // pas un simple nombre d'articles re-publiés).
+  function _groupSources(a){
+    const grp = (a && a._group) ? a._group : [];
+    if(!grp.length) return [];
+    const own = (a.source||'').trim().toLowerCase();
+    const seen = new Set(); const out = [];
+    for(const g of grp){
+      const s = (g.source||'').trim(); const k = s.toLowerCase();
+      if(!k || k===own || seen.has(k)) continue;
+      seen.add(k); out.push(s);
+    }
+    return out;
+  }
+  window._groupSources = _groupSources;
+  // Métadonnée discrète de regroupement (niveau 1 — jamais un bloc graphique)
+  function _groupMeta(a){
+    const n = _groupSources(a).length;
+    if(n<1) return '';
+    return ` <span class="bf-group">· ${n} autre${n>1?'s':''} source${n>1?'s':''}</span>`;
+  }
+  window._groupMeta = _groupMeta;
+  // Niveau 3 — panneau « Contexte » (déroulant, opt-in) du lecteur d'article.
+  // Une seule entrée par média distinct (le plus récent), classées en
+  // chronologie ; pastille discrète pour les médias liés (audio/podcast) et
+  // pour les angles divergents (démenti / nuance / fact-check). Aucun bloc
+  // graphique : l'intelligence reste invisible, le calme visuel préservé.
+  const _CTX_CONTRA = /(d[ée]ment|d[ée]menti|conteste|r[ée]fute|r[ée]fut|nuance|contredit|infox|rumeur|contrairement|mise au point|fact[\s-]?check|fausse?\s|d[ée]bunk)/i;
+  function _groupContextHtml(a){
+    const grp = (a && a._group) ? a._group : [];
+    if(!grp.length) return '';
+    const own = (a.source||'').trim().toLowerCase();
+    // Dédup par source : on garde l'article le plus récent de chaque autre média
+    const bySrc = new Map();
+    for(const g of grp){
+      const s = (g.source||'').trim(); const k = s.toLowerCase();
+      if(!k || k===own) continue;
+      const prev = bySrc.get(k);
+      if(!prev || (+new Date(g.pubDate||0)) > (+new Date(prev.pubDate||0))) bySrc.set(k, g);
+    }
+    let list = Array.from(bySrc.values());
+    if(!list.length) return '';   // que des re-publications du même média → pas de contexte
+    // Chronologie : du plus récent au plus ancien (cohérent avec le reste de l'app)
+    list.sort((x,y)=> (+new Date(y.pubDate||0)) - (+new Date(x.pubDate||0)));
+    const items = list.map(g=>{
+      const esc = String(g.link||'').replace(/'/g,"\\'");
+      const t = relTime(g.pubDate);
+      const media  = g.audioUrl ? `<span class="art-ctx-tag art-ctx-tag-media">Audio</span>` : '';
+      const nuance = _CTX_CONTRA.test(g.title||'') ? `<span class="art-ctx-tag art-ctx-tag-nuance">Nuance</span>` : '';
+      return `<button class="art-ctx-item" type="button" onclick="_openCtxArt('${esc}')">`
+        + `<span class="art-ctx-meta"><span class="art-ctx-src">${escHtml(g.source||'')}</span>`
+        + (t?`<span class="art-ctx-time">${escHtml(t)}</span>`:'') + media + nuance + `</span>`
+        + `<span class="art-ctx-title">${escHtml(g.title||'')}</span></button>`;
+    }).join('');
+    const n = list.length;
+    return `<div class="art-ctx" id="artCtx">
+      <button class="art-ctx-head" type="button" aria-expanded="false" onclick="_toggleCtx(this)">
+        <span class="art-ctx-label"><span class="art-ctx-dot"></span>CONTEXTE</span>
+        <span class="art-ctx-sub">Aussi couvert par ${n} autre${n>1?'s':''} source${n>1?'s':''}</span>
+        <svg class="art-ctx-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="art-ctx-wrap"><div class="art-ctx-inner">${items}</div></div>
+    </div>`;
+  }
+  window._groupContextHtml = _groupContextHtml;
+  function _toggleCtx(btn){
+    const box = btn && btn.closest ? btn.closest('.art-ctx') : null;
+    if(!box) return;
+    const open = box.classList.toggle('open');
+    btn.setAttribute('aria-expanded', open?'true':'false');
+  }
+  window._toggleCtx = _toggleCtx;
+  function _openCtxArt(link){
+    const a = (typeof _allArticles!=='undefined' ? _allArticles : []).find(x=>x && x.link===link);
+    if(a && typeof _showArtModal==='function') _showArtModal(a);
+    else if(link){ try{ window.open(link,'_blank','noopener'); }catch(e){} }
+  }
+  window._openCtxArt = _openCtxArt;
   function _edlCardHtml(a, i){
     const isRead = _RS.has(a.link);
     const fig = a.imageUrl
@@ -10819,7 +10932,7 @@ body.focus-mode .focus-exit{ display:flex; }
       ${fig}
       <div class="edl-title">${escHtml(a.title||'')}</div>
       ${sub ? `<div class="edl-sub">${escHtml(sub.slice(0,150))}</div>` : ''}
-      <div class="edl-date">${escHtml(_seqDateStr(a.pubDate))}</div>
+      <div class="edl-date">${escHtml(_seqDateStr(a.pubDate))}${_groupMeta(a)}</div>
       ${tags}
     </div>`;
   }
@@ -10854,7 +10967,7 @@ body.focus-mode .focus-exit{ display:flex; }
     return `<div class="seq-item reveal${isRead?' is-read':''}" data-seq-idx="${i}" onclick="_seqOpen(${i})">
       <span class="seq-num">${String(i+1).padStart(2,'0')}</span>
       <div class="seq-body">
-        <div class="seq-source"><span class="seq-fav"><img src="${escAttr(fav)}" onerror="this.style.opacity='.3'"></span>${escHtml(a.source||'')} · ${relTime(a.pubDate)}</div>
+        <div class="seq-source"><span class="seq-fav"><img src="${escAttr(fav)}" onerror="this.style.opacity='.3'"></span>${escHtml(a.source||'')} · ${relTime(a.pubDate)}${_groupMeta(a)}</div>
         <div class="seq-title">${escHtml(a.title||'')}</div>
       </div>
       ${thumb}
@@ -10904,7 +11017,7 @@ body.focus-mode .focus-exit{ display:flex; }
       return `<div class="list-item reveal" onclick="_listeOpen(${i})" style="position:relative">
         ${thumb}
         <div class="list-body">
-          <div class="list-source"><div class="list-fav"><img src="${escAttr(fav)}" onerror="this.style.opacity='.3'"></div>${escHtml(a.source)} · ${relTime(a.pubDate)}</div>
+          <div class="list-source"><div class="list-fav"><img src="${escAttr(fav)}" onerror="this.style.opacity='.3'"></div>${escHtml(a.source)} · ${relTime(a.pubDate)}${_groupMeta(a)}</div>
           ${_titleWithShare(escHtml(a.title), a.link, a.title, 'list-title')}
         </div>
       </div>`;
@@ -12221,6 +12334,7 @@ body.focus-mode .focus-exit{ display:flex; }
 
         <!-- Reader content -->
         <div class="art-reader-section" id="artReaderSection"></div>
+        <div id="artModalContext"></div>
       </div>
 
       <!-- Toolbar sticky bas -->
