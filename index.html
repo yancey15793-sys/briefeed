@@ -6175,6 +6175,9 @@ body.focus-mode .focus-exit{ display:flex; }
       const el = document.createElement('div');
       el.className = 'folder' + (f.open ? ' open' : '');
       el.dataset.idx = i;
+      // Le dossier « Podcasts » vit dans l'espace Podcasts, pas dans la sidebar.
+      // On masque l'élément (display:none) sans le retirer du DOM : les index de folders restent alignés.
+      if((f.name||'').toLowerCase()==='podcasts') el.style.display='none';
       const feeds = (f.feeds || []).map(fd => {
         // Si c'est une URL, chercher le nom dans feedMeta ou extraire le hostname
         let displayName = fd, ftype = 'rss';
@@ -7929,6 +7932,7 @@ body.focus-mode .focus-exit{ display:flex; }
         <svg class="pl-disc-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
         <input type="search" id="plDiscInput" placeholder="Rechercher un podcast…" autocapitalize="none" autocorrect="off" enterkeyhint="search" onkeydown="if(event.key==='Enter'){event.preventDefault();_plDiscoverSearch();}">
       </div>
+      ${_plAddRssHtml()}
       <div id="plDiscResults" class="pl-disc-results">
         <div class="pl-soon"><div class="pl-soon-t">Découvrir</div><div class="pl-soon-d">Cherchez un podcast par nom ou par thème — annuaire Apple Podcasts (gratuit). Tendances et catégories suivront.</div></div>
       </div>`;
@@ -8036,16 +8040,15 @@ body.focus-mode .focus-exit{ display:flex; }
 
   function _plBuildAbos(){
     const eps=_plEpisodes();
-    const addBar=_plAddRssHtml();
     if(!eps.length){
-      return addBar + `<div class="pl-empty">
+      return `<div class="pl-empty">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14v-2a9 9 0 0 1 18 0v2"/><rect x="2.5" y="13" width="4.5" height="8" rx="2"/><rect x="17" y="13" width="4.5" height="8" rx="2"/></svg>
         <div class="pl-empty-t">Aucun abonnement audio</div>
         <div class="pl-empty-d">Ajoutez des flux de podcasts pour retrouver leurs épisodes ici.</div>
         <button class="pl-empty-btn" onclick="if(window.pcSetTab)pcSetTab('decouvrir')">Découvrir des podcasts</button>
       </div>`;
     }
-    let html=addBar;
+    let html='';
     const cont=_plContinue();
     if(cont.length){
       html += `<div class="pl-sec-title">Continuer l'écoute</div><div class="pl-rail">` + cont.map(_plContCard).join('') + `</div>`;
@@ -8054,10 +8057,6 @@ body.focus-mode .focus-exit{ display:flex; }
     const pods=_plMyPods();
     if(pods.length){
       html += `<div class="pl-sec-title" style="margin-top:6px">Mes podcasts</div><div class="pl-rail">` + pods.map(_plPodCard).join('') + `</div>`;
-    }
-    const ttsArts=(_allArticles||[]).filter(a=>a && !a.audioUrl).slice(0,16);
-    if(ttsArts.length){
-      html += `<div class="pl-sec-title" style="margin-top:6px">Lire à voix haute</div><div class="pl-list">` + ttsArts.map(a=>_plEpCard(a,true)).join('') + `</div>`;
     }
     return html;
   }
@@ -8113,7 +8112,9 @@ body.focus-mode .focus-exit{ display:flex; }
       return;
     }
     const au=_plAudioEl(); if(!au || !au.src) return;
-    if(au.paused){ au.play().catch(()=>{}); } else { au.pause(); }
+    // Réactivité : bascule l'icône immédiatement (optimiste), avant l'événement audio (qui peut tarder au buffering).
+    if(au.paused){ _plSetIcon(true); au.play().catch(()=>{ _plSetIcon(false); }); }
+    else { _plSetIcon(false); au.pause(); }
   }
   function _plSetIcon(playing){
     const ic=document.getElementById('plPlayIcon'); if(!ic) return;
@@ -8669,6 +8670,7 @@ body.focus-mode .focus-exit{ display:flex; }
     const order = [], map = {};
     feeds.forEach(f => {
       const c = f.category || 'Autres';
+      if((c||'').toLowerCase()==='podcasts') return;   // espace Podcasts dédié → hors chips et rail
       if(!map[c]){ map[c] = []; order.push(c); }
       if(!map[c].some(s => s.url === f.url)) map[c].push({ name:f.name, url:f.url });
     });
@@ -10570,6 +10572,11 @@ body.focus-mode .focus-exit{ display:flex; }
   window.artModalOpenExternal = function(){
     if(_artCurrent?.link && _artCurrent.link!=='#') window.open(_artCurrent.link,'_blank');
   };
+  // Lecture vocale de l'article courant — réutilise le lecteur global (TTS si pas d'audio).
+  window.artModalSpeak = function(){
+    if(!_artCurrent || !_artCurrent.link) return;
+    if(typeof _plPlay === 'function') _plPlay(_artCurrent.link);
+  };
   window.artModalToggleSave = function(){
     if(!_artCurrent) return;
     _toggleReadLater(_artCurrent);
@@ -12199,8 +12206,8 @@ body.focus-mode .focus-exit{ display:flex; }
     .pl-hero-play svg{ width:16px; height:16px; }
     .pl-sec-title{ display:flex; align-items:center; gap:7px; font-family:var(--font-inter); font-size:13px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--text-muted); margin:0 2px 12px; }
     .pl-sec-title::before{ content:""; width:6px; height:6px; border-radius:50%; flex:none; background:var(--eyebrow-dot); box-shadow:0 0 10px var(--eyebrow-dot); }
-    .pl-ep{ display:flex; gap:13px; align-items:center; padding:11px 0; border-top:1px solid var(--border); cursor:pointer; }
-    .pl-ep:first-child{ border-top:none; }
+    .pl-ep{ display:flex; gap:13px; align-items:center; padding:20px 2px; border-top:1px solid var(--border); cursor:pointer; }
+    .pl-ep:first-child{ border-top:none; padding-top:8px; }
     .pl-ep-art{ width:58px; height:58px; flex:none; border-radius:12px; background:#111 center/cover no-repeat; box-shadow:0 3px 10px rgba(0,0,0,.25); }
     .pl-ep-body{ flex:1; min-width:0; }
     .pl-ep-title{ font-family:var(--font-inter); font-size:14.5px; font-weight:700; letter-spacing:-.01em; color:var(--text); line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-bottom:4px; }
@@ -12477,6 +12484,9 @@ body.focus-mode .focus-exit{ display:flex; }
           </button>
           <button class="art-toolbar-btn" id="artBtnWeb" title="Ouvrir dans le navigateur" onclick="artModalOpenExternal()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </button>
+          <button class="art-toolbar-btn" id="artBtnTTS" title="Lire à voix haute" onclick="artModalSpeak()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a9 9 0 0 1 0 14"/></svg>
           </button>
         </div>
       </div>
