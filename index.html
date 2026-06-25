@@ -7794,9 +7794,12 @@ body.focus-mode .focus-exit{ display:flex; }
     const abo = document.getElementById('pcPaneAbonne');
     if(dec) dec.hidden = tab!=='decouvrir';
     if(abo) abo.hidden = tab!=='abonne';
+    if(tab==='abonne' && abo && typeof _plBuildAbos==='function'){ abo.innerHTML = _plBuildAbos(); if(typeof _plSyncPlaying==='function') _plSyncPlaying(); }
+    if(tab==='decouvrir' && dec && typeof _plBuildDiscover==='function'){ dec.innerHTML = _plBuildDiscover(); }
     const body = document.getElementById('pcBody');
     if(body) body.scrollTop = 0;
   }
+  window.pcSetTab = pcSetTab;
   document.querySelectorAll('.pc-tab').forEach(b=>{
     b.addEventListener('click', ()=> pcSetTab(b.dataset.pctab));
   });
@@ -7812,10 +7815,9 @@ body.focus-mode .focus-exit{ display:flex; }
   });
 
   const pcPage = document.getElementById('podcastPage');
-  function openPodcast(){
+  function openPodcast(tab){
     closeSB();
-    pcSetTab('decouvrir');
-    pcBuildCatalog();
+    pcSetTab(tab||'abonne');
     pcPage.classList.add('open'); pcPage.setAttribute('aria-hidden','false');
     lockScroll();
     navArm();
@@ -7835,20 +7837,11 @@ body.focus-mode .focus-exit{ display:flex; }
   const _plAudioEl = ()=> document.getElementById('plAudio');
   function _plEpisodes(){ return (_allArticles||[]).filter(a=>a && a.audioUrl).slice(0,80); }
   function _plArtCss(a){ return a.imageUrl ? `background-image:url('${String(a.imageUrl).replace(/'/g,"\\'")}')` : `background:linear-gradient(135deg,rgba(10,132,255,.3),rgba(12,242,230,.15))`; }
-  function openPodListen(){
-    if(typeof closeSB==='function') closeSB();
-    _plBuild();
-    const p=document.getElementById('podListenPage'); if(!p) return;
-    p.classList.add('open'); p.setAttribute('aria-hidden','false');
-    if(typeof lockScroll==='function') lockScroll();
-    if(typeof navArm==='function') navArm();
-  }
+  // La page Podcast est désormais #podcastPage (onglets Abonné/Découvrir).
+  function openPodListen(){ if(typeof openPodcast==='function') openPodcast('abonne'); }
   function closePodListen(){
-    const p=document.getElementById('podListenPage');
-    if(!p || !p.classList.contains('open')) return;
-    p.classList.remove('open'); p.setAttribute('aria-hidden','true');
     try{ if(typeof _plStopAll==='function'){ _plStopAll(); _plCur=null; _plSetIcon(false); } }catch(e){}
-    if(typeof unlockScroll==='function') unlockScroll();
+    if(typeof closePodcast==='function') closePodcast();
   }
   window.openPodListen = openPodListen;
   window.closePodListen = closePodListen;
@@ -7908,12 +7901,69 @@ body.focus-mode .focus-exit{ display:flex; }
     return `<div class="pl-cont" data-link="${escAttr(a.link)}" onclick="_plPlay('${esc}')"><div class="pl-cont-art" style="${_plArtCss(a)}"></div><div class="pl-cont-body"><div class="pl-cont-title">${escHtml(a.title||'')}</div><div class="pl-cont-bar"><span class="pl-cont-prog" style="width:${pct}%"></span></div><div class="pl-cont-rem">${_plFmtRem((p.d||0)-(p.t||0))}</div></div></div>`;
   }
   function _plBuildDiscover(){
-    return `<div class="pl-soon">
-      <div class="pl-soon-t">Découvrir</div>
-      <div class="pl-soon-d">Recherche, tendances et catégories de podcasts arriveront ici (annuaire Apple Podcasts, gratuit).</div>
-      <button class="pl-empty-btn" onclick="closePodListen();if(window.openPodcast)openPodcast();">Parcourir les thèmes</button>
-    </div>`;
+    return `<div class="pl-disc-search">
+        <svg class="pl-disc-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
+        <input type="search" id="plDiscInput" placeholder="Rechercher un podcast…" autocapitalize="none" autocorrect="off" enterkeyhint="search" onkeydown="if(event.key==='Enter'){event.preventDefault();_plDiscoverSearch();}">
+      </div>
+      <div id="plDiscResults" class="pl-disc-results">
+        <div class="pl-soon"><div class="pl-soon-t">Découvrir</div><div class="pl-soon-d">Cherchez un podcast par nom ou par thème — annuaire Apple Podcasts (gratuit). Tendances et catégories suivront.</div></div>
+      </div>`;
   }
+  // Recherche dans l'annuaire Apple Podcasts (iTunes Search, gratuit). Direct (CORS) + proxies en secours.
+  async function _plItunes(term, opt){
+    opt = opt||{};
+    const url = 'https://itunes.apple.com/search?term='+encodeURIComponent(term)+'&media=podcast&entity=podcast&limit='+(opt.limit||24);
+    const tries = [
+      ()=> fetch(url, {signal:AbortSignal.timeout(7000)}),
+      ()=> fetch('https://corsproxy.io/?'+encodeURIComponent(url), {signal:AbortSignal.timeout(7000)}),
+      ()=> fetch('https://api.codetabs.com/v1/proxy?quest='+encodeURIComponent(url), {signal:AbortSignal.timeout(8000)}),
+      ()=> fetch('https://api.allorigins.win/raw?url='+encodeURIComponent(url), {signal:AbortSignal.timeout(8000)})
+    ];
+    for(const t of tries){
+      try{ const r=await t(); if(r&&r.ok){ const j=await r.json(); if(j&&j.results) return j.results; } }catch(e){}
+    }
+    return null;
+  }
+  function _plItunesCard(r){
+    const art=(r.artworkUrl600||r.artworkUrl100||'').replace(/'/g,'');
+    const feed=r.feedUrl||'', name=r.collectionName||r.trackName||'', artist=r.artistName||'';
+    return `<div class="pl-it"><div class="pl-it-art"${art?` style="background-image:url('${art}')"`:''}></div><div class="pl-it-info"><div class="pl-it-name">${escHtml(name)}</div><div class="pl-it-by">${escHtml(artist)}</div></div><button class="pl-it-sub" data-feed="${escAttr(feed)}" data-name="${escAttr(name)}" ${feed?'':'disabled'} onclick="_plSubscribeBtn(this)">S'abonner</button></div>`;
+  }
+  async function _plDiscoverSearch(){
+    const inp=document.getElementById('plDiscInput'), res=document.getElementById('plDiscResults');
+    if(!inp||!res) return;
+    const term=inp.value.trim(); if(!term) return;
+    res.innerHTML='<div class="pl-disc-msg">Recherche…</div>';
+    const list=await _plItunes(term,{limit:24});
+    if(!list){ res.innerHTML='<div class="pl-disc-msg">Recherche indisponible pour l\'instant (réseau). Réessayez.</div>'; return; }
+    if(!list.length){ res.innerHTML='<div class="pl-disc-msg">Aucun podcast pour « '+escHtml(term)+' ».</div>'; return; }
+    res.innerHTML='<div class="pl-it-grid">'+list.map(_plItunesCard).join('')+'</div>';
+  }
+  window._plDiscoverSearch=_plDiscoverSearch;
+  // Abonnement : ajoute le flux du podcast (réutilise la logique de afSubmit)
+  function _plSubscribe(feedUrl, name){
+    if(!feedUrl || typeof folders==='undefined') return false;
+    try{
+      let fi=folders.findIndex(f=> (f.name||'').toLowerCase()==='podcasts');
+      if(fi<0){ if(folders.length) fi=0; else { folders.push({name:'Podcasts',feeds:[],open:true}); fi=0; } }
+      folders[fi].feeds=folders[fi].feeds||[];
+      if(folders[fi].feeds.includes(feedUrl)) return 'exists';
+      folders[fi].feeds.push(feedUrl); folders[fi].open=true;
+      try{ const m=JSON.parse(localStorage.getItem('reader.feedMeta')||'{}'); m[feedUrl]={name:name||'Podcast', type:'rss', originalUrl:feedUrl}; if(window._safeSet)_safeSet('reader.feedMeta',JSON.stringify(m)); else localStorage.setItem('reader.feedMeta',JSON.stringify(m)); }catch(e){}
+      if(typeof persist==='function') persist();
+      if(typeof render==='function') render();
+      if(typeof _syncRSSFeeds==='function') _syncRSSFeeds();
+      if(typeof loadAllFeeds==='function') loadAllFeeds(true);
+      return true;
+    }catch(e){ return false; }
+  }
+  function _plSubscribeBtn(btn){
+    if(!btn) return; const r=_plSubscribe(btn.dataset.feed, btn.dataset.name);
+    if(r==='exists'){ btn.textContent='Déjà abonné'; btn.disabled=true; }
+    else if(r){ btn.textContent='Abonné ✓'; btn.disabled=true; btn.classList.add('done'); }
+    else { btn.textContent='Erreur'; }
+  }
+  window._plSubscribeBtn=_plSubscribeBtn;
   function _plBuildAbos(){
     const eps=_plEpisodes();
     if(!eps.length){
@@ -7921,7 +7971,7 @@ body.focus-mode .focus-exit{ display:flex; }
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14v-2a9 9 0 0 1 18 0v2"/><rect x="2.5" y="13" width="4.5" height="8" rx="2"/><rect x="17" y="13" width="4.5" height="8" rx="2"/></svg>
         <div class="pl-empty-t">Aucun abonnement audio</div>
         <div class="pl-empty-d">Ajoutez des flux de podcasts pour retrouver leurs épisodes ici.</div>
-        <button class="pl-empty-btn" onclick="closePodListen();if(window.openPodcast)openPodcast();">Découvrir des podcasts</button>
+        <button class="pl-empty-btn" onclick="if(window.pcSetTab)pcSetTab('decouvrir')">Découvrir des podcasts</button>
       </div>`;
     }
     let html='';
@@ -8000,7 +8050,7 @@ body.focus-mode .focus-exit{ display:flex; }
   }
   function _plSyncPlaying(){
     const playing = !!_plCur && _plAudioEl() && !_plAudioEl().paused;
-    document.querySelectorAll('#plBody .pl-ep, #plBody .pl-card, #plBody .pl-cont, #plBody .pl-pod').forEach(el=>el.classList.toggle('playing', el.dataset.link===_plCur));
+    document.querySelectorAll('#pcPaneAbonne .pl-ep, #pcPaneAbonne .pl-cont, #pcPaneAbonne .pl-pod').forEach(el=>el.classList.toggle('playing', el.dataset.link===_plCur));
     return playing;
   }
   window._plPlay = _plPlay;
@@ -11897,6 +11947,21 @@ body.focus-mode .focus-exit{ display:flex; }
     .pl-soon{ text-align:center; padding:54px 22px; color:var(--text-muted); }
     .pl-soon-t{ font-family:var(--font-dm); font-size:24px; color:var(--text); margin-bottom:8px; }
     .pl-soon-d{ font-family:var(--font-inter); font-size:13.5px; line-height:1.55; max-width:290px; margin:0 auto 18px; }
+    /* Découvrir — recherche annuaire Apple Podcasts */
+    .pl-disc-search{ position:relative; margin:14px 2px 16px; }
+    .pl-disc-search input{ width:100%; box-sizing:border-box; height:44px; padding:0 14px 0 42px; border-radius:var(--r-field); border:1px solid var(--border); background:var(--surface-card); color:var(--text); font-family:var(--font-inter); font-size:15px; outline:none; -webkit-appearance:none; }
+    .pl-disc-search input::placeholder{ color:var(--text-muted); }
+    .pl-disc-ic{ position:absolute; left:14px; top:50%; transform:translateY(-50%); width:18px; height:18px; color:var(--text-muted); pointer-events:none; }
+    .pl-disc-msg{ text-align:center; color:var(--text-muted); font-family:var(--font-inter); font-size:14px; padding:40px 20px; line-height:1.5; }
+    .pl-it-grid{ display:flex; flex-direction:column; gap:15px; }
+    .pl-it{ display:flex; align-items:center; gap:13px; }
+    .pl-it-art{ width:60px; height:60px; flex:none; border-radius:13px; background:#111 center/cover no-repeat; box-shadow:var(--shadow-soft); }
+    .pl-it-info{ flex:1; min-width:0; }
+    .pl-it-name{ font-family:var(--font-inter); font-size:14.5px; font-weight:700; color:var(--text); line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+    .pl-it-by{ font-family:var(--font-inter); font-size:12px; color:var(--text-muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .pl-it-sub{ flex:none; border:none; background:var(--text); color:var(--bg); font-family:var(--font-inter); font-size:12.5px; font-weight:700; padding:8px 15px; border-radius:var(--r-field); cursor:pointer; white-space:nowrap; -webkit-tap-highlight-color:transparent; }
+    .pl-it-sub:disabled{ opacity:.5; cursor:default; }
+    .pl-it-sub.done{ background:var(--accent); color:#fff; opacity:1; }
     .pl-body{ flex:1; min-height:0; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; padding:6px 16px 132px; scrollbar-width:none; }
     .pl-body::-webkit-scrollbar{ display:none; }
     .pl-hero{ position:relative; border-radius:22px; overflow:hidden; margin-bottom:22px; padding:20px;
@@ -11949,7 +12014,7 @@ body.focus-mode .focus-exit{ display:flex; }
     .pl-empty-t{ font-family:var(--font-inter); font-size:16px; font-weight:700; color:var(--text); margin-bottom:6px; }
     .pl-empty-d{ font-family:var(--font-inter); font-size:13.5px; line-height:1.5; max-width:280px; margin:0 auto 18px; }
     .pl-empty-btn{ border:none; border-radius:999px; background:var(--accent); color:#fff; font-family:var(--font-inter); font-size:14px; font-weight:700; padding:11px 22px; cursor:pointer; }
-    .pl-player{ position:absolute; left:12px; right:12px; bottom:max(14px,env(safe-area-inset-bottom)); z-index:5; display:flex; align-items:center; gap:11px; padding:11px 13px; border-radius:24px; background:rgba(28,26,24,.82); -webkit-backdrop-filter:blur(22px) saturate(180%); backdrop-filter:blur(22px) saturate(180%); border:.5px solid var(--lg-border); box-shadow:var(--lg-spec), var(--lg-elev); }
+    .pl-player{ position:fixed; left:12px; right:12px; bottom:calc(env(safe-area-inset-bottom,0px) + 74px); z-index:460; display:flex; align-items:center; gap:11px; padding:11px 13px; border-radius:24px; background:rgba(28,26,24,.82); -webkit-backdrop-filter:blur(22px) saturate(180%); backdrop-filter:blur(22px) saturate(180%); border:.5px solid var(--lg-border); box-shadow:var(--lg-spec), var(--lg-elev); }
     [data-theme="light"] .pl-player{ background:rgba(255,255,255,.7); }
     .pl-player[hidden]{ display:none; }
     .pl-pp-art{ width:46px; height:46px; flex:none; border-radius:10px; background:#111 center/cover no-repeat; }
@@ -11971,29 +12036,20 @@ body.focus-mode .focus-exit{ display:flex; }
     .sbar-podcast svg{ width:16px; height:16px; }
     [data-theme="light"] .sbar-podcast{ background:rgba(0,0,0,.04); border-color:rgba(0,0,0,.09); }
   </style>
-  <div class="pl-page" id="podListenPage" aria-hidden="true">
-    <div class="pl-topbar">
-      <button class="pl-back" id="plBack" aria-label="Retour à l'accueil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg><span>Accueil</span></button>
-      <span class="pl-title">Podcast</span>
+  <!-- Mini-player global (audio + TTS) — flotte au-dessus de toutes les pages -->
+  <div class="pl-player" id="plPlayer" hidden>
+    <div class="pl-pp-art" id="plPpArt"></div>
+    <div class="pl-pp-meta">
+      <div class="pl-pp-title" id="plPpTitle"></div>
+      <div class="pl-pp-src" id="plPpSrc"></div>
+      <div class="pl-pp-bar" id="plPpBar"><div class="pl-pp-prog" id="plPpProg"></div></div>
     </div>
-    <div class="pl-tabs" id="plTabs">
-      <button class="pl-tab active" type="button" data-pltab="abos">Abonnements</button>
-      <button class="pl-tab" type="button" data-pltab="discover">Découvrir</button>
-    </div>
-    <div class="pl-body" id="plBody"></div>
-    <div class="pl-player" id="plPlayer" hidden>
-      <div class="pl-pp-art" id="plPpArt"></div>
-      <div class="pl-pp-meta">
-        <div class="pl-pp-title" id="plPpTitle"></div>
-        <div class="pl-pp-src" id="plPpSrc"></div>
-        <div class="pl-pp-bar" id="plPpBar"><div class="pl-pp-prog" id="plPpProg"></div></div>
-      </div>
-      <button class="pl-pp-btn pl-pp-skip" id="plBack15" aria-label="Reculer 15 secondes">&minus;15</button>
-      <button class="pl-pp-btn pl-pp-play" id="plPlayBtn" aria-label="Lecture / Pause"><svg id="plPlayIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
-      <button class="pl-pp-btn pl-pp-skip" id="plFwd15" aria-label="Avancer 15 secondes">+15</button>
-    </div>
-    <audio id="plAudio" preload="none"></audio>
+    <button class="pl-pp-btn pl-pp-skip" id="plBack15" aria-label="Reculer 15 secondes">&minus;15</button>
+    <button class="pl-pp-btn pl-pp-play" id="plPlayBtn" aria-label="Lecture / Pause"><svg id="plPlayIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+    <button class="pl-pp-btn pl-pp-skip" id="plFwd15" aria-label="Avancer 15 secondes">+15</button>
   </div>
+  <audio id="plAudio" preload="none"></audio>
+
 
   <!-- Boîte de saisie fiable (remplace prompt(), bloqué en PWA standalone iOS) -->
   <style>
