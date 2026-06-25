@@ -8233,7 +8233,7 @@ body.focus-mode .focus-exit{ display:flex; }
     doc.querySelectorAll('item,entry').forEach(el=>{
       const g=n=>{const e=el.querySelector(n);return e?e.textContent.trim():''};
       const a=(s,at)=>{const e=el.querySelector(s);return e?e.getAttribute(at):null};
-      const mc=[]; el.querySelectorAll('media\\:content,content').forEach(m=>{const u=m.getAttribute('url');if(u)mc.push({url:u,width:m.getAttribute('width')});});
+      const mc=[]; el.querySelectorAll('media\\:content,content').forEach(m=>{const u=m.getAttribute('url');if(u)mc.push({url:u,width:m.getAttribute('width'),type:m.getAttribute('type')||'',medium:m.getAttribute('medium')||''});});
       const mt=[]; el.querySelectorAll('media\\:thumbnail,thumbnail').forEach(m=>{const u=m.getAttribute('url');if(u)mt.push({url:u});});
       items.push({
         title: g('title'), link: g('link')||a('link','href')||'',
@@ -8242,7 +8242,7 @@ body.focus-mode .focus-exit{ display:flex; }
         pubDate: g('pubDate')||g('published')||g('updated'),
         enclosure: (()=>{const e=el.querySelector('enclosure');return e?{url:e.getAttribute('url'),type:e.getAttribute('type')||'',length:e.getAttribute('length')||''}:null})(),
         'itunes:duration': g('itunes\\:duration')||'',
-        'media:content': mc.length?mc[0]:null,
+        'media:content': mc.length?(mc.find(c=>_looksImg(c.url,c.type,c.medium,false))||mc[0]):null,
         'media:thumbnail': mt.length?mt[0]:null,
         'itunes:image': (()=>{const ii=el.querySelector('itunes\\:image');return ii?{href:ii.getAttribute('href')}:null})(),
         author: g('dc\\:creator')||g('author')||g('itunes\\:author')||'',
@@ -8253,12 +8253,27 @@ body.focus-mode .focus-exit{ display:flex; }
   }
 
   // ── 7. Extraction image depuis un item RSS ────────────────────
+  // Décide si une URL (media:content / enclosure) est une image. On se fie
+  // d'abord au type/medium MIME, puis à l'extension. Beaucoup de CDN servent
+  // des images SANS extension dans le chemin (resize, ID numérique, ?format=) :
+  // on les tente (strict=false) plutôt que de les rejeter à tort, ce qui
+  // privait d'image de nombreux flux. enclosure (souvent un audio de podcast)
+  // reste strict=true pour ne pas confondre une pièce jointe sonore.
+  function _looksImg(u, type, medium, strict){
+    if(!u || !/^https?:/i.test(u)) return false;
+    type=(type||'').toLowerCase(); medium=(medium||'').toLowerCase();
+    if(/^(video|audio)\//.test(type) || medium==='video' || medium==='audio') return false;
+    if(type.indexOf('image/')===0 || medium==='image') return true;
+    if(/\.(mp4|webm|mov|m4v|mp3|m4a|aac|ogg|wav|opus|pdf)(\?|#|$)/i.test(u)) return false;
+    if(/\.(jpe?g|png|webp|gif|avif|bmp|tiff?)/i.test(u)) return true;
+    return !strict;
+  }
   function _extractImg(item){
     // media:content / media:thumbnail
-    const mc = item['media:content']; if(mc?.url && /\.(jpe?g|png|webp|gif)/i.test(mc.url)) return mc.url;
+    const mc = item['media:content']; if(mc?.url && _looksImg(mc.url, mc.type, mc.medium, false)) return mc.url;
     const mt = item['media:thumbnail']; if(mt?.url) return mt.url;
-    // enclosure image
-    if(item.enclosure?.url && /\.(jpe?g|png|webp)/i.test(item.enclosure.url)) return item.enclosure.url;
+    // enclosure image (strict : évite d'attraper l'audio d'un podcast)
+    if(item.enclosure?.url && _looksImg(item.enclosure.url, item.enclosure.type, '', true)) return item.enclosure.url;
     // itunes:image
     if(item['itunes:image']?.href) return item['itunes:image'].href;
     // <img> dans description ou content:encoded
@@ -8415,20 +8430,35 @@ body.focus-mode .focus-exit{ display:flex; }
   }
 
   // ── 10. Enrichissement images manquantes ──────────────────────
+  // Récupère le HTML d'une page via une CASCADE de proxies CORS (et non un
+  // seul) : si le premier est benché/HS, on ne renonce plus en silence.
+  async function _fetchHtmlViaProxies(url, T){
+    const U = encodeURIComponent(url);
+    const fns = [
+      async()=>{ const r=await fetch(`https://corsproxy.io/?${U}`,{signal:AbortSignal.timeout(T)}); return r.ok?r.text():null; },
+      async()=>{ const r=await fetch(`https://api.codetabs.com/v1/proxy?quest=${U}`,{signal:AbortSignal.timeout(T)}); return r.ok?r.text():null; },
+      async()=>{ const r=await fetch(`https://api.allorigins.win/get?url=${U}`,{signal:AbortSignal.timeout(T)}); const d=await r.json(); return (d&&d.contents)||null; },
+    ];
+    for(const fn of fns){ try{ const t=await fn(); if(t && t.length>200) return t; }catch(e){} }
+    return null;
+  }
+  // Extrait l'image sociale : og:image (+secure_url) ou twitter:image (+:src),
+  // property|name dans les deux ordres d'attributs.
+  function _ogImage(html){
+    const m = html.match(/<meta[^>]+(?:property|name)=["'](?:og:image(?::secure_url)?|twitter:image(?::src)?)["'][^>]+content=["']([^"']+)["']/i)
+           || html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+(?:property|name)=["'](?:og:image|twitter:image)["']/i);
+    return (m && m[1] && /^https?:/.test(m[1])) ? m[1] : null;
+  }
   async function _enrichImages(arts){
     const need = arts.filter(a=>a.needsFetch&&!a.imageUrl);
     if(!need.length) return;
     for(let i=0;i<need.length;i+=6){
       await Promise.all(need.slice(i,i+6).map(async a=>{
         try{
-          // Tenter OG image via proxy
-          const U = encodeURIComponent(a.link);
-          const r = await fetch(`https://corsproxy.io/?${U}`,{signal:AbortSignal.timeout(4000)});
-          if(!r.ok) return;
-          const txt = await r.text();
-          const m = txt.match(/<meta[^>]+(?:property=["']og:image["']|name=["']twitter:image["'])[^>]+content=["']([^"']+)["']/i)
-                 || txt.match(/<meta[^>]+content=["']([^"']+)["'][^>]+(?:property=["']og:image["'])/i);
-          if(m && m[1] && /^https?:/.test(m[1])){ a.imageUrl=m[1]; a.needsFetch=false; _updateCardImage(a); }
+          const html = await _fetchHtmlViaProxies(a.link, 4500);
+          if(!html) return;
+          const img = _ogImage(html);
+          if(img){ a.imageUrl=img; a.needsFetch=false; _updateCardImage(a); }
         }catch(e){}
       }));
       if(i+6 < need.length) await new Promise(r=>setTimeout(r,600));
