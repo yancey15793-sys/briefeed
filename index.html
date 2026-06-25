@@ -7844,6 +7844,7 @@ body.focus-mode .focus-exit{ display:flex; }
   const pcPage = document.getElementById('podcastPage');
   function openPodcast(tab){
     closeSB();
+    try{ _plMigratePods(); }catch(e){}
     pcSetTab(tab||'abonne');
     pcPage.classList.add('open'); pcPage.setAttribute('aria-hidden','false');
     lockScroll();
@@ -7973,11 +7974,11 @@ body.focus-mode .focus-exit{ display:flex; }
     if(!feedUrl || typeof folders==='undefined') return false;
     try{
       let fi=folders.findIndex(f=> (f.name||'').toLowerCase()==='podcasts');
-      if(fi<0){ if(folders.length) fi=0; else { folders.push({name:'Podcasts',feeds:[],open:true}); fi=0; } }
+      if(fi<0){ folders.push({name:'Podcasts',feeds:[],open:true}); fi=folders.length-1; }   // dossier dédié, jamais le 1er dossier de l'utilisateur
       folders[fi].feeds=folders[fi].feeds||[];
       if(folders[fi].feeds.includes(feedUrl)) return 'exists';
       folders[fi].feeds.push(feedUrl); folders[fi].open=true;
-      try{ const m=JSON.parse(localStorage.getItem('reader.feedMeta')||'{}'); m[feedUrl]={name:name||'Podcast', type:'rss', originalUrl:feedUrl}; if(window._safeSet)_safeSet('reader.feedMeta',JSON.stringify(m)); else localStorage.setItem('reader.feedMeta',JSON.stringify(m)); }catch(e){}
+      try{ const m=JSON.parse(localStorage.getItem('reader.feedMeta')||'{}'); m[feedUrl]={name:name||'Podcast', type:'rss', originalUrl:feedUrl, podcast:true}; if(window._safeSet)_safeSet('reader.feedMeta',JSON.stringify(m)); else localStorage.setItem('reader.feedMeta',JSON.stringify(m)); }catch(e){}
       if(typeof persist==='function') persist();
       if(typeof render==='function') render();
       if(typeof _syncRSSFeeds==='function') _syncRSSFeeds();
@@ -7992,6 +7993,37 @@ body.focus-mode .focus-exit{ display:flex; }
     else { btn.textContent='Erreur'; }
   }
   window._plSubscribeBtn=_plSubscribeBtn;
+
+  // Regroupe les flux de podcasts dans le dossier dédié « Podcasts » (masqué de la sidebar).
+  // Corrige les abonnements rangés par erreur dans le 1er dossier. Sûr : ne déplace que les flux
+  // marqués podcast, ou dont les articles chargés sont massivement audio (≥60 %).
+  function _plMigratePods(){
+    if(typeof folders==='undefined' || !Array.isArray(folders) || !folders.length) return false;
+    let meta={}; try{ meta=JSON.parse(localStorage.getItem('reader.feedMeta')||'{}'); }catch(e){}
+    const arts=_allArticles||[]; const tot={}, aud={};
+    for(const a of arts){ const u=a&&a.feedUrl; if(!u) continue; tot[u]=(tot[u]||0)+1; if(a.audioUrl) aud[u]=(aud[u]||0)+1; }
+    const isPod=(u)=> (meta[u]&&meta[u].podcast) || ((tot[u]||0)>=2 && (aud[u]||0)/tot[u]>=0.6);
+    let pi=folders.findIndex(f=>(f.name||'').toLowerCase()==='podcasts'), moved=false;
+    folders.forEach(f=>{
+      if((f.name||'').toLowerCase()==='podcasts') return;
+      (f.feeds||[]).slice().forEach(u=>{
+        if(!isPod(u)) return;
+        if(pi<0){ folders.push({name:'Podcasts',feeds:[],open:false}); pi=folders.length-1; }
+        const k=f.feeds.indexOf(u); if(k>-1) f.feeds.splice(k,1);
+        folders[pi].feeds=folders[pi].feeds||[];
+        if(!folders[pi].feeds.includes(u)) folders[pi].feeds.push(u);
+        if(!meta[u]) meta[u]={}; meta[u].podcast=true; moved=true;
+      });
+    });
+    if(moved){
+      try{ if(window._safeSet)_safeSet('reader.feedMeta',JSON.stringify(meta)); else localStorage.setItem('reader.feedMeta',JSON.stringify(meta)); }catch(e){}
+      if(typeof persist==='function') persist();
+      if(typeof render==='function') render();
+      if(typeof _syncRSSFeeds==='function') _syncRSSFeeds();
+    }
+    return moved;
+  }
+  window._plMigratePods=_plMigratePods;
 
   // Ajout direct d'un flux RSS de podcast — bouton + déroulant, en tête de l'onglet Abonné.
   function _plAddRssHtml(){
@@ -8117,8 +8149,7 @@ body.focus-mode .focus-exit{ display:flex; }
     else { _plSetIcon(false); au.pause(); }
   }
   function _plSetIcon(playing){
-    const ic=document.getElementById('plPlayIcon'); if(!ic) return;
-    ic.innerHTML = playing ? '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>' : '<path d="M8 5v14l11-7z"/>';
+    const btn=document.getElementById('plPlayBtn'); if(btn) btn.classList.toggle('playing', !!playing);
   }
   function _plSyncPlaying(){
     const playing = !!_plCur && _plAudioEl() && !_plAudioEl().paused;
@@ -10191,6 +10222,9 @@ body.focus-mode .focus-exit{ display:flex; }
     if(!_hasCachedContent && _allArticles.length){
       _renderCurrentView();
     }
+
+    // Regrouper les podcasts dans leur dossier dédié (nettoie la sidebar) une fois les articles chargés.
+    try{ if(typeof _plMigratePods==='function') _plMigratePods(); }catch(e){}
 
     // Persister en IDB (silencieux)
     if(newCount > 0){
@@ -12275,6 +12309,10 @@ body.focus-mode .focus-exit{ display:flex; }
     .pl-pp-btn{ flex:none; border:none; background:none; color:var(--text); cursor:pointer; display:flex; align-items:center; justify-content:center; padding:4px; -webkit-tap-highlight-color:transparent; }
     .pl-pp-play{ width:42px; height:42px; border-radius:50%; background:var(--text); color:var(--bg); }
     .pl-pp-play svg{ width:20px; height:20px; }
+    /* Bascule play/pause par classe (innerHTML sur <svg> ne se rend pas sur Safari iOS) */
+    #plPlayIcon .pl-ic-pause{ display:none; }
+    #plPlayBtn.playing .pl-ic-play{ display:none; }
+    #plPlayBtn.playing .pl-ic-pause{ display:inline; }
     .pl-pp-skip{ font-family:var(--font-inter); font-size:10px; font-weight:800; color:var(--text-muted); width:30px; }
     /* Bouton Podcast de la Smart Bar */
     .sbar-podcast{ flex:none; display:inline-flex; align-items:center; gap:6px; height:36px; box-sizing:border-box;
@@ -12294,7 +12332,7 @@ body.focus-mode .focus-exit{ display:flex; }
       <div class="pl-pp-bar" id="plPpBar"><div class="pl-pp-prog" id="plPpProg"></div></div>
     </div>
     <button class="pl-pp-btn pl-pp-skip" id="plBack15" aria-label="Reculer 15 secondes">&minus;15</button>
-    <button class="pl-pp-btn pl-pp-play" id="plPlayBtn" aria-label="Lecture / Pause"><svg id="plPlayIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+    <button class="pl-pp-btn pl-pp-play" id="plPlayBtn" aria-label="Lecture / Pause"><svg id="plPlayIcon" viewBox="0 0 24 24" fill="currentColor"><path class="pl-ic-play" d="M8 5v14l11-7z"/><path class="pl-ic-pause" d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg></button>
     <button class="pl-pp-btn pl-pp-skip" id="plFwd15" aria-label="Avancer 15 secondes">+15</button>
   </div>
   <audio id="plAudio" preload="none"></audio>
