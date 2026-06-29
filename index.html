@@ -2055,15 +2055,15 @@ button, .ob-btn, .ob-btn-ghost,
 .edl-tags{ display:flex; flex-wrap:wrap; gap:4px; margin-top:8px; }
 .edl-tag{
   display:inline-flex; align-items:center;
-  background:rgba(255,255,255,.06);
-  border:1px solid rgba(255,255,255,.08);
+  background:#000;
+  border:1px solid var(--border);
   color:var(--text-muted);
-  border-radius:6px; padding:3px 7px;
-  font-family:var(--font-inter); font-size:10px; font-weight:500;
+  border-radius:90px; padding:3px 9px;
+  font-family:var(--font-inter); font-size:10px; font-weight:600;
   letter-spacing:.025em; white-space:nowrap; text-transform:uppercase;
 }
 [data-theme="light"] .edl-tag{
-  background:rgba(0,0,0,.04); border-color:rgba(0,0,0,.08); color:var(--text-muted);
+  background:#fff; border-color:rgba(0,0,0,.12); color:#5a554e;
 }
 @media (min-width:768px){
   .edl-fig{ border-radius:10px; }
@@ -2634,6 +2634,7 @@ button, .ob-btn, .ob-btn-ghost,
              opacity .22s ease;
 }
 .sbar-cat-pill.vis{ opacity:1; }
+.sbar-cat-pill.grab{ box-shadow:0 5px 16px rgba(0,0,0,.32); }
 
 /* — Sources : panneau révélé en accordéon (grid-rows) au changement de catégorie — */
 .sbar-srcs-wrap{
@@ -9463,7 +9464,7 @@ body.focus-mode .focus-exit{ display:flex; }
     // normale (géré par le click ci-dessus). 100 % JS, aucun CSS ajouté.
     if(cats){
       const _buzz = ()=>{ try{ navigator.vibrate && navigator.vibrate(7); }catch(e){} };
-      let armed=false, dragging=false, moved=false, sx=0, sy=0, idx=-1, pill=null, chips=[];
+      let armed=false, dragging=false, moved=false, sx=0, sy=0, idx=-1, pill=null, chips=[], lpx=0, lt=0;
       const _pt = e => e.touches ? e.touches[0] : e;
       const _chips = ()=> Array.from(cats.querySelectorAll('.sbar-cat'));
       const _nearest = cx => { let best=0,bd=1e9; chips.forEach((c,i)=>{ const x=c.offsetLeft+c.offsetWidth/2; const d=Math.abs(x-cx); if(d<bd){bd=d;best=i;} }); return best; };
@@ -9477,8 +9478,8 @@ body.focus-mode .focus-exit{ display:flex; }
         if(!armed) return;
         const t=_pt(e); const dx=t.clientX-sx, dy=t.clientY-sy;
         if(!dragging){
-          if(Math.abs(dx)<7 || Math.abs(dx)<=Math.abs(dy)) return;   // intention horizontale requise
-          dragging=true; pill.style.transition='none';
+          if(Math.abs(dx)<4 || Math.abs(dx)<Math.abs(dy)) return;     // intention horizontale (seuil abaissé)
+          dragging=true; pill.style.transition='none'; pill.classList.add('grab');
           if(!pill.classList.contains('vis') && chips[idx]){          // état « Tout » : faire apparaître la pilule au départ
             pill.style.width=chips[idx].offsetWidth+'px'; pill.style.height=chips[idx].offsetHeight+'px';
             pill.style.top=chips[idx].offsetTop+'px'; pill.classList.add('vis');
@@ -9490,13 +9491,17 @@ body.focus-mode .focus-exit{ display:flex; }
         const w=pill.offsetWidth;
         let px=(t.clientX-rect.left+cats.scrollLeft)-w/2;
         px=Math.max(0,Math.min(cats.scrollWidth-w, px));
-        pill.style.transform=`translateX(${px}px)`;
+        // Élasticité : squash horizontal proportionnel à la vitesse (rendu « vivant »).
+        const nowT=performance.now(); const vx=(px-lpx)/Math.max(8,nowT-lt); lpx=px; lt=nowT;
+        const sq=Math.min(.16, Math.abs(vx)*.05);
+        pill.style.transform=`translateX(${px}px) scaleX(${1+sq}) scaleY(${1-sq*.55})`;
         const i=_nearest(px+w/2);
         if(i!==idx){ idx=i; chips.forEach((c,j)=>c.classList.toggle('sel', j===i)); _buzz(); }
       };
       const _up = ()=>{
         if(!armed) return; armed=false;
         pill.style.transition='';
+        pill.classList.remove('grab');
         if(dragging){ dragging=false; const cat = chips[idx] ? (chips[idx].dataset.cat||'') : ''; _smartPickCat(cat); _smartMoveCatPill(); }
       };
       cats.addEventListener('touchstart', _down, {passive:true});
@@ -12603,6 +12608,10 @@ body.focus-mode .focus-exit{ display:flex; }
     .pl-ep.playing .pl-ep-play{ background:var(--accent); border-color:var(--accent); color:#fff; }
     .pl-ep.playing .pl-ep-title{ color:var(--accent); }
     /* ── Onglet Abonné — sections à rôles distincts (squelette V2) ── */
+    /* Panneau Abonné : padding horizontal (sinon titres + carrousel collent au
+       bord et le carrousel margin:0 -16px déborde → 1re pochette rognée) +
+       clearance basse pour la nav et le mini-player. */
+    #pcPaneAbonne{ padding:8px 16px calc(env(safe-area-inset-bottom,0px) + 120px); }
     .pc-sec-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin:0 2px 14px; }
     .pc-sec-t{ font-family:var(--font-inter); font-size:17px; font-weight:800; letter-spacing:-.02em; color:var(--text); }
     .pc-sec-act{ flex:none; border:none; background:none; color:var(--text-muted); font-family:var(--font-inter); font-size:12.5px; font-weight:600; cursor:pointer; padding:4px 0; -webkit-tap-highlight-color:transparent; transition:color .2s ease, transform .12s ease; }
