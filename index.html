@@ -8535,8 +8535,14 @@ body.focus-mode .focus-exit{ display:flex; }
                 || (tag.match(/\bsrc=["']([^"']+)["']/i)||[])[1] || '';
       if(cand && /^https?:/.test(cand) && !/\b(1x1|spacer|blank|pixel|placeholder)\b/i.test(cand)) return cand;
     }
-    // Dernier recours : artwork du podcast (niveau channel) — couvre les épisodes sans image propre.
-    if(item._channelImg && /^https?:/.test(item._channelImg)) return item._channelImg;
+    // Dernier recours : artwork du channel — RÉSERVÉ aux épisodes de podcast
+    // (item audio sans image propre). Pour un article classique, le <image> du
+    // channel = le LOGO du site (TechCrunch, ESPN…) : l'utiliser en visuel de
+    // carte est faux ET empêche l'enrichissement og:image (imageUrl rempli →
+    // needsFetch=false). On laisse donc null pour les articles → og:image jouera.
+    const enc = item.enclosure;
+    const isAudioEp = enc && enc.url && (/^audio\//i.test(enc.type||'') || /\.(mp3|m4a|aac|ogg|wav|opus)(\?|#|$)/i.test(enc.url));
+    if(isAudioEp && item._channelImg && /^https?:/.test(item._channelImg)) return item._channelImg;
     return null;
   }
 
