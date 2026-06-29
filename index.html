@@ -1712,6 +1712,18 @@ button, .ob-btn, .ob-btn-ghost,
    ══════════════════════════════════════════════════════════════ */
 .pc-page{ position:fixed; inset:0; z-index:300; background:var(--bg); display:flex; flex-direction:column; opacity:0; visibility:hidden; transform:translateY(16px) scale(.992); transition:opacity .4s ease, transform .55s cubic-bezier(.16,1,.3,1), visibility .4s ease; }
 .pc-page.open{ opacity:1; visibility:visible; transform:none; }
+/* Page Émission (show dédié) — au-dessus de la page Podcasts */
+.pod-show-page{ z-index:320; }
+.pod-show-hero{ padding:6px 20px 22px; text-align:center; animation:pcRise .5s cubic-bezier(.34,1.56,.64,1) both; }
+.pod-show-cover{ width:164px; height:164px; margin:6px auto 18px; border-radius:26px; background:#111 center/cover no-repeat; box-shadow:0 18px 46px rgba(0,0,0,.42); }
+.pod-show-name{ font-family:var(--font-inter); font-size:23px; font-weight:800; letter-spacing:-.02em; color:var(--text); line-height:1.18; }
+.pod-show-sub{ font-family:var(--font-inter); font-size:13px; font-weight:600; color:var(--text-muted); margin-top:7px; }
+.pod-show-desc{ font-family:var(--font-inter); font-size:13.5px; line-height:1.5; color:var(--text-muted); margin:14px auto 0; max-width:520px; display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden; }
+.pod-show-play-btn{ display:inline-flex; align-items:center; gap:9px; margin-top:20px; border:none; border-radius:999px; background:var(--text); color:var(--bg); font-family:var(--font-inter); font-size:14.5px; font-weight:700; padding:12px 24px; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:transform .14s ease; }
+.pod-show-play-btn:active{ transform:scale(.95); }
+.pod-show-play-btn svg{ width:17px; height:17px; margin-left:-2px; }
+.pod-show-eps{ padding:6px 18px 48px; }
+.pod-show-eps .pl-ep:first-child{ border-top:1px solid var(--border); padding-top:20px; }
 .pc-topbar{ flex:none; display:flex; align-items:center; gap:12px; padding:14px 18px 4px; }
 .pc-back{ width:36px;height:36px;flex:none;border:0;cursor:pointer;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,.06);color:var(--text);transition:background .2s,transform .15s; }
 .pc-back:hover{ background:rgba(255,255,255,.12); }
@@ -4778,6 +4790,17 @@ body.focus-mode .focus-exit{ display:flex; }
 
   </div>
 
+  <!-- ═══════════════ PAGE ÉMISSION (show dédié) ═══════════════ -->
+  <div class="pc-page pod-show-page" id="podShowPage" aria-hidden="true">
+    <div class="pc-topbar">
+      <button class="pc-back" id="podShowBack" aria-label="Retour" onclick="closePodShow()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <span class="dc-topbar-title" id="podShowTopTitle">Émission</span>
+    </div>
+    <div class="pc-body" id="podShowBody"></div>
+  </div>
+
   <div class="pp-page" id="prefsPage" aria-hidden="true">
 
     <div class="pp-topbar">
@@ -5637,6 +5660,8 @@ body.focus-mode .focus-exit{ display:flex; }
       if(det && det.classList.contains('visible')) return dcCloseTheme;
       return closeDiscover;
     }
+    const psh = document.getElementById('podShowPage');
+    if(psh && psh.classList.contains('open')) return window.closePodShow;
     const pc = document.getElementById('podcastPage');
     if(pc && pc.classList.contains('open')) return window.closePodcast;
     const pf = document.getElementById('prefsPage');
@@ -7939,17 +7964,17 @@ body.focus-mode .focus-exit{ display:flex; }
   }
   // « Toutes vos émissions » — un show abonné (pochette + éditeur + dernier épisode + play). Unité = l'émission.
   function _plShowRow(o){
-    const a=o.art||{}, esc=String(a.link||'').replace(/'/g,"\\'");
+    const a=o.art||{}, esc=String(a.link||'').replace(/'/g,"\\'"), feedEsc=String(a.feedUrl||'').replace(/'/g,"\\'");
     const meta = `${o.count} épisode${o.count>1?'s':''} · ${relTime(o.latest)}`;
-    return `<button class="pc-show" type="button" data-link="${escAttr(a.link)}" onclick="_plPlay('${esc}')">
+    return `<div class="pc-show" role="button" tabindex="0" data-feed="${escAttr(a.feedUrl||'')}" onclick="_plOpenShow('${feedEsc}')">
       <span class="pc-show-cover" style="${_plArtCss(a)}"></span>
       <span class="pc-show-meta">
         <span class="pc-show-pub">${escHtml(meta)}</span>
         <span class="pc-show-title">${escHtml(o.source||'')}</span>
         <span class="pc-show-desc">${escHtml(a.title||'')}</span>
       </span>
-      <span class="pc-show-play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>
-    </button>`;
+      <span class="pc-show-play" role="button" aria-label="Lire le dernier épisode" onclick="event.stopPropagation();_plPlay('${esc}')"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>
+    </div>`;
   }
   // Action « Tout marquer comme lu » de la section Nouveaux épisodes.
   window._plMarkAllEpRead=function(){
@@ -7959,6 +7984,41 @@ body.focus-mode .focus-exit{ display:flex; }
     const abo=document.getElementById('pcPaneAbonne');
     if(abo){ abo.innerHTML=_plBuildAbos(); if(typeof _plSyncPlaying==='function') _plSyncPlaying(); }
   };
+  // Page dédiée à une émission (show) — porte d'entrée depuis « Toutes vos émissions ».
+  function _plOpenShow(feedUrl){
+    if(!feedUrl) return;
+    const page=document.getElementById('podShowPage'), body=document.getElementById('podShowBody');
+    if(!page||!body) return;
+    let eps=(_allArticles||[]).filter(a=> a && a.audioUrl && (a.feedUrl||'')===feedUrl);
+    if(!eps.length) return;
+    const head=eps[0]||{};
+    const showName=head.source||'Émission';
+    const count=eps.length;
+    const desc=(head.description||'').replace(/<[^>]*>/g,'').trim();
+    const lastEsc=String(head.link||'').replace(/'/g,"\\'");
+    body.innerHTML=`<div class="pod-show-hero">
+        <div class="pod-show-cover" style="${_plArtCss(head)}"></div>
+        <div class="pod-show-name">${escHtml(showName)}</div>
+        <div class="pod-show-sub">${count} épisode${count>1?'s':''}</div>
+        ${desc?`<div class="pod-show-desc">${escHtml(desc.slice(0,300))}</div>`:''}
+        <button class="pod-show-play-btn" type="button" onclick="_plPlay('${lastEsc}')"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Lire le dernier épisode</button>
+      </div>
+      <div class="pod-show-eps">${eps.map(a=>_plEpCard(a,false)).join('')}</div>`;
+    body.scrollTop=0;
+    const tt=document.getElementById('podShowTopTitle'); if(tt) tt.textContent=showName;
+    page.classList.add('open'); page.setAttribute('aria-hidden','false');
+    if(typeof lockScroll==='function') lockScroll();
+    if(typeof navArm==='function') navArm();
+    if(typeof _plSyncPlaying==='function') _plSyncPlaying();
+  }
+  window._plOpenShow=_plOpenShow;
+  function closePodShow(){
+    const page=document.getElementById('podShowPage');
+    if(!page||!page.classList.contains('open')) return;
+    page.classList.remove('open'); page.setAttribute('aria-hidden','true');
+    if(typeof unlockScroll==='function') unlockScroll();
+  }
+  window.closePodShow=closePodShow;
   const PC_CATS=[['Actualités','actualité'],['Société','société'],['Culture','culture'],['Histoire','histoire'],['Sciences','science'],['Sport','sport'],['Économie','économie'],['Humour','humour'],['True crime','true crime'],['Politique','politique']];
   function _plBuildDiscover(){
     const chips=PC_CATS.map(([label,term],i)=>`<button class="pl-disc-chip${i===0?' sel':''}" type="button" data-term="${escAttr(term)}" onclick="_plDiscoverCat(this)">${escHtml(label)}</button>`).join('');
@@ -8211,7 +8271,7 @@ body.focus-mode .focus-exit{ display:flex; }
   }
   function _plSyncPlaying(){
     const playing = !!_plCur && _plAudioEl() && !_plAudioEl().paused;
-    document.querySelectorAll('#pcPaneAbonne .pl-ep, #pcPaneAbonne .pl-cont, #pcPaneAbonne .pl-pod').forEach(el=>el.classList.toggle('playing', el.dataset.link===_plCur));
+    document.querySelectorAll('#pcPaneAbonne .pl-ep, #pcPaneAbonne .pl-cont, #pcPaneAbonne .pl-pod, #podShowBody .pl-ep').forEach(el=>el.classList.toggle('playing', el.dataset.link===_plCur));
     return playing;
   }
   window._plPlay = _plPlay;
