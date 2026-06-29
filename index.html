@@ -2669,10 +2669,8 @@ body.bf-heavy-open .sbar-podcast{
 .bfr-ring{ width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; position:relative;
   transition:transform .22s cubic-bezier(.34,1.4,.64,1), box-shadow .22s ease; box-shadow:0 0 0 1px var(--border); }
 .bfr-face{ width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center;
-  font-weight:800; font-size:14px; color:#fff; overflow:hidden; background:var(--brand,#333); }
+  font-weight:800; font-size:16px; color:#fff; letter-spacing:-.02em; overflow:hidden; background:var(--brand,#333); }
 .bfr-face img{ width:100%; height:100%; object-fit:contain; padding:7px; }
-.bfr-face svg{ width:19px; height:19px; }
-.bfr-item[data-type="cat"] .bfr-face{ background:radial-gradient(120% 120% at 30% 20%, var(--bg-elev), #141312); color:var(--text); }
 .bfr-name{ font-size:10px; font-weight:500; color:var(--text-muted); max-width:52px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; transition:color .2s, font-weight .2s; }
 .bfr-item:active .bfr-ring{ transform:scale(.93); }
 .bfr-item.on .bfr-ring{ transform:scale(1.08); box-shadow:0 0 0 2.5px var(--brand,var(--text)), 0 0 16px -2px var(--brand,var(--text)); }
@@ -2706,7 +2704,6 @@ body.bf-heavy-open .sbar-podcast{
 .bfr-dot{ flex:none; width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:14px; background:var(--brand,#333); overflow:hidden; box-shadow:0 0 0 1px var(--border); }
 .bfr-dot img{ width:100%; height:100%; object-fit:contain; padding:6px; }
 .bfr-dot svg{ width:19px; height:19px; }
-.bfr-dot[data-type="cat"]{ background:radial-gradient(120% 120% at 30% 20%, var(--bg-elev), #141312); color:var(--text); }
 .bfr-rname{ flex:1; min-width:0; font-size:16px; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .bfr-star{ flex:none; width:34px; height:34px; border:none; background:none; cursor:pointer; color:var(--text-muted); display:flex; align-items:center; justify-content:center; -webkit-tap-highlight-color:transparent; transition:transform .12s ease; }
 .bfr-star:active{ transform:scale(.85); }
@@ -5402,23 +5399,15 @@ body.focus-mode .focus-exit{ display:flex; }
           </div>
           <div class="bfr-scroll" id="bfrRail"><!-- favoris injectés par _renderHybRail() --></div>
           <div class="bfr-edge right">
+            <button class="bfr-btn" id="sbarPodcastBtn" type="button" onclick="openPodListen()" aria-label="Podcast">
+              <span class="bfr-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 14v-2a9 9 0 0 1 18 0v2"/><rect x="2.5" y="13" width="4.5" height="8" rx="2"/><rect x="17" y="13" width="4.5" height="8" rx="2"/></svg></span>
+              <span class="bfr-lbl">Podcast</span>
+            </button>
             <button class="bfr-btn" id="bfrManage" type="button" aria-label="Gérer">
               <span class="bfr-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><circle cx="9" cy="7" r="2.3" fill="var(--bg-elev)"/><line x1="4" y1="17" x2="20" y2="17"/><circle cx="15" cy="17" r="2.3" fill="var(--bg-elev)"/></svg></span>
               <span class="bfr-lbl">Gérer</span>
             </button>
           </div>
-        </div>
-        <div class="sbar-seg-row">
-          <div class="sbar-seg" id="sbarSeg">
-            <span class="sbar-seg-pill" id="sbarSegPill" aria-hidden="true"></span>
-            <button class="sbar-seg-btn" type="button" data-mode="all">Tout</button>
-            <button class="sbar-seg-btn" type="button" data-mode="unread">Non lus</button>
-            <button class="sbar-seg-btn" type="button" data-mode="trending">Tendances</button>
-          </div>
-          <button class="sbar-podcast" id="sbarPodcastBtn" type="button" onclick="openPodListen()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 14v-2a9 9 0 0 1 18 0v2"/><rect x="2.5" y="13" width="4.5" height="8" rx="2"/><rect x="17" y="13" width="4.5" height="8" rx="2"/></svg>
-            <span>Podcast</span>
-          </button>
         </div>
       </div>
 
@@ -9466,11 +9455,13 @@ body.focus-mode .focus-exit{ display:flex; }
     if(cb.si) return `<img src="https://cdn.simpleicons.org/${cb.si}/ffffff" alt="" onerror="this.onerror=null;this.src='${cl}'">`;
     return `<img src="${cl}" alt="" onerror="this.style.display='none'">`;
   }
-  // Rendu de la « face » d'une catégorie : logo officiel si marque détectée, sinon glyphe.
-  function _catFaceInner(name){
-    const cb=_catBrand(name);
-    return cb ? _brandImg(cb) : _hybCatSVG(name);
-  }
+  // Catégorie sans marque : pastille couleur + initiale (façon Mastercard : typo
+  // forte sur aplat de couleur). Couleur déterministe par nom, palette premium.
+  const _CAT_PALETTE=['#E2484D','#F37338','#1D9BF0','#10A37F','#7B61FF','#F4B400','#EB5286','#0B7285','#C2410C','#4F46E5','#0A84FF','#D81B60'];
+  function _catColor(name){ let h=0; const s=String(name||''); for(let i=0;i<s.length;i++) h=(h*31+s.charCodeAt(i))>>>0; return _CAT_PALETTE[h%_CAT_PALETTE.length]; }
+  function _catInitial(name){ const m=String(name||'').trim().replace(/^actu(alit[ée]s?)?\s+/i,''); return (m[0]||'?').toUpperCase(); }
+  function _catColorOf(name){ const cb=_catBrand(name); return cb?cb.color:_catColor(name); }
+  function _catFaceInner(name){ const cb=_catBrand(name); return cb ? _brandImg(cb) : escHtml(_catInitial(name)); }
   // ── Favoris : la barre n'affiche QUE des favoris choisis (pas tous les flux) ──
   const _BF_FAV_KEY = 'bf_favorites';
   let _bfFavs = [];   // [{t:'cat'|'src', id}]
@@ -9521,11 +9512,9 @@ body.focus-mode .focus-exit{ display:flex; }
       favs.forEach(f=>{
         const b=document.createElement('button'); b.className='bfr-item';
         if(f.t==='cat'){
-          const cb=_catBrand(f.id);
-          b.dataset.type='cat'; b.dataset.cat=f.id; b.title=f.id;
-          if(cb) b.style.setProperty('--brand', cb.color);
-          const faceStyle = cb ? ` style="background:${cb.color}"` : '';
-          b.innerHTML=`<span class="bfr-ring"><span class="bfr-face"${faceStyle}>${_catFaceInner(f.id)}</span></span><span class="bfr-name">${escHtml(f.id)}</span>`;
+          const col=_catColorOf(f.id);
+          b.dataset.type='cat'; b.dataset.cat=f.id; b.title=f.id; b.style.setProperty('--brand', col);
+          b.innerHTML=`<span class="bfr-ring"><span class="bfr-face" style="background:${col}">${_catFaceInner(f.id)}</span></span><span class="bfr-name">${escHtml(f.id)}</span>`;
           b.addEventListener('click', ()=>{ _smartPickCat(f.id===(_smartCat||'')?'':f.id); });
         } else {
           const nm=_srcName(f.id), col=_hybBrand(f.id);
@@ -9556,7 +9545,7 @@ body.focus-mode .focus-exit{ display:flex; }
       const cb=_catBrand(id);
       return cb
         ? `<span class="bfr-dot" style="background:${cb.color}">${_brandImg(cb)}</span>`
-        : `<span class="bfr-dot" data-type="cat">${_hybCatSVG(id)}</span>`;
+        : `<span class="bfr-dot" style="background:${_catColor(id)}">${escHtml(_catInitial(id))}</span>`;
     }
     return `<span class="bfr-dot" style="background:${brand}"><img src="${escAttr(_hybLogo(id))}" alt="" onerror="this.style.opacity='.3'"></span>`;
   }
