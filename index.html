@@ -2648,7 +2648,7 @@ body.bf-heavy-open .sbar-podcast{
 .sbar-cat-pill.grab{ box-shadow:0 5px 16px rgba(0,0,0,.32); }
 
 /* ════ Barre de favoris (rail timeline) + bibliothèque (bottom sheet) ════ */
-.bfr-rail{ display:flex; align-items:center; height:72px; background:linear-gradient(var(--bg) 78%, transparent); }
+.bfr-rail{ display:flex; align-items:center; width:100%; max-width:100%; height:72px; overflow:hidden; background:linear-gradient(var(--bg) 78%, transparent); }
 .bfr-edge{ flex:none; display:flex; align-items:center; height:100%; z-index:2; }
 .bfr-edge.left{ padding:0 6px 0 14px; background:linear-gradient(90deg, var(--bg) 66%, transparent); }
 .bfr-edge.right{ padding:0 14px 0 6px; background:linear-gradient(270deg, var(--bg) 66%, transparent); }
@@ -2668,7 +2668,7 @@ body.bf-heavy-open .sbar-podcast{
   transition:transform .22s cubic-bezier(.34,1.4,.64,1), box-shadow .22s ease; box-shadow:0 0 0 1px var(--border); }
 .bfr-face{ width:46px; height:46px; border-radius:50%; display:flex; align-items:center; justify-content:center;
   font-weight:800; font-size:16px; color:#fff; overflow:hidden; background:var(--brand,#333); }
-.bfr-face img{ width:100%; height:100%; object-fit:contain; padding:9px; }
+.bfr-face img{ width:100%; height:100%; object-fit:cover; }
 .bfr-face svg{ width:21px; height:21px; }
 .bfr-item[data-type="cat"] .bfr-face{ background:radial-gradient(120% 120% at 30% 20%, var(--bg-elev), #141312); color:var(--text); }
 .bfr-name{ font-size:10.5px; font-weight:500; color:var(--text-muted); max-width:56px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; transition:color .2s, font-weight .2s; }
@@ -2702,7 +2702,7 @@ body.bf-heavy-open .sbar-podcast{
 .bfr-row:active{ background:rgba(127,127,127,.12); }
 .bfr-row.sel{ background:rgba(127,127,127,.09); }
 .bfr-dot{ flex:none; width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:14px; background:var(--brand,#333); overflow:hidden; box-shadow:0 0 0 1px var(--border); }
-.bfr-dot img{ width:100%; height:100%; object-fit:contain; padding:6px; }
+.bfr-dot img{ width:100%; height:100%; object-fit:cover; }
 .bfr-dot svg{ width:19px; height:19px; }
 .bfr-dot[data-type="cat"]{ background:radial-gradient(120% 120% at 30% 20%, var(--bg-elev), #141312); color:var(--text); }
 .bfr-rname{ flex:1; min-width:0; font-size:16px; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -9407,6 +9407,48 @@ body.focus-mode .focus-exit{ display:flex; }
     const db = (typeof _FEED_DB !== 'undefined') ? (_FEED_DB[url] || {}) : {};
     return db.color || '#ffffff';
   }
+  // ── Logo « intelligent » de dossier : on détecte une marque/équipe dans le nom
+  //   (« actu Apple », « actu PSG », « Premier League »…) et on utilise son VRAI
+  //   logo officiel (via getFavicon sur le domaine) + sa couleur. Repli = glyphe SVG.
+  //   Ordre : du plus spécifique au plus générique. Facile à étendre.
+  const _BRAND_MAP = [
+    [/premier\s*league|premi[eè]re?\s*league/, 'premierleague.com', '#37003C'],
+    [/ligue\s*des\s*champions|champions\s*league|\bucl\b|\bldc\b/, 'uefa.com', '#001489'],
+    [/ligue\s*1|ligue1/, 'ligue1.com', '#091C3E'],
+    [/\bpsg\b|paris\s*saint|paris\s*sg/, 'psg.fr', '#0B1E45'],
+    [/real\s*madrid/, 'realmadrid.com', '#00529F'],
+    [/bar[çc]a|barcelon/, 'fcbarcelona.com', '#A50044'],
+    [/bayern/, 'fcbayern.com', '#DC052D'],
+    [/liverpool/, 'liverpoolfc.com', '#C8102E'],
+    [/man(chester)?\s*(city|utd|united)/, 'mancity.com', '#6CABDD'],
+    [/arsenal/, 'arsenal.com', '#EF0107'],
+    [/\bnba\b/, 'nba.com', '#1D428A'],
+    [/\bnfl\b/, 'nfl.com', '#013369'],
+    [/\bmlb\b/, 'mlb.com', '#041E42'],
+    [/\bapple\b/, 'apple.com', '#1D1D1F'],
+    [/openai|chatgpt/, 'openai.com', '#10A37F'],
+    [/google/, 'google.com', '#4285F4'],
+    [/microsoft/, 'microsoft.com', '#0067B8'],
+    [/\bamazon\b/, 'amazon.com', '#FF9900'],
+    [/netflix/, 'netflix.com', '#E50914'],
+    [/spotify/, 'spotify.com', '#1DB954'],
+    [/tesla/, 'tesla.com', '#CC0000'],
+    [/nintendo/, 'nintendo.com', '#E60012'],
+    [/playstation|\bps5\b/, 'playstation.com', '#003791'],
+    [/samsung/, 'samsung.com', '#1428A0'],
+    [/\bbbc\b/, 'bbc.com', '#B80000'],
+  ];
+  function _catBrand(name){
+    const n=(name||'').toLowerCase();
+    for(const [re,domain,color] of _BRAND_MAP){ if(re.test(n)) return {domain,color}; }
+    return null;
+  }
+  // Rendu de la « face » d'une catégorie : logo officiel si marque détectée, sinon glyphe.
+  function _catFaceInner(name){
+    const cb=_catBrand(name);
+    if(cb) return `<img src="${escAttr(getFavicon('https://'+cb.domain))}" alt="" onerror="this.style.display='none'">`;
+    return _hybCatSVG(name);
+  }
   // ── Favoris : la barre n'affiche QUE des favoris choisis (pas tous les flux) ──
   const _BF_FAV_KEY = 'bf_favorites';
   let _bfFavs = [];   // [{t:'cat'|'src', id}]
@@ -9457,8 +9499,11 @@ body.focus-mode .focus-exit{ display:flex; }
       favs.forEach(f=>{
         const b=document.createElement('button'); b.className='bfr-item';
         if(f.t==='cat'){
+          const cb=_catBrand(f.id);
           b.dataset.type='cat'; b.dataset.cat=f.id; b.title=f.id;
-          b.innerHTML=`<span class="bfr-ring"><span class="bfr-face">${_hybCatSVG(f.id)}</span></span><span class="bfr-name">${escHtml(f.id)}</span>`;
+          if(cb) b.style.setProperty('--brand', cb.color);
+          const faceStyle = cb ? ` style="background:${cb.color}"` : '';
+          b.innerHTML=`<span class="bfr-ring"><span class="bfr-face"${faceStyle}>${_catFaceInner(f.id)}</span></span><span class="bfr-name">${escHtml(f.id)}</span>`;
           b.addEventListener('click', ()=>{ _smartPickCat(f.id===(_smartCat||'')?'':f.id); });
         } else {
           const nm=_srcName(f.id), col=_hybBrand(f.id);
@@ -9485,9 +9530,13 @@ body.focus-mode .focus-exit{ display:flex; }
   //   en mode Modifier) + toute la bibliothèque (Catégories/Sources) avec étoile —
   let _bfrEditing=false;
   function _libDot(type,id,brand){
-    return type==='cat'
-      ? `<span class="bfr-dot" data-type="cat">${_hybCatSVG(id)}</span>`
-      : `<span class="bfr-dot" style="background:${brand}"><img src="${escAttr(getFavicon(id))}" alt="" onerror="this.style.opacity='.3'"></span>`;
+    if(type==='cat'){
+      const cb=_catBrand(id);
+      return cb
+        ? `<span class="bfr-dot" style="background:${cb.color}"><img src="${escAttr(getFavicon('https://'+cb.domain))}" alt="" onerror="this.style.display='none'"></span>`
+        : `<span class="bfr-dot" data-type="cat">${_hybCatSVG(id)}</span>`;
+    }
+    return `<span class="bfr-dot" style="background:${brand}"><img src="${escAttr(getFavicon(id))}" alt="" onerror="this.style.opacity='.3'"></span>`;
   }
   function _libRow(type,id,name,brand,isFavRow){
     const fav=_isFav(type,id);
