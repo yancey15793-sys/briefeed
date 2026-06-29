@@ -9456,6 +9456,59 @@ body.focus-mode .focus-exit{ display:flex; }
       _smartPickCat(cat === (_smartCat || '') ? '' : cat);
       b.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' });
     });
+    // ── Pilule élastique : presser une catégorie et glisser pour scruber ──
+    // La pilule suit le doigt (transition coupée), la catégorie survolée
+    // s'inverse en direct + retour haptique ; au relâché elle snap avec ressort
+    // (transition CSS rétablie) sur la plus proche. Tap simple = sélection
+    // normale (géré par le click ci-dessus). 100 % JS, aucun CSS ajouté.
+    if(cats){
+      const _buzz = ()=>{ try{ navigator.vibrate && navigator.vibrate(7); }catch(e){} };
+      let armed=false, dragging=false, moved=false, sx=0, sy=0, idx=-1, pill=null, chips=[];
+      const _pt = e => e.touches ? e.touches[0] : e;
+      const _chips = ()=> Array.from(cats.querySelectorAll('.sbar-cat'));
+      const _nearest = cx => { let best=0,bd=1e9; chips.forEach((c,i)=>{ const x=c.offsetLeft+c.offsetWidth/2; const d=Math.abs(x-cx); if(d<bd){bd=d;best=i;} }); return best; };
+      const _down = e => {
+        const chip = e.target.closest && e.target.closest('.sbar-cat'); if(!chip) return;
+        pill = document.getElementById('sbarCatPill'); if(!pill) return;
+        chips = _chips(); idx = chips.indexOf(chip);
+        const t=_pt(e); sx=t.clientX; sy=t.clientY; armed=true; dragging=false; moved=false;
+      };
+      const _move = e => {
+        if(!armed) return;
+        const t=_pt(e); const dx=t.clientX-sx, dy=t.clientY-sy;
+        if(!dragging){
+          if(Math.abs(dx)<7 || Math.abs(dx)<=Math.abs(dy)) return;   // intention horizontale requise
+          dragging=true; pill.style.transition='none';
+          if(!pill.classList.contains('vis') && chips[idx]){          // état « Tout » : faire apparaître la pilule au départ
+            pill.style.width=chips[idx].offsetWidth+'px'; pill.style.height=chips[idx].offsetHeight+'px';
+            pill.style.top=chips[idx].offsetTop+'px'; pill.classList.add('vis');
+          }
+        }
+        if(e.cancelable) e.preventDefault();   // bloque le scroll de la barre pendant le scrub
+        moved=true;
+        const rect=cats.getBoundingClientRect();
+        const w=pill.offsetWidth;
+        let px=(t.clientX-rect.left+cats.scrollLeft)-w/2;
+        px=Math.max(0,Math.min(cats.scrollWidth-w, px));
+        pill.style.transform=`translateX(${px}px)`;
+        const i=_nearest(px+w/2);
+        if(i!==idx){ idx=i; chips.forEach((c,j)=>c.classList.toggle('sel', j===i)); _buzz(); }
+      };
+      const _up = ()=>{
+        if(!armed) return; armed=false;
+        pill.style.transition='';
+        if(dragging){ dragging=false; const cat = chips[idx] ? (chips[idx].dataset.cat||'') : ''; _smartPickCat(cat); _smartMoveCatPill(); }
+      };
+      cats.addEventListener('touchstart', _down, {passive:true});
+      cats.addEventListener('touchmove',  _move, {passive:false});
+      cats.addEventListener('touchend',   _up);
+      cats.addEventListener('touchcancel',_up);
+      cats.addEventListener('mousedown', _down);
+      window.addEventListener('mousemove', e=>{ if(armed) _move(e); });
+      window.addEventListener('mouseup', _up);
+      // Empêcher le click de sélection juste après un scrub (sinon double-action)
+      cats.addEventListener('click', e=>{ if(moved){ moved=false; e.stopImmediatePropagation(); e.preventDefault(); } }, true);
+    }
     const srcsBtn = document.getElementById('sbarSrcsBtn');
     if(srcsBtn) srcsBtn.addEventListener('click', _smartToggleSrcs);
     if(srcs) srcs.addEventListener('click', e => {
