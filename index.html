@@ -2647,29 +2647,27 @@ body.bf-heavy-open .sbar-podcast{
 .sbar-cat-pill.vis{ opacity:1; }
 .sbar-cat-pill.grab{ box-shadow:0 5px 16px rgba(0,0,0,.32); }
 
-/* ════ Navigation hybride : rail de bulles + bottom sheet ════ */
-/* L'ancienne rangée chips + rail sources restent en DOM mais masqués */
-#smartBar .sbar-cats-row, #smartBar .sbar-srcs-wrap{ display:none !important; }
-.bf-hybrail{ display:flex; align-items:center; gap:16px; height:76px; padding:0 4px;
+/* ════ Barre de favoris — rail compact de bulles (façon The Athletic) ════ */
+.bf-hybrail{ display:flex; align-items:center; gap:13px; height:60px; padding:0 18px 0 0;
   overflow-x:auto; overflow-y:hidden; scroll-snap-type:x proximity; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
 .bf-hybrail::-webkit-scrollbar{ display:none; }
-.bf-hyb-menu{ position:sticky; left:0; z-index:2; flex:none; border:none; background:linear-gradient(90deg,var(--bg) 70%,transparent); cursor:pointer; padding:0 10px 0 0; }
-.bf-hyb-ico{ width:48px; height:48px; border-radius:50%; background:var(--bg-elev); color:var(--text);
+/* Bouton menu épinglé à gauche, masque doux des bulles qui passent dessous */
+.bf-hyb-menu{ position:sticky; left:0; z-index:2; flex:none; border:none; cursor:pointer;
+  height:100%; display:flex; align-items:center; padding:0 13px 0 16px;
+  background:linear-gradient(90deg, var(--bg) 62%, transparent); }
+.bf-hyb-ico{ width:38px; height:38px; border-radius:50%; background:var(--bg-elev); color:var(--text-muted);
   display:flex; align-items:center; justify-content:center; box-shadow:0 0 0 1px var(--border); transition:transform .18s cubic-bezier(.34,1.4,.64,1); }
 .bf-hyb-menu:active .bf-hyb-ico{ transform:scale(.9); }
-.bf-hyb-ico svg{ width:21px; height:21px; }
-.bf-hyb-item{ flex:none; scroll-snap-align:center; display:flex; flex-direction:column; align-items:center; gap:6px;
-  border:none; background:none; cursor:pointer; padding:2px 0 0; width:60px; }
-.bf-hyb-circle{ position:relative; width:52px; height:52px; border-radius:50%; display:flex; align-items:center; justify-content:center;
-  overflow:hidden; box-shadow:0 0 0 1px var(--border); transition:transform .22s cubic-bezier(.34,1.4,.64,1), box-shadow .22s ease; }
-.bf-hyb-circle img{ width:100%; height:100%; object-fit:contain; background:#fff; }
+.bf-hyb-ico svg{ width:18px; height:18px; }
+.bf-hyb-item{ flex:none; scroll-snap-align:center; border:none; background:none; cursor:pointer; padding:0; line-height:0; }
+.bf-hyb-circle{ position:relative; width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  overflow:hidden; box-shadow:0 0 0 1px var(--border); transition:transform .2s cubic-bezier(.34,1.4,.64,1), box-shadow .2s ease; }
+.bf-hyb-circle img{ width:100%; height:100%; object-fit:contain; padding:7px; }   /* logo centré sur la couleur de marque */
 .bf-hyb-item[data-type="cat"] .bf-hyb-circle{ background:radial-gradient(120% 120% at 30% 20%, var(--bg-elev), #141312); color:var(--text);
   box-shadow:0 0 0 1px var(--border), inset 0 1px 1px rgba(255,255,255,.06), inset 0 -2px 6px rgba(0,0,0,.5); }
-.bf-hyb-item[data-type="cat"] .bf-hyb-circle svg{ width:24px; height:24px; opacity:.92; }
-.bf-hyb-label{ font-size:11px; font-weight:500; color:var(--text-muted); max-width:58px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; transition:color .2s, font-weight .2s; }
-.bf-hyb-item:active .bf-hyb-circle{ transform:scale(.94); }
-.bf-hyb-item.sel .bf-hyb-circle{ transform:scale(1.1); box-shadow:0 0 0 2px var(--text), 0 6px 18px rgba(0,0,0,.45); }
-.bf-hyb-item.sel .bf-hyb-label{ color:var(--text); font-weight:700; }
+.bf-hyb-item[data-type="cat"] .bf-hyb-circle svg{ width:20px; height:20px; opacity:.9; }
+.bf-hyb-item:active .bf-hyb-circle{ transform:scale(.92); }
+.bf-hyb-item.sel .bf-hyb-circle{ transform:scale(1.12); box-shadow:0 0 0 2px var(--text), 0 4px 14px rgba(0,0,0,.4); }
 
 .bf-sheet-overlay{ position:fixed; inset:0; z-index:600; background:rgba(0,0,0,.5); opacity:0; visibility:hidden; transition:opacity .35s ease, visibility .35s ease; }
 .bf-sheet-overlay.show{ opacity:1; visibility:visible; }
@@ -2689,7 +2687,7 @@ body.bf-heavy-open .sbar-podcast{
 .bf-srow:active{ background:rgba(127,127,127,.12); }
 .bf-srow.sel{ background:rgba(127,127,127,.08); }
 .bf-srow-dot{ flex:none; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; overflow:hidden; background:#fff; box-shadow:0 0 0 1px var(--border); }
-.bf-srow-dot img{ width:100%; height:100%; object-fit:contain; }
+.bf-srow-dot img{ width:100%; height:100%; object-fit:contain; padding:5px; }
 .bf-srow-dot[data-type="cat"]{ background:radial-gradient(120% 120% at 30% 20%, var(--bg-elev), #141312); color:var(--text); }
 .bf-srow-dot[data-type="cat"] svg{ width:19px; height:19px; }
 .bf-srow-name{ flex:1; min-width:0; font-size:16px; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -5384,17 +5382,6 @@ body.focus-mode .focus-exit{ display:flex; }
           </button>
           <!-- bulles injectées par _renderHybRail() -->
         </div>
-        <!-- Ancienne rangée conservée en DOM (masquée) pour la mécanique existante -->
-        <div class="sbar-cats-row">
-          <div class="sbar-cats" id="sbarCats"></div>
-          <button class="sbar-srcs-btn" id="sbarSrcsBtn" type="button" aria-label="Filtrer par source" title="Sources">
-            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="12" r="5" opacity=".5"/><circle cx="15" cy="12" r="5"/></svg>
-          </button>
-        </div>
-        <div class="sbar-srcs-wrap collapsed" id="sbarSrcsWrap"><div class="sbar-srcs-inner">
-          <div class="sbar-srail" id="sbarSrcs"></div>
-          <span class="sbar-srail-label" id="sbarSrailLabel"></span>
-        </div></div>
       </div>
 
       <!-- ════ Bottom Sheet « Sources & Favoris » (physique iOS) ════ -->
@@ -9379,6 +9366,11 @@ body.focus-mode .focus-exit{ display:flex; }
     else if(/monde|world|inter|g[ée]o|globe/.test(n)) k='monde';
     return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${_HYB_ICONS[k]}</svg>`;
   }
+  // Couleur de marque d'une source (catalogue _FEED_DB) ; blanc en repli (logo visible).
+  function _hybBrand(url){
+    const db = (typeof _FEED_DB !== 'undefined') ? (_FEED_DB[url] || {}) : {};
+    return db.color || '#ffffff';
+  }
   function _renderHybRail(){
     const rail = document.getElementById('bfHybRail'); if(!rail) return;
     const { order } = _smartCatMap();
@@ -9390,13 +9382,15 @@ body.focus-mode .focus-exit{ display:flex; }
       const frag = document.createDocumentFragment();
       order.forEach(c=>{
         const b=document.createElement('button'); b.className='bf-hyb-item'; b.dataset.type='cat'; b.dataset.cat=c;
-        b.innerHTML=`<span class="bf-hyb-circle">${_hybCatSVG(c)}</span><span class="bf-hyb-label">${escHtml(c)}</span>`;
+        b.title=c;
+        b.innerHTML=`<span class="bf-hyb-circle">${_hybCatSVG(c)}</span>`;
         b.addEventListener('click', ()=>{ _smartPickCat(c === (_smartCat||'') ? '' : c); });
         frag.appendChild(b);
       });
       sources.forEach(s=>{
         const b=document.createElement('button'); b.className='bf-hyb-item'; b.dataset.type='src'; b.dataset.url=s.url;
-        b.innerHTML=`<span class="bf-hyb-circle"><img src="${escAttr(getFavicon(s.url))}" alt="" onerror="this.style.opacity='.3'"></span><span class="bf-hyb-label">${escHtml(s.name)}</span>`;
+        b.title=s.name;
+        b.innerHTML=`<span class="bf-hyb-circle" style="background:${_hybBrand(s.url)}"><img src="${escAttr(getFavicon(s.url))}" alt="" onerror="this.style.opacity='.3'"></span>`;
         b.addEventListener('click', ()=>{ _smartPickSource(s.url); });
         frag.appendChild(b);
       });
@@ -9425,7 +9419,7 @@ body.focus-mode .focus-exit{ display:flex; }
     html += '<div class="bf-sheet-section">Sources</div>';
     html += sources.map(s=>(
       `<div class="bf-srow${(_railFilterUrl===s.url)?' sel':''}" data-type="src" data-url="${escAttr(s.url)}">`
-      + `<span class="bf-srow-dot"><img src="${escAttr(getFavicon(s.url))}" alt="" onerror="this.style.opacity='.3'"></span>`
+      + `<span class="bf-srow-dot" style="background:${_hybBrand(s.url)}"><img src="${escAttr(getFavicon(s.url))}" alt="" onerror="this.style.opacity='.3'"></span>`
       + `<span class="bf-srow-name">${escHtml(s.name)}</span>`
       + `<span class="bf-srow-chev"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 6 15 12 9 18"/></svg></span></div>`
     )).join('');
@@ -9487,80 +9481,9 @@ body.focus-mode .focus-exit{ display:flex; }
     const seg = document.getElementById('sbarSeg');
     if(seg) _smartSyncSegment();
 
-    // Onglets catégories — pilule glissante (mix-blend) ; « Tout » en tête
-    const cats = document.getElementById('sbarCats');
-    if(cats){
-      const catSig = order.join('|');
-      if(cats.dataset.sig !== catSig){
-        // Reconstruction (liste de dossiers modifiée)
-        const prevLeft = cats.scrollLeft;
-        let html = `<span class="sbar-cat-pill" id="sbarCatPill" aria-hidden="true"></span>`;
-        html += order.map(c => `<button class="sbar-cat${_smartCat === c ? ' sel' : ''}" type="button" data-cat="${escAttr(c)}">
-          <span class="sbar-cat-label">${escHtml(c)}</span>
-        </button>`).join('');
-        cats.innerHTML = html;
-        cats.dataset.sig = catSig;
-        cats.scrollLeft = prevLeft;
-        requestAnimationFrame(()=> _smartMoveCatPill());
-      } else {
-        // Même liste : on glisse la pilule + on met à jour la sélection
-        cats.querySelectorAll('.sbar-cat').forEach(b => {
-          b.classList.toggle('sel', (b.dataset.cat || '') === (_smartCat || ''));
-        });
-        _smartMoveCatPill();
-      }
-    }
-
-    // Rail « liquid glass » : logos flottants + blob springé sous l'actif
-    const srcs = document.getElementById('sbarSrcs');
-    const labelEl = document.getElementById('sbarSrailLabel');
-    if(srcs){
-      const items = [{ url:'', name:'Toutes les sources', all:true }]
-        .concat(sources.map(s => ({ url:s.url, name:s.name, unread:s.unread })));
-      const sig = (_smartCat || '∅') + '|' + items.map(i => i.url).join(',');
-      const activeUrl = _railFilterUrl || '';
-
-      if(srcs.dataset.sig !== sig){
-        // Reconstruction (catégorie changée ou liste de sources modifiée)
-        const itemsHtml = items.map(it => {
-          const sel = (it.url === activeUrl) ? ' sel' : '';
-          const inner = it.all
-            ? _GRID_SVG
-            : `<span class="savatar"><img src="${escAttr(getFavicon(it.url))}" alt="" onerror="this.style.opacity='.25'"></span>`;
-          const dot = (!it.all && it.unread) ? `<span class="sbar-srail-dot"></span>` : '';
-          const cls = 'sbar-srail-item' + (it.all ? ' sbar-srail-all' : '') + sel;
-          return `<button class="${cls}" type="button" data-url="${escAttr(it.url)}" title="${escAttr(it.name)}">${inner}${dot}</button>`;
-        }).join('');
-        srcs.innerHTML = `<div class="sbar-srail-track">
-          <div class="sbar-srail-liquid"><span class="sbar-srail-blob" id="sbarSrailBlob"></span></div>
-          ${itemsHtml}
-        </div>`;
-        srcs.dataset.sig = sig;
-        const activeEl = srcs.querySelector('.sbar-srail-item.sel') || srcs.querySelector('.sbar-srail-item');
-        requestAnimationFrame(() => _SRAIL.moveTo(activeEl, true));
-      } else {
-        // Même liste : on glisse seulement le blob + on met à jour la sélection
-        let activeEl = null;
-        srcs.querySelectorAll('.sbar-srail-item').forEach(el => {
-          const on = (el.dataset.url || '') === activeUrl;
-          el.classList.toggle('sel', on);
-          if(on) activeEl = el;
-        });
-        if(activeEl){
-          _SRAIL.moveTo(activeEl, false);
-          activeEl.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' });
-        }
-      }
-      if(labelEl){
-        labelEl.textContent = activeUrl
-          ? (sources.find(s => s.url === activeUrl)?.name || '')
-          : (_smartCat || 'Toutes les sources');
-        labelEl.classList.add('vis');
-      }
-    }
-
+    // Navigation : segment conservé + rail de favoris hybride (remplace chips/rail sources)
     _smartBindOnce();
-    _renderHybRail();      // navigation hybride (rail de bulles + sheet)
+    _renderHybRail();
     _BFSheet.bind();
   }
 
@@ -9653,87 +9576,14 @@ body.focus-mode .focus-exit{ display:flex; }
     if(_railBound) return;
     _railBound = true;
     const seg  = document.getElementById('sbarSeg');
-    const cats = document.getElementById('sbarCats');
-    const srcs = document.getElementById('sbarSrcs');
     if(seg) seg.addEventListener('click', e => {
       const b = e.target.closest('.sbar-seg-btn');
       if(!b || !b.dataset.mode) return;
       _smartSetMode(b.dataset.mode);
     });
-    if(cats) cats.addEventListener('click', e => {
-      const b = e.target.closest('.sbar-cat');
-      if(!b) return;
-      const cat = b.dataset.cat || '';
-      // re-tap sur le dossier actif → revient à « toutes les catégories »
-      _smartPickCat(cat === (_smartCat || '') ? '' : cat);
-      b.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' });
-    });
-    // ── Pilule élastique : presser une catégorie et glisser pour scruber ──
-    // La pilule suit le doigt (transition coupée), la catégorie survolée
-    // s'inverse en direct + retour haptique ; au relâché elle snap avec ressort
-    // (transition CSS rétablie) sur la plus proche. Tap simple = sélection
-    // normale (géré par le click ci-dessus). 100 % JS, aucun CSS ajouté.
-    if(cats){
-      const _buzz = ()=>{ try{ navigator.vibrate && navigator.vibrate(7); }catch(e){} };
-      let armed=false, dragging=false, moved=false, sx=0, sy=0, idx=-1, pill=null, chips=[], lpx=0, lt=0;
-      const _pt = e => e.touches ? e.touches[0] : e;
-      const _chips = ()=> Array.from(cats.querySelectorAll('.sbar-cat'));
-      const _nearest = cx => { let best=0,bd=1e9; chips.forEach((c,i)=>{ const x=c.offsetLeft+c.offsetWidth/2; const d=Math.abs(x-cx); if(d<bd){bd=d;best=i;} }); return best; };
-      const _down = e => {
-        const chip = e.target.closest && e.target.closest('.sbar-cat'); if(!chip) return;
-        pill = document.getElementById('sbarCatPill'); if(!pill) return;
-        chips = _chips(); idx = chips.indexOf(chip);
-        const t=_pt(e); sx=t.clientX; sy=t.clientY; armed=true; dragging=false; moved=false;
-      };
-      const _move = e => {
-        if(!armed) return;
-        const t=_pt(e); const dx=t.clientX-sx, dy=t.clientY-sy;
-        if(!dragging){
-          if(Math.abs(dx)<4 || Math.abs(dx)<Math.abs(dy)) return;     // intention horizontale (seuil abaissé)
-          dragging=true; pill.style.transition='none'; pill.classList.add('grab');
-          if(!pill.classList.contains('vis') && chips[idx]){          // état « Tout » : faire apparaître la pilule au départ
-            pill.style.width=chips[idx].offsetWidth+'px'; pill.style.height=chips[idx].offsetHeight+'px';
-            pill.style.top=chips[idx].offsetTop+'px'; pill.classList.add('vis');
-          }
-        }
-        if(e.cancelable) e.preventDefault();   // bloque le scroll de la barre pendant le scrub
-        moved=true;
-        const rect=cats.getBoundingClientRect();
-        const w=pill.offsetWidth;
-        let px=(t.clientX-rect.left+cats.scrollLeft)-w/2;
-        px=Math.max(0,Math.min(cats.scrollWidth-w, px));
-        // Élasticité : squash horizontal proportionnel à la vitesse (rendu « vivant »).
-        const nowT=performance.now(); const vx=(px-lpx)/Math.max(8,nowT-lt); lpx=px; lt=nowT;
-        const sq=Math.min(.16, Math.abs(vx)*.05);
-        pill.style.transform=`translateX(${px}px) scaleX(${1+sq}) scaleY(${1-sq*.55})`;
-        const i=_nearest(px+w/2);
-        if(i!==idx){ idx=i; chips.forEach((c,j)=>c.classList.toggle('sel', j===i)); _buzz(); }
-      };
-      const _up = ()=>{
-        if(!armed) return; armed=false;
-        pill.style.transition='';
-        pill.classList.remove('grab');
-        if(dragging){ dragging=false; const cat = chips[idx] ? (chips[idx].dataset.cat||'') : ''; _smartPickCat(cat); _smartMoveCatPill(); }
-      };
-      cats.addEventListener('touchstart', _down, {passive:true});
-      cats.addEventListener('touchmove',  _move, {passive:false});
-      cats.addEventListener('touchend',   _up);
-      cats.addEventListener('touchcancel',_up);
-      cats.addEventListener('mousedown', _down);
-      window.addEventListener('mousemove', e=>{ if(armed) _move(e); });
-      window.addEventListener('mouseup', _up);
-      // Empêcher le click de sélection juste après un scrub (sinon double-action)
-      cats.addEventListener('click', e=>{ if(moved){ moved=false; e.stopImmediatePropagation(); e.preventDefault(); } }, true);
-    }
-    const srcsBtn = document.getElementById('sbarSrcsBtn');
-    if(srcsBtn) srcsBtn.addEventListener('click', _smartToggleSrcs);
-    if(srcs) srcs.addEventListener('click', e => {
-      const it = e.target.closest('.sbar-srail-item');
-      if(it) _smartPickSource(it.dataset.url || '');
-    });
-    // Recalcule les pilules une fois la police Inter chargée (évite un décalage de taille au FOUT)
+    // Recalcule la pastille du segment une fois la police Inter chargée (anti-FOUT)
     if(document.fonts && document.fonts.ready){
-      document.fonts.ready.then(()=>{ _smartMoveCatPill(); _smartMovePill(false); });
+      document.fonts.ready.then(()=>{ _smartMovePill(false); });
     }
   }
 
