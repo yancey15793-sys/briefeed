@@ -260,7 +260,8 @@ button, .ob-btn, .ob-btn-ghost,
   display:flex; flex-direction:column; align-items:flex-start;
   gap:9.5px;
   width:341.25px;
-  padding:calc(env(safe-area-inset-top,0px) + 76px) 0 140px;
+  /* +73px : place pour la barre de favoris fixe (rail) sous le header */
+  padding:calc(env(safe-area-inset-top,0px) + 149px) 0 140px;
 }
 
 /* h1.typography-hero-headline — « Hello Developer » */
@@ -2648,9 +2649,11 @@ body.bf-heavy-open .sbar-podcast{
 .sbar-cat-pill.grab{ box-shadow:0 5px 16px rgba(0,0,0,.32); }
 
 /* ════ Barre de favoris (rail timeline) + bibliothèque (bottom sheet) ════ */
-/* Smart Bar collante : reste sous le header fixe (.topnav) en scrollant */
-#smartBar{ position:sticky; top:calc(env(safe-area-inset-top,0px) + 60px); z-index:40; background:var(--bg); }
-.bfr-rail{ display:flex; align-items:center; width:100%; max-width:100%; height:84px; overflow:hidden; background:transparent; }
+/* Smart Bar = prolongement FIXE du header, collée juste sous le logo (.topnav),
+   pleine largeur, comme la barre de favoris de The Athletic. */
+#smartBar{ position:fixed; top:calc(env(safe-area-inset-top,0px) + 60px); left:0; right:0; z-index:61;
+  background:var(--bg); border-bottom:1px solid var(--border); }
+.bfr-rail{ display:flex; align-items:center; width:100%; max-width:100%; height:72px; overflow:hidden; background:transparent; }
 .bfr-edge{ flex:none; display:flex; align-items:center; height:100%; z-index:2; }
 .bfr-edge.left{ padding:0 8px 0 14px; background:linear-gradient(90deg, var(--bg) 70%, transparent); }
 .bfr-edge.right{ padding:0 14px 0 8px; background:linear-gradient(270deg, var(--bg) 70%, transparent); }
