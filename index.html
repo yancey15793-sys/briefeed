@@ -8869,6 +8869,23 @@ body.focus-mode .focus-exit{ display:flex; }
     return res;
   }
 
+  // ── Dédoublonnage contextuel ──────────────────────────────────
+  // Le dédoublonnage flou ne s'applique de façon AUTOMATIQUE qu'en vue « Tout »
+  // (aucune catégorie ni source active). Dans un dossier/catégorie, on ne masque
+  // RIEN par défaut (un article pouvait être caché au profit d'un représentant
+  // d'un autre dossier) — l'utilisateur peut réactiver le filtrage via un réglage.
+  let _dedupFolders = false;
+  try{ _dedupFolders = localStorage.getItem('reader.dedupeFolders')==='1'; }catch(e){}
+  function _uniqByLink(arts){
+    const seen=new Set(); const out=[];
+    for(const a of arts){ if(a && a.link){ if(seen.has(a.link)) continue; seen.add(a.link); } out.push(a); }
+    return out;
+  }
+  function _dedupCtx(arts){
+    const inFolder = !!_smartCat || !!_railFilterUrl;
+    return (inFolder && !_dedupFolders) ? _uniqByLink(arts) : _dedup(arts);
+  }
+
   // ── 12. État global articles ──────────────────────────────────
   let _allArticles = [];
   let _isLoading = false;
@@ -9106,7 +9123,7 @@ body.focus-mode .focus-exit{ display:flex; }
       const urls = _smartCatUrls(_smartCat);
       pool = pool.filter(a => urls.has(a.feedUrl||''));
     }
-    pool = (typeof _dedup === 'function') ? _dedup([...pool]) : pool;
+    pool = (typeof _dedup === 'function') ? _dedupCtx([...pool]) : pool;
     const msToday = _smartModeMs('today');
     const ms3days = _smartModeMs('3days');
     const msWeek  = _smartModeMs('week');
@@ -9904,7 +9921,7 @@ body.focus-mode .focus-exit{ display:flex; }
   function _catHotArticles(cat, n){
     const urls = _smartCatUrls(cat);
     let pool = (_allArticles || []).filter(a => urls.has(a.feedUrl || ''));
-    pool = (typeof _dedup === 'function') ? _dedup([...pool]) : pool;
+    pool = (typeof _dedup === 'function') ? _dedupCtx([...pool]) : pool;
     let scoped = pool.filter(a => (a.pubDate || 0) >= _smartModeMs('today'));
     if(scoped.length < n) scoped = pool.filter(a => (a.pubDate || 0) >= _smartModeMs('3days'));
     if(scoped.length < n) scoped = pool;
@@ -10237,7 +10254,7 @@ body.focus-mode .focus-exit{ display:flex; }
 
     // Filtrage éventuel par source (rail global)
     const pool    = _railApplyFilter(_allArticles);
-    const deduped = _dedup(_smartDateSort([...pool]));
+    const deduped = _dedupCtx(_smartDateSort([...pool]));
     _editionArts  = deduped.slice(0, 60);
 
     // Jitter fix : ne re-rendre que si le contenu a changé
@@ -10384,7 +10401,7 @@ body.focus-mode .focus-exit{ display:flex; }
   }
   window._applyPendingArts = function(){
     if(!_pendingNewArts.length){ _hideNewArtsPill(); return; }
-    _allArticles = _dedup([..._pendingNewArts, ..._allArticles].sort((a,b)=>new Date(b.pubDate)-new Date(a.pubDate)));
+    _allArticles = _uniqByLink([..._pendingNewArts, ..._allArticles].sort((a,b)=>new Date(b.pubDate)-new Date(a.pubDate)));
     _pendingNewArts = []; _pendingNewCount = 0;
     _hideNewArtsPill();
     // Remonter en haut instantanément avant le crossfade
@@ -10478,7 +10495,7 @@ body.focus-mode .focus-exit{ display:flex; }
         const batch = newArts.splice(0);
         if(!_hasCachedContent){
           // Aucun contenu affiché : rendre immédiatement
-          _allArticles = _dedup([..._allArticles, ...batch].sort((a,b)=>new Date(b.pubDate)-new Date(a.pubDate)));
+          _allArticles = _uniqByLink([..._allArticles, ...batch].sort((a,b)=>new Date(b.pubDate)-new Date(a.pubDate)));
           _renderCurrentView();
           _hasCachedContent = true;
           if(skel) skel.style.display='none';
@@ -10491,7 +10508,7 @@ body.focus-mode .focus-exit{ display:flex; }
           const atTop  = (rowEl ? rowEl.scrollTop : window.scrollY) < 80;
           if(atTop){
             // En haut : fusionner silencieusement avec crossfade
-            _allArticles = _dedup([..._pendingNewArts, ..._allArticles].sort((a,b)=>new Date(b.pubDate)-new Date(a.pubDate)));
+            _allArticles = _uniqByLink([..._pendingNewArts, ..._allArticles].sort((a,b)=>new Date(b.pubDate)-new Date(a.pubDate)));
             _pendingNewArts = []; _pendingNewCount = 0;
             _smoothRenderCurrentView();
           } else {
@@ -10536,7 +10553,7 @@ body.focus-mode .focus-exit{ display:flex; }
     if(newCount > 0){
       // Fusionner les pending restants dans _allArticles pour l'IDB
       const toSave = _pendingNewArts.length
-        ? _dedup([..._pendingNewArts, ..._allArticles].sort((a,b)=>new Date(b.pubDate)-new Date(a.pubDate)))
+        ? _uniqByLink([..._pendingNewArts, ..._allArticles].sort((a,b)=>new Date(b.pubDate)-new Date(a.pubDate)))
         : _allArticles;
       try{ idbSaveArticles(toSave); idbPrune(); }catch(e){}
       showBadge(`+${newCount} article${newCount>1?'s':''}`, true);
@@ -11151,7 +11168,7 @@ body.focus-mode .focus-exit{ display:flex; }
   function _renderGrille(){
     const wrap = document.getElementById('grilleGrid');
     if(!wrap) return;
-    const arts = typeof _allArticles !== 'undefined' ? _dedup(_smartDateSort(_railApplyFilter([..._allArticles]))) : [];
+    const arts = typeof _allArticles !== 'undefined' ? _dedupCtx(_smartDateSort(_railApplyFilter([..._allArticles]))) : [];
     _grilleArts = arts.slice(0,60);
     if(!_grilleArts.length){
       wrap.innerHTML = '<div style="grid-column:1/-1;padding:60px 0;text-align:center;color:var(--text-muted);font-size:14px;font-family:var(--font-inter)">Aucun article disponible</div>';
@@ -11483,7 +11500,7 @@ body.focus-mode .focus-exit{ display:flex; }
     const list = document.getElementById('seqList');
     if(!list) return;
     const arts = typeof _allArticles !== 'undefined'
-      ? _dedup(_smartDateSort(_railApplyFilter([..._allArticles])))
+      ? _dedupCtx(_smartDateSort(_railApplyFilter([..._allArticles])))
       : [];
     _seqArts = arts.slice(0, 100);
     if(!_seqArts.length){
@@ -11508,7 +11525,7 @@ body.focus-mode .focus-exit{ display:flex; }
   function _renderListe(){
     const wrap = document.getElementById('listeList');
     if(!wrap) return;
-    const arts = typeof _allArticles !== 'undefined' ? _dedup(_smartDateSort(_railApplyFilter([..._allArticles]))) : [];
+    const arts = typeof _allArticles !== 'undefined' ? _dedupCtx(_smartDateSort(_railApplyFilter([..._allArticles]))) : [];
     _listeArts = arts.slice(0, 100);
     if(!_listeArts.length){
       wrap.innerHTML = '<div style="padding:60px 0;text-align:center;color:var(--text-muted);font-size:14px;font-family:var(--font-inter)">Aucun article disponible</div>';
@@ -12056,7 +12073,7 @@ body.focus-mode .focus-exit{ display:flex; }
     // ── Articles ────────────────────────────────────────────────────
     const feedUrls = new Set(folder.feeds||[]);
     const arts = typeof _allArticles !== 'undefined'
-      ? _dedup([..._allArticles].filter(a=>feedUrls.has(a.feedUrl||'')).sort((a,b)=>b.pubDate-a.pubDate))
+      ? (_dedupFolders ? _dedup : _uniqByLink)([..._allArticles].filter(a=>feedUrls.has(a.feedUrl||'')).sort((a,b)=>b.pubDate-a.pubDate))
       : [];
     _folderPageArts = arts;
     const content = document.getElementById('folderPageContent');
@@ -13358,6 +13375,12 @@ body.focus-mode .focus-exit{ display:flex; }
   .bf-dd-opt.on .bf-dd-radio::after{content:'';position:absolute;inset:3px;border-radius:50%;background:#0a84ff;}
   .bf-dd-ot{font-family:var(--font-inter);font-size:14px;font-weight:600;color:var(--text);}
   .bf-dd-od{font-family:var(--font-inter);font-size:11.5px;color:var(--text-muted);margin-top:2px;line-height:1.4;}
+  .bf-dd-foldertoggle{display:flex;align-items:center;gap:11px;margin-top:10px;padding:11px 12px;border-radius:12px;border:1px solid var(--border);background:rgba(127,127,127,.04);cursor:pointer;}
+  .bf-dd-foldertoggle > span{flex:1;min-width:0;}
+  .bf-dd-foldertoggle input{flex:none;width:42px;height:26px;margin:0;-webkit-appearance:none;appearance:none;border-radius:999px;background:var(--border);position:relative;cursor:pointer;transition:background .2s;}
+  .bf-dd-foldertoggle input::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .2s cubic-bezier(.34,1.4,.64,1);}
+  .bf-dd-foldertoggle input:checked{background:#0a84ff;}
+  .bf-dd-foldertoggle input:checked::after{transform:translateX(16px);}
 
   /* ── Page liste générique (résultats smart feed / tag) ── */
   .bf-list-page{
@@ -13949,9 +13972,13 @@ body.focus-mode .focus-exit{ display:flex; }
       return '<div class="bf-dd-card">'
         + '<div class="bf-dd-head">'
         + '<span class="bf-dd-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></span>'
-        + '<span><div class="bf-dd-tt">Filtre anti-doublons</div><div class="bf-dd-ds">Élimine les articles en double sur l\'ensemble de vos flux.</div></span>'
+        + '<span><div class="bf-dd-tt">Filtre anti-doublons</div><div class="bf-dd-ds">Élimine les articles en double dans « Tout ». Automatique sur l\'ensemble de vos flux.</div></span>'
         + '</div>'
         + '<div class="bf-dd-opts">'+opts+'</div>'
+        + '<label class="bf-dd-foldertoggle">'
+        + '<span><span class="bf-dd-ot">Appliquer aussi dans les dossiers</span><span class="bf-dd-od">Par défaut, un dossier affiche TOUS ses articles (rien n\'est masqué). Activez pour y dédupliquer aussi.</span></span>'
+        + '<input type="checkbox" '+(_dedupFolders?'checked':'')+' onchange="BF_SMART._setDedupeFolders(this.checked)">'
+        + '</label>'
         + '</div>';
     }
     function _setDedupe(mode){
@@ -13961,6 +13988,11 @@ body.focus-mode .focus-exit{ display:flex; }
       const card = document.querySelector('.bf-dd-card');
       if(card){ const tmp=document.createElement('div'); tmp.innerHTML=_ddCard(); card.replaceWith(tmp.firstElementChild); }
       renderSidebar();
+      if(typeof _renderCurrentView==='function') _renderCurrentView();
+    }
+    function _setDedupeFolders(on){
+      _dedupFolders = !!on;
+      try{ localStorage.setItem('reader.dedupeFolders', on?'1':'0'); }catch(e){}
       if(typeof _renderCurrentView==='function') _renderCurrentView();
     }
 
@@ -14086,7 +14118,7 @@ body.focus-mode .focus-exit{ display:flex; }
     }
 
     return { openList, openCreate, openEdit, runById, del, quick, renderSidebar,
-             _toggleSrc, _setMatch, _submit, _addCond, _delCond, _setDedupe };
+             _toggleSrc, _setMatch, _submit, _addCond, _delCond, _setDedupe, _setDedupeFolders };
   })();
   window.BF_SMART = BF_SMART;
   window.bfSmartOpenList = BF_SMART.openList;
