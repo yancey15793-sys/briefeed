@@ -260,8 +260,8 @@ button, .ob-btn, .ob-btn-ghost,
   display:flex; flex-direction:column; align-items:flex-start;
   gap:9.5px;
   width:341.25px;
-  /* +73px : place pour la barre de favoris fixe (rail) sous le header */
-  padding:calc(env(safe-area-inset-top,0px) + 149px) 0 140px;
+  /* place pour le header rallongé : titre (52) + rail (60) + marge */
+  padding:calc(env(safe-area-inset-top,0px) + 124px) 0 140px;
 }
 
 /* h1.typography-hero-headline — « Hello Developer » */
@@ -2649,11 +2649,11 @@ body.bf-heavy-open .sbar-podcast{
 .sbar-cat-pill.grab{ box-shadow:0 5px 16px rgba(0,0,0,.32); }
 
 /* ════ Barre de favoris (rail timeline) + bibliothèque (bottom sheet) ════ */
-/* Smart Bar = prolongement FIXE du header, collée juste sous le logo (.topnav),
-   pleine largeur, comme la barre de favoris de The Athletic. */
-#smartBar{ position:fixed; top:calc(env(safe-area-inset-top,0px) + 60px); left:0; right:0; z-index:61;
-  background:var(--bg); border-bottom:1px solid var(--border); }
-.bfr-rail{ display:flex; align-items:center; width:100%; max-width:100%; height:72px; overflow:hidden; background:transparent; }
+/* #smartBar n'est plus qu'un conteneur référencé par le JS ; le rail vit dans la topnav */
+#smartBar{ display:none; }
+/* Rail intégré au header — circles uniquement (façon The Athletic), sans libellés */
+.bfr-rail{ display:flex; align-items:center; width:100%; max-width:100%; height:60px; overflow:hidden; background:transparent; }
+.bfr-name, .bfr-lbl{ display:none; }
 .bfr-edge{ flex:none; display:flex; align-items:center; height:100%; z-index:2; }
 .bfr-edge.left{ padding:0 8px 0 14px; background:linear-gradient(90deg, var(--bg) 70%, transparent); }
 .bfr-edge.right{ padding:0 14px 0 8px; background:linear-gradient(270deg, var(--bg) 70%, transparent); }
@@ -3792,15 +3792,16 @@ body.focus-mode .focus-exit{ display:flex; }
 /* ── TOPNAV NYTimes style ─────────────────────────────────────── */
 .topnav{
   position:fixed; top:0; left:0; right:0; z-index:62;
-  height:calc(env(safe-area-inset-top,0px) + 60px);
-  display:flex; align-items:flex-end; justify-content:center;
-  padding-bottom:10px;
-  background:rgba(11,12,15,.88);
-  border-bottom:1px solid rgba(255,255,255,.05);
+  display:flex; flex-direction:column;
+  padding-top:env(safe-area-inset-top,0px);
+  background:rgba(11,12,15,.92);
+  border-bottom:1px solid rgba(255,255,255,.06);
   -webkit-backdrop-filter:blur(24px) saturate(200%);
   backdrop-filter:blur(24px) saturate(200%);
   pointer-events:none;
 }
+.topnav-bar{ height:52px; display:flex; align-items:center; justify-content:center; }
+.topnav .bfr-rail{ pointer-events:auto; }
 [data-theme="light"] .topnav{ background:rgba(248,248,250,.92); border-bottom-color:rgba(0,0,0,.07); }
 [data-theme="light"] .topnav-wordmark{ color:#1d1d1f; }
 .topnav-wordmark{
@@ -4530,7 +4531,24 @@ body.focus-mode .focus-exit{ display:flex; }
 
   <!-- Barre de navigation NYTimes style — wordmark centré -->
   <div class="topnav" id="topNav" aria-hidden="true">
-    <span class="topnav-wordmark">Briefeed</span>
+    <div class="topnav-bar"><span class="topnav-wordmark">Briefeed</span></div>
+    <!-- Barre de favoris (rail) — intégrée au header, sous le logo -->
+    <div class="bfr-rail">
+      <div class="bfr-edge left">
+        <button class="bfr-btn" id="bfrAll" type="button" aria-label="Tous">
+          <span class="bfr-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3.4"/><circle cx="12" cy="12" r="8.2" opacity=".5"/></svg></span>
+        </button>
+      </div>
+      <div class="bfr-scroll" id="bfrRail"><!-- favoris injectés par _renderHybRail() --></div>
+      <div class="bfr-edge right">
+        <button class="bfr-btn" id="sbarPodcastBtn" type="button" onclick="openPodListen()" aria-label="Podcast">
+          <span class="bfr-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 14v-2a9 9 0 0 1 18 0v2"/><rect x="2.5" y="13" width="4.5" height="8" rx="2"/><rect x="17" y="13" width="4.5" height="8" rx="2"/></svg></span>
+        </button>
+        <button class="bfr-btn" id="bfrManage" type="button" aria-label="Gérer">
+          <span class="bfr-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><circle cx="9" cy="7" r="2.3" fill="var(--bg-elev)"/><line x1="4" y1="17" x2="20" y2="17"/><circle cx="15" cy="17" r="2.3" fill="var(--bg-elev)"/></svg></span>
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- Bouton sidebar — grille 3×3, haut gauche -->
@@ -5391,28 +5409,8 @@ body.focus-mode .focus-exit{ display:flex; }
       <h2 class="edition-label">Mon magazine du jour</h2>
 
       <!-- Smart Bar — segment intelligent + catégories (tiret animé) + sources (accordéon) -->
-      <div id="smartBar" class="sbar" hidden>
-        <!-- Barre de favoris (rail de timeline) — directement sous le logo -->
-        <div class="bfr-rail">
-          <div class="bfr-edge left">
-            <button class="bfr-btn" id="bfrAll" type="button" aria-label="Tous">
-              <span class="bfr-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3.4"/><circle cx="12" cy="12" r="8.2" opacity=".5"/></svg></span>
-              <span class="bfr-lbl">Tous</span>
-            </button>
-          </div>
-          <div class="bfr-scroll" id="bfrRail"><!-- favoris injectés par _renderHybRail() --></div>
-          <div class="bfr-edge right">
-            <button class="bfr-btn" id="sbarPodcastBtn" type="button" onclick="openPodListen()" aria-label="Podcast">
-              <span class="bfr-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 14v-2a9 9 0 0 1 18 0v2"/><rect x="2.5" y="13" width="4.5" height="8" rx="2"/><rect x="17" y="13" width="4.5" height="8" rx="2"/></svg></span>
-              <span class="bfr-lbl">Podcast</span>
-            </button>
-            <button class="bfr-btn" id="bfrManage" type="button" aria-label="Gérer">
-              <span class="bfr-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><circle cx="9" cy="7" r="2.3" fill="var(--bg-elev)"/><line x1="4" y1="17" x2="20" y2="17"/><circle cx="15" cy="17" r="2.3" fill="var(--bg-elev)"/></svg></span>
-              <span class="bfr-lbl">Gérer</span>
-            </button>
-          </div>
-        </div>
-      </div>
+      <!-- #smartBar conservé (référencé par le JS) ; le rail vit désormais dans la topnav -->
+      <div id="smartBar" class="sbar" hidden></div>
 
       <!-- ════ Bottom Sheet « Abonnements » (bibliothèque + favoris) ════ -->
       <div class="bfr-ov" id="bfrOv"></div>
