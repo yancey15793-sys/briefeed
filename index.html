@@ -8305,7 +8305,7 @@ body.focus-mode .focus-exit{ display:flex; }
   }
   window._plPlay = _plPlay;
 
-  (function _plWire(){
+  function _plWire(){
     const back=document.getElementById('plBack'); if(back) back.addEventListener('click', closePodListen);
     const tabs=document.getElementById('plTabs');
     if(tabs) tabs.querySelectorAll('.pl-tab').forEach(t=> t.addEventListener('click', ()=> _plSetTab(t.dataset.pltab)));
@@ -8326,7 +8326,12 @@ body.focus-mode .focus-exit{ display:flex; }
       au.addEventListener('pause', ()=>{ _plSetIcon(false); _plSyncPlaying(); if(_plMode==='audio' && _plCur) _plSavePos(_plCur, au.currentTime, au.duration); });
       au.addEventListener('ended', ()=>{ _plSetIcon(false); if(_plCur){ delete _plPos[_plCur]; try{ if(window._safeSet)_safeSet('bf_pl_pos',JSON.stringify(_plPos)); else localStorage.setItem('bf_pl_pos',JSON.stringify(_plPos)); }catch(e){} } });
     }
-  })();
+  }
+  // IMPORTANT : le HTML du player (#plPlayBtn, #plAudio…) est défini APRÈS ce
+  // bloc <script>. On câble donc une fois le DOM parsé, sinon les listeners
+  // (play/pause, ±15s, barre, sync icône) ne s'attachent jamais.
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', _plWire);
+  else _plWire();
 
   // ═══════════════════════════════════════════════════════════════
   //  MOTEUR RSS — IDB + 12 proxies + parse + score + render
