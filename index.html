@@ -3322,6 +3322,14 @@ button, .ob-btn, .ob-btn-ghost,
 .art-ctx-tag{ font-family:var(--font-inter); font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--text-muted); border:1px solid var(--border); border-radius:var(--r-pill,999px); padding:1px 7px; line-height:1.6; }
 .art-ctx-tag-nuance{ color:var(--eyebrow-dot); border-color:var(--eyebrow-dot); opacity:.85; }
 .art-ctx-title{ font-family:var(--font-inter); font-size:14px; font-weight:600; line-height:1.35; color:var(--text); letter-spacing:-.01em; }
+/* Niveau 1 — prolongement audio/vidéo : deux boutons sobres, pas de miniature */
+.art-ext{ display:flex; flex-wrap:wrap; gap:9px; margin:4px 0 10px; }
+.art-ext-btn{ display:inline-flex; align-items:center; gap:9px; padding:10px 15px; border:1px solid var(--border); border-radius:var(--r-pill,999px); background:var(--surface-card,rgba(127,127,127,.05)); color:var(--text); font-family:var(--font-inter); font-size:13.5px; font-weight:600; letter-spacing:-.01em; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:background .2s ease, transform .12s ease, border-color .2s ease; }
+.art-ext-btn:hover{ background:rgba(127,127,127,.1); border-color:var(--text-muted); }
+.art-ext-btn:active{ transform:scale(.98); }
+.art-ext-btn svg{ flex:none; opacity:.9; }
+.art-ext-dur{ font-size:11.5px; font-weight:600; color:var(--text-muted); }
+.art-ext-dur::before{ content:''; display:inline-block; width:3px; height:3px; border-radius:50%; background:currentColor; vertical-align:middle; margin-right:7px; opacity:.6; }
 .art-reader-text{
   font-family:var(--font-title),Georgia,serif;
   font-size:var(--reader-font-size,17px); line-height:1.72; color:var(--text);
@@ -10731,7 +10739,11 @@ body.focus-mode .focus-exit{ display:flex; }
 
     // Niveau 3 — Contexte (autres sources du sujet), opt-in, replié par défaut
     const ctxEl = document.getElementById('artModalContext');
-    if(ctxEl) ctxEl.innerHTML = (typeof _groupContextHtml==='function') ? _groupContextHtml(a) : '';
+    if(ctxEl){
+      const ext = (typeof _groupExtendHtml==='function') ? _groupExtendHtml(a) : '';   // Niveau 1
+      const ctx = (typeof _groupContextHtml==='function') ? _groupContextHtml(a) : '';  // Niveau 3
+      ctxEl.innerHTML = ext + ctx;
+    }
 
     // Ouvrir — on annule une éventuelle animation de fermeture en cours.
     // Si le modal était déjà ouvert ou en train de se fermer, son verrou de
@@ -11193,6 +11205,47 @@ body.focus-mode .focus-exit{ display:flex; }
   // pour les angles divergents (démenti / nuance / fact-check). Aucun bloc
   // graphique : l'intelligence reste invisible, le calme visuel préservé.
   const _CTX_CONTRA = /(d[ée]ment|d[ée]menti|conteste|r[ée]fute|r[ée]fut|nuance|contredit|infox|rumeur|contrairement|mise au point|fact[\s-]?check|fausse?\s|d[ée]bunk)/i;
+  // ── Niveau 1 — Prolongement de l'article (audio / vidéo) ──────────
+  // Détection 100 % « tes flux » : on ne propose un audio ou une vidéo QUE
+  // s'il en existe une dans le regroupement du sujet (a._group), donc dans
+  // tes propres abonnements. Aucune API tierce, aucun lien au hasard.
+  // L'intelligence reste invisible : la zone n'apparaît que quand c'est réel.
+  const _VIDEO_LINK = /(?:youtube\.com\/watch|youtu\.be\/|m\.youtube\.com\/watch|vimeo\.com\/\d|dailymotion\.com\/video)/i;
+  function _isVideoLink(u){ return _VIDEO_LINK.test(String(u||'')); }
+  function _extDurLabel(a){
+    let d = a && a.audioDuration; if(!d) return '';
+    d = String(d).trim();
+    if(/^\d+$/.test(d)){ const m=Math.round(+d/60); return m>0 ? m+' min' : ''; }
+    const p = d.split(':').map(Number);
+    if(p.length && p.every(n=>!isNaN(n))){ let s=0; p.forEach(n=>{ s=s*60+n; }); const m=Math.round(s/60); if(m>0) return m+' min'; }
+    return d;
+  }
+  function _groupExtendHtml(a){
+    const grp = (a && a._group) ? a._group : [];
+    // Audio : même sujet disponible en écoute, via un autre média de tes flux.
+    const audio = grp.find(g => g && g.audioUrl && g.link !== (a&&a.link));
+    // Vidéo : même sujet en format vidéo (YouTube/Vimeo… présent dans tes flux).
+    const video = grp.find(g => g && _isVideoLink(g.link) && g.link !== (a&&a.link))
+               || ((a && _isVideoLink(a.link)) ? a : null);
+    if(!audio && !video) return '';
+    let btns = '';
+    if(audio){
+      const esc = String(audio.link||'').replace(/'/g,"\\'");
+      const dur = _extDurLabel(audio);
+      btns += `<button class="art-ext-btn" type="button" onclick="_plPlay('${esc}')">`
+        + `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1h3zM3 19a2 2 0 0 0 2 2h1a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1H3z"/></svg>`
+        + `<span class="art-ext-lbl">Continuer en audio</span>`
+        + (dur ? `<span class="art-ext-dur">${escHtml(dur)}</span>` : '') + `</button>`;
+    }
+    if(video){
+      const esc = String(video.link||'').replace(/'/g,"\\'");
+      btns += `<button class="art-ext-btn" type="button" onclick="window.open('${esc}','_blank','noopener')">`
+        + `<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`
+        + `<span class="art-ext-lbl">Explication vidéo</span></button>`;
+    }
+    return `<div class="art-ext">${btns}</div>`;
+  }
+  window._groupExtendHtml = _groupExtendHtml;
   function _groupContextHtml(a){
     const grp = (a && a._group) ? a._group : [];
     if(!grp.length) return '';
