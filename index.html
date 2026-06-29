@@ -2648,7 +2648,9 @@ body.bf-heavy-open .sbar-podcast{
 .sbar-cat-pill.grab{ box-shadow:0 5px 16px rgba(0,0,0,.32); }
 
 /* ════ Barre de favoris (rail timeline) + bibliothèque (bottom sheet) ════ */
-.bfr-rail{ display:flex; align-items:center; width:100%; max-width:100%; height:84px; overflow:hidden; background:linear-gradient(var(--bg) 82%, transparent); }
+/* Smart Bar collante : reste sous le header fixe (.topnav) en scrollant */
+#smartBar{ position:sticky; top:calc(env(safe-area-inset-top,0px) + 60px); z-index:40; background:var(--bg); }
+.bfr-rail{ display:flex; align-items:center; width:100%; max-width:100%; height:84px; overflow:hidden; background:transparent; }
 .bfr-edge{ flex:none; display:flex; align-items:center; height:100%; z-index:2; }
 .bfr-edge.left{ padding:0 8px 0 14px; background:linear-gradient(90deg, var(--bg) 70%, transparent); }
 .bfr-edge.right{ padding:0 14px 0 8px; background:linear-gradient(270deg, var(--bg) 70%, transparent); }
@@ -2668,7 +2670,7 @@ body.bf-heavy-open .sbar-podcast{
   transition:transform .22s cubic-bezier(.34,1.4,.64,1), box-shadow .22s ease; box-shadow:0 0 0 1px var(--border); }
 .bfr-face{ width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center;
   font-weight:800; font-size:14px; color:#fff; overflow:hidden; background:var(--brand,#333); }
-.bfr-face img{ width:100%; height:100%; object-fit:cover; }
+.bfr-face img{ width:100%; height:100%; object-fit:contain; padding:7px; }
 .bfr-face svg{ width:19px; height:19px; }
 .bfr-item[data-type="cat"] .bfr-face{ background:radial-gradient(120% 120% at 30% 20%, var(--bg-elev), #141312); color:var(--text); }
 .bfr-name{ font-size:10px; font-weight:500; color:var(--text-muted); max-width:52px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; transition:color .2s, font-weight .2s; }
@@ -2678,7 +2680,7 @@ body.bf-heavy-open .sbar-podcast{
 
 .bfr-ov{ position:fixed; inset:0; z-index:600; background:rgba(0,0,0,.5); opacity:0; visibility:hidden; transition:opacity .35s, visibility .35s; -webkit-backdrop-filter:blur(2px); backdrop-filter:blur(2px); }
 .bfr-ov.show{ opacity:1; visibility:visible; }
-.bfr-sheet{ position:fixed; left:0; right:0; bottom:0; z-index:601; height:92vh; display:flex; flex-direction:column;
+.bfr-sheet{ position:fixed; left:0; right:0; bottom:0; z-index:601; height:86vh; display:flex; flex-direction:column;
   background:rgba(26,26,28,.88); -webkit-backdrop-filter:blur(30px) saturate(180%); backdrop-filter:blur(30px) saturate(180%);
   border-radius:34px 34px 0 0; box-shadow:0 -12px 44px rgba(0,0,0,.55); border-top:1px solid rgba(255,255,255,.08);
   transform:translateY(100%); will-change:transform; }
@@ -2702,7 +2704,7 @@ body.bf-heavy-open .sbar-podcast{
 .bfr-row:active{ background:rgba(127,127,127,.12); }
 .bfr-row.sel{ background:rgba(127,127,127,.09); }
 .bfr-dot{ flex:none; width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:14px; background:var(--brand,#333); overflow:hidden; box-shadow:0 0 0 1px var(--border); }
-.bfr-dot img{ width:100%; height:100%; object-fit:cover; }
+.bfr-dot img{ width:100%; height:100%; object-fit:contain; padding:6px; }
 .bfr-dot svg{ width:19px; height:19px; }
 .bfr-dot[data-type="cat"]{ background:radial-gradient(120% 120% at 30% 20%, var(--bg-elev), #141312); color:var(--text); }
 .bfr-rname{ flex:1; min-width:0; font-size:16px; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -9386,20 +9388,30 @@ body.focus-mode .focus-exit{ display:flex; }
   // SVG au trait, mappées par mot-clé du nom de dossier. Sources = favicon sur
   // fond clair (toujours visibles). L'ancienne mécanique reste en DOM (masquée).
   const _HYB_ICONS = {
-    tech:   '<path d="M12 3l1.7 4.6 4.6 1.7-4.6 1.7L12 15.6l-1.7-4.6L5.7 9.3l4.6-1.7z"/><path d="M5 15.5l.9 2.3 2.3.9-2.3.9-.9 2.3-.9-2.3L1.8 19.6l2.3-.9z"/>',
-    eco:    '<path d="M3 16l5.2-5.2 3.6 3.6L21 5"/><polyline points="15 5 21 5 21 11"/>',
-    monde:  '<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c3.3 2.6 3.3 15.4 0 18M12 3c-3.3 2.6-3.3 15.4 0 18"/>',
+    ia:     '<path d="M12 3l1.7 4.6 4.6 1.7-4.6 1.7L12 15.6l-1.7-4.6L5.7 9.3l4.6-1.7z"/><path d="M5 15.5l.9 2.3 2.3.9-2.3.9-.9 2.3-.9-2.3L1.8 19.6l2.3-.9z"/>',
+    tech:   '<rect x="6" y="6" width="12" height="12" rx="2.6"/><rect x="9.6" y="9.6" width="4.8" height="4.8" rx="1.2"/><path d="M9.2 3v2.6M14.8 3v2.6M9.2 18.4V21M14.8 18.4V21M3 9.2h2.6M3 14.8h2.6M18.4 9.2H21M18.4 14.8H21"/>',
+    foot:   '<circle cx="12" cy="12" r="9"/><path d="M12 8.2l3.2 2.3-1.2 3.8h-4l-1.2-3.8z"/><path d="M12 8.2V4.4M15.2 10.5l3.4-1.2M13.9 14.3l2.1 3M10.1 14.3l-2.1 3M8.8 10.5L5.4 9.3"/>',
+    climat: '<path d="M5 18C5 9 11 5 19 5c0 9-6 13-14 13z"/><path d="M5 18c3.5-3.6 6.6-5.6 9.6-6.6"/>',
+    geo:    '<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c3.3 2.6 3.3 15.4 0 18M12 3c-3.3 2.6-3.3 15.4 0 18"/>',
+    finance:'<rect x="4" y="13" width="3.4" height="7" rx="1"/><rect x="10.3" y="9" width="3.4" height="11" rx="1"/><rect x="16.6" y="5" width="3.4" height="15" rx="1"/>',
+    gastro: '<path d="M7 3v7a2 2 0 0 0 4 0V3"/><path d="M9 10v11"/><path d="M16.4 3c-1.4 0-2.3 2.2-2.3 5s.9 4 2.3 4 2.3-1.2 2.3-4S17.8 3 16.4 3z"/><path d="M16.4 12v9"/>',
+    une:    '<polygon points="12 3.5 14.5 9 20.5 9.6 16 13.7 17.3 19.6 12 16.6 6.7 19.6 8 13.7 3.5 9.6 9.5 9"/>',
     sport:  '<path d="M7 4h10v3a5 5 0 0 1-10 0z"/><path d="M7 5H4.4A2.4 2.4 0 0 0 7 9M17 5h2.6A2.4 2.4 0 0 1 17 9"/><path d="M12 12v3.5"/><path d="M8.6 20h6.8l-.6-3a1 1 0 0 0-1-.8h-2.6a1 1 0 0 0-1 .8z"/>',
     actu:   '<rect x="4" y="5" width="16" height="14" rx="2.5"/><line x1="8" y1="9.5" x2="16" y2="9.5"/><line x1="8" y1="12.5" x2="16" y2="12.5"/><line x1="8" y1="15.5" x2="13" y2="15.5"/>',
     culture:'<path d="M9 17V5.2l10-2v11.6"/><circle cx="6.5" cy="17" r="2.5"/><circle cx="16.5" cy="14.8" r="2.5"/>',
   };
   function _hybCatSVG(name){
     const n=(name||'').toLowerCase(); let k='actu';
-    if(/tech|\bia\b|\bai\b|num[ée]ri|digital|\bweb\b|\bdev\b|gadget|science|espace|informa/.test(n)) k='tech';
-    else if(/[ée]co|[ée]con|finan|bourse|business|march[ée]|crypto|argent|entrepr/.test(n)) k='eco';
-    else if(/sport|nba|foot|basket|tennis|rugby|\bf1\b|ligue|mercato|nfl|nhl|\bmlb\b/.test(n)) k='sport';
-    else if(/cultur|cin[ée]|\bfilm|musi|\bart\b|livre|book|s[ée]rie|\bjeu|game/.test(n)) k='culture';
-    else if(/monde|world|inter|g[ée]o|globe/.test(n)) k='monde';
+    if(/\bia\b|\bai\b|intellig|chatgpt|\bllm\b|\bgpt\b/.test(n)) k='ia';
+    else if(/tech|num[ée]ri|digital|\bweb\b|gadget|informa|logiciel|hardware/.test(n)) k='tech';
+    else if(/foot|soccer|\bl1\b|ligue\s*1|liga|s[ée]rie\s*a/.test(n)) k='foot';
+    else if(/climat|environ|[ée]colo|planet|carbone|biodivers/.test(n)) k='climat';
+    else if(/g[ée]opolit|diploma|g[ée]o\b|monde|world|international/.test(n)) k='geo';
+    else if(/financ|bourse|march[ée]|[ée]conom|\beco\b|crypto|argent|invest|banqu/.test(n)) k='finance';
+    else if(/gastro|cuisine|\bfood\b|recette|restaur|culinaire|\bchef\b/.test(n)) k='gastro';
+    else if(/\bune\b|la une|essentiel|headline|important|top\b/.test(n)) k='une';
+    else if(/sport|nba|basket|tennis|rugby|nfl|nhl|\bf1\b/.test(n)) k='sport';
+    else if(/cultur|cin[ée]|film|musi|\bart\b|livre|s[ée]rie|spectacle/.test(n)) k='culture';
     return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${_HYB_ICONS[k]}</svg>`;
   }
   // Couleur de marque d'une source (catalogue _FEED_DB) ; blanc en repli (logo visible).
@@ -9412,6 +9424,7 @@ body.focus-mode .focus-exit{ display:flex; }
   //   logo officiel (via getFavicon sur le domaine) + sa couleur. Repli = glyphe SVG.
   //   Ordre : du plus spécifique au plus générique. Facile à étendre.
   const _BRAND_MAP = [
+    [/youtube|youtu\.be/, 'youtube.com', '#FF0000'],
     [/premier\s*league|premi[eè]re?\s*league/, 'premierleague.com', '#37003C'],
     [/ligue\s*des\s*champions|champions\s*league|\bucl\b|\bldc\b/, 'uefa.com', '#001489'],
     [/ligue\s*1|ligue1/, 'ligue1.com', '#091C3E'],
@@ -9443,10 +9456,12 @@ body.focus-mode .focus-exit{ display:flex; }
     for(const [re,domain,color] of _BRAND_MAP){ if(re.test(n)) return {domain,color}; }
     return null;
   }
+  // Logo haute résolution (Clearbit 256 → net en retina ; repli DuckDuckGo via l'écouteur global).
+  function _hybLogo(url){ const d=getFaviconDomain(url); return 'https://logo.clearbit.com/'+d+'?size=256'; }
   // Rendu de la « face » d'une catégorie : logo officiel si marque détectée, sinon glyphe.
   function _catFaceInner(name){
     const cb=_catBrand(name);
-    if(cb) return `<img src="${escAttr(getFavicon('https://'+cb.domain))}" alt="" onerror="this.style.display='none'">`;
+    if(cb) return `<img src="${escAttr(_hybLogo('https://'+cb.domain))}" alt="" onerror="this.style.display='none'">`;
     return _hybCatSVG(name);
   }
   // ── Favoris : la barre n'affiche QUE des favoris choisis (pas tous les flux) ──
@@ -9508,7 +9523,7 @@ body.focus-mode .focus-exit{ display:flex; }
         } else {
           const nm=_srcName(f.id), col=_hybBrand(f.id);
           b.dataset.type='src'; b.dataset.url=f.id; b.title=nm; b.style.setProperty('--brand', col);
-          b.innerHTML=`<span class="bfr-ring"><span class="bfr-face" style="background:${col}"><img src="${escAttr(getFavicon(f.id))}" alt="" onerror="this.style.opacity='.3'"></span></span><span class="bfr-name">${escHtml(nm)}</span>`;
+          b.innerHTML=`<span class="bfr-ring"><span class="bfr-face" style="background:${col}"><img src="${escAttr(_hybLogo(f.id))}" alt="" onerror="this.style.opacity='.3'"></span></span><span class="bfr-name">${escHtml(nm)}</span>`;
           b.addEventListener('click', ()=>{ _smartPickSource(f.id); });
         }
         rail.appendChild(b);
@@ -9533,10 +9548,10 @@ body.focus-mode .focus-exit{ display:flex; }
     if(type==='cat'){
       const cb=_catBrand(id);
       return cb
-        ? `<span class="bfr-dot" style="background:${cb.color}"><img src="${escAttr(getFavicon('https://'+cb.domain))}" alt="" onerror="this.style.display='none'"></span>`
+        ? `<span class="bfr-dot" style="background:${cb.color}"><img src="${escAttr(_hybLogo('https://'+cb.domain))}" alt="" onerror="this.style.display='none'"></span>`
         : `<span class="bfr-dot" data-type="cat">${_hybCatSVG(id)}</span>`;
     }
-    return `<span class="bfr-dot" style="background:${brand}"><img src="${escAttr(getFavicon(id))}" alt="" onerror="this.style.opacity='.3'"></span>`;
+    return `<span class="bfr-dot" style="background:${brand}"><img src="${escAttr(_hybLogo(id))}" alt="" onerror="this.style.opacity='.3'"></span>`;
   }
   function _libRow(type,id,name,brand,isFavRow){
     const fav=_isFav(type,id);
@@ -9615,7 +9630,7 @@ body.focus-mode .focus-exit{ display:flex; }
     function measure(){ const s=sheet(); if(!s) return; const H=s.offsetHeight; yHalf=H-Math.round(window.innerHeight*0.45); yClosed=H; }
     function setT(y,spring){ const s=sheet(); if(!s) return; cur=y; s.style.transition=spring?SPRING:'none'; s.style.transform=`translateY(${y}px)`; const o=overlay(); if(o) o.style.opacity=String(Math.max(0,Math.min(1,1-(y/Math.max(1,yClosed))))); }
     function snapTo(name){ measure(); const o=overlay(); const target = name==='full'?0 : name==='half'?yHalf : yClosed; if(o) o.classList.add('show'); requestAnimationFrame(()=>setT(target,true)); if(name==='closed'){ const s=sheet(); const end=()=>{ if(o) o.classList.remove('show'); s.removeEventListener('transitionend',end); }; s.addEventListener('transitionend',end); } }
-    function open(){ measure(); setT(yClosed,false); _renderHybLib(); snapTo('full'); }
+    function open(){ measure(); setT(yClosed,false); _renderHybLib(); snapTo('half'); }
     function down(e){ measure(); dragging=true; const t=e.touches?e.touches[0]:e; startY=t.clientY; startT=cur; lastY=t.clientY; lastT=performance.now(); vy=0; const s=sheet(); if(s) s.style.transition='none'; }
     function move(e){ if(!dragging) return; const t=e.touches?e.touches[0]:e; let y=Math.max(0,Math.min(yClosed, startT+(t.clientY-startY))); const now=performance.now(); vy=(t.clientY-lastY)/Math.max(1,now-lastT); lastY=t.clientY; lastT=now; setT(y,false); if(e.cancelable) e.preventDefault(); }
     function up(){ if(!dragging) return; dragging=false; if(vy>0.9){ snapTo('closed'); return; } if(vy<-0.9){ snapTo('full'); return; } const pts=[['full',0],['half',yHalf],['closed',yClosed]]; let best=pts[0],bd=1e9; pts.forEach(p=>{const d=Math.abs(cur-p[1]); if(d<bd){bd=d;best=p;}}); if(cur>yHalf+(yClosed-yHalf)*0.25 && best[0]!=='closed') best=['closed',yClosed]; snapTo(best[0]); }
