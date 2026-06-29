@@ -43,7 +43,7 @@ Succès mesuré non par le nombre de fonctionnalités visibles, mais par la sens
 - Concurrence : pool borné à 5 workers, vrai mutex anti-ré-entrance
 - Dédoublonnage : `_dedup()` — index inversé par tokens (quasi linéaire), mode `fuzzy`
 - Navigation : module central avec scroll-lock par compteur, registre top-layer, piège d'historique unique
-- Branche de développement active : `claude/amazing-goodall-88hgwc`
+- Branche de développement active : `claude/session-recap-8q4np8`
 
 ## Design tokens
 
@@ -131,6 +131,17 @@ let _srcsOpen      = false;  // rail des sources à la demande (replié par déf
 ### Statut exact
 
 - **Dernière chose faite :**
+  - **Session « recap » (branche `claude/session-recap-8q4np8`)** :
+    - **Images — régression résolue** : le repli « artwork du channel » (ajouté pour les podcasts) renvoyait le **logo du site** comme image d'article (TechCrunch/ESPN…) ET bloquait l'enrichissement og:image. Désormais ce repli est **réservé aux épisodes audio** (`_extractImg` teste l'enclosure audio). Extraction élargie : lazy-load (`data-src`/`data-lazy-src`/`data-original`/`srcset`), scan de **content:encoded ET description**, `og:image`/`twitter:image` embarqué. Enrichissement og : cascade portée à **6 proxies**, `_ogImage` lit aussi `<link rel=image_src>` + JSON-LD `"image"`, timeout 7 s (cible ESPN, sans média dans le flux). **Migration ponctuelle `bf_img_fix_v3`** : purge une fois le cache d'articles (IDB + `bf_fc_*`) pour re-parser proprement (favoris/read-state/préfs préservés).
+    - **Mini-player — bug de câblage** : `_plWire()` s'exécutait AVANT le HTML du player (le `<script>` finit l.12468, `#plPlayBtn`/`#plAudio` sont l.12624+) → aucun listener attaché (play/pause, ±15 s, barre inertes). Corrigé : câblage sur `DOMContentLoaded`.
+    - **Niveau 1 — prolongement de l'article** : `_groupExtendHtml(a)` dans le lecteur (au-dessus du panneau Contexte) — boutons sobres `🎙 Continuer en audio` / `▶ Explication vidéo` UNIQUEMENT si un autre média du `_group` (tes flux) couvre le sujet en audio (`audioUrl`) ou en vidéo (`_isVideoLink` : YouTube/Vimeo/Dailymotion). Zéro API tierce. CSS `.art-ext`/`.art-ext-btn`.
+    - **Grille magazine centrée (tablette)** : `.column` est fixée à 341px (iPhone) ; en `min-width:768px` les vues **editions**/**grille** passent à `width:min(100%,980px)` (re-centrées par `.row`), cartes fluides (`minmax(0,1fr)` + `width:100%`, annule le `310px` qui débordait). Marqueur `body[data-view]` posé par `_renderCurrentView` (vue effective) + `_switchView` + init.
+    - **Logos toujours visibles (façon Reeder)** : `.fav-xs/sm/md`, `.grid2-fav`, etc. → fond `#fff` constant + anneau `var(--border)` au thème (les marques ressortent en sombre comme en clair).
+    - **Étiquettes article (`.edl-tag`)** : pilule (radius 90), fond **noir en sombre / blanc en clair**, bordure au thème.
+    - **Navigation chips — pilule élastique** (choix utilisateur) : presser une catégorie + glisser → la pilule suit le doigt (transition coupée) avec squash selon la vitesse + relief au grab (`.sbar-cat-pill.grab`), surlignage live, snap à ressort au relâché ; seuil 4 px, tap = sélection normale. Binding dans `_smartBindOnce`. **Note : l'API Vibration n'existe pas sur Safari iOS** → pas d'haptique sur iPhone (Android oui), compensé par le visuel.
+    - **Dédoublonnage contextuel** : `_allArticles` reste **complet** (unicité par lien via `_uniqByLink`) ; le dédoublonnage flou est appliqué AU RENDU via `_dedupCtx` — **auto en « Tout »**, **désactivé par défaut en dossier/catégorie** (réglage `reader.dedupeFolders` → toggle dans la carte « Filtre anti-doublons », `BF_SMART._setDedupeFolders`). Corrige les articles masqués à tort dans un dossier au profit d'un représentant d'un autre dossier. Page dossier gérée par le réglage. Vues globales (Browse, Pour vous, feed page) gardent `_dedup`.
+    - **Stabilité page podcast mobile** : `overscroll-behavior:contain` sur `.pl-body`/`.pc-body` ; padding du panneau Abonné `#pcPaneAbonne` (sinon titres + carrousel collés au bord, 1re pochette rognée) + clearance basse safe-area.
+    - **Anti-crash iOS** : `visibilitychange` suspend les timers décoratifs en arrière-plan ; classe `body.bf-heavy-open` (posée par `lockScroll`/`unlockScroll`) coupe le `backdrop-filter` des éléments persistants (nav-capsule, smart bar) DERRIÈRE une page plein écran → allège la mémoire GPU au moment critique (ouverture dossier).
   - **Chantier Podcast — refonte complète** (`3d119c5`→`cc1253b`) : voir le composant **Podcast** en détail plus haut. En résumé :
     - **Navigation scroll** (`3d119c5`) : retour d'article conserve la position (suppression du `_stMain(false)` dans `closeArtModal`) ; changement de catégorie/mode/source remonte en haut (`_stMain(true)` dans `_smartPickCat`/`_smartSetMode`/`_smartPickSource`).
     - **Onglet Abonné refondu d'après un squelette utilisateur** (`2a11c51`) : *Continuer l'écoute* (conditionnel) + **Nouveaux épisodes** (carrousel pochettes, non lus, « Tout marquer comme lu ») + **Toutes vos émissions** (liste des shows). Micro-anims spring `pcRise`.
@@ -176,7 +187,8 @@ let _srcsOpen      = false;  // rail des sources à la demande (replié par déf
   - Diagnostic : **aucun `location.reload()` dans le code** → c'est iOS/WebKit qui recharge la WebView (crash mémoire ou purge de l'app en arrière-plan). Vues bornées (60–100 cartes), pas de fuite DOM ni de boucle. Facteur restant = **empreinte mémoire GPU** (verre `backdrop-filter` ×45, filtre SVG `#srailGoo` permanent sur le rail).
   - Décision utilisateur : **garder tout le verre**, ne pas toucher au CSS. On teste d'abord l'effet du correctif JS (MutationObserver).
 - **Prochaine étape prévue :**
-  - Si le redémarrage persiste : **suspendre effets + timers en arrière-plan** via `visibilitychange` (JS, invisible en usage — cible le « en revenant dessus ») — à valider avec l'utilisateur.
+  - **Anti-crash : déjà en place** — `visibilitychange` (suspension timers en fond) + `body.bf-heavy-open` (coupe le verre des éléments persistants derrière une page plein écran, cible le crash à l'ouverture d'un dossier). **À valider sur device** : si le crash persiste, étape suivante = élargir `bf-heavy-open` à plus d'éléments verre, ou réduire le nombre de couches `backdrop-filter` simultanées.
+  - Clés localStorage ajoutées cette session : `bf_img_fix_v3` (flag migration images), `reader.dedupeFolders` (dédoublonnage dans les dossiers).
   - Pistes Smart Bar : indicateur "filtres actifs combinés" · affinement vue Browse (bulles logos par dossier) · intégration Balados/Podcasts
   - Logos/images : si Clearbit s'avère peu fiable (couverture FR impartaite), envisager table manuelle FR pour les sources clés. `wsrv.nl` peut aussi être utilisé en mode systématique (`&w=400&output=webp`) pour réduire la mémoire image — piste pour le bug « l'app redémarre ».
 

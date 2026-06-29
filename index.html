@@ -881,6 +881,17 @@ button, .ob-btn, .ob-btn-ghost,
 }
 
 /* Capsules */
+/* Anti-crash iOS : quand une page/modale plein écran est ouverte, on coupe le
+   verre GPU des éléments persistants qui sont DERRIÈRE elle (donc masqués).
+   Invisible à l'usage, allège la mémoire de compositing au moment critique. */
+body.bf-heavy-open .nav-capsule,
+body.bf-heavy-open #smartBar,
+body.bf-heavy-open .sbar-seg,
+body.bf-heavy-open .sbar-seg-row,
+body.bf-heavy-open .sbar-podcast{
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+}
 /* ══ Capsules — Liquid Glass (Aave technique) ══════════════
    filter:url() sur l'élément (cross-browser).
    Le displacement map a des valeurs neutres en dehors de la
@@ -5646,8 +5657,12 @@ body.focus-mode .focus-exit{ display:flex; }
   //   niveau. Évite que fermer un modal au-dessus d'une page rende le fond
   //   défilable alors que la page est encore ouverte.
   let _scrollLocks = 0;
-  function lockScroll(){ if(_scrollLocks++ === 0) document.body.style.overflow = 'hidden'; }
-  function unlockScroll(){ if(_scrollLocks > 0 && --_scrollLocks === 0) document.body.style.overflow = ''; }
+  // bf-heavy-open : actif dès qu'une page/modale plein écran est ouverte. Sert à
+  // couper le verre GPU (backdrop-filter) des éléments persistants situés DERRIÈRE
+  // la couche plein écran — invisible à l'usage, réduit l'empreinte mémoire iOS
+  // (cible le crash « l'app redémarre » à l'ouverture d'un dossier).
+  function lockScroll(){ if(_scrollLocks++ === 0){ document.body.style.overflow = 'hidden'; document.body.classList.add('bf-heavy-open'); } }
+  function unlockScroll(){ if(_scrollLocks > 0 && --_scrollLocks === 0){ document.body.style.overflow = ''; document.body.classList.remove('bf-heavy-open'); } }
   function resetScroll(){ _scrollLocks = 0; document.body.style.overflow = ''; }
 
   // Scroll-to-top centralisé — instant ou smooth selon le contexte
