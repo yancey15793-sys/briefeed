@@ -1975,10 +1975,18 @@ button, .ob-btn, .ob-btn-ghost,
   gap:0; padding:2px 0 10px;
 }
 @media (min-width:768px){
-  .edl{ grid-template-columns:repeat(3,1fr); gap:0 22px; }
-  .edl-item:not(:first-child){ align-items:flex-start; }
-  .edl-item:not(:first-child) > *{ width:100%; }
-  .edl-fig{ width:100%; }
+  /* Magazine & Grille — sur tablette/ordi, on élargit le conteneur principal
+     (fixé à 341px pour l'iPhone) et .row le re-centre (justify-content:center),
+     donc marges gauche/droite égales. min(100%,980px) ne déborde jamais. */
+  body[data-view="editions"] .column,
+  body[data-view="grille"]   .column{ width:min(100%, 980px); }
+  /* minmax(0,1fr) : les colonnes peuvent rétrécir (un enfant à largeur fixe ne
+     gonfle plus la piste). Cartes fluides : on annule le width:310px de base
+     (déclaré plus bas dans la feuille) qui faisait déborder la grille à droite. */
+  .edl{ grid-template-columns:repeat(3,minmax(0,1fr)); gap:0 22px; }
+  .edl .edl-fig{ width:100%; }
+  .edl .edl-item:not(:first-child){ align-items:flex-start; }
+  .edl .edl-item:not(:first-child) > *{ width:100%; }
 }
 .edl-item{
   display:flex; flex-direction:column; align-items:flex-start;
@@ -5711,6 +5719,7 @@ body.focus-mode .focus-exit{ display:flex; }
   function _switchView(target){
     _currentView = target;
     try { localStorage.setItem('bf_view', target); } catch(e) {}
+    try { document.body.dataset.view = target; } catch(e) {}  // pour le CSS responsive (grille centrée)
 
     // Si une sous-page est ouverte, re-rendre uniquement celle-ci
     const fp = document.getElementById('feedPage');
@@ -8418,6 +8427,12 @@ body.focus-mode .focus-exit{ display:flex; }
       tx.oncomplete=()=>res(); tx.onerror=rej;
     });
   }
+  function idbClearArticles(){
+    return idbOpen().then(db=>new Promise((res,rej)=>{
+      const tx=db.transaction(IDB_STORE,'readwrite'); tx.objectStore(IDB_STORE).clear();
+      tx.oncomplete=()=>res(); tx.onerror=rej;
+    }));
+  }
   async function idbLoadAll(){
     const db = await idbOpen();
     return new Promise((res,rej)=>{
@@ -8526,23 +8541,32 @@ body.focus-mode .focus-exit{ display:flex; }
     if(item.enclosure?.url && _looksImg(item.enclosure.url, item.enclosure.type, '', true)) return item.enclosure.url;
     // itunes:image
     if(item['itunes:image']?.href) return item['itunes:image'].href;
-    // <img> dans description ou content:encoded — beaucoup de flux servent
+    // <img> dans content:encoded ET description — beaucoup de flux servent
     // l'image en lazy-load (src = placeholder 1px/base64, la vraie image dans
     // data-src/data-lazy-src/data-original/srcset). On balaie tous les <img>
-    // et on retient la 1re URL http(s) plausible, sans s'arrêter à un src vide.
-    const raw = item['content:encoded'] || item.description || '';
+    // des DEUX champs (l'un peut être vide là où l'autre porte l'image) et on
+    // retient la 1re URL http(s) plausible, sans s'arrêter à un src vide.
     const _pickSrcset = ss => { const c=String(ss||'').split(',').map(s=>s.trim().split(/\s+/)[0]).filter(u=>/^https?:/.test(u)); return c[c.length-1]||c[0]||''; };
-    const _imgRe = /<img\b[^>]*>/gi; let im;
-    while((im = _imgRe.exec(raw))){
-      const tag = im[0];
-      const cand = (tag.match(/\bdata-src=["']([^"']+)["']/i)||[])[1]
-                || (tag.match(/\bdata-lazy-src=["']([^"']+)["']/i)||[])[1]
-                || (tag.match(/\bdata-original=["']([^"']+)["']/i)||[])[1]
-                || _pickSrcset((tag.match(/\bdata-srcset=["']([^"']+)["']/i)||[])[1])
-                || _pickSrcset((tag.match(/\bsrcset=["']([^"']+)["']/i)||[])[1])
-                || (tag.match(/\bsrc=["']([^"']+)["']/i)||[])[1] || '';
-      if(cand && /^https?:/.test(cand) && !/\b(1x1|spacer|blank|pixel|placeholder)\b/i.test(cand)) return cand;
-    }
+    const _scanImgs = raw => {
+      const re = /<img\b[^>]*>/gi; let im;
+      while((im = re.exec(raw||''))){
+        const tag = im[0];
+        const cand = (tag.match(/\bdata-src=["']([^"']+)["']/i)||[])[1]
+                  || (tag.match(/\bdata-lazy-src=["']([^"']+)["']/i)||[])[1]
+                  || (tag.match(/\bdata-original=["']([^"']+)["']/i)||[])[1]
+                  || _pickSrcset((tag.match(/\bdata-srcset=["']([^"']+)["']/i)||[])[1])
+                  || _pickSrcset((tag.match(/\bsrcset=["']([^"']+)["']/i)||[])[1])
+                  || (tag.match(/\bsrc=["']([^"']+)["']/i)||[])[1] || '';
+        if(cand && /^https?:/.test(cand) && !/\b(1x1|spacer|blank|pixel|placeholder)\b/i.test(cand)) return cand;
+      }
+      return null;
+    };
+    const _imgInHtml = _scanImgs(item['content:encoded']) || _scanImgs(item.description);
+    if(_imgInHtml) return _imgInHtml;
+    // og:image dans une éventuelle balise <meta> embarquée (certains flux la collent)
+    const ogRaw = (item['content:encoded']||'') + (item.description||'');
+    const ogm = ogRaw.match(/<meta[^>]+(?:property|name)=["'](?:og:image|twitter:image)["'][^>]+content=["'](https?:\/\/[^"']+)["']/i);
+    if(ogm && ogm[1]) return ogm[1];
     // Dernier recours : artwork du channel — RÉSERVÉ aux épisodes de podcast
     // (item audio sans image propre). Pour un article classique, le <image> du
     // channel = le LOGO du site (TechCrunch, ESPN…) : l'utiliser en visuel de
@@ -10234,6 +10258,7 @@ body.focus-mode .focus-exit{ display:flex; }
     if(!order.includes(_currentView)){ _currentView='editions'; try{localStorage.setItem('bf_view','editions');}catch(e){} }
     // Mode Tendances : toujours la vue séquentielle (corps + numérotation) ; ranking conservé
     const effView = (_smartMode === 'trending') ? 'sequential' : _currentView;
+    try { document.body.dataset.view = effView; } catch(e) {}  // CSS responsive : reflète la vue réellement affichée
     views.forEach(v => { v.hidden = v.dataset.view !== effView; });
     _renderSrcRail();   // rail partagé visible sur toutes les vues
     if(effView === 'editions')    _renderEditions();
@@ -10295,6 +10320,20 @@ body.focus-mode .focus-exit{ display:flex; }
       }
       return;
     }
+
+    // Migration ponctuelle (une seule fois) : l'ancien repli artwork-du-channel
+    // a pu enregistrer le LOGO du site comme imageUrl d'articles (TechCrunch,
+    // ESPN…). On purge le cache d'articles pour forcer un re-parse propre avec
+    // le nouvel _extractImg ; favoris (snapshots), read-state et préférences
+    // sont stockés ailleurs, donc préservés.
+    try{
+      if(!localStorage.getItem('bf_img_fix_v3')){
+        await idbClearArticles();
+        Object.keys(localStorage).forEach(k=>{ if(k.indexOf('bf_fc_')===0) localStorage.removeItem(k); });
+        localStorage.setItem('bf_img_fix_v3','1');
+        _allArticles = [];
+      }
+    }catch(e){}
 
     // Phase 1 — IDB instantané → rendu immédiat, stable
     const skel = document.getElementById('editionsSkeleton');
@@ -10844,6 +10883,7 @@ body.focus-mode .focus-exit{ display:flex; }
 
   _syncRSSFeeds();
   // Appliquer la vue persistée dès le démarrage
+  try { document.body.dataset.view = _currentView; } catch(e) {}  // CSS responsive (grille centrée)
   views.forEach(v => { v.hidden = v.dataset.view !== _currentView; });
   if(_rssFeeds.length){
     if(_currentView === 'editions'){
