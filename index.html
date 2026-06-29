@@ -2668,6 +2668,16 @@ body.bf-heavy-open .sbar-podcast{
 .bf-hyb-item[data-type="cat"] .bf-hyb-circle svg{ width:20px; height:20px; opacity:.9; }
 .bf-hyb-item:active .bf-hyb-circle{ transform:scale(.92); }
 .bf-hyb-item.sel .bf-hyb-circle{ transform:scale(1.12); box-shadow:0 0 0 2px var(--text), 0 4px 14px rgba(0,0,0,.4); }
+.bf-hyb-home{ background:var(--bg-elev) !important; color:var(--text); }
+.bf-hyb-home svg{ width:20px; height:20px; }
+.bf-hyb-item.sel .bf-hyb-home{ background:var(--text) !important; color:var(--bg); }
+/* Étoile de favori (bottom sheet) */
+.bf-srow-star{ flex:none; width:34px; height:34px; border:none; background:none; cursor:pointer; color:var(--text-muted); display:flex; align-items:center; justify-content:center; -webkit-tap-highlight-color:transparent; transition:transform .12s ease; }
+.bf-srow-star:active{ transform:scale(.85); }
+.bf-srow-star svg{ width:21px; height:21px; fill:none; stroke:currentColor; }
+.bf-srow-star.on{ color:var(--accent); }
+.bf-srow-star.on svg{ fill:var(--accent); stroke:var(--accent); }
+.bf-sheet-hint{ font-size:12px; color:var(--text-muted); line-height:1.45; padding:10px 12px 2px; }
 
 .bf-sheet-overlay{ position:fixed; inset:0; z-index:600; background:rgba(0,0,0,.5); opacity:0; visibility:hidden; transition:opacity .35s ease, visibility .35s ease; }
 .bf-sheet-overlay.show{ opacity:1; visibility:visible; }
@@ -9371,63 +9381,115 @@ body.focus-mode .focus-exit{ display:flex; }
     const db = (typeof _FEED_DB !== 'undefined') ? (_FEED_DB[url] || {}) : {};
     return db.color || '#ffffff';
   }
+  // ── Favoris : la barre n'affiche QUE des favoris choisis (pas tous les flux) ──
+  const _BF_FAV_KEY = 'bf_favorites';
+  let _bfFavs = [];   // [{t:'cat'|'src', id}]
+  try{ const s=JSON.parse(localStorage.getItem(_BF_FAV_KEY)||'null'); if(Array.isArray(s)) _bfFavs=s; }catch(e){}
+  function _bfFavSave(){ try{ localStorage.setItem(_BF_FAV_KEY, JSON.stringify(_bfFavs)); }catch(e){} }
+  function _bfFavSeed(){ // défaut au 1er lancement = tes dossiers (catégories)
+    if(_bfFavs.length) return;
+    const { order } = _smartCatMap();
+    _bfFavs = order.map(c=>({t:'cat',id:c}));
+    _bfFavSave();
+  }
+  function _isFav(t,id){ return _bfFavs.some(f=>f.t===t && f.id===id); }
+  function _toggleFav(t,id){
+    const i=_bfFavs.findIndex(f=>f.t===t && f.id===id);
+    if(i>=0) _bfFavs.splice(i,1); else _bfFavs.push({t,id});
+    _bfFavSave(); _renderHybRail();
+  }
+  function _srcName(url){
+    const db=(typeof _FEED_DB!=='undefined')?(_FEED_DB[url]||{}):{};
+    if(db.name) return db.name;
+    const m=(typeof _feedMeta!=='undefined')?(_feedMeta[url]||{}):{};
+    if(m && m.name) return m.name;
+    try{ return new URL(url).hostname.replace(/^www\./,''); }catch(e){ return url; }
+  }
+  function _allSourcesFlat(){
+    const { map } = _smartCatMap(); const seen={}; const out=[];
+    Object.keys(map).forEach(c=>map[c].forEach(s=>{ if(!seen[s.url]){ seen[s.url]=1; out.push(s); } }));
+    return out.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+  }
+  const _HOME_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9"/></svg>';
+  const _STAR_SVG='<svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 3 14.9 8.9 21.4 9.8 16.7 14.4 17.8 20.9 12 17.8 6.2 20.9 7.3 14.4 2.6 9.8 9.1 8.9"/></svg>';
+  function _hybGoHome(){
+    _smartCat=null; _railFilterUrl=null;
+    try{ localStorage.removeItem('bf_smart_cat'); localStorage.removeItem('bf_rail_filter'); }catch(e){}
+    _railInstant=true; if(typeof _renderCurrentView==='function') _renderCurrentView();
+    if(typeof _stMain==='function') _stMain(true);
+  }
+
   function _renderHybRail(){
     const rail = document.getElementById('bfHybRail'); if(!rail) return;
-    const { order } = _smartCatMap();
-    const sources = _smartSources();
-    const sig = order.join('|') + '#' + sources.map(s=>s.url).join(',');
+    _bfFavSeed();
+    const { order, map } = _smartCatMap();
+    const validSrc = u => Object.keys(map).some(c=>map[c].some(s=>s.url===u));
+    const favs = _bfFavs.filter(f=> f.t==='cat' ? order.includes(f.id) : validSrc(f.id));
+    const sig = 'H|' + favs.map(f=>f.t+':'+f.id).join(',');
     if(rail.dataset.sig !== sig){
       const prevLeft = rail.scrollLeft;
       rail.querySelectorAll('.bf-hyb-item').forEach(e=>e.remove());
       const frag = document.createDocumentFragment();
-      order.forEach(c=>{
-        const b=document.createElement('button'); b.className='bf-hyb-item'; b.dataset.type='cat'; b.dataset.cat=c;
-        b.title=c;
-        b.innerHTML=`<span class="bf-hyb-circle">${_hybCatSVG(c)}</span>`;
-        b.addEventListener('click', ()=>{ _smartPickCat(c === (_smartCat||'') ? '' : c); });
-        frag.appendChild(b);
-      });
-      sources.forEach(s=>{
-        const b=document.createElement('button'); b.className='bf-hyb-item'; b.dataset.type='src'; b.dataset.url=s.url;
-        b.title=s.name;
-        b.innerHTML=`<span class="bf-hyb-circle" style="background:${_hybBrand(s.url)}"><img src="${escAttr(getFavicon(s.url))}" alt="" onerror="this.style.opacity='.3'"></span>`;
-        b.addEventListener('click', ()=>{ _smartPickSource(s.url); });
+      const home=document.createElement('button'); home.className='bf-hyb-item'; home.dataset.home='1'; home.title='Accueil';
+      home.innerHTML=`<span class="bf-hyb-circle bf-hyb-home">${_HOME_SVG}</span>`;
+      home.addEventListener('click', _hybGoHome);
+      frag.appendChild(home);
+      favs.forEach(f=>{
+        const b=document.createElement('button'); b.className='bf-hyb-item';
+        if(f.t==='cat'){
+          b.dataset.type='cat'; b.dataset.cat=f.id; b.title=f.id;
+          b.innerHTML=`<span class="bf-hyb-circle">${_hybCatSVG(f.id)}</span>`;
+          b.addEventListener('click', ()=>{ _smartPickCat(f.id===(_smartCat||'')?'':f.id); });
+        } else {
+          b.dataset.type='src'; b.dataset.url=f.id; b.title=_srcName(f.id);
+          b.innerHTML=`<span class="bf-hyb-circle" style="background:${_hybBrand(f.id)}"><img src="${escAttr(getFavicon(f.id))}" alt="" onerror="this.style.opacity='.3'"></span>`;
+          b.addEventListener('click', ()=>{ _smartPickSource(f.id); });
+        }
         frag.appendChild(b);
       });
       rail.appendChild(frag);
       rail.dataset.sig = sig; rail.scrollLeft = prevLeft;
     }
+    const homeActive = !_smartCat && !_railFilterUrl;
     rail.querySelectorAll('.bf-hyb-item').forEach(b=>{
-      const on = b.dataset.type==='cat'
-        ? (!!_smartCat && b.dataset.cat===_smartCat && !_railFilterUrl)
-        : (!!_railFilterUrl && b.dataset.url===_railFilterUrl);
+      let on=false;
+      if(b.dataset.home) on=homeActive;
+      else if(b.dataset.type==='cat') on=(!!_smartCat && b.dataset.cat===_smartCat && !_railFilterUrl);
+      else on=(!!_railFilterUrl && b.dataset.url===_railFilterUrl);
       b.classList.toggle('sel', on);
     });
     _renderHybSheetBody();
   }
+  function _hybSheetRow(type,id,name,brand){
+    const fav=_isFav(type,id);
+    const dot = type==='cat'
+      ? `<span class="bf-srow-dot" data-type="cat">${_hybCatSVG(id)}</span>`
+      : `<span class="bf-srow-dot" style="background:${brand}"><img src="${escAttr(getFavicon(id))}" alt="" onerror="this.style.opacity='.3'"></span>`;
+    const sel = type==='cat' ? (!!_smartCat&&id===_smartCat&&!_railFilterUrl) : (_railFilterUrl===id);
+    const at = type==='cat' ? `data-cat="${escAttr(id)}"` : `data-url="${escAttr(id)}"`;
+    return `<div class="bf-srow${sel?' sel':''}" data-type="${type}" ${at}>`
+      + dot + `<span class="bf-srow-name">${escHtml(name)}</span>`
+      + `<button class="bf-srow-star${fav?' on':''}" type="button" aria-label="Favori">${_STAR_SVG}</button></div>`;
+  }
   function _renderHybSheetBody(){
     const body = document.getElementById('bfSheetBody'); if(!body) return;
     const { order } = _smartCatMap();
-    const sources = _smartSources();
-    let html = order.length ? '<div class="bf-sheet-section">Catégories</div>' : '';
-    html += order.map(c=>(
-      `<div class="bf-srow${(!!_smartCat&&c===_smartCat&&!_railFilterUrl)?' sel':''}" data-type="cat" data-cat="${escAttr(c)}">`
-      + `<span class="bf-srow-dot" data-type="cat">${_hybCatSVG(c)}</span>`
-      + `<span class="bf-srow-name">${escHtml(c)}</span>`
-      + `<span class="bf-srow-chev"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 6 15 12 9 18"/></svg></span></div>`
-    )).join('');
+    const sources = _allSourcesFlat();
+    let html = '<div class="bf-sheet-hint">Touchez l’étoile pour épingler un favori à la barre. Touchez le nom pour filtrer.</div>';
+    if(order.length){ html += '<div class="bf-sheet-section">Catégories</div>'; html += order.map(c=>_hybSheetRow('cat',c,c,'')).join(''); }
     html += '<div class="bf-sheet-section">Sources</div>';
-    html += sources.map(s=>(
-      `<div class="bf-srow${(_railFilterUrl===s.url)?' sel':''}" data-type="src" data-url="${escAttr(s.url)}">`
-      + `<span class="bf-srow-dot" style="background:${_hybBrand(s.url)}"><img src="${escAttr(getFavicon(s.url))}" alt="" onerror="this.style.opacity='.3'"></span>`
-      + `<span class="bf-srow-name">${escHtml(s.name)}</span>`
-      + `<span class="bf-srow-chev"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 6 15 12 9 18"/></svg></span></div>`
-    )).join('');
+    html += sources.map(s=>_hybSheetRow('src',s.url,s.name,_hybBrand(s.url))).join('');
     body.innerHTML = html;
-    body.querySelectorAll('.bf-srow').forEach(r=>r.addEventListener('click', ()=>{
+    body.querySelectorAll('.bf-srow').forEach(r=>r.addEventListener('click', (e)=>{
+      if(e.target.closest('.bf-srow-star')) return;
       if(r.dataset.type==='cat'){ const c=r.dataset.cat; _smartPickCat(c===(_smartCat||'')?'':c); }
       else { _smartPickSource(r.dataset.url); }
       _BFSheet.snapTo('closed');
+    }));
+    body.querySelectorAll('.bf-srow-star').forEach(st=>st.addEventListener('click', (e)=>{
+      e.stopPropagation(); const r=st.closest('.bf-srow');
+      _toggleFav(r.dataset.type, r.dataset.type==='cat'?r.dataset.cat:r.dataset.url);
+      st.classList.toggle('on');
     }));
   }
 
