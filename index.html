@@ -8518,10 +8518,23 @@ body.focus-mode .focus-exit{ display:flex; }
     if(item.enclosure?.url && _looksImg(item.enclosure.url, item.enclosure.type, '', true)) return item.enclosure.url;
     // itunes:image
     if(item['itunes:image']?.href) return item['itunes:image'].href;
-    // <img> dans description ou content:encoded
+    // <img> dans description ou content:encoded — beaucoup de flux servent
+    // l'image en lazy-load (src = placeholder 1px/base64, la vraie image dans
+    // data-src/data-lazy-src/data-original/srcset). On balaie tous les <img>
+    // et on retient la 1re URL http(s) plausible, sans s'arrêter à un src vide.
     const raw = item['content:encoded'] || item.description || '';
-    const m = raw.match(/<img[^>]+src=["']([^"']+)["']/i);
-    if(m && m[1] && /^https?:/.test(m[1])) return m[1];
+    const _pickSrcset = ss => { const c=String(ss||'').split(',').map(s=>s.trim().split(/\s+/)[0]).filter(u=>/^https?:/.test(u)); return c[c.length-1]||c[0]||''; };
+    const _imgRe = /<img\b[^>]*>/gi; let im;
+    while((im = _imgRe.exec(raw))){
+      const tag = im[0];
+      const cand = (tag.match(/\bdata-src=["']([^"']+)["']/i)||[])[1]
+                || (tag.match(/\bdata-lazy-src=["']([^"']+)["']/i)||[])[1]
+                || (tag.match(/\bdata-original=["']([^"']+)["']/i)||[])[1]
+                || _pickSrcset((tag.match(/\bdata-srcset=["']([^"']+)["']/i)||[])[1])
+                || _pickSrcset((tag.match(/\bsrcset=["']([^"']+)["']/i)||[])[1])
+                || (tag.match(/\bsrc=["']([^"']+)["']/i)||[])[1] || '';
+      if(cand && /^https?:/.test(cand) && !/\b(1x1|spacer|blank|pixel|placeholder)\b/i.test(cand)) return cand;
+    }
     // Dernier recours : artwork du podcast (niveau channel) — couvre les épisodes sans image propre.
     if(item._channelImg && /^https?:/.test(item._channelImg)) return item._channelImg;
     return null;
@@ -8679,9 +8692,13 @@ body.focus-mode .focus-exit{ display:flex; }
   async function _fetchHtmlViaProxies(url, T){
     const U = encodeURIComponent(url);
     const fns = [
+      async()=>{ const r=await fetch(`https://api.allorigins.win/get?url=${U}`,{signal:AbortSignal.timeout(T)}); const d=await r.json(); return (d&&d.contents)||null; },
       async()=>{ const r=await fetch(`https://corsproxy.io/?${U}`,{signal:AbortSignal.timeout(T)}); return r.ok?r.text():null; },
       async()=>{ const r=await fetch(`https://api.codetabs.com/v1/proxy?quest=${U}`,{signal:AbortSignal.timeout(T)}); return r.ok?r.text():null; },
-      async()=>{ const r=await fetch(`https://api.allorigins.win/get?url=${U}`,{signal:AbortSignal.timeout(T)}); const d=await r.json(); return (d&&d.contents)||null; },
+      async()=>{ const r=await fetch(`https://corsproxy.org/?${U}`,{signal:AbortSignal.timeout(T)}); return r.ok?r.text():null; },
+      async()=>{ const r=await fetch(`https://api.cors.lol/?url=${U}`,{signal:AbortSignal.timeout(T)}); return r.ok?r.text():null; },
+      async()=>{ const r=await fetch(`https://thingproxy.freeboard.io/fetch/${U}`,{signal:AbortSignal.timeout(T)}); return r.ok?r.text():null; },
+      async()=>{ const r=await fetch(`https://cors.deno.dev/${url}`,{signal:AbortSignal.timeout(T)}); return r.ok?r.text():null; },
     ];
     for(const fn of fns){ try{ const t=await fn(); if(t && t.length>200) return t; }catch(e){} }
     return null;
@@ -9734,8 +9751,29 @@ body.focus-mode .focus-exit{ display:flex; }
     });
   }
   function _srcmCarNav(dir){ _srcmGoTo(_srcmSlideIdx+dir); }
-  function _srcmAutoPlay(){ _srcmAutoStop(); _srcmAutoTimer=setInterval(()=>_srcmCarNav(1),4200); }
+  function _srcmAutoPlay(){ _srcmAutoStop(); if(document.hidden) return; _srcmAutoTimer=setInterval(()=>_srcmCarNav(1),4200); }
   function _srcmAutoStop(){ if(_srcmAutoTimer){ clearInterval(_srcmAutoTimer); _srcmAutoTimer=null; } }
+
+  // ── Suspension en arrière-plan (anti-redémarrage iOS) ────────────
+  // iOS purge la WebView sous pression mémoire quand l'app passe en fond, puis
+  // la recharge « en revenant dessus ». On réduit l'empreinte hors écran :
+  // on coupe les timers/animations décoratives quand l'onglet est masqué et on
+  // les relance au retour. Invisible à l'usage (rien ne tourne hors écran de
+  // toute façon), l'audio en cours n'est pas touché.
+  (function(){
+    let _wasAuto = false;
+    document.addEventListener('visibilitychange', ()=>{
+      if(document.hidden){
+        _wasAuto = !!_srcmAutoTimer;       // le carrousel tournait-il ?
+        _srcmAutoStop();                    // stoppe l'autoplay du carrousel
+      } else {
+        // Au retour : on ne relance le carrousel que si sa fenêtre est ouverte.
+        const open = document.getElementById('srcModal');
+        if(_wasAuto && open && open.classList.contains('open')) _srcmAutoPlay();
+        _wasAuto = false;
+      }
+    });
+  })();
 
   // Articles les plus « chauds » d'un dossier : couverture + signal + fraîcheur
   function _catHotArticles(cat, n){
