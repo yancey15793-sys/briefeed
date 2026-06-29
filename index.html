@@ -5392,19 +5392,7 @@ body.focus-mode .focus-exit{ display:flex; }
 
       <!-- Smart Bar — segment intelligent + catégories (tiret animé) + sources (accordéon) -->
       <div id="smartBar" class="sbar" hidden>
-        <div class="sbar-seg-row">
-          <div class="sbar-seg" id="sbarSeg">
-            <span class="sbar-seg-pill" id="sbarSegPill" aria-hidden="true"></span>
-            <button class="sbar-seg-btn" type="button" data-mode="all">Tout</button>
-            <button class="sbar-seg-btn" type="button" data-mode="unread">Non lus</button>
-            <button class="sbar-seg-btn" type="button" data-mode="trending">Tendances</button>
-          </div>
-          <button class="sbar-podcast" id="sbarPodcastBtn" type="button" onclick="openPodListen()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 14v-2a9 9 0 0 1 18 0v2"/><rect x="2.5" y="13" width="4.5" height="8" rx="2"/><rect x="17" y="13" width="4.5" height="8" rx="2"/></svg>
-            <span>Podcast</span>
-          </button>
-        </div>
-        <!-- Barre de favoris (rail de timeline) -->
+        <!-- Barre de favoris (rail de timeline) — directement sous le logo -->
         <div class="bfr-rail">
           <div class="bfr-edge left">
             <button class="bfr-btn" id="bfrAll" type="button" aria-label="Tous">
@@ -5419,6 +5407,18 @@ body.focus-mode .focus-exit{ display:flex; }
               <span class="bfr-lbl">Gérer</span>
             </button>
           </div>
+        </div>
+        <div class="sbar-seg-row">
+          <div class="sbar-seg" id="sbarSeg">
+            <span class="sbar-seg-pill" id="sbarSegPill" aria-hidden="true"></span>
+            <button class="sbar-seg-btn" type="button" data-mode="all">Tout</button>
+            <button class="sbar-seg-btn" type="button" data-mode="unread">Non lus</button>
+            <button class="sbar-seg-btn" type="button" data-mode="trending">Tendances</button>
+          </div>
+          <button class="sbar-podcast" id="sbarPodcastBtn" type="button" onclick="openPodListen()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 14v-2a9 9 0 0 1 18 0v2"/><rect x="2.5" y="13" width="4.5" height="8" rx="2"/><rect x="17" y="13" width="4.5" height="8" rx="2"/></svg>
+            <span>Podcast</span>
+          </button>
         </div>
       </div>
 
@@ -8493,7 +8493,7 @@ body.focus-mode .focus-exit{ display:flex; }
         return;
       }
       if(img.dataset.bfProxied) return;         // déjà retentée → laisser le onerror inline
-      if(/icons\.duckduckgo\.com|google\.com\/s2|gstatic\.com|icon\.horse|wsrv\.nl|images\.weserv\.nl/.test(src)) return;
+      if(/icons\.duckduckgo\.com|google\.com\/s2|gstatic\.com|icon\.horse|wsrv\.nl|images\.weserv\.nl|cdn\.simpleicons\.org/.test(src)) return;
       img.dataset.bfProxied = '1';
       img.src = 'https://wsrv.nl/?url=' + encodeURIComponent(src);
       e.stopImmediatePropagation(); e.preventDefault();
@@ -9423,46 +9423,53 @@ body.focus-mode .focus-exit{ display:flex; }
   //   (« actu Apple », « actu PSG », « Premier League »…) et on utilise son VRAI
   //   logo officiel (via getFavicon sur le domaine) + sa couleur. Repli = glyphe SVG.
   //   Ordre : du plus spécifique au plus générique. Facile à étendre.
+  // [regex, domaine (repli Clearbit couleur), couleur de fond, slug SimpleIcons (logo SVG blanc net)]
   const _BRAND_MAP = [
-    [/youtube|youtu\.be/, 'youtube.com', '#FF0000'],
-    [/premier\s*league|premi[eè]re?\s*league/, 'premierleague.com', '#37003C'],
-    [/ligue\s*des\s*champions|champions\s*league|\bucl\b|\bldc\b/, 'uefa.com', '#001489'],
-    [/ligue\s*1|ligue1/, 'ligue1.com', '#091C3E'],
-    [/\bpsg\b|paris\s*saint|paris\s*sg/, 'psg.fr', '#0B1E45'],
-    [/real\s*madrid/, 'realmadrid.com', '#00529F'],
-    [/bar[çc]a|barcelon/, 'fcbarcelona.com', '#A50044'],
-    [/bayern/, 'fcbayern.com', '#DC052D'],
-    [/liverpool/, 'liverpoolfc.com', '#C8102E'],
-    [/man(chester)?\s*(city|utd|united)/, 'mancity.com', '#6CABDD'],
-    [/arsenal/, 'arsenal.com', '#EF0107'],
-    [/\bnba\b/, 'nba.com', '#1D428A'],
-    [/\bnfl\b/, 'nfl.com', '#013369'],
-    [/\bmlb\b/, 'mlb.com', '#041E42'],
-    [/\bapple\b/, 'apple.com', '#1D1D1F'],
-    [/openai|chatgpt/, 'openai.com', '#10A37F'],
-    [/google/, 'google.com', '#4285F4'],
-    [/microsoft/, 'microsoft.com', '#0067B8'],
-    [/\bamazon\b/, 'amazon.com', '#FF9900'],
-    [/netflix/, 'netflix.com', '#E50914'],
-    [/spotify/, 'spotify.com', '#1DB954'],
-    [/tesla/, 'tesla.com', '#CC0000'],
-    [/nintendo/, 'nintendo.com', '#E60012'],
-    [/playstation|\bps5\b/, 'playstation.com', '#003791'],
-    [/samsung/, 'samsung.com', '#1428A0'],
-    [/\bbbc\b/, 'bbc.com', '#B80000'],
+    [/youtube|youtu\.be/, 'youtube.com', '#FF0000', 'youtube'],
+    [/\bia\b|\bai\b|intelligence\s*artif|chatgpt|openai/, 'openai.com', '#10A37F', 'openai'],
+    [/premier\s*league|premi[eè]re?\s*league/, 'premierleague.com', '#37003C', 'premierleague'],
+    [/ligue\s*des\s*champions|champions\s*league|\bucl\b|\bldc\b/, 'uefa.com', '#001489', ''],
+    [/ligue\s*1|ligue1/, 'ligue1.com', '#091C3E', ''],
+    [/\bpsg\b|paris\s*saint|paris\s*sg/, 'psg.fr', '#0B1E45', ''],
+    [/real\s*madrid/, 'realmadrid.com', '#00529F', ''],
+    [/bar[çc]a|barcelon/, 'fcbarcelona.com', '#A50044', ''],
+    [/bayern/, 'fcbayern.com', '#DC052D', ''],
+    [/liverpool/, 'liverpoolfc.com', '#C8102E', ''],
+    [/man(chester)?\s*(city|utd|united)/, 'mancity.com', '#6CABDD', ''],
+    [/arsenal/, 'arsenal.com', '#EF0107', ''],
+    [/\bnba\b/, 'nba.com', '#1D428A', 'nba'],
+    [/\bnfl\b/, 'nfl.com', '#013369', 'nfl'],
+    [/\bmlb\b/, 'mlb.com', '#041E42', 'mlb'],
+    [/\bapple\b/, 'apple.com', '#1D1D1F', 'apple'],
+    [/google/, 'google.com', '#4285F4', 'google'],
+    [/microsoft/, 'microsoft.com', '#0067B8', ''],
+    [/\bamazon\b/, 'amazon.com', '#FF9900', 'amazon'],
+    [/netflix/, 'netflix.com', '#E50914', 'netflix'],
+    [/spotify/, 'spotify.com', '#1DB954', 'spotify'],
+    [/tesla/, 'tesla.com', '#CC0000', 'tesla'],
+    [/nintendo/, 'nintendo.com', '#E60012', 'nintendo'],
+    [/playstation|\bps5\b/, 'playstation.com', '#003791', 'playstation'],
+    [/samsung/, 'samsung.com', '#1428A0', 'samsung'],
+    [/\bbbc\b/, 'bbc.com', '#B80000', 'bbc'],
   ];
   function _catBrand(name){
     const n=(name||'').toLowerCase();
-    for(const [re,domain,color] of _BRAND_MAP){ if(re.test(n)) return {domain,color}; }
+    for(const [re,domain,color,si] of _BRAND_MAP){ if(re.test(n)) return {domain,color,si:si||''}; }
     return null;
   }
   // Logo haute résolution (Clearbit 256 → net en retina ; repli DuckDuckGo via l'écouteur global).
   function _hybLogo(url){ const d=getFaviconDomain(url); return 'https://logo.clearbit.com/'+d+'?size=256'; }
+  // <img> d'un logo de marque : SimpleIcons (SVG blanc, ultra net) en priorité,
+  // repli Clearbit couleur si le slug n'existe pas, puis l'écouteur global (DDG).
+  function _brandImg(cb){
+    const cl='https://logo.clearbit.com/'+cb.domain+'?size=256';
+    if(cb.si) return `<img src="https://cdn.simpleicons.org/${cb.si}/ffffff" alt="" onerror="this.onerror=null;this.src='${cl}'">`;
+    return `<img src="${cl}" alt="" onerror="this.style.display='none'">`;
+  }
   // Rendu de la « face » d'une catégorie : logo officiel si marque détectée, sinon glyphe.
   function _catFaceInner(name){
     const cb=_catBrand(name);
-    if(cb) return `<img src="${escAttr(_hybLogo('https://'+cb.domain))}" alt="" onerror="this.style.display='none'">`;
-    return _hybCatSVG(name);
+    return cb ? _brandImg(cb) : _hybCatSVG(name);
   }
   // ── Favoris : la barre n'affiche QUE des favoris choisis (pas tous les flux) ──
   const _BF_FAV_KEY = 'bf_favorites';
@@ -9548,7 +9555,7 @@ body.focus-mode .focus-exit{ display:flex; }
     if(type==='cat'){
       const cb=_catBrand(id);
       return cb
-        ? `<span class="bfr-dot" style="background:${cb.color}"><img src="${escAttr(_hybLogo('https://'+cb.domain))}" alt="" onerror="this.style.display='none'"></span>`
+        ? `<span class="bfr-dot" style="background:${cb.color}">${_brandImg(cb)}</span>`
         : `<span class="bfr-dot" data-type="cat">${_hybCatSVG(id)}</span>`;
     }
     return `<span class="bfr-dot" style="background:${brand}"><img src="${escAttr(_hybLogo(id))}" alt="" onerror="this.style.opacity='.3'"></span>`;
