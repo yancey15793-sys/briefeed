@@ -260,8 +260,8 @@ button, .ob-btn, .ob-btn-ghost,
   display:flex; flex-direction:column; align-items:flex-start;
   gap:9.5px;
   width:341.25px;
-  /* place pour le header rallongé : titre (52) + rail (60) + marge */
-  padding:calc(env(safe-area-inset-top,0px) + 124px) 0 140px;
+  /* place pour le header rallongé : titre (52) + nav (44) + marge */
+  padding:calc(env(safe-area-inset-top,0px) + 108px) 0 140px;
 }
 
 /* h1.typography-hero-headline — « Hello Developer » */
@@ -2651,33 +2651,32 @@ body.bf-heavy-open .sbar-podcast{
 /* ════ Barre de favoris (rail timeline) + bibliothèque (bottom sheet) ════ */
 /* #smartBar n'est plus qu'un conteneur référencé par le JS ; le rail vit dans la topnav */
 #smartBar{ display:none; }
-/* Rail intégré au header — circles uniquement (façon The Athletic), sans libellés */
-.bfr-rail{ display:flex; align-items:center; width:100%; max-width:100%; height:60px; overflow:hidden; background:transparent; }
-.bfr-name, .bfr-lbl{ display:none; }
-.bfr-edge{ flex:none; display:flex; align-items:center; height:100%; z-index:2; }
-.bfr-edge.left{ padding:0 8px 0 14px; background:linear-gradient(90deg, var(--bg) 70%, transparent); }
-.bfr-edge.right{ padding:0 14px 0 8px; background:linear-gradient(270deg, var(--bg) 70%, transparent); }
-.bfr-scroll{ flex:1; min-width:0; display:flex; align-items:center; gap:18px; height:100%; padding:0 6px;
-  overflow-x:auto; overflow-y:hidden; scroll-snap-type:x proximity; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+/* Rail = navigation façon apple.com : rangée de liens texte, centrés, blanc 80 %,
+   hauteur 44px, espacés ; actif = blanc pur + semi-gras. Endpoints = icônes. */
+.bfr-rail{ display:flex; align-items:center; width:100%; max-width:100%; height:44px; overflow:hidden; background:transparent; }
+.bfr-lbl{ display:none; }
+.bfr-edge{ flex:none; display:flex; align-items:center; height:44px; z-index:2; }
+.bfr-edge.left{ padding-left:10px; background:linear-gradient(90deg, var(--topnav-bg,rgba(11,12,15,.92)) 72%, transparent); }
+.bfr-edge.right{ padding-right:10px; background:linear-gradient(270deg, var(--topnav-bg,rgba(11,12,15,.92)) 72%, transparent); }
+.bfr-scroll{ flex:1; min-width:0; display:flex; align-items:center; justify-content:center; gap:17px; height:44px; padding:0 10px;
+  overflow-x:auto; overflow-y:hidden; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
 .bfr-scroll::-webkit-scrollbar{ display:none; }
-.bfr-btn{ display:flex; flex-direction:column; align-items:center; gap:6px; border:none; background:none; cursor:pointer; padding:0; width:46px; -webkit-tap-highlight-color:transparent; }
-.bfr-ic{ width:40px; height:40px; border-radius:50%; background:var(--bg-elev); color:var(--text);
-  display:flex; align-items:center; justify-content:center; box-shadow:0 0 0 1px var(--border); transition:transform .18s cubic-bezier(.34,1.4,.64,1); }
-.bfr-btn:active .bfr-ic{ transform:scale(.9); }
+/* Liens texte (catégories / sources favorites) */
+.bfr-item{ flex:none; display:flex; align-items:center; padding:0 8px; height:44px; border:none; background:none; cursor:pointer;
+  font-family:var(--font-inter); font-size:12.5px; font-weight:400; line-height:1; letter-spacing:-.01em;
+  color:rgba(255,255,255,.8); white-space:nowrap; -webkit-tap-highlight-color:transparent; transition:color .18s ease; }
+[data-theme="light"] .bfr-item{ color:rgba(0,0,0,.78); }
+@media(hover:hover){ .bfr-item:hover{ color:#fff; } [data-theme="light"] .bfr-item:hover{ color:#000; } }
+.bfr-item.on{ color:#fff; font-weight:600; }
+[data-theme="light"] .bfr-item.on{ color:#000; }
+/* Endpoints (Tous / Podcast / Gérer) = icônes blanches 80 % */
+.bfr-btn{ flex:none; display:flex; align-items:center; justify-content:center; padding:0 8px; height:44px; border:none; background:none; cursor:pointer; color:rgba(255,255,255,.8); -webkit-tap-highlight-color:transparent; transition:color .18s ease; }
+[data-theme="light"] .bfr-btn{ color:rgba(0,0,0,.78); }
+.bfr-btn:active{ color:#fff; }
+.bfr-ic{ display:flex; align-items:center; justify-content:center; }
 .bfr-ic svg{ width:18px; height:18px; }
-.bfr-lbl{ font-size:10px; font-weight:600; color:var(--text-muted); }
-#bfrAll.on .bfr-ic{ background:var(--text); color:var(--bg); }
-#bfrAll.on .bfr-lbl{ color:var(--text); }
-.bfr-item{ flex:none; scroll-snap-align:center; display:flex; flex-direction:column; align-items:center; gap:6px; border:none; background:none; cursor:pointer; padding:0; width:52px; -webkit-tap-highlight-color:transparent; }
-.bfr-ring{ width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; position:relative;
-  transition:transform .22s cubic-bezier(.34,1.4,.64,1), box-shadow .22s ease; box-shadow:0 0 0 1px var(--border); }
-.bfr-face{ width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center;
-  font-weight:800; font-size:16px; color:#fff; letter-spacing:-.02em; overflow:hidden; background:var(--brand,#333); }
-.bfr-face img{ width:100%; height:100%; object-fit:contain; padding:7px; }
-.bfr-name{ font-size:10px; font-weight:500; color:var(--text-muted); max-width:52px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; transition:color .2s, font-weight .2s; }
-.bfr-item:active .bfr-ring{ transform:scale(.93); }
-.bfr-item.on .bfr-ring{ transform:scale(1.08); box-shadow:0 0 0 2.5px var(--brand,var(--text)), 0 0 16px -2px var(--brand,var(--text)); }
-.bfr-item.on .bfr-name{ color:var(--text); font-weight:700; }
+#bfrAll.on{ color:#fff; }
+[data-theme="light"] #bfrAll.on{ color:#000; }
 
 .bfr-ov{ position:fixed; inset:0; z-index:600; background:rgba(0,0,0,.5); opacity:0; visibility:hidden; transition:opacity .35s, visibility .35s; -webkit-backdrop-filter:blur(2px); backdrop-filter:blur(2px); }
 .bfr-ov.show{ opacity:1; visibility:visible; }
@@ -3794,7 +3793,8 @@ body.focus-mode .focus-exit{ display:flex; }
   position:fixed; top:0; left:0; right:0; z-index:62;
   display:flex; flex-direction:column;
   padding-top:env(safe-area-inset-top,0px);
-  background:rgba(11,12,15,.92);
+  --topnav-bg:rgba(11,12,15,.92);
+  background:var(--topnav-bg);
   border-bottom:1px solid rgba(255,255,255,.06);
   -webkit-backdrop-filter:blur(24px) saturate(200%);
   backdrop-filter:blur(24px) saturate(200%);
@@ -3802,7 +3802,7 @@ body.focus-mode .focus-exit{ display:flex; }
 }
 .topnav-bar{ height:52px; display:flex; align-items:center; justify-content:center; }
 .topnav .bfr-rail{ pointer-events:auto; }
-[data-theme="light"] .topnav{ background:rgba(248,248,250,.92); border-bottom-color:rgba(0,0,0,.07); }
+[data-theme="light"] .topnav{ --topnav-bg:rgba(248,248,250,.94); background:var(--topnav-bg); border-bottom-color:rgba(0,0,0,.07); }
 [data-theme="light"] .topnav-wordmark{ color:#1d1d1f; }
 .topnav-wordmark{
   font-family:var(--font-inter); font-size:15px; font-weight:700;
@@ -9461,6 +9461,8 @@ body.focus-mode .focus-exit{ display:flex; }
   const _CAT_PALETTE=['#E2484D','#F37338','#1D9BF0','#10A37F','#7B61FF','#F4B400','#EB5286','#0B7285','#C2410C','#4F46E5','#0A84FF','#D81B60'];
   function _catColor(name){ let h=0; const s=String(name||''); for(let i=0;i<s.length;i++) h=(h*31+s.charCodeAt(i))>>>0; return _CAT_PALETTE[h%_CAT_PALETTE.length]; }
   function _catInitial(name){ const m=String(name||'').trim().replace(/^actu(alit[ée]s?)?\s+/i,''); return (m[0]||'?').toUpperCase(); }
+  // Libellé court pour la nav (sans préfixe « actu », 1re lettre en majuscule)
+  function _catLabel(name){ const m=String(name||'').trim().replace(/^actu(alit[ée]s?)?\s+/i,''); return m ? (m.charAt(0).toUpperCase()+m.slice(1)) : String(name||''); }
   function _catColorOf(name){ const cb=_catBrand(name); return cb?cb.color:_catColor(name); }
   function _catFaceInner(name){ const cb=_catBrand(name); return cb ? _brandImg(cb) : escHtml(_catInitial(name)); }
   // ── Favoris : la barre n'affiche QUE des favoris choisis (pas tous les flux) ──
@@ -9511,16 +9513,15 @@ body.focus-mode .focus-exit{ display:flex; }
     if(rail.dataset.sig !== sig){
       const prevLeft = rail.scrollLeft; rail.innerHTML='';
       favs.forEach(f=>{
-        const b=document.createElement('button'); b.className='bfr-item';
+        const b=document.createElement('button'); b.className='bfr-item'; b.type='button';
         if(f.t==='cat'){
-          const col=_catColorOf(f.id);
-          b.dataset.type='cat'; b.dataset.cat=f.id; b.title=f.id; b.style.setProperty('--brand', col);
-          b.innerHTML=`<span class="bfr-ring"><span class="bfr-face" style="background:${col}">${_catFaceInner(f.id)}</span></span><span class="bfr-name">${escHtml(f.id)}</span>`;
+          b.dataset.type='cat'; b.dataset.cat=f.id; b.title=f.id;
+          b.textContent=_catLabel(f.id);
           b.addEventListener('click', ()=>{ _smartPickCat(f.id===(_smartCat||'')?'':f.id); });
         } else {
-          const nm=_srcName(f.id), col=_hybBrand(f.id);
-          b.dataset.type='src'; b.dataset.url=f.id; b.title=nm; b.style.setProperty('--brand', col);
-          b.innerHTML=`<span class="bfr-ring"><span class="bfr-face" style="background:${col}"><img src="${escAttr(_hybLogo(f.id))}" alt="" onerror="this.style.opacity='.3'"></span></span><span class="bfr-name">${escHtml(nm)}</span>`;
+          const nm=_srcName(f.id);
+          b.dataset.type='src'; b.dataset.url=f.id; b.title=nm;
+          b.textContent=nm;
           b.addEventListener('click', ()=>{ _smartPickSource(f.id); });
         }
         rail.appendChild(b);
