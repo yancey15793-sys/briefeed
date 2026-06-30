@@ -1709,8 +1709,8 @@ body.bf-heavy-open .sbar-podcast{
 .dc-art-state{ font-family:var(--font-inter); font-size:12px; font-weight:500; color:var(--text-muted); padding:6px 18px 2px 59px; }
 .dc-art-skel{ height:179px; border-radius:14px; width:258px; flex:none; background:linear-gradient(90deg,rgba(127,127,127,.10),rgba(127,127,127,.18),rgba(127,127,127,.10)); background-size:200% 100%; animation:dcSkel 1.2s linear infinite; }
 @keyframes dcSkel{ from{ background-position:200% 0; } to{ background-position:-200% 0; } }
-.dc-feed-logo{ width:46px; height:46px; flex:none; border-radius:50%; position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; font-family:var(--font-inter); font-size:18px; font-weight:800; color:var(--text-muted); background:transparent; border:1.5px solid rgba(255,255,255,.1); flex-shrink:0; }
-[data-theme="light"] .dc-feed-logo{ border-color:rgba(0,0,0,.1); }
+.dc-feed-logo{ width:38px; height:38px; flex:none; border-radius:50%; position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; font-family:var(--font-inter); font-size:15px; font-weight:800; color:var(--text-muted); background:transparent; border:none; box-shadow:0 0 0 4.5px rgba(255,255,255,0.75); flex-shrink:0; }
+[data-theme="light"] .dc-feed-logo{ box-shadow:0 0 0 3px rgba(0,0,0,0.18); }
 .dc-feed-logo img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:1; border-radius:50%; display:block; }
 .dc-feed-info{ flex:1; min-width:0; }
 .dc-feed-row-name{ font-family:var(--font-inter); font-size:15px; font-weight:700; color:var(--text); letter-spacing:-0.01em; }
@@ -1742,6 +1742,11 @@ body.bf-heavy-open .sbar-podcast{
 .pc-back:active{ transform:scale(.9); }
 [data-theme="light"] .pc-back{ background:rgba(0,0,0,.05); }
 .pc-back svg{ width:18px; height:18px; }
+.pc-more{ width:36px;height:36px;flex:none;border:0;cursor:pointer;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,.06);color:var(--text);margin-left:auto;transition:background .15s; }
+.pc-more:hover{ background:rgba(255,255,255,.12); }
+.pc-more:active{ transform:scale(.9); }
+[data-theme="light"] .pc-more{ background:rgba(0,0,0,.05); }
+.pc-more svg{ width:18px; height:18px; }
 /* Onglets façon capture : deux onglets larges, actif souligné */
 .pc-tabs{ flex:none; display:flex; padding:2px 18px 0; border-bottom:1px solid var(--border); }
 [data-theme="light"] .pc-tabs{ border-bottom-color:rgba(0,0,0,.08); }
@@ -1957,9 +1962,9 @@ body.bf-heavy-open .sbar-podcast{
   border-radius:50%; overflow:hidden;
   background:transparent;
 }
-.fav-md img{ width:100%; height:100%; object-fit:contain; border-radius:50%; display:block; }
+.fav-md img{ width:100%; height:100%; object-fit:cover; border-radius:50%; display:block; }
 
-.grid2-fav{ width:16px; height:16px; border-radius:50%; overflow:hidden; flex-shrink:0; background:transparent; }
+.grid2-fav{ width:16px; height:16px; border-radius:50%; overflow:hidden; flex-shrink:0; background:transparent; box-shadow:0 0 0 1.5px rgba(255,255,255,0.75); }
 .grid2-fav img{ width:100%; height:100%; object-fit:contain; border-radius:50%; display:block; }
 /* Logos sources — toujours visibles (façon Reeder) : fond clair constant pour
    que la marque ressorte quel que soit le thème + anneau fin à la couleur du
@@ -2007,10 +2012,15 @@ body.bf-heavy-open .sbar-podcast{
   /* minmax(0,1fr) : les colonnes peuvent rétrécir (un enfant à largeur fixe ne
      gonfle plus la piste). Cartes fluides : on annule le width:310px de base
      (déclaré plus bas dans la feuille) qui faisait déborder la grille à droite. */
-  .edl{ grid-template-columns:repeat(3,minmax(0,1fr)); gap:0 22px; }
-  .edl .edl-fig{ width:100%; }
-  .edl .edl-item:not(:first-child){ align-items:flex-start; }
+  .edl{ grid-template-columns:repeat(3,minmax(0,1fr)); gap:24px 22px; }
+  /* Toutes les cartes identiques sur tablette — annule les overrides mobile */
+  .edl .edl-item,
+  .edl .edl-item:first-child,
+  .edl .edl-item:not(:first-child){ align-items:flex-start; padding-top:0; border-top:none; }
+  .edl .edl-item > *,
   .edl .edl-item:not(:first-child) > *{ width:100%; }
+  .edl .edl-fig,
+  .edl .edl-item:first-child .edl-fig{ width:100%; aspect-ratio:310 / 174.38; border-radius:12px; }
 }
 .edl-item{
   display:flex; flex-direction:column; align-items:flex-start;
@@ -2064,6 +2074,11 @@ body.bf-heavy-open .sbar-podcast{
 }
 
 
+.edl-src-row{ display:flex; align-items:center; gap:7px; margin-top:6px; margin-bottom:2px; }
+.edl-src-dot{ flex:none; width:22px; height:22px; border-radius:50%; background:#333; display:flex; align-items:center; justify-content:center; overflow:hidden; box-shadow:0 0 0 2.5px rgba(255,255,255,0.75); }
+.edl-src-dot img{ width:100%; height:100%; object-fit:cover; padding:0; }
+.edl-src-name{ font-size:11px; font-weight:600; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; letter-spacing:.01em; }
+[data-theme="light"] .edl-src-dot{ box-shadow:0 0 0 2.5px rgba(0,0,0,0.18); }
 .edl-tags{ display:flex; flex-wrap:wrap; gap:4px; margin-top:8px; }
 .edl-tag{
   display:inline-flex; align-items:center;
@@ -2546,8 +2561,8 @@ body.bf-heavy-open .sbar-podcast{
 .art-card .hello-img-wrapper{ position:relative; border-radius:16px; overflow:hidden; aspect-ratio:16/9; background:#111; margin-bottom:0; }
 .art-card .hello-img-wrapper img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
 .art-card .art-source-row{ display:flex; align-items:center; gap:5px; margin:10px 0 4px; }
-.art-card .art-fav{ width:18px; height:18px; border-radius:22%; overflow:hidden; flex-shrink:0; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.2),0 0 0 .5px rgba(0,0,0,.06); display:flex; align-items:center; justify-content:center; }
-.art-card .art-fav img{ width:82%; height:82%; object-fit:contain; border-radius:0; display:block; }
+.art-card .art-fav{ width:18px; height:18px; border-radius:22%; overflow:hidden; flex-shrink:0; background:#fff; box-shadow:0 0 0 2px rgba(255,255,255,0.75); display:flex; align-items:center; justify-content:center; }
+.art-card .art-fav img{ width:100%; height:100%; object-fit:cover; display:block; }
 .art-card .art-source-name{ font-family:var(--font-inter); font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.04em; }
 .art-card .art-time{ font-family:var(--font-inter); font-size:11px; color:var(--text-muted); }
 .art-card .art-title{ font-family:var(--font-title); font-size:17px; font-weight:700; line-height:1.28; letter-spacing:-.01em; color:var(--text); display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
@@ -2688,19 +2703,63 @@ body.bf-heavy-open .sbar-podcast{
   border-bottom:1px solid var(--border); clip-path:inset(0 0 100% 0); transition:clip-path .46s cubic-bezier(.32,.72,0,1);
   max-height:calc(100vh - env(safe-area-inset-top,0px) - 96px); overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; }
 .fm.show{ clip-path:inset(0 0 0 0); }
+/* Mode clair : le crème sur crème manque de profondeur. On élève la surface,
+   on pose une ombre portée généreuse et on assombrit/floute l'overlay pour
+   retrouver l'effet immersif du mode sombre. */
+[data-theme="light"] .fm{ background:#FCFBFA; border-bottom:1px solid #E4DED6;
+  box-shadow:0 32px 64px -12px rgba(60,48,34,.22), 0 8px 24px -8px rgba(60,48,34,.12); }
+[data-theme="light"] .fm-ov{ background:rgba(40,32,22,.30); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); }
 .fm-inner{ max-width:1080px; margin:0 auto; padding:30px 26px calc(env(safe-area-inset-bottom,0px) + 120px); display:grid; grid-template-columns:1.2fr .9fr .9fr 1.4fr; gap:30px; }
-@media(max-width:820px){ .fm-inner{ grid-template-columns:1fr 1fr; gap:24px; padding:22px 18px calc(env(safe-area-inset-bottom,0px) + 120px); } .fm-prev{ grid-column:1 / -1; border-top:1px solid var(--border); padding-top:18px; } }
+@media(max-width:820px){
+  .fm-inner{ grid-template-columns:1fr 1fr; gap:24px; padding:22px 18px calc(env(safe-area-inset-bottom,0px) + 120px); }
+  /* Sur téléphone : « À la une » passe avant « Podcasts du sujet » (ordre visuel seulement,
+     via `order` — l'ordre dans le HTML et la disposition tablette/desktop ne changent pas). */
+  .fm-prev{ grid-column:1 / -1; border-top:1px solid var(--border); padding-top:18px; order:1; }
+  /* « Approfondir » (Podcasts du sujet) : sur téléphone, une demi-colonne écrase la grille
+     de pochettes. On lui donne toute la largeur, comme à « À la une ». */
+  .fm-deepen{ grid-column:1 / -1; border-top:1px solid var(--border); padding-top:18px; order:2; }
+  /* « À la une » : même gabarit d'image que les cartes secondaires de la vue magazine
+     (310×174, coins 12px) plutôt que le grand hero pleine largeur. */
+  .fm-feat-img{ width:310px; max-width:100%; aspect-ratio:310 / 174.38; border-radius:12px; }
+  /* « Approfondir » compact : moins d'espace avant les pochettes, pour voir les podcasts
+     liés d'un coup d'œil sans avoir à faire défiler. */
+  .fm-deepen .fm-head{ margin-bottom:10px; }
+  .fm-deepen > a{ margin-bottom:8px; }
+  .fm-pod-head{ margin:10px 0 8px; }
+  .fm-pod-grid{ gap:8px 10px; }
+  .fm-pod-sq{ width:52px; }
+  .fm-pod-sq-cover{ width:52px; height:52px; }
+  .fm-pod-sq-name{ max-width:52px; font-size:10px; }
+}
 .fm-head{ font-size:11px; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); margin:0 0 16px; opacity:.75; }
 .fm-big a{ display:flex; align-items:center; gap:8px; font-size:22px; font-weight:600; letter-spacing:-.02em; color:var(--text); text-decoration:none; margin:0 0 14px; line-height:1.12; cursor:pointer; transition:transform .15s ease; }
 .fm-big a:hover{ transform:translateX(2px); }
 .fm-sm a{ display:flex; align-items:center; gap:11px; font-size:14.5px; font-weight:500; color:var(--text-muted); text-decoration:none; margin:0 0 13px; cursor:pointer; transition:color .15s; }
 .fm-sm a:hover{ color:var(--text); }
-.fm-sm .bfr-dot{ width:24px; height:24px; font-size:11px; }
-.fm-feat{ display:block; text-decoration:none; color:inherit; cursor:pointer; border-radius:16px; overflow:hidden; background:var(--bg-elev); transition:transform .25s var(--spring,cubic-bezier(.32,.72,0,1)); }
+.fm-sm .bfr-dot{ width:29px; height:29px; font-size:11px; box-shadow:0 0 0 3px rgba(255,255,255,0.75); }
+.fm-pod-head{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin:20px 0 10px; font-size:11px; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); opacity:.75; }
+.fm-pod-addbtn{ flex:none; width:24px; height:24px; border-radius:50%; border:1px solid var(--border); background:transparent; color:var(--text-muted); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:transform .2s cubic-bezier(.34,1.56,.64,1), color .15s, border-color .15s; }
+.fm-pod-addbtn:hover{ color:var(--text); border-color:var(--text); transform:scale(1.12); }
+.fm-pod-addbtn:active{ transform:scale(.88); }
+.fm-pod-addbtn svg{ width:13px; height:13px; }
+.fm-pod-empty{ font-size:12.5px; color:var(--text-muted); line-height:1.45; opacity:.8; }
+/* Podcasts dans le méga-menu : tuiles carrées (même langage visuel que la page Podcasts),
+   pour ne jamais forcer la largeur de la colonne avec un nom trop long. */
+.fm-pod-grid{ display:flex; flex-wrap:wrap; gap:10px 12px; }
+.fm-pod-sq{ flex:none; width:62px; display:flex; flex-direction:column; align-items:center; gap:6px; text-decoration:none; color:var(--text); border:none; background:none; padding:0; cursor:pointer; text-align:center; }
+.fm-pod-sq-cover{ position:relative; flex:none; width:62px; height:62px; border-radius:14px; background:#111 center/cover no-repeat; box-shadow:0 2px 8px rgba(0,0,0,.25); }
+.fm-pod-sq:hover .fm-pod-sq-cover{ transform:scale(1.04); }
+.fm-pod-sq:active .fm-pod-sq-cover{ transform:scale(.95); }
+.fm-pod-sq-name{ font-size:10.5px; font-weight:600; line-height:1.25; color:var(--text-muted); max-width:62px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; transition:color .15s; }
+.fm-pod-sq:hover .fm-pod-sq-name{ color:var(--text); }
+.fm-pod-sq-new{ position:absolute; top:-4px; right:-4px; width:10px; height:10px; border-radius:50%; background:var(--eyebrow-dot,#F37338); box-shadow:0 0 8px var(--eyebrow-dot,#F37338); }
+.fm-pod-picker{ margin-top:8px; display:flex; flex-wrap:wrap; gap:10px 12px; padding-top:8px; border-top:1px solid var(--border); }
+.fm-pod-picker[hidden]{ display:none; }
+.fm-feat{ display:block; text-decoration:none; color:inherit; cursor:pointer; transition:transform .25s var(--spring,cubic-bezier(.32,.72,0,1)); }
 .fm-feat:hover{ transform:translateY(-2px); }
-.fm-feat-img{ aspect-ratio:16/9; background:#111 center/cover; overflow:hidden; }
+.fm-feat-img{ aspect-ratio:16/9; background:#111 center/cover; overflow:hidden; border-radius:16px; }
 .fm-feat-img img{ width:100%; height:100%; object-fit:cover; display:block; }
-.fm-feat-b{ padding:12px 14px 14px; }
+.fm-feat-b{ padding:10px 2px 14px; }
 .fm-feat-k{ font-size:10.5px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; color:var(--accent); }
 .fm-feat-t{ font-family:var(--font-title); font-size:18px; line-height:1.22; margin-top:6px; color:var(--text); }
 .fm-mini{ margin-top:14px; }
@@ -2733,9 +2792,10 @@ body.bf-heavy-open .sbar-podcast{
 .bfr-row{ display:flex; align-items:center; gap:13px; padding:11px 10px; border-radius:14px; cursor:pointer; transition:background .15s; }
 .bfr-row:active{ background:rgba(127,127,127,.12); }
 .bfr-row.sel{ background:rgba(127,127,127,.09); }
-.bfr-dot{ flex:none; width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:14px; background:var(--brand,#333); overflow:hidden; box-shadow:0 0 0 1px var(--border); }
-.bfr-dot img{ width:100%; height:100%; object-fit:contain; padding:6px; }
-.bfr-dot svg{ width:19px; height:19px; }
+.bfr-dot{ flex:none; width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:14px; background:var(--brand,#333); overflow:hidden; box-shadow:0 0 0 3px rgba(255,255,255,0.75); }
+.bfr-dot img{ width:100%; height:100%; object-fit:cover; padding:0; border-radius:50%; }
+.bfr-dot img.si-logo{ object-fit:contain; padding:22%; border-radius:0; }
+.bfr-dot svg{ width:50%; height:50%; }
 .bfr-rname{ flex:1; min-width:0; font-size:16px; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .bfr-star{ flex:none; width:34px; height:34px; border:none; background:none; cursor:pointer; color:var(--text-muted); display:flex; align-items:center; justify-content:center; -webkit-tap-highlight-color:transparent; transition:transform .12s ease; }
 .bfr-star:active{ transform:scale(.85); }
@@ -2959,7 +3019,7 @@ body.bf-heavy-open .sbar-podcast{
 .fav-thumb-empty{ width:72px; height:54px; flex-shrink:0; border-radius:10px; background:linear-gradient(135deg,rgba(10,132,255,.15),rgba(0,0,0,.3)); }
 .fav-meta{ flex:1; min-width:0; }
 .fav-source-row{ display:flex; align-items:center; gap:5px; margin-bottom:5px; }
-.fav-fav-img{ width:16px; height:16px; border-radius:50%; overflow:hidden; background:transparent; display:block; object-fit:contain; }
+.fav-fav-img{ width:16px; height:16px; border-radius:50%; overflow:hidden; background:transparent; display:block; object-fit:contain; box-shadow:0 0 0 1.5px rgba(255,255,255,0.75); }
 .fav-source{ font-family:var(--font-inter); font-size:10.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.04em; }
 .fav-time{ font-family:var(--font-inter); font-size:10.5px; color:var(--text-muted); margin-left:auto; }
 .fav-title{ font-family:var(--font-title); font-size:15px; font-weight:700; line-height:1.3; color:var(--text); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
@@ -3186,10 +3246,10 @@ body.bf-heavy-open .sbar-podcast{
 .browse-carousel::-webkit-scrollbar{ display:none; }
 .browse-folder-item.bf-open .browse-carousel{ opacity:1; transform:translateY(0); }
 
-/* Card — 85% visible, suivante qui dépasse */
+/* Card — un peu plus compacte qu'avant : ~70% visible, la suivante dépasse davantage */
 .browse-c-hero,
 .browse-c-card{
-  flex:0 0 85%; scroll-snap-align:start;
+  flex:0 0 70%; scroll-snap-align:start;
   border-radius:16px; overflow:hidden;
   background:rgba(255,255,255,.04);
   border:0.5px solid rgba(255,255,255,.07);
@@ -3218,12 +3278,12 @@ body.bf-heavy-open .sbar-podcast{
   background:linear-gradient(135deg,rgba(0,145,255,.08),#111);
 }
 
-/* Zone info — 17px top/bottom · 25.5px gauche/droite · min 109px */
+/* Zone info — un peu plus compacte */
 .browse-c-body{
   display:flex; flex-direction:column;
   justify-content:space-between; align-items:flex-start;
-  padding:17px 25.5px;
-  min-height:109px;
+  padding:13px 18px;
+  min-height:88px;
 }
 
 /* Title:margin — padding-bottom 8px */
@@ -3357,8 +3417,8 @@ body.bf-heavy-open .sbar-podcast{
 [data-theme="light"] .feed-page-back{ background:rgba(0,0,0,.06); }
 .feed-page-back svg{ width:17px; height:17px; }
 .feed-page-header{ display:flex; flex-direction:column; align-items:center; padding:32px 24px 24px; text-align:center; }
-.feed-page-fav{ position:relative; width:64px; height:64px; border-radius:50%; overflow:hidden; flex-shrink:0; background:transparent; border:1.5px solid rgba(255,255,255,.12); display:flex; align-items:center; justify-content:center; font-family:var(--font-inter); font-size:22px; font-weight:700; color:var(--text-muted); margin-bottom:16px; }
-[data-theme="light"] .feed-page-fav{ border-color:rgba(0,0,0,.1); }
+.feed-page-fav{ position:relative; width:64px; height:64px; border-radius:50%; overflow:hidden; flex-shrink:0; background:transparent; border:none; box-shadow:0 0 0 3px rgba(255,255,255,0.75); display:flex; align-items:center; justify-content:center; font-family:var(--font-inter); font-size:22px; font-weight:700; color:var(--text-muted); margin-bottom:16px; }
+[data-theme="light"] .feed-page-fav{ box-shadow:0 0 0 3px rgba(0,0,0,0.18); }
 .feed-page-fav img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
 .feed-page-title{ font-family:var(--font-inter); font-size:24px; font-weight:800; letter-spacing:-.03em; color:var(--text); text-align:center; }
 .feed-page-desc{ font-family:var(--font-inter); font-size:14px; font-weight:500; color:var(--text-muted); margin-top:8px; line-height:1.55; text-align:center; max-width:280px; }
@@ -3430,9 +3490,9 @@ body.bf-heavy-open .sbar-podcast{
   -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.8);
 }
-.art-modal-source-fav{ width:28px; height:28px; border-radius:20%; overflow:hidden; background:#fff; flex-shrink:0; box-shadow:0 1.5px 5px rgba(0,0,0,.22), 0 0 0 .5px rgba(0,0,0,.07); display:flex; align-items:center; justify-content:center; }
+.art-modal-source-fav{ width:28px; height:28px; border-radius:50%; overflow:hidden; background:#fff; flex-shrink:0; box-shadow:0 0 0 2.5px rgba(255,255,255,0.75); display:flex; align-items:center; justify-content:center; }
 .art-modal-source-fav img{ width:82%; height:82%; object-fit:contain; border-radius:12%; display:block; }
-[data-theme="light"] .art-modal-source-fav{ box-shadow:0 1px 4px rgba(0,0,0,.12), 0 0 0 .5px rgba(0,0,0,.08); }
+[data-theme="light"] .art-modal-source-fav{ box-shadow:0 0 0 2.5px rgba(0,0,0,0.18); }
 .art-modal-source-name{ font-family:var(--font-inter); font-size:12px; font-weight:700; color:var(--text); text-transform:uppercase; letter-spacing:.04em; }
 /* Reader content */
 .art-reader-section{ position:relative; z-index:1; padding:4px 0 20px; }
@@ -3513,7 +3573,7 @@ body.bf-heavy-open .sbar-podcast{
 [data-theme="light"] .essentiel-rank{ color:rgba(0,0,0,.07); }
 .essentiel-body{ flex:1; min-width:0; }
 .essentiel-source{ font-family:var(--font-inter); font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.06em; display:flex; align-items:center; gap:5px; margin-bottom:6px; }
-.essentiel-source img{ width:13px; height:13px; border-radius:50%; }
+.essentiel-source img{ width:13px; height:13px; border-radius:50%; box-shadow:0 0 0 1.5px rgba(255,255,255,0.75); }
 .essentiel-title{ font-family:var(--font-title); font-size:19px; font-weight:700; line-height:1.28; letter-spacing:-.012em; color:var(--text); margin-bottom:8px; }
 .essentiel-desc{ font-family:var(--font-inter); font-size:13.5px; line-height:1.6; color:var(--text-muted); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
 .essentiel-thumb{ width:82px; height:82px; flex-shrink:0; border-radius:12px; overflow:hidden; background:#111; align-self:center; }
@@ -4173,14 +4233,14 @@ body.focus-mode .focus-exit{ display:flex; }
 .sbar-srail-item{
   position:relative; z-index:1; flex:none;
   width:46px; height:46px; border-radius:50%;
-  border:1.5px solid rgba(255,255,255,.12);
+  border:none;
   background:rgba(255,255,255,.06);
-  box-shadow:inset 0 0.5px 0 rgba(255,255,255,.1);
+  box-shadow:0 0 0 3px rgba(255,255,255,0.75), inset 0 0.5px 0 rgba(255,255,255,.1);
   display:flex; align-items:center; justify-content:center;
   cursor:pointer; -webkit-tap-highlight-color:transparent;
   scroll-snap-align:center; overflow:visible;
   animation:srailItemIn .46s cubic-bezier(.34,1.56,.64,1) both;
-  transition:transform .3s cubic-bezier(.34,1.56,.64,1), border-color .2s ease;
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1);
   will-change:transform;
 }
 @media(hover:hover) and (pointer:fine){
@@ -4961,6 +5021,9 @@ body.focus-mode .focus-exit{ display:flex; }
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
       <span class="dc-topbar-title" id="podShowTopTitle">Émission</span>
+      <button class="pc-more" id="podShowMore" type="button" aria-label="Options du podcast" onclick="_plPodMenu(_plCurShowFeed, document.getElementById('podShowTopTitle').textContent)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="6" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="18" r="1.6"/></svg>
+      </button>
     </div>
     <div class="pc-body" id="podShowBody"></div>
   </div>
@@ -7792,8 +7855,9 @@ body.focus-mode .focus-exit{ display:flex; }
       <div class="dc-feed-row">
         <div class="dc-feed-logo" style="background:${feed.color}">
           ${initial}
-          <img src="https://icon.horse/icon/${feed.domain}"
+          <img src="${getFavicon('https://'+feed.domain)}"${_coAttr(getFavicon('https://'+feed.domain))}
                data-fb="https://www.google.com/s2/favicons?domain=${feed.domain}&sz=128"
+               onload="_applyDominant(this)"
                onerror="if(this.dataset.fb){this.src=this.dataset.fb;delete this.dataset.fb}else{this.remove()}"
                loading="lazy" alt="">
         </div>
@@ -8079,9 +8143,10 @@ body.focus-mode .focus-exit{ display:flex; }
     _plEpisodes().forEach(a=>{
       const k = a.source || a.feedUrl || a.link || '?';
       let o = map.get(k);
-      if(!o){ o = { source:a.source||k, art:a, count:0, latest:a.pubDate }; map.set(k,o); }
+      if(!o){ o = { source:a.source||k, art:a, count:0, latest:a.pubDate, hasNew:false }; map.set(k,o); }
       o.count++;
       if(!o.art.imageUrl && a.imageUrl) o.art = a;
+      if(window._RS && !window._RS.has(a.link)) o.hasNew = true;
     });
     return [...map.values()].sort((x,y)=> (new Date(y.latest||0)) - (new Date(x.latest||0)));
   }
@@ -8101,29 +8166,95 @@ body.focus-mode .focus-exit{ display:flex; }
     const esc=String(a.link||'').replace(/'/g,"\\'");
     return `<div class="pl-cont" data-link="${escAttr(a.link)}" onclick="_plPlay('${esc}')"><div class="pl-cont-art" style="${_plArtCss(a)}"></div><div class="pl-cont-body"><div class="pl-cont-title">${escHtml(a.title||'')}</div><div class="pl-cont-bar"><span class="pl-cont-prog" style="width:${pct}%"></span></div><div class="pl-cont-rem">${_plFmtRem((p.d||0)-(p.t||0))}</div></div></div>`;
   }
-  // « Nouveaux épisodes » — pochette de carrousel (épisode récent non lu). Unité = l'épisode.
-  function _plNewEpCard(a){
-    const esc=String(a.link||'').replace(/'/g,"\\'");
-    return `<button class="pc-cl-item" type="button" data-link="${escAttr(a.link)}" onclick="_plPlay('${esc}')">
-      <span class="pc-cl-cover" style="${_plArtCss(a)}"><span class="pc-cl-play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span></span>
-      <span class="pc-cl-title">${escHtml(a.title||'')}</span>
-      <span class="pc-cl-src">${escHtml(a.source||'')}</span>
-    </button>`;
+  // « Nouveaux épisodes » — liste verticale (épisode récent non lu). Unité = l'épisode.
+  // Si l'épisode n'a pas sa propre image, on retombe sur la pochette du podcast (showArtMap).
+  function _plShowArtMap(){
+    const map = new Map();
+    _plMyPods().forEach(o=>{ if(o.art && o.art.imageUrl) map.set(o.source, o.art.imageUrl); });
+    return map;
+  }
+  function _plNewEpCard(a, showArtMap){
+    const fallbackArt = (showArtMap && !a.imageUrl && showArtMap.get(a.source)) ? Object.assign({}, a, {imageUrl: showArtMap.get(a.source)}) : a;
+    return _plEpCard(fallbackArt, false);
   }
   // « Toutes vos émissions » — un show abonné (pochette + éditeur + dernier épisode + play). Unité = l'émission.
   function _plShowRow(o){
-    const a=o.art||{}, esc=String(a.link||'').replace(/'/g,"\\'"), feedEsc=String(a.feedUrl||'').replace(/'/g,"\\'");
+    const a=o.art||{}, feedEsc=String(a.feedUrl||'').replace(/'/g,"\\'"), nameEsc=String(o.source||'').replace(/'/g,"\\'");
     const meta = `${o.count} épisode${o.count>1?'s':''} · ${relTime(o.latest)}`;
     return `<div class="pc-show" role="button" tabindex="0" data-feed="${escAttr(a.feedUrl||'')}" onclick="_plOpenShow('${feedEsc}')">
-      <span class="pc-show-cover" style="${_plArtCss(a)}"></span>
+      <span class="pc-show-cover" style="${_plArtCss(a)}">${o.hasNew?'<span class="pc-show-new" title="Nouveaux épisodes"></span>':''}</span>
+      <button class="pc-show-more" type="button" aria-label="Options du podcast" onclick="event.stopPropagation();_plPodMenu('${feedEsc}','${nameEsc}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="6" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="18" r="1.6"/></svg></button>
       <span class="pc-show-meta">
         <span class="pc-show-pub">${escHtml(meta)}</span>
         <span class="pc-show-title">${escHtml(o.source||'')}</span>
-        <span class="pc-show-desc">${escHtml(a.title||'')}</span>
       </span>
-      <span class="pc-show-play" role="button" aria-label="Lire le dernier épisode" onclick="event.stopPropagation();_plPlay('${esc}')"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>
     </div>`;
   }
+  // Menu d'actions d'un podcast (renommer / se désabonner) — accessible depuis
+  // « Toutes vos émissions » et l'en-tête de la page émission.
+  function _plPodMenu(feedUrl, name){
+    if(!feedUrl || typeof bfSheetOpen!=='function') return;
+    const fEsc=String(feedUrl).replace(/'/g,"\\'"), nEsc=String(name||'').replace(/'/g,"\\'");
+    bfSheetOpen('Gérer le podcast',
+      `<div class="bf-sub" style="margin-bottom:14px">${escHtml(name||'')}</div>
+       <div class="feed-props-action">
+         <button class="feed-props-btn-unsub" type="button" onclick="bfSheetClose();setTimeout(()=>_plUnsubscribePodcast('${fEsc}'),420)">Se désabonner</button>
+         <button class="feed-props-btn-close" type="button" onclick="bfSheetClose();setTimeout(()=>_plRenamePodcast('${fEsc}','${nEsc}'),420)">Renommer</button>
+       </div>`);
+  }
+  window._plPodMenu=_plPodMenu;
+  // Corrige manuellement le nom d'un podcast (utile quand le flux RSS de l'hébergeur
+  // n'expose pas le vrai titre de l'émission). Verrouille le nom contre la correction auto.
+  function _plRenamePodcast(feedUrl, currentName){
+    if(!feedUrl) return;
+    const input = prompt('Renommer ce podcast :', currentName||'');
+    if(input===null) return;
+    const clean = input.trim().slice(0,80);
+    if(!clean) return;
+    try{
+      const m=JSON.parse(localStorage.getItem(_FMETA_KEY)||'{}');
+      m[feedUrl] = Object.assign({}, m[feedUrl], {name:clean, nameLocked:true});
+      if(window._safeSet) _safeSet(_FMETA_KEY, JSON.stringify(m)); else localStorage.setItem(_FMETA_KEY, JSON.stringify(m));
+      if(typeof _feedMeta!=='undefined') _feedMeta = m;
+    }catch(e){}
+    if(typeof _allArticles!=='undefined' && _allArticles) _allArticles.forEach(a=>{ if(a && a.feedUrl===feedUrl) a.source=clean; });
+    if(typeof _syncRSSFeeds==='function') _syncRSSFeeds();
+    if(typeof persist==='function') persist();
+    if(typeof render==='function') render();
+    const abo=document.getElementById('pcPaneAbonne');
+    if(abo){ abo.innerHTML=_plBuildAbos(); if(typeof _plSyncPlaying==='function') _plSyncPlaying(); }
+    const showPage=document.getElementById('podShowPage');
+    if(showPage && showPage.classList.contains('open') && _plCurShowFeed===feedUrl){
+      const tt=document.getElementById('podShowTopTitle'); if(tt) tt.textContent=clean;
+      const nm=document.querySelector('#podShowBody .pod-show-name'); if(nm) nm.textContent=clean;
+    }
+  }
+  window._plRenamePodcast=_plRenamePodcast;
+  // Désabonnement complet d'un podcast (retire le flux + ses épisodes en mémoire).
+  function _plUnsubscribePodcast(feedUrl){
+    if(!feedUrl || typeof folders==='undefined') return;
+    if(!confirm('Se désabonner de ce podcast ? Ses épisodes ne seront plus suivis.')) return;
+    folders.forEach(f=>{ const i=(f.feeds||[]).indexOf(feedUrl); if(i>-1) f.feeds.splice(i,1); });
+    try{
+      const m=JSON.parse(localStorage.getItem(_FMETA_KEY)||'{}'); delete m[feedUrl];
+      if(window._safeSet) _safeSet(_FMETA_KEY, JSON.stringify(m)); else localStorage.setItem(_FMETA_KEY, JSON.stringify(m));
+      if(typeof _feedMeta!=='undefined') _feedMeta = m;
+    }catch(e){}
+    try{
+      const sp=_subjPodsAll(); let changed=false;
+      Object.keys(sp).forEach(k=>{ const before=(sp[k]||[]).length; sp[k]=(sp[k]||[]).filter(p=>p.feedUrl!==feedUrl); if(sp[k].length!==before) changed=true; });
+      if(changed) _subjPodsSave(sp);
+    }catch(e){}
+    if(typeof _allArticles!=='undefined' && _allArticles) _allArticles = _allArticles.filter(a=>!(a && a.feedUrl===feedUrl));
+    if(typeof persist==='function') persist();
+    if(typeof render==='function') render();
+    if(typeof _syncRSSFeeds==='function') _syncRSSFeeds();
+    const showPage=document.getElementById('podShowPage');
+    if(showPage && showPage.classList.contains('open') && _plCurShowFeed===feedUrl && typeof closePodShow==='function') closePodShow();
+    const abo=document.getElementById('pcPaneAbonne');
+    if(abo){ abo.innerHTML=_plBuildAbos(); if(typeof _plSyncPlaying==='function') _plSyncPlaying(); }
+  }
+  window._plUnsubscribePodcast=_plUnsubscribePodcast;
   // Action « Tout marquer comme lu » de la section Nouveaux épisodes.
   window._plMarkAllEpRead=function(){
     const fresh=_plEpisodes().filter(a=> a && !(window._RS && window._RS.has(a.link)));
@@ -8133,8 +8264,10 @@ body.focus-mode .focus-exit{ display:flex; }
     if(abo){ abo.innerHTML=_plBuildAbos(); if(typeof _plSyncPlaying==='function') _plSyncPlaying(); }
   };
   // Page dédiée à une émission (show) — porte d'entrée depuis « Toutes vos émissions ».
+  let _plCurShowFeed = null;
   function _plOpenShow(feedUrl){
     if(!feedUrl) return;
+    _plCurShowFeed = feedUrl;
     const page=document.getElementById('podShowPage'), body=document.getElementById('podShowBody');
     if(!page||!body) return;
     let eps=(_allArticles||[]).filter(a=> a && a.audioUrl && (a.feedUrl||'')===feedUrl);
@@ -8170,7 +8303,8 @@ body.focus-mode .focus-exit{ display:flex; }
   const PC_CATS=[['Actualités','actualité'],['Société','société'],['Culture','culture'],['Histoire','histoire'],['Sciences','science'],['Sport','sport'],['Économie','économie'],['Humour','humour'],['True crime','true crime'],['Politique','politique']];
   function _plBuildDiscover(){
     const chips=PC_CATS.map(([label,term],i)=>`<button class="pl-disc-chip${i===0?' sel':''}" type="button" data-term="${escAttr(term)}" onclick="_plDiscoverCat(this)">${escHtml(label)}</button>`).join('');
-    return `<div class="pl-disc-search">
+    return `<div class="pl-disc-wrap">
+      <div class="pl-disc-search">
         <svg class="pl-disc-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
         <input type="search" id="plDiscInput" placeholder="Rechercher un podcast…" autocapitalize="none" autocorrect="off" enterkeyhint="search" onkeydown="if(event.key==='Enter'){event.preventDefault();_plDiscoverSearch();}">
       </div>
@@ -8178,7 +8312,7 @@ body.focus-mode .focus-exit{ display:flex; }
       <div class="pl-disc-chips">${chips}</div>
       <div id="plDiscResults" class="pl-disc-results"><div class="pl-disc-msg">Chargement…</div>
         <div class="pl-soon"><div class="pl-soon-t">Découvrir</div><div class="pl-soon-d">Cherchez un podcast par nom ou par thème — annuaire Apple Podcasts (gratuit). Tendances et catégories suivront.</div></div>
-      </div>`;
+      </div></div>`;
   }
   // Recherche dans l'annuaire Apple Podcasts (iTunes Search, gratuit). Direct (CORS) + proxies en secours.
   async function _plItunes(term, opt){
@@ -8346,7 +8480,8 @@ body.focus-mode .focus-exit{ display:flex; }
     const fresh = eps.filter(a=> a && !(window._RS && window._RS.has(a.link))).slice(0,16);
     if(fresh.length){
       html += `<div class="pc-sec-head"${cont.length?' style="margin-top:8px"':''}><span class="pc-sec-t">Nouveaux épisodes</span><button class="pc-sec-act" type="button" onclick="_plMarkAllEpRead()">Tout marquer comme lu</button></div>`;
-      html += `<div class="pc-carousel">` + fresh.map(_plNewEpCard).join('') + `</div>`;
+      const showArt = _plShowArtMap();
+      html += `<div class="pc-ep-rows">` + fresh.slice(0,3).map(a=>_plNewEpCard(a, showArt)).join('') + `</div>`;
     }
     // Toutes vos émissions — tous les podcasts abonnés (les shows), en liste verticale.
     const pods=_plMyPods();
@@ -8472,13 +8607,21 @@ body.focus-mode .focus-exit{ display:flex; }
   // Domaines où le logo de marque Clearbit déçoit (couverture FR imparfaite / mauvais recadrage) :
   // on y force le favicon DuckDuckGo, fiable. À compléter au fil des sources signalées.
   const _LOGO_FORCE_DDG = new Set([
-    // 'exemple.fr',
   ]);
+  // Domaines dont icon.horse renvoie un mauvais logo → on force le favicon Google (vrai favicon de marque, fiable).
+  const _LOGO_FORCE_GOOGLE = new Set([
+    'lequipe.fr','bloomberg.com','reuters.com','eurosport.fr','techcrunch.com','01net.com',
+    'technologyreview.com','huffingtonpost.fr','sciencesetavenir.fr','ycombinator.com',
+  ]);
+  function _rootDomain(d){ const p=String(d||'').split('.'); return p.length>2 ? p.slice(-2).join('.') : d; }
   function getFavicon(url){
-    const d = getFaviconDomain(url);
+    const d = getFaviconDomain(url), root=_rootDomain(d);
+    if(_LOGO_FORCE_GOOGLE.has(root)) return 'https://www.google.com/s2/favicons?domain='+root+'&sz=128';
     if(_LOGO_FORCE_DDG.has(d)) return 'https://icons.duckduckgo.com/ip3/'+d+'.ico';
-    return 'https://logo.clearbit.com/'+d+'?size=128';
+    return 'https://icon.horse/icon/'+d;
   }
+  // crossorigin UNIQUEMENT pour icon.horse (qui supporte CORS) : ailleurs il casserait le chargement.
+  function _coAttr(src){ return (src && src.indexOf('icon.horse')>=0) ? ' crossorigin="anonymous"' : ''; }
   // Repli logo + récupération d'images bloquées. Écouteur global en phase capture : il agit
   // AVANT le onerror inline de chaque <img>, donc sans toucher au rendu de chaque vue.
   //  1) logo Clearbit absent          → repli sur le favicon DuckDuckGo (domaine lu dans l'URL) ;
@@ -8716,6 +8859,21 @@ body.focus-mode .focus-exit{ display:flex; }
 
   // ── 8. Mapper items bruts → articles Briefeed ─────────────────
   function _parseItems(items, feed){
+    // Corrige automatiquement le nom d'un podcast dès que le flux RSS révèle son vrai
+    // titre (à l'ajout via URL brute, seul le nom d'hôte du flux est connu). Ne touche
+    // jamais un nom que l'utilisateur a renommé à la main (nameLocked).
+    if(feed && feed._discoveredTitle && feed.url){
+      try{
+        const m=JSON.parse(localStorage.getItem(_FMETA_KEY)||'{}');
+        const cur=m[feed.url];
+        if(cur && cur.podcast && !cur.nameLocked && cur.name !== feed._discoveredTitle){
+          cur.name = feed._discoveredTitle;
+          if(window._safeSet) _safeSet(_FMETA_KEY, JSON.stringify(m)); else localStorage.setItem(_FMETA_KEY, JSON.stringify(m));
+          feed.name = feed._discoveredTitle;
+          _feedMeta = m;
+        }
+      }catch(e){}
+    }
     const now = Date.now(); let latestKnown = 0;
     items.forEach(it=>{ try{const d=new Date(it.pubDate||0);if(!isNaN(d)&&d.getTime()>0&&d.getTime()<=now+60000)latestKnown=Math.max(latestKnown,d.getTime());}catch(e){} });
     if(!latestKnown) latestKnown = now - 3600000;
@@ -8806,10 +8964,12 @@ body.focus-mode .focus-exit{ display:flex; }
       const doc = new DOMParser().parseFromString(txt,'text/xml');
       if(doc.querySelector('parsererror')) return null;
       const items = parseXML(doc);
+      if(items.length){ try{ const ct=doc.querySelector('channel > title, feed > title'); const t=(ct&&ct.textContent||'').trim(); if(t) feed._discoveredTitle=t; }catch(e){} }
       return items.length ? _parseItems(items.slice(0,MAX), feed) : null;
     };
     const parseJson = d => {
       if(!d) return null;
+      try{ const t=(d.feed&&d.feed.title)?String(d.feed.title).trim():''; if(t) feed._discoveredTitle=t; }catch(e){}
       if(d.status==='ok' && d.items?.length) return _parseItems(d.items.slice(0,MAX), feed);
       if(Array.isArray(d.items) && d.items.length) return _parseItems(d.items.slice(0,MAX), feed);
       return null;
@@ -9461,6 +9621,12 @@ body.focus-mode .focus-exit{ display:flex; }
     [/playstation|\bps5\b/, 'playstation.com', '#003791', 'playstation'],
     [/samsung/, 'samsung.com', '#1428A0', 'samsung'],
     [/\bbbc\b/, 'bbc.com', '#B80000', 'bbc'],
+    [/huffpost|huffington/, 'huffpost.com', '#00A651', 'huffpost'],
+    [/france.?info|francetvinfo|franceinfo/, 'francetvinfo.fr', '#d20000', ''],
+    [/reuters/, 'reuters.com', '#FF8000', ''],
+    [/le.?monde\b/, 'lemonde.fr', '#0a3c6e', ''],
+    [/nytimes|new.?york.?times/, 'nytimes.com', '#1a1a2e', ''],
+    [/rfi\b/, 'rfi.fr', '#e2001a', ''],
   ];
   function _catBrand(name){
     const n=(name||'').toLowerCase();
@@ -9468,13 +9634,41 @@ body.focus-mode .focus-exit{ display:flex; }
     return null;
   }
   // Logo haute résolution (Clearbit 256 → net en retina ; repli DuckDuckGo via l'écouteur global).
-  function _hybLogo(url){ const d=getFaviconDomain(url); return 'https://logo.clearbit.com/'+d+'?size=256'; }
+  function _hybLogo(url){ const d=getFaviconDomain(url), root=_rootDomain(d); if(_LOGO_FORCE_GOOGLE.has(root)) return 'https://www.google.com/s2/favicons?domain='+root+'&sz=128'; if(_LOGO_FORCE_DDG.has(d)) return 'https://icons.duckduckgo.com/ip3/'+d+'.ico'; return 'https://icon.horse/icon/'+d; }
   // <img> d'un logo de marque : SimpleIcons (SVG blanc, ultra net) en priorité,
   // repli Clearbit couleur si le slug n'existe pas, puis l'écouteur global (DDG).
+  function _applyDominant(img){
+    try{
+      const S=24,c=document.createElement('canvas');c.width=c.height=S;
+      const ctx=c.getContext('2d');ctx.drawImage(img,0,0,S,S);
+      const d=ctx.getImageData(0,0,S,S).data;
+      const at=(x,y)=>{ const i=(y*S+x)*4; return [d[i],d[i+1],d[i+2],d[i+3]]; };
+      const el=img.closest('.bfr-dot,.edl-src-dot,.art-modal-source-fav,.dc-feed-logo')||img.parentElement;
+      if(!el) return;
+      /* On échantillonne le BORD de l'image = le vrai fond du logo (qui contraste
+         avec le logo par définition). On NE prend PAS la couleur dominante, sinon
+         le fond prend la couleur du logo et le cache (ex: Libération rouge). */
+      let rSum=0,gSum=0,bSum=0,opaque=0,clear=0;
+      for(let x=0;x<S;x++){ for(const y of [0,1,S-2,S-1]){ const [r,g,b,a]=at(x,y); if(a<70){clear++;continue;} rSum+=r;gSum+=g;bSum+=b;opaque++; } }
+      for(let y=2;y<S-2;y++){ for(const x of [0,1,S-2,S-1]){ const [r,g,b,a]=at(x,y); if(a<70){clear++;continue;} rSum+=r;gSum+=g;bSum+=b;opaque++; } }
+      /* Logo transparent (pas de fond) → on lit la clarté du logo au centre et on
+         choisit un fond contrastant : logo clair → fond sombre, logo foncé → fond clair. */
+      if(clear > opaque){
+        let lr=0,lg=0,lb=0,ln=0;
+        for(let y=6;y<S-6;y++)for(let x=6;x<S-6;x++){ const [r,g,b,a]=at(x,y); if(a<70)continue; lr+=r;lg+=g;lb+=b;ln++; }
+        const lum = ln ? (lr+lg+lb)/(3*ln) : 128;
+        el.style.background = lum>140 ? '#1a1a1a' : '#f5f3f0';
+        return;
+      }
+      if(!opaque) return;
+      const r=Math.round(rSum/opaque),g=Math.round(gSum/opaque),b=Math.round(bSum/opaque);
+      el.style.background=`rgb(${r},${g},${b})`;
+    }catch(e){}
+  }
   function _brandImg(cb){
-    const cl='https://logo.clearbit.com/'+cb.domain+'?size=256';
-    if(cb.si) return `<img src="https://cdn.simpleicons.org/${cb.si}/ffffff" alt="" onerror="this.onerror=null;this.src='${cl}'">`;
-    return `<img src="${cl}" alt="" onerror="this.style.display='none'">`;
+    const ih='https://icon.horse/icon/'+cb.domain;
+    if(cb.si) return `<img class="si-logo" src="https://cdn.simpleicons.org/${cb.si}/ffffff" alt="" onerror="this.onerror=null;this.src='${ih}';this.className='cl-logo';this.setAttribute('crossorigin','anonymous')">`;
+    return `<img class="cl-logo" crossorigin="anonymous" src="${ih}" alt="" onload="_applyDominant(this)" onerror="this.style.display='none'">`;
   }
   // Catégorie sans marque : pastille couleur + initiale (façon Mastercard : typo
   // forte sur aplat de couleur). Couleur déterministe par nom, palette premium.
@@ -9557,7 +9751,7 @@ body.focus-mode .focus-exit{ display:flex; }
         ? `<span class="bfr-dot" style="background:${cb.color}">${_brandImg(cb)}</span>`
         : `<span class="bfr-dot" style="background:${_catColor(id)}">${escHtml(_catInitial(id))}</span>`;
     }
-    return `<span class="bfr-dot" style="background:${brand}"><img src="${escAttr(_hybLogo(id))}" alt="" onerror="this.style.opacity='.3'"></span>`;
+    return `<span class="bfr-dot" style="background:${brand}"><img class="cl-logo"${_coAttr(_hybLogo(id))} src="${escAttr(_hybLogo(id))}" alt="" onload="_applyDominant(this)" onerror="this.style.opacity='.3'"></span>`;
   }
   function _libRow(type,id,name,brand,isFavRow){
     const fav=_isFav(type,id);
@@ -9673,6 +9867,36 @@ body.focus-mode .focus-exit{ display:flex; }
     const m=document.getElementById('fmMenu'), o=document.getElementById('fmOv');
     if(m) m.classList.remove('show'); if(o) o.classList.remove('show'); _fmFolder=null;
   }
+  // ── « Podcasts du sujet » : podcasts liés par l'utilisateur à une catégorie ──
+  function _subjPodsAll(){ try{ return JSON.parse(localStorage.getItem('bf_subj_pods')||'{}'); }catch(e){ return {}; } }
+  function _subjPodsSave(o){ try{ localStorage.setItem('bf_subj_pods', JSON.stringify(o)); }catch(e){} }
+  function _subjSeenAll(){ try{ return JSON.parse(localStorage.getItem('bf_subj_seen')||'{}'); }catch(e){ return {}; } }
+  function _subjSeenSave(o){ try{ localStorage.setItem('bf_subj_seen', JSON.stringify(o)); }catch(e){} }
+  function _subjPodLink(folder, feedUrl, name){
+    const all=_subjPodsAll(), list=all[folder]||[];
+    if(!list.some(p=>p.feedUrl===feedUrl)){ list.push({feedUrl, name}); all[folder]=list; _subjPodsSave(all); }
+  }
+  function _subjPodUnlink(folder, feedUrl){
+    const all=_subjPodsAll(); all[folder]=(all[folder]||[]).filter(p=>p.feedUrl!==feedUrl); _subjPodsSave(all);
+  }
+  // Construit la liste à afficher : pochette + nom + drapeau « nouveaux épisodes »
+  // (épisode plus récent que la dernière ouverture de ce podcast depuis cette section).
+  function _subjPodList(folder){
+    const stored=_subjPodsAll()[folder]||[], pods=(typeof _plMyPods==='function'?_plMyPods():[]), seen=_subjSeenAll();
+    return stored.map(s=>{
+      const match=pods.find(p=> p.art && (p.art.feedUrl===s.feedUrl || p.source===s.name));
+      const art=match?match.art:null, latest=match?match.latest:null;
+      const coverCss=art?_plArtCss(art):'background:linear-gradient(135deg,rgba(10,132,255,.3),rgba(12,242,230,.15))';
+      const isNew = latest ? (new Date(latest).getTime() > (seen[s.feedUrl]||0)) : false;
+      return { feedUrl:s.feedUrl, name:s.name, coverCss, isNew };
+    });
+  }
+  function _subjPodOpen(feedUrl){
+    const seen=_subjSeenAll(); seen[feedUrl]=Date.now(); _subjSeenSave(seen);
+    if(typeof openPodListen==='function') openPodListen();
+    setTimeout(()=>{ if(typeof _plOpenShow==='function') _plOpenShow(feedUrl); }, 80);
+  }
+  function _fmRefresh(folder){ _fmFolder=null; _folderMenuOpen(folder); }
   function _folderMenuOpen(folder){
     const inner=document.getElementById('fmInner'); if(!inner) return;
     if(_fmFolder===folder){ _folderMenuClose(); return; }   // re-tap = ferme
@@ -9692,9 +9916,14 @@ body.focus-mode .focus-exit{ display:flex; }
       + (srcs.length ? srcs.map(s=>`<a data-act="src" data-url="${escAttr(s.url)}">${_libDot('src',s.url,_hybBrand(s.url))}<span>${escHtml(s.name)}</span></a>`).join('')
                      : '<div style="color:var(--text-muted);font-size:13px">Aucune source</div>')
       + '</div>';
-    h+='<div class="fm-col fm-sm"><div class="fm-head">Approfondir</div>'
-      + '<a data-act="podcast">Podcasts du sujet</a>'
+    const _subjList=_subjPodList(folder);
+    h+='<div class="fm-col fm-sm fm-deepen"><div class="fm-head">Approfondir</div>'
       + '<a data-act="mode" data-mode="all">Le brief du jour</a>'
+      + '<div class="fm-pod-head"><span>Podcasts du sujet</span><button class="fm-pod-addbtn" data-act="subjadd" type="button" aria-label="Ajouter un podcast"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></div>'
+      + (_subjList.length
+          ? '<div class="fm-pod-grid">' + _subjList.map(p=>`<a class="fm-pod-sq" data-act="subjpod" data-feed="${escAttr(p.feedUrl)}"><span class="fm-pod-sq-cover" style="${p.coverCss}">${p.isNew?'<span class="fm-pod-sq-new" title="Nouveaux épisodes"></span>':''}</span><span class="fm-pod-sq-name">${escHtml(p.name)}</span></a>`).join('') + '</div>'
+          : '<div class="fm-pod-empty">Aucun podcast lié. Touchez + pour en ajouter.</div>')
+      + '<div class="fm-pod-picker" data-picker hidden></div>'
       + '</div>';
     if(top){
       h+='<div class="fm-col fm-prev"><div class="fm-head">À la une dans '+lab+'</div>'
@@ -9706,8 +9935,20 @@ body.focus-mode .focus-exit{ display:flex; }
         + '</div></div>';
     }
     inner.innerHTML=h;
-    inner.querySelectorAll('a[data-act]').forEach(el=>el.addEventListener('click',(e)=>{
+    inner.querySelectorAll('[data-act]').forEach(el=>el.addEventListener('click',(e)=>{
       e.preventDefault(); const act=el.dataset.act;
+      if(act==='subjadd'){
+        const picker=inner.querySelector('[data-picker]'); if(!picker) return;
+        if(!picker.hidden){ picker.hidden=true; return; }
+        const linked=new Set((_subjPodsAll()[folder]||[]).map(p=>p.feedUrl));
+        const avail=(typeof _plMyPods==='function'?_plMyPods():[]).filter(p=>p.art&&p.art.feedUrl&&!linked.has(p.art.feedUrl));
+        picker.innerHTML = avail.length
+          ? avail.map(p=>`<button type="button" class="fm-pod-sq" data-feed="${escAttr(p.art.feedUrl)}" data-name="${escAttr(p.source)}"><span class="fm-pod-sq-cover" style="${_plArtCss(p.art)}"></span><span class="fm-pod-sq-name">${escHtml(p.source)}</span></button>`).join('')
+          : '<div class="fm-pod-empty">Abonnez-vous à des podcasts dans l\'onglet Podcasts, puis liez-les ici.</div>';
+        picker.querySelectorAll('.fm-pod-sq').forEach(b=>b.addEventListener('click',(ev)=>{ ev.preventDefault(); ev.stopPropagation(); _subjPodLink(folder,b.dataset.feed,b.dataset.name); _fmRefresh(folder); }));
+        picker.hidden=false; return;
+      }
+      if(act==='subjpod'){ _subjPodOpen(el.dataset.feed); _folderMenuClose(); return; }
       if(act==='mode') _applyFolderFilter(folder, el.dataset.mode, null);
       else if(act==='src') _applyFolderFilter(folder, null, el.dataset.url);
       else if(act==='art'){ if(typeof _openCtxArt==='function') _openCtxArt(el.dataset.link); }
@@ -11761,8 +12002,14 @@ body.focus-mode .focus-exit{ display:flex; }
     const tags = kws.length
       ? `<div class="edl-tags">${kws.map(t=>`<span class="edl-tag">${escHtml(t)}</span>`).join('')}</div>`
       : '';
+    const fav  = typeof getFavicon === 'function' ? getFavicon(a.feedUrl||a.link||'') : '';
+    const srcRow = a.source ? `<div class="edl-src-row">
+      <span class="edl-src-dot"><img src="${escAttr(fav)}"${_coAttr(fav)} alt="" onload="_applyDominant(this)" onerror="this.style.opacity='.3'"></span>
+      <span class="edl-src-name">${escHtml(a.source)}</span>
+    </div>` : '';
     return `<div class="edl-item reveal${isRead?' is-read':''}" data-edl-idx="${i}" onclick="_openEditionArt(${i})">
       ${fig}
+      ${srcRow}
       <div class="edl-title">${escHtml(a.title||'')}</div>
       ${sub ? `<div class="edl-sub">${escHtml(sub.slice(0,150))}</div>` : ''}
       <div class="edl-date">${escHtml(_seqDateStr(a.pubDate))}${_groupMeta(a)}</div>
@@ -12894,19 +13141,20 @@ body.focus-mode .focus-exit{ display:flex; }
     .pl-soon-t{ font-family:var(--font-dm); font-size:24px; color:var(--text); margin-bottom:8px; }
     .pl-soon-d{ font-family:var(--font-inter); font-size:13.5px; line-height:1.55; max-width:290px; margin:0 auto 18px; }
     /* Découvrir — recherche annuaire Apple Podcasts */
-    .pl-disc-search{ position:relative; margin:14px 2px 16px; }
+    .pl-disc-wrap{ padding:0 20px; }
+    .pl-disc-search{ position:relative; margin:14px 0 16px; }
     .pl-disc-search input{ width:100%; box-sizing:border-box; height:44px; padding:0 14px 0 42px; border-radius:var(--r-field); border:1px solid var(--border); background:var(--surface-card); color:var(--text); font-family:var(--font-inter); font-size:15px; outline:none; -webkit-appearance:none; }
     .pl-disc-search input::placeholder{ color:var(--text-muted); }
     .pl-disc-ic{ position:absolute; left:14px; top:50%; transform:translateY(-50%); width:18px; height:18px; color:var(--text-muted); pointer-events:none; }
-    .pl-disc-chips{ display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; margin:0 0 18px; padding:2px; }
+    .pl-disc-chips{ display:flex; flex-wrap:wrap; justify-content:center; gap:8px; margin:0 0 18px; padding:2px; }
     .pl-disc-chips::-webkit-scrollbar{ display:none; }
     .pl-disc-chip{ flex:none; border:1px solid var(--border); background:var(--surface-card); color:var(--text-muted); font-family:var(--font-inter); font-size:13px; font-weight:700; padding:8px 15px; border-radius:999px; cursor:pointer; white-space:nowrap; -webkit-tap-highlight-color:transparent; transition:transform .12s ease; }
     .pl-disc-chip:active{ transform:scale(.95); }
     .pl-disc-chip.sel{ background:var(--text); color:var(--bg); border-color:var(--text); }
     .pl-disc-msg{ text-align:center; color:var(--text-muted); font-family:var(--font-inter); font-size:14px; padding:40px 20px; line-height:1.5; }
-    .pl-it-grid{ display:flex; flex-direction:column; gap:15px; }
-    .pl-it{ display:flex; align-items:center; gap:13px; }
-    .pl-it-art{ width:60px; height:60px; flex:none; border-radius:13px; background:#111 center/cover no-repeat; box-shadow:var(--shadow-soft); }
+    .pl-it-grid{ display:flex; flex-direction:column; gap:15px; padding:0; }
+    .pl-it{ display:flex; align-items:center; gap:14px; padding:4px 8px; border-radius:16px; }
+    .pl-it-art{ width:90px; height:90px; flex:none; border-radius:16px; background:#111 center/cover no-repeat; box-shadow:var(--shadow-soft); }
     .pl-it-info{ flex:1; min-width:0; }
     .pl-it-name{ font-family:var(--font-inter); font-size:14.5px; font-weight:700; color:var(--text); line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
     .pl-it-by{ font-family:var(--font-inter); font-size:12px; color:var(--text-muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -12944,10 +13192,13 @@ body.focus-mode .focus-exit{ display:flex; }
     .pc-sec-t{ font-family:var(--font-inter); font-size:17px; font-weight:800; letter-spacing:-.02em; color:var(--text); }
     .pc-sec-act{ flex:none; border:none; background:none; color:var(--text-muted); font-family:var(--font-inter); font-size:12.5px; font-weight:600; cursor:pointer; padding:4px 0; -webkit-tap-highlight-color:transparent; transition:color .2s ease, transform .12s ease; }
     .pc-sec-act:active{ transform:scale(.94); color:var(--text); }
-    /* Carrousel « Nouveaux épisodes » */
-    .pc-carousel{ display:flex; gap:16px; overflow-x:auto; scroll-snap-type:x proximity; scrollbar-width:none; margin:0 -16px 26px; padding:4px 16px 6px; }
+    /* Liste « Nouveaux épisodes » (verticale, réutilise les rangées .pl-ep) */
+    .pc-ep-rows{ display:flex; flex-direction:column; margin:0 0 26px; }
+    /* Carrousel « Nouveaux épisodes » (ancien, conservé inutilisé) */
+    .pc-carousel{ display:flex; gap:0; overflow-x:auto; scroll-snap-type:x proximity; scrollbar-width:none; margin:0 -16px 26px; padding:4px 16px 6px; }
     .pc-carousel::-webkit-scrollbar{ display:none; }
-    .pc-cl-item{ flex:none; width:144px; scroll-snap-align:start; display:flex; flex-direction:column; gap:11px; border:none; background:none; padding:0; cursor:pointer; text-align:left; -webkit-tap-highlight-color:transparent; animation:pcRise .5s cubic-bezier(.34,1.56,.64,1) both; }
+    .pc-cl-item{ flex:none; width:144px; scroll-snap-align:start; display:flex; flex-direction:column; gap:11px; border:none; background:none; padding:0 16px 0 0; cursor:pointer; text-align:left; -webkit-tap-highlight-color:transparent; position:relative; }
+    .pc-cl-item + .pc-cl-item{ padding-left:16px; border-left:1px solid rgba(255,255,255,.10); } animation:pcRise .5s cubic-bezier(.34,1.56,.64,1) both; }
     .pc-cl-cover{ position:relative; width:144px; height:144px; border-radius:var(--r-card); background:#111 center/cover no-repeat; box-shadow:var(--shadow-soft); transition:transform .26s cubic-bezier(.34,1.56,.64,1); }
     .pc-cl-item:active .pc-cl-cover{ transform:scale(.95); }
     .pc-cl-play{ position:absolute; right:9px; bottom:9px; width:34px; height:34px; border-radius:50%; background:rgba(0,0,0,.6); display:flex; align-items:center; justify-content:center; opacity:0; transform:translateY(6px) scale(.8); transition:opacity .24s ease, transform .3s cubic-bezier(.34,1.56,.64,1); }
@@ -12956,18 +13207,27 @@ body.focus-mode .focus-exit{ display:flex; }
     .pc-cl-title{ font-family:var(--font-inter); font-size:13.5px; font-weight:700; line-height:1.3; color:var(--text); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
     .pc-cl-src{ font-family:var(--font-inter); font-size:11.5px; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     /* Liste « Toutes vos émissions » */
-    .pc-shows{ display:flex; flex-direction:column; }
-    .pc-show{ display:flex; align-items:center; gap:16px; width:100%; border:none; background:none; text-align:left; padding:14px 8px; border-radius:18px; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:background .2s ease, transform .12s ease; animation:pcRise .5s cubic-bezier(.34,1.56,.64,1) both; }
-    .pc-show:active{ transform:scale(.985); background:var(--surface-card); }
-    @media (hover:hover){ .pc-show:hover{ background:var(--surface-card); } }
-    .pc-show-cover{ flex:none; width:64px; height:64px; border-radius:14px; background:#111 center/cover no-repeat; box-shadow:var(--shadow-soft); }
-    .pc-show-meta{ flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; }
-    .pc-show-pub{ font-family:var(--font-inter); font-size:10.5px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .pc-show-title{ font-family:var(--font-inter); font-size:15.5px; font-weight:700; letter-spacing:-.01em; color:var(--text); line-height:1.25; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .pc-show-desc{ font-family:var(--font-inter); font-size:12.5px; color:var(--text-muted); line-height:1.35; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; }
-    .pc-show-play{ flex:none; width:40px; height:40px; border-radius:50%; background:var(--text); display:flex; align-items:center; justify-content:center; transition:transform .14s ease; }
-    .pc-show:active .pc-show-play{ transform:scale(.9); }
-    .pc-show-play svg{ width:16px; height:16px; color:var(--bg); margin-left:1px; }
+    /* Carousel « Toutes vos émissions » */
+    .pc-shows{ display:flex; gap:16px; overflow-x:auto; scroll-snap-type:x mandatory; scrollbar-width:none; margin:0 -16px 26px; padding:4px 16px 8px; }
+    .pc-shows::-webkit-scrollbar{ display:none; }
+    .pc-show{ flex:none; width:160px; scroll-snap-align:start; display:flex; flex-direction:column; align-items:flex-start; gap:9px; border:none; background:none!important; padding:0; cursor:pointer; text-align:left; -webkit-tap-highlight-color:transparent; transition:transform .26s cubic-bezier(.34,1.56,.64,1); position:relative; animation:pcRise .5s cubic-bezier(.34,1.56,.64,1) both; }
+    .pc-show:active{ transform:scale(.94); }
+    @media (hover:hover){ .pc-show:hover .pc-show-cover{ transform:scale(1.03); } }
+    .pc-show-cover{ flex:none; width:160px; height:160px; border-radius:20px; background:#111 center/cover no-repeat; box-shadow:0 8px 28px rgba(0,0,0,.45); transition:transform .26s cubic-bezier(.34,1.56,.64,1); }
+    .pc-show-meta{ width:100%; display:flex; flex-direction:column; gap:2px; padding:0 2px; }
+    .pc-show-pub{ font-family:var(--font-inter); font-size:10px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .pc-show-title{ font-family:var(--font-inter); font-size:13.5px; font-weight:700; letter-spacing:-.01em; color:var(--text); line-height:1.25; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+    .pc-show-desc{ display:none; }
+    .pc-show-play{ position:absolute; top:10px; right:10px; width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,.92); display:flex; align-items:center; justify-content:center; transition:transform .14s ease; box-shadow:0 2px 8px rgba(0,0,0,.35); }
+    .pc-show:active .pc-show-play{ transform:scale(.88); }
+    .pc-show-play svg{ width:13px; height:13px; color:#000; margin-left:2px; }
+    /* Pastille « nouvel épisode » + bouton options, sur la pochette de la carte émission */
+    .pc-show-new{ position:absolute; top:10px; left:10px; width:10px; height:10px; border-radius:50%; background:var(--eyebrow-dot,#F37338); box-shadow:0 0 8px var(--eyebrow-dot,#F37338); }
+    .pc-show-more{ position:absolute; top:8px; right:8px; width:30px; height:30px; border:none; border-radius:50%; background:rgba(0,0,0,.55); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; opacity:0; transform:scale(.85); transition:opacity .18s, transform .18s; }
+    .pc-show-more svg{ width:14px; height:14px; }
+    @media (hover:hover){ .pc-show:hover .pc-show-more{ opacity:1; transform:none; } }
+    @media (hover:none){ .pc-show-more{ opacity:1; transform:none; } }
+    .pc-show-more:active{ transform:scale(.85)!important; opacity:1; }
     @keyframes pcRise{ from{ opacity:0; transform:translateY(14px); } to{ opacity:1; transform:none; } }
     @media (prefers-reduced-motion:reduce){ .pc-cl-item, .pc-show{ animation:none; } .pc-cl-cover, .pc-cl-play, .pc-show, .pc-show-play, .pc-sec-act{ transition:none; } }
     /* Grand titre éditorial (mix Apple Podcasts + Briefeed) */
@@ -13001,7 +13261,7 @@ body.focus-mode .focus-exit{ display:flex; }
     .pl-empty-d{ font-family:var(--font-inter); font-size:13.5px; line-height:1.5; max-width:280px; margin:0 auto 18px; }
     .pl-empty-btn{ border:none; border-radius:999px; background:var(--accent); color:#fff; font-family:var(--font-inter); font-size:14px; font-weight:700; padding:11px 22px; cursor:pointer; }
     /* Barre d'ajout de flux RSS de podcast — bouton + déroulant */
-    .pl-addrss{ margin:2px 2px 20px; }
+    .pl-addrss{ margin:2px 0 20px; display:flex; justify-content:center; }
     .pl-addrss-toggle{ display:inline-flex; align-items:center; gap:7px; border:1px solid var(--border); background:var(--bg-elev); color:var(--text); font-family:var(--font-inter); font-size:13px; font-weight:700; padding:9px 16px; border-radius:999px; cursor:pointer; transition:transform .12s ease, border-color .2s ease; }
     .pl-addrss-toggle:active{ transform:scale(.95); }
     .pl-addrss-toggle svg{ width:15px; height:15px; stroke-width:2.4; transition:transform .32s cubic-bezier(.34,1.4,.64,1); }
@@ -13752,7 +14012,7 @@ body.focus-mode .focus-exit{ display:flex; }
   .bp-row-src{ display:flex; align-items:center; gap:7px; font-family:var(--font-inter);
     font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase;
     letter-spacing:.03em; margin-bottom:5px; }
-  .bp-row-src img{ width:15px; height:15px; border-radius:50%; flex:none; }
+  .bp-row-src img{ width:15px; height:15px; border-radius:50%; flex:none; box-shadow:0 0 0 1.5px rgba(255,255,255,0.75); }
   .bp-row-ti{ font-family:var(--font-title); font-size:16px; font-weight:700; line-height:1.28;
     color:var(--text); letter-spacing:-.01em;
     display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
