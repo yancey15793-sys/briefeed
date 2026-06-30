@@ -9525,26 +9525,18 @@ body.focus-mode .focus-exit{ display:flex; }
 
   function _renderHybRail(){
     const rail = document.getElementById('bfrRail'); if(!rail) return;
-    _bfFavSeed();
-    const { order, map } = _smartCatMap();
-    const validSrc = u => Object.keys(map).some(c=>map[c].some(s=>s.url===u));
-    const favs = _bfFavs.filter(f=> f.t==='cat' ? order.includes(f.id) : validSrc(f.id));
-    const sig = favs.map(f=>f.t+':'+f.id).join(',');
+    // Le rail = TES dossiers (catégories), synchronisés avec la sidebar.
+    // Plus de favoris figés ni de sources parasites : un dossier créé apparaît,
+    // un dossier supprimé disparaît, automatiquement.
+    const { order } = _smartCatMap();
+    const sig = order.join('|');
     if(rail.dataset.sig !== sig){
       const prevLeft = rail.scrollLeft; rail.innerHTML='';
-      favs.forEach(f=>{
-        const b=document.createElement('button'); b.className='bfr-item'; b.type='button';
-        if(f.t==='cat'){
-          b.dataset.type='cat'; b.dataset.cat=f.id; b.title=f.id;
-          b.classList.add('has-menu');
-          b.innerHTML=`${escHtml(_catLabel(f.id))}<svg class="bfr-chev" viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l4 4 4-4"/></svg>`;
-          b.addEventListener('click', ()=>{ _folderMenuOpen(f.id); });
-        } else {
-          const nm=_srcName(f.id);
-          b.dataset.type='src'; b.dataset.url=f.id; b.title=nm;
-          b.textContent=nm;
-          b.addEventListener('click', ()=>{ _smartPickSource(f.id); });
-        }
+      order.forEach(c=>{
+        const b=document.createElement('button'); b.className='bfr-item has-menu'; b.type='button';
+        b.dataset.type='cat'; b.dataset.cat=c; b.title=c;
+        b.innerHTML=`${escHtml(_catLabel(c))}<svg class="bfr-chev" viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l4 4 4-4"/></svg>`;
+        b.addEventListener('click', ()=>{ _folderMenuOpen(c); });
         rail.appendChild(b);
       });
       rail.dataset.sig = sig; rail.scrollLeft = prevLeft;
@@ -9552,10 +9544,7 @@ body.focus-mode .focus-exit{ display:flex; }
     const homeActive = !_smartCat && !_railFilterUrl;
     const allBtn=document.getElementById('bfrAll'); if(allBtn) allBtn.classList.toggle('on', homeActive);
     rail.querySelectorAll('.bfr-item').forEach(b=>{
-      const on = b.dataset.type==='cat'
-        ? (!!_smartCat && b.dataset.cat===_smartCat && !_railFilterUrl)
-        : (!!_railFilterUrl && b.dataset.url===_railFilterUrl);
-      b.classList.toggle('on', on);
+      b.classList.toggle('on', !!_smartCat && b.dataset.cat===_smartCat);
     });
   }
   // — Bibliothèque (bottom sheet) : section « Vos favoris » (réordonnable/retirable
