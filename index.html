@@ -2008,6 +2008,7 @@ body.bf-heavy-open .sbar-podcast{
      (fixé à 341px pour l'iPhone) et .row le re-centre (justify-content:center),
      donc marges gauche/droite égales. min(100%,980px) ne déborde jamais. */
   body[data-view="editions"] .column,
+  body[data-view="mosaic"]   .column,
   body[data-view="grille"]   .column{ width:min(100%, 980px); }
   /* minmax(0,1fr) : les colonnes peuvent rétrécir (un enfant à largeur fixe ne
      gonfle plus la piste). Cartes fluides : on annule le width:310px de base
@@ -2710,6 +2711,9 @@ body.bf-heavy-open .sbar-podcast{
   box-shadow:0 32px 64px -12px rgba(60,48,34,.22), 0 8px 24px -8px rgba(60,48,34,.12); }
 [data-theme="light"] .fm-ov{ background:rgba(40,32,22,.30); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); }
 .fm-inner{ max-width:1080px; margin:0 auto; padding:30px 26px calc(env(safe-area-inset-bottom,0px) + 120px); display:grid; grid-template-columns:1.2fr .9fr .9fr 1.4fr; gap:30px; }
+/* Les pistes grid ont un min-width implicite = max-content de leur contenu ; sans ce
+   reset, un carrousel large (la « À la une ») gonfle sa colonne et écrase les autres. */
+.fm-inner > div{ min-width:0; }
 @media(max-width:820px){
   .fm-inner{ grid-template-columns:1fr 1fr; gap:24px; padding:22px 18px calc(env(safe-area-inset-bottom,0px) + 120px); }
   /* Sur téléphone : « À la une » passe avant « Podcasts du sujet » (ordre visuel seulement,
@@ -2718,9 +2722,6 @@ body.bf-heavy-open .sbar-podcast{
   /* « Approfondir » (Podcasts du sujet) : sur téléphone, une demi-colonne écrase la grille
      de pochettes. On lui donne toute la largeur, comme à « À la une ». */
   .fm-deepen{ grid-column:1 / -1; border-top:1px solid var(--border); padding-top:18px; order:2; }
-  /* « À la une » : même gabarit d'image que les cartes secondaires de la vue magazine
-     (310×174, coins 12px) plutôt que le grand hero pleine largeur. */
-  .fm-feat-img{ width:310px; max-width:100%; aspect-ratio:310 / 174.38; border-radius:12px; }
   /* « Approfondir » compact : moins d'espace avant les pochettes, pour voir les podcasts
      liés d'un coup d'œil sans avoir à faire défiler. */
   .fm-deepen .fm-head{ margin-bottom:10px; }
@@ -2755,17 +2756,201 @@ body.bf-heavy-open .sbar-podcast{
 .fm-pod-sq-new{ position:absolute; top:-4px; right:-4px; width:10px; height:10px; border-radius:50%; background:var(--eyebrow-dot,#F37338); box-shadow:0 0 8px var(--eyebrow-dot,#F37338); }
 .fm-pod-picker{ margin-top:8px; display:flex; flex-wrap:wrap; gap:10px 12px; padding-top:8px; border-top:1px solid var(--border); }
 .fm-pod-picker[hidden]{ display:none; }
-.fm-feat{ display:block; text-decoration:none; color:inherit; cursor:pointer; transition:transform .25s var(--spring,cubic-bezier(.32,.72,0,1)); }
-.fm-feat:hover{ transform:translateY(-2px); }
-.fm-feat-img{ aspect-ratio:16/9; background:#111 center/cover; overflow:hidden; border-radius:16px; }
-.fm-feat-img img{ width:100%; height:100%; object-fit:cover; display:block; }
-.fm-feat-b{ padding:10px 2px 14px; }
-.fm-feat-k{ font-size:10.5px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; color:var(--accent); }
-.fm-feat-t{ font-family:var(--font-title); font-size:18px; line-height:1.22; margin-top:6px; color:var(--text); }
-.fm-mini{ margin-top:14px; }
-.fm-mini a{ display:block; text-decoration:none; padding:9px 0; border-top:1px solid var(--border); cursor:pointer; }
-.fm-mt{ display:block; font-size:13.5px; font-weight:600; color:var(--text); line-height:1.3; }
-.fm-ms{ display:block; font-size:11.5px; color:var(--text-muted); margin-top:2px; }
+/* « À la une » : carrousel des 5 articles les plus récents — cartes magazine
+   élégantes (image arrondie + source + titre, sans conteneur/boîte), avec un
+   effet dynamique au glissement (la carte centrée grandit, les voisines reculent). */
+/* « À la une » (méga-menu) : briefing des 3 à 5 articles les plus scorés du dossier
+   (tendances × perspicacité). Liste éditoriale sobre, alignée sur le langage du menu :
+   rang, source (+ multi-sources), titre — sans boîte ni image. */
+.fm-feat-list{ display:flex; flex-direction:column; }
+.fm-deepen .fm-feat-list{ margin-bottom:16px; padding-bottom:4px; border-bottom:1px solid var(--border); }
+.fm-deepen .fm-feat-item{ padding:11px 0; }
+.fm-deepen .fm-pod-head{ margin-top:2px; }
+.fm-feat-item{ display:flex; align-items:flex-start; gap:13px; text-decoration:none; color:var(--text);
+  padding:13px 0; border-top:1px solid var(--border); cursor:pointer; transition:transform .15s ease; }
+.fm-feat-item:first-child{ border-top:none; padding-top:2px; }
+.fm-feat-item:hover{ transform:translateX(2px); }
+.fm-feat-item:active{ opacity:.6; }
+.fm-feat-rank{ flex:none; width:18px; padding-top:3px; font-family:var(--font-inter); font-size:12px; font-weight:700;
+  line-height:1; color:var(--text-muted); opacity:.55; font-variant-numeric:tabular-nums; }
+.fm-feat-item:first-child .fm-feat-rank{ color:var(--eyebrow-dot,#F37338); opacity:1; }
+.fm-feat-body{ display:flex; flex-direction:column; gap:4px; min-width:0; }
+.fm-feat-src{ font-family:var(--font-inter); font-size:10.5px; font-weight:700; letter-spacing:.07em;
+  text-transform:uppercase; color:var(--text-muted); }
+.fm-feat-src b{ color:var(--eyebrow-dot,#F37338); font-weight:700; }
+.fm-feat-tt{ font-size:16px; font-weight:600; line-height:1.28; letter-spacing:-.01em; color:var(--text);
+  display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+@media(min-width:768px){ .fm-feat-tt{ font-size:16.5px; } }
+.fm-feat-carousel{
+  display:flex; gap:16px;
+  overflow-x:auto; overflow-y:visible;
+  scrollbar-width:none; -ms-overflow-style:none; -webkit-overflow-scrolling:touch;
+  /* Pas de scroll-snap-type CSS ici : "mandatory" entre en conflit avec le scrollLeft
+     piloté en JS (le navigateur réannule chaque set programmatique pour re-snapper),
+     ce qui bloquait tout glissement. Le recentrage est géré entièrement par le JS. */
+  margin:4px -26px 0; padding:8px 13% 14px;
+  cursor:grab; touch-action:pan-y; position:relative;
+}
+.fm-feat-carousel::-webkit-scrollbar{ display:none; }
+.fm-feat-carousel.is-dragging{ cursor:grabbing; }
+.fm-feat-card{
+  flex:0 0 74%;
+  display:flex; flex-direction:column; gap:6px;
+  cursor:pointer; -webkit-tap-highlight-color:transparent;
+  transform-origin:center bottom; will-change:transform, opacity;
+}
+.fm-feat-card .edl-fig{ width:100%; margin:0; box-shadow:0 10px 30px -6px rgba(0,0,0,.5); }
+.fm-feat-card .edl-fig img{ transition:transform .6s cubic-bezier(.22,1,.36,1); }
+.fm-feat-card:active .edl-fig img{ transform:scale(1.04); }
+.fm-feat-card .edl-src-row{ margin-top:9px; margin-bottom:0; }
+.fm-feat-card .edl-title{ font-size:14.5px; line-height:1.3; -webkit-line-clamp:2; margin-top:1px; }
+@media(max-width:820px){
+  .fm-feat-carousel{ margin:4px -18px 0; padding:8px 11% 14px; }
+  .fm-feat-card{ flex:0 0 78%; }
+  .fm-feat-card .edl-title{ font-size:16px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   VUE MOSAÏQUE — rythme éditorial répété (Mosaic 4, amélioré) :
+   bande 2-égal · bande vedette pleine largeur · bande large+étroit
+   ═══════════════════════════════════════════════════════════════ */
+.mos{ display:flex; flex-direction:column; gap:14px; padding:6px 0 90px; }
+.mos-band{ display:grid; gap:12px; }
+.mos-band.two{ grid-template-columns:1fr 1fr; }
+.mos-band.full{ grid-template-columns:1fr; }
+.mos-band.wide{ grid-template-columns:1.5fr 1fr; align-items:start; }
+
+.mos-card{ display:flex; flex-direction:column; cursor:pointer; -webkit-tap-highlight-color:transparent; min-width:0; }
+.mos-card:active{ transform:scale(.985); transition:transform .12s ease; }
+.mos-card.is-read{ opacity:.45; }
+.mos-fig{ width:100%; border-radius:12px; overflow:hidden; background:rgba(255,255,255,.05); aspect-ratio:4/3; }
+[data-theme="light"] .mos-fig{ background:rgba(0,0,0,.04); }
+.mos-fig img{ width:100%; height:100%; object-fit:cover; display:block; transition:transform .55s cubic-bezier(.22,1,.36,1); }
+@media(hover:hover){ .mos-card:hover .mos-fig img{ transform:scale(1.05); } }
+.mos-src-row{ display:flex; align-items:center; gap:7px; margin-top:8px; }
+.mos-src-dot{ flex:none; width:20px; height:20px; border-radius:50%; background:#333; overflow:hidden; display:flex; align-items:center; justify-content:center; box-shadow:0 0 0 2px rgba(255,255,255,.08); }
+.mos-src-dot img{ width:100%; height:100%; object-fit:cover; }
+.mos-src-name{ font-size:11px; font-weight:600; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; letter-spacing:.01em; }
+.mos-time{ margin-left:auto; font-size:10.5px; color:var(--text-muted); flex:none; padding-left:6px; }
+.mos-title{ font-family:var(--font-inter); font-weight:600; line-height:1.28; color:var(--text); margin:5px 0 0;
+  font-size:14.5px; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+/* Réglages par variante */
+.mos-eq .mos-fig{ aspect-ratio:4/3; }
+.mos-wide .mos-fig{ aspect-ratio:16/10; }
+.mos-narrow .mos-fig{ aspect-ratio:1/1; }
+.mos-narrow .mos-title{ font-size:13px; }
+
+/* Carte vedette pleine largeur — image + dégradé + titre superposés */
+.mos-feature{ position:relative; border-radius:16px; overflow:hidden; }
+.mos-feature-media{ position:relative; width:100%; aspect-ratio:16/9; background:#111 center/cover no-repeat; display:flex; align-items:flex-end; }
+.mos-feature-scrim{ position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,.85) 0%, rgba(0,0,0,.34) 46%, rgba(0,0,0,0) 76%); }
+.mos-feature-body{ position:relative; z-index:1; padding:16px 16px 15px; width:100%; }
+.mos-feature .mos-src-row{ margin-top:0; margin-bottom:7px; }
+.mos-feature .mos-src-name{ color:rgba(255,255,255,.94); }
+.mos-feature .mos-time{ color:rgba(255,255,255,.72); }
+.mos-feature .mos-src-dot{ box-shadow:0 0 0 2px rgba(255,255,255,.28); }
+.mos-feature-title{ font-family:var(--font-title,var(--font-inter)); font-weight:700; color:#fff; margin:0;
+  font-size:19px; line-height:1.22; letter-spacing:-.01em; text-shadow:0 1px 14px rgba(0,0,0,.45);
+  display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+
+@media(min-width:768px){
+  .mos{ gap:24px; }
+  .mos-band{ gap:22px; }
+  .mos-title{ font-size:15.5px; -webkit-line-clamp:2; }
+  .mos-feature-media{ aspect-ratio:21/9; }
+  .mos-feature-title{ font-size:27px; -webkit-line-clamp:2; }
+  .mos-feature-body{ padding:26px 28px 24px; max-width:72%; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CARROUSEL 3D (cylindre piloté au défilement) — « À la une » + pochettes
+   ═══════════════════════════════════════════════════════════════ */
+.c3d{ position:relative; width:100%; }
+.c3d-stage{ position:relative; width:100%; height:240px; perspective:var(--c3d-persp,1100px); overflow:hidden;
+  -webkit-mask:linear-gradient(90deg,transparent 0,#000 19%,#000 81%,transparent 100%);
+          mask:linear-gradient(90deg,transparent 0,#000 19%,#000 81%,transparent 100%); }
+.c3d-ring{ position:absolute; top:50%; left:50%; width:var(--c3d-w,180px); height:var(--c3d-h,180px);
+  transform-style:preserve-3d; pointer-events:none; will-change:transform;
+  transform:translate(-50%,-50%) rotateY(var(--c3d-rot,0deg)); }
+.c3d-cell{ position:absolute; inset:0; border-radius:16px; overflow:hidden; background:#111 center/cover no-repeat;
+  -webkit-backface-visibility:hidden; backface-visibility:hidden;
+  transform:rotateY(calc(var(--i) * var(--c3d-angle,52deg))) translateZ(var(--c3d-radius,240px));
+  box-shadow:0 16px 42px -12px rgba(0,0,0,.62);
+  filter:brightness(.6) saturate(.92); transition:filter .35s ease, box-shadow .35s ease; }
+[data-theme="light"] .c3d-cell{ background:#ddd center/cover no-repeat; box-shadow:0 14px 34px -12px rgba(60,48,34,.34); }
+.c3d-cell.is-active{ filter:none; box-shadow:0 26px 60px -14px rgba(0,0,0,.72); }
+/* Effet d'arr\u00eat : petite but\u00e9e d'\u00e9chelle quand la vignette s'accroche au centre */
+@keyframes c3dSettle{ 0%{ transform:rotateY(calc(var(--i) * var(--c3d-angle,52deg))) translateZ(var(--c3d-radius,240px)) scale(.93); } 55%{ transform:rotateY(calc(var(--i) * var(--c3d-angle,52deg))) translateZ(var(--c3d-radius,240px)) scale(1.035); } 100%{ transform:rotateY(calc(var(--i) * var(--c3d-angle,52deg))) translateZ(var(--c3d-radius,240px)) scale(1); } }
+.c3d-cell.c3d-settle{ animation:c3dSettle .34s cubic-bezier(.34,1.56,.64,1); }
+.c3d-cell img{ width:100%; height:100%; object-fit:cover; display:block; }
+.c3d-cell-new{ position:absolute; top:10px; left:10px; width:11px; height:11px; border-radius:50%; z-index:2; background:var(--eyebrow-dot,#F37338); box-shadow:0 0 8px var(--eyebrow-dot,#F37338); }
+.c3d-track{ position:absolute; inset:0; z-index:3; display:flex; overflow-x:auto; overflow-y:hidden; scrollbar-width:none;
+  -webkit-overflow-scrolling:touch; touch-action:pan-x; cursor:grab; scroll-snap-type:x mandatory;
+  padding-inline:calc((100% - var(--c3d-slot,60%))/2); }
+.c3d-track:active{ cursor:grabbing; }
+.c3d-track::-webkit-scrollbar{ display:none; }
+.c3d-slot{ flex:0 0 var(--c3d-slot,60%); height:100%; scroll-snap-align:center; scroll-snap-stop:always; }
+@keyframes c3dLockImg{ 0%{ transform:scale(1); } 45%{ transform:scale(1.055); } 100%{ transform:scale(1); } }
+.c3d-cell.c3d-lock img{ animation:c3dLockImg .34s cubic-bezier(.34,1.4,.64,1); }
+.c3d-cap{ text-align:center; padding:13px 12px 0; min-height:46px; }
+.c3d-cap-sub{ font-family:var(--font-inter); font-size:10.5px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.c3d-cap-title{ font-family:var(--font-inter); font-size:15px; font-weight:700; letter-spacing:-.01em; color:var(--text); line-height:1.3; margin-top:4px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.c3d-dots{ display:flex; justify-content:center; gap:6px; margin-top:11px; flex-wrap:wrap; }
+.c3d-dot{ width:6px; height:6px; border-radius:50%; background:var(--text-muted); opacity:.3; transition:opacity .2s ease, transform .2s ease; }
+.c3d-dot.on{ opacity:1; transform:scale(1.35); background:var(--text); }
+
+/* ═══════════════════════════════════════════════════════════════
+   HERO ACCUEIL — briefing du jour + carte vedette (article le + récent)
+   Repris du concept fourni, réécrit aux tokens Briefeed. Responsive :
+   empilé sur mobile, carte scindée (texte / image) sur iPad & desktop.
+   ═══════════════════════════════════════════════════════════════ */
+#bfHomeHero{ margin:2px 0 32px; }
+#bfHomeHero[hidden]{ display:none; }
+.bf-hero{ display:flex; flex-direction:column; gap:22px; }
+.bf-brief{ display:flex; flex-direction:column; gap:10px; }
+.bf-brief-eyebrow{ display:flex; align-items:center; gap:8px; font-family:var(--font-inter); font-size:11.5px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--text-muted); }
+.bf-brief-eyebrow::before{ content:""; width:6px; height:6px; border-radius:50%; background:var(--eyebrow-dot,#F37338); box-shadow:0 0 10px var(--eyebrow-dot,#F37338); }
+.bf-brief-list{ display:flex; flex-direction:column; }
+.bf-brief-item{ display:flex; align-items:flex-start; gap:12px; width:100%; text-align:left; background:none; border:none; border-top:1px solid var(--border); padding:11px 2px; cursor:pointer; font-family:var(--font-inter); -webkit-tap-highlight-color:transparent; transition:opacity .15s; }
+.bf-brief-item:first-child{ border-top:none; }
+.bf-brief-item:active{ opacity:.55; }
+.bf-brief-dot{ flex:none; width:6px; height:6px; margin-top:8px; border-radius:50%; background:var(--accent,#0a84ff); box-shadow:0 0 8px rgba(10,132,255,.4); }
+.bf-brief-tx{ font-size:16px; font-weight:500; line-height:1.4; letter-spacing:-.01em; color:var(--text); }
+.bf-greet{ display:flex; flex-direction:column; align-items:center; gap:3px; text-align:center; padding-top:16px; border-top:1px solid var(--border); }
+.bf-greet-hi{ font-family:var(--font-inter); font-size:32px; font-weight:700; letter-spacing:-.02em; color:var(--text); }
+.bf-greet-date{ font-family:var(--font-inter); font-size:13px; color:var(--text-muted); letter-spacing:.02em; }
+.bf-feat{ display:grid; grid-template-columns:1fr; background:var(--surface-card,#1C1A18); border:1px solid var(--border); border-radius:var(--r-card,24px); overflow:hidden; cursor:pointer; box-shadow:var(--shadow-soft,0 20px 48px rgba(0,0,0,.4)); -webkit-tap-highlight-color:transparent; transition:transform .3s cubic-bezier(.16,1,.3,1); }
+.bf-feat:active{ transform:scale(.99); }
+.bf-feat-media{ order:-1; width:100%; aspect-ratio:16/9; background:#111 center/cover no-repeat; }
+.bf-feat-body{ display:flex; flex-direction:column; gap:9px; padding:20px 22px 24px; }
+.bf-feat-src{ font-family:var(--font-inter); font-size:12px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--accent,#0a84ff); }
+.bf-feat-title{ font-family:var(--font-title,var(--font-inter)); font-size:22px; font-weight:700; line-height:1.24; letter-spacing:-.015em; color:var(--text); }
+.bf-feat-desc{ font-family:var(--font-inter); font-size:15px; line-height:1.5; color:var(--text-muted); display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+.bf-feat-meta{ font-family:var(--font-inter); font-size:12.5px; color:var(--text-muted); margin-top:2px; }
+.bf-feat-link{ font-family:var(--font-inter); font-size:15px; font-weight:600; color:var(--accent,#0a84ff); margin-top:6px; }
+@media(min-width:768px){
+  .bf-hero{ gap:28px; }
+  .bf-feat{ grid-template-columns:1fr 1.15fr; align-items:stretch; border-radius:var(--r-container,40px); }
+  .bf-feat-media{ order:0; height:100%; aspect-ratio:auto; min-height:340px; }
+  .bf-feat-body{ padding:40px; justify-content:center; gap:12px; }
+  .bf-feat-title{ font-size:29px; }
+  .bf-brief-tx{ font-size:17px; }
+  .bf-greet-hi{ font-size:40px; }
+}
+
+/* Chevrons de navigation article → article (iPad / desktop) + transition */
+.art-nav-chevron{ position:fixed; top:50%; transform:translateY(-50%); width:46px; height:46px; border-radius:50%; border:.5px solid var(--lg-border,rgba(255,255,255,.18)); background:rgba(28,26,24,.6); -webkit-backdrop-filter:blur(18px) saturate(1.6); backdrop-filter:blur(18px) saturate(1.6); color:var(--text); display:none; align-items:center; justify-content:center; cursor:pointer; z-index:6; box-shadow:0 6px 20px rgba(0,0,0,.4); transition:transform .2s ease, background .2s ease; }
+[data-theme="light"] .art-nav-chevron{ background:rgba(252,251,250,.7); }
+.art-nav-chevron.show{ display:flex; }
+.art-nav-chevron:active{ transform:translateY(-50%) scale(.9); }
+.art-nav-chevron.prev{ left:16px; }
+.art-nav-chevron.next{ right:16px; }
+.art-nav-chevron svg{ width:22px; height:22px; }
+@media(hover:hover){ .art-nav-chevron:hover{ background:rgba(28,26,24,.85); transform:translateY(-50%) scale(1.06); } }
+#artModalBody.art-slide-left{ animation:artSlideL .34s cubic-bezier(.22,1,.36,1); }
+#artModalBody.art-slide-right{ animation:artSlideR .34s cubic-bezier(.22,1,.36,1); }
+@keyframes artSlideL{ from{ opacity:.25; transform:translateX(44px); } to{ opacity:1; transform:none; } }
+@keyframes artSlideR{ from{ opacity:.25; transform:translateX(-44px); } to{ opacity:1; transform:none; } }
 
 .bfr-ov{ position:fixed; inset:0; z-index:600; background:rgba(0,0,0,.5); opacity:0; visibility:hidden; transition:opacity .35s, visibility .35s; -webkit-backdrop-filter:blur(2px); backdrop-filter:blur(2px); }
 .bfr-ov.show{ opacity:1; visibility:visible; }
@@ -3545,14 +3730,112 @@ body.bf-heavy-open .sbar-podcast{
 [data-theme="light"] .art-reader-spinner{ border-color:rgba(0,0,0,.1); border-top-color:#0a84ff; }
 .art-reader-partial{ display:inline-flex; align-items:center; gap:5px; font-family:var(--font-inter); font-size:11px; color:var(--text-muted); background:rgba(255,255,255,.05); padding:5px 10px; border-radius:999px; margin-bottom:14px; }
 .art-reader-partial-spin{ width:9px; height:9px; border-radius:50%; border:1.5px solid rgba(255,255,255,.12); border-top-color:#0a84ff; animation:af-spin .8s linear infinite; }
-/* Toolbar bas */
-.art-modal-toolbar{ position:sticky; bottom:0; left:0; right:0; z-index:5; display:flex; align-items:center; justify-content:flex-end; padding:10px 20px 14px; background:linear-gradient(transparent,var(--bg) 40%); }
-/* artModal — entrée animée */
-/* Entrée du modal : monte depuis le bas avec spring naturel */
-#artModal{ transform:translateY(48px) scale(.98); opacity:0; transition:transform .48s cubic-bezier(.16,1,.3,1), opacity .3s ease; }
-#artModal.art-open{ transform:translateY(0) scale(1); opacity:1; }
-/* Sortie : rapide et directe vers le bas */
-#artModal.art-closing{ transform:translateY(64px) scale(.97); opacity:0; transition:transform .28s cubic-bezier(.4,0,1,1), opacity .2s ease; }
+/* ═══════════ MODAL ARTICLE — coque contenue (compact → expansion élastique) ═══════════
+   Ouverture en carte compacte centrée (squelette « tile » Apple : image + titre + source
+   + amorce) puis, au clic sur « Lire la suite », expansion à ressort vers un panneau plus
+   large — sans jamais couvrir toute la page — avec lecture au scroll interne, partage et
+   navigation interne en swipe à puces (façon Mastercard). */
+#artModal{ align-items:center; justify-content:center; padding:22px; }
+.art-scrim{ position:absolute; inset:0; z-index:0; background:rgba(0,0,0,.55);
+  -webkit-backdrop-filter:blur(9px) saturate(1.3); backdrop-filter:blur(9px) saturate(1.3);
+  opacity:0; transition:opacity .42s ease; }
+#artModal.art-open .art-scrim{ opacity:1; }
+#artModal.art-closing .art-scrim{ opacity:0; }
+[data-theme="light"] .art-scrim{ background:rgba(30,28,26,.42); }
+
+.art-shell{ position:relative; z-index:1; display:flex; flex-direction:column;
+  width:100%; max-width:430px; max-height:min(84vh,560px);
+  background:var(--surface-card,#1C1A18); border:1px solid var(--border);
+  border-radius:28px; overflow:hidden; box-shadow:0 34px 90px rgba(0,0,0,.62), 0 4px 18px rgba(0,0,0,.4);
+  transform:translateY(42px) scale(.965); opacity:0;
+  transition:transform .5s cubic-bezier(.16,1,.3,1), opacity .34s ease,
+    max-width .64s cubic-bezier(.34,1.56,.64,1), max-height .64s cubic-bezier(.34,1.56,.64,1),
+    border-radius .5s cubic-bezier(.34,1.56,.64,1); }
+#artModal.art-open .art-shell{ transform:none; opacity:1; }
+#artModal.art-closing .art-shell{ transform:translateY(46px) scale(.965); opacity:0;
+  transition:transform .28s cubic-bezier(.4,0,1,1), opacity .2s ease; }
+.art-shell.is-expanded{ max-width:min(760px,94vw); max-height:min(92vh,940px); border-radius:32px; }
+
+/* Boutons flottants (fermer / enregistrer) — glass, superposés au hero */
+.art-float-btn{ position:absolute; top:13px; z-index:6; width:34px; height:34px; border:.5px solid rgba(255,255,255,.2);
+  border-radius:50%; background:rgba(20,20,19,.5); -webkit-backdrop-filter:blur(16px) saturate(1.6); backdrop-filter:blur(16px) saturate(1.6);
+  color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer;
+  box-shadow:0 4px 14px rgba(0,0,0,.35); transition:transform .16s ease, background .2s ease; -webkit-tap-highlight-color:transparent; }
+.art-float-btn:active{ transform:scale(.86); }
+.art-float-close{ left:13px; }
+.art-float-save{ right:13px; }
+[data-theme="light"] .art-float-btn{ background:rgba(252,251,250,.72); border-color:rgba(0,0,0,.08); color:#141413; }
+
+.art-shell-hero{ flex:none; width:100%; aspect-ratio:16/9; max-height:210px; background:#111; overflow:hidden; }
+.art-shell.is-expanded .art-shell-hero{ max-height:264px; transition:max-height .5s cubic-bezier(.34,1.56,.64,1); }
+.art-shell-hero img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+.art-shell-head{ flex:none; position:relative; padding:18px 22px 4px; }
+
+/* Pager à puces (swipe interne façon Mastercard) — piste translatée */
+.art-pager-wrap{ position:relative; flex:1; min-height:0; display:flex; overflow:hidden; }
+.art-pager{ flex:1; min-width:0; overflow:hidden; }
+.art-pager-track{ display:flex; height:100%; will-change:transform;
+  transition:transform .52s cubic-bezier(.22,1,.36,1); }
+.art-page{ flex:0 0 100%; width:100%; overflow-y:hidden; overflow-x:hidden;
+  scrollbar-width:none; padding:6px 22px 24px; }
+.art-page::-webkit-scrollbar{ display:none; }
+.art-shell.is-expanded .art-page{ overflow-y:auto; -webkit-overflow-scrolling:touch; }
+/* En compact : seule la 1re page, tronquée, avec fondu + amorce */
+.art-shell:not(.is-expanded) .art-page ~ .art-page{ display:none !important; }
+.art-page-eyebrow{ display:inline-flex; align-items:center; gap:7px; font-family:var(--font-inter); font-size:11px;
+  font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--text-muted); margin:2px 0 12px; }
+.art-page-eyebrow::before{ content:""; width:6px; height:6px; border-radius:50%; background:var(--eyebrow-dot); box-shadow:0 0 10px var(--eyebrow-dot); }
+
+/* Amorce compacte : fondu de lecture au-dessus du pied */
+.art-teaser-fade{ position:absolute; left:0; right:0; bottom:0; height:96px; pointer-events:none; z-index:2;
+  background:linear-gradient(transparent, var(--surface-card,#1C1A18) 88%); transition:opacity .3s ease; }
+.art-shell.is-expanded .art-teaser-fade{ opacity:0; }
+
+/* Pied : bouton « Lire la suite » (compact) ⇄ puces + barre d'outils (étendu) */
+.art-shell-foot{ flex:none; display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:12px 16px calc(14px + env(safe-area-inset-bottom,0px)); border-top:1px solid var(--border);
+  background:var(--surface-card,#1C1A18); }
+[data-theme="light"] .art-shell-foot{ border-color:rgba(0,0,0,.07); }
+
+/* CTA principal — pilule encre pleine largeur, toujours visible en compact */
+.art-cta{ flex:1; display:inline-flex; align-items:center; justify-content:center; gap:9px;
+  padding:15px 22px; border:none; border-radius:var(--r-pill,999px);
+  background:var(--text); color:var(--bg); font-family:var(--font-inter); font-size:15.5px; font-weight:700;
+  letter-spacing:-.01em; cursor:pointer; box-shadow:0 10px 26px rgba(0,0,0,.34); -webkit-tap-highlight-color:transparent;
+  transition:transform .12s ease; }
+.art-cta:active{ transform:scale(.97); }
+.art-cta svg{ width:16px; height:16px; }
+.art-shell.is-expanded .art-cta{ display:none; }
+
+/* Puces (façon Mastercard) + barre d'outils — visibles seulement en étendu */
+.art-dots{ display:none; align-items:center; gap:8px; padding-left:6px; }
+.art-shell:not(.is-expanded) .art-dots,
+.art-shell:not(.is-expanded) .art-toolbar-pill{ display:none !important; }
+.art-dot{ width:7px; height:7px; border-radius:50%; border:none; padding:0; cursor:pointer;
+  background:var(--text-muted); opacity:.32; transition:opacity .25s ease, transform .3s cubic-bezier(.34,1.56,.64,1), width .3s cubic-bezier(.34,1.56,.64,1); -webkit-tap-highlight-color:transparent; }
+.art-dot.active{ opacity:1; width:20px; border-radius:999px; background:var(--accent,#0a84ff); }
+
+/* ── Mobile : coque plein-cadre, chevrons masqués (ils chevauchaient le titre),
+      amorce garantie sous le titre, « Lire la suite » toujours visible en pied ── */
+@media(max-width:767px){
+  #artModal{ padding:0; align-items:flex-end; }
+  .art-nav-chevron{ display:none !important; }
+  .art-shell{ max-width:100%; width:100%; max-height:92vh; border-radius:28px 28px 0 0;
+    transform:translateY(60px) scale(1); }
+  #artModal.art-open .art-shell{ transform:none; }
+  #artModal.art-closing .art-shell{ transform:translateY(80px) scale(1); }
+  .art-shell.is-expanded{ max-width:100%; max-height:96vh; border-radius:28px 28px 0 0; }
+  .art-shell-hero{ max-height:180px; }
+  .art-shell:not(.is-expanded) .art-shell-hero{ max-height:150px; }
+  .art-shell.is-expanded .art-shell-hero{ max-height:210px; }
+  .art-shell-head{ padding:16px 20px 2px; }
+  .art-pager-wrap{ min-height:118px; }
+  /* Poignée de préhension (sheet) */
+  .art-shell::before{ content:""; position:absolute; top:8px; left:50%; transform:translateX(-50%);
+    width:38px; height:4px; border-radius:999px; background:var(--text-muted); opacity:.35; z-index:7; }
+  .art-float-close, .art-float-save{ top:12px; }
+}
 .art-toolbar-pill{ display:flex; align-items:center; gap:2px; background:rgba(255,255,255,.08); border-radius:999px; padding:4px; }
 [data-theme="light"] .art-toolbar-pill{ background:rgba(0,0,0,.07); }
 .art-toolbar-btn{ width:36px; height:36px; border:none; background:transparent; color:var(--text-muted); cursor:pointer; display:flex; align-items:center; justify-content:center; border-radius:50%; transition:background .15s,color .15s; -webkit-tap-highlight-color:transparent; }
@@ -4687,6 +4970,7 @@ body.focus-mode .focus-exit{ display:flex; }
               <a class="sub-link sub-link-sm" data-qview="editions"   onclick="qmenuSetView('editions')">Magazine</a>
               <a class="sub-link sub-link-sm" data-qview="liste"      onclick="qmenuSetView('liste')">Liste</a>
               <a class="sub-link sub-link-sm" data-qview="grille"     onclick="qmenuSetView('grille')">Grille</a>
+              <a class="sub-link sub-link-sm" data-qview="mosaic"     onclick="qmenuSetView('mosaic')">Mosaïque</a>
               <a class="sub-link sub-link-sm" data-qview="sequential" onclick="qmenuSetView('sequential')">Séquentiel</a>
               <div class="qmenu-sub-section-label" style="margin-top:10px">Police</div>
               <a class="sub-link sub-link-sm" data-qfont="inter"        onclick="qmenuSetFont('inter')"        style="font-family:'Inter',-apple-system,sans-serif">Inter</a>
@@ -4789,6 +5073,22 @@ body.focus-mode .focus-exit{ display:flex; }
         </svg>
       </div>
       <span class="vp-label">Grille</span>
+      <span class="vp-check"><svg viewBox="0 0 24 24" fill="none" stroke="#0a84ff" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+    </div>
+
+    <div class="vp-divider"></div>
+
+    <div class="vp-item" data-vpview="mosaic" onclick="vpSelect('mosaic')">
+      <div class="vp-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <rect x="3" y="3" width="8" height="6" rx="1.3"/>
+          <rect x="13" y="3" width="8" height="6" rx="1.3"/>
+          <rect x="3" y="11" width="18" height="5" rx="1.3"/>
+          <rect x="3" y="18" width="11" height="3.5" rx="1.3"/>
+          <rect x="16" y="18" width="5" height="3.5" rx="1.3"/>
+        </svg>
+      </div>
+      <span class="vp-label">Mosaïque</span>
       <span class="vp-check"><svg viewBox="0 0 24 24" fill="none" stroke="#0a84ff" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></span>
     </div>
 
@@ -5502,6 +5802,9 @@ body.focus-mode .focus-exit{ display:flex; }
       <!-- Label centré, toujours présent au-dessus de toutes les vues -->
       <h2 class="edition-label">Mon magazine du jour</h2>
 
+      <!-- Hero accueil : briefing du jour + carte vedette (au-dessus de toutes les vues du flux) -->
+      <div id="bfHomeHero" hidden></div>
+
       <!-- Smart Bar — segment intelligent + catégories (tiret animé) + sources (accordéon) -->
       <!-- #smartBar conservé (référencé par le JS) ; le rail vit désormais dans la topnav -->
       <div id="smartBar" class="sbar" hidden></div>
@@ -5612,6 +5915,11 @@ body.focus-mode .focus-exit{ display:flex; }
       <div class="view" data-view="grille" hidden>
         <div class="grid2-wrap" id="grilleGrid"></div>
       </div><!-- /vue grille -->
+
+      <!-- ========== VUE MOSAÏQUE ========== -->
+      <div class="view" data-view="mosaic" hidden>
+        <div class="mosaic-wrap" id="mosaicGrid"></div>
+      </div><!-- /vue mosaïque -->
 
       <!-- ========== VUE SÉQUENTIELLE ========== -->
       <div class="view" data-view="sequential" hidden>
@@ -5807,7 +6115,7 @@ body.focus-mode .focus-exit{ display:flex; }
 
   // ---- Bouton œil : cycle éditions → grille → séquentiel → parcourir ----
   const views = document.querySelectorAll('.view');
-  const order = ['editions', 'liste', 'grille', 'sequential'];
+  const order = ['editions', 'liste', 'grille', 'mosaic', 'sequential'];
   let _currentView = (() => { try { const v = localStorage.getItem('bf_view'); return order.includes(v) ? v : 'editions'; } catch(e){ return 'editions'; } })();
   // Déclarés tôt pour éviter reference-before-declaration dans _switchView
   let _feedPageArts = [];
@@ -5936,6 +6244,7 @@ body.focus-mode .focus-exit{ display:flex; }
       views.forEach(v => { v.hidden = v.dataset.view !== target; });
       if(target === 'browse')    renderBrowseTimeline();
       if(target === 'grille')    _renderGrille();
+      if(target === 'mosaic')    _renderMosaic();
       if(target === 'sequential')_renderSequential();
       if(target === 'liste')     _renderListe();
       if(target === 'essentiel') _renderEssentiel();
@@ -6967,6 +7276,7 @@ body.focus-mode .focus-exit{ display:flex; }
       document.querySelectorAll('.view').forEach(v=>{ v.hidden = v.dataset.view !== _currentView; });
       if(_currentView==='browse') renderBrowseTimeline();
       if(_currentView==='grille') _renderGrille();
+      if(_currentView==='mosaic') _renderMosaic();
       if(_currentView==='sequential') _renderSequential();
       if(_currentView==='liste') _renderListe();
     } else if(idx===1){
@@ -8178,6 +8488,28 @@ body.focus-mode .focus-exit{ display:flex; }
     return _plEpCard(fallbackArt, false);
   }
   // « Toutes vos émissions » — un show abonné (pochette + éditeur + dernier épisode + play). Unité = l'émission.
+  // « Toutes vos émissions » en carrousel 3D (cylindre). Les pods sont mémorisés
+  // par _plBuildAbos ; le montage est déclenché (idempotent) via _plSyncPlaying.
+  let _pcShowsPods = [];
+  function _pcMountShowsC3d(){
+    const host = document.getElementById('pcShowsHost'); if(!host) return;
+    const pods = _pcShowsPods || [];
+    if(!pods.length) return;
+    const key = pods.map(p=>((p.art&&p.art.feedUrl)||p.source||'')+(p.hasNew?'!':'')).join('|');
+    if(host.dataset.key===key && host.__mounted) return;
+    host.dataset.key = key; host.__mounted = true;
+    const items = pods.map(o=>{
+      const a = o.art||{};
+      const feed = a.feedUrl || '';
+      const meta = (o.count?o.count+' épisode'+(o.count>1?'s':''):'') + (o.latest?' · '+relTime(o.latest):'');
+      return {
+        img: a.imageUrl, title: o.source||'', sub: meta, isNew: !!o.hasNew,
+        onOpen: ()=>{ if(feed) _plOpenShow(feed); }
+      };
+    });
+    _c3dMount(host, items, { arW:1, arH:1, itemFrac:0.5 });
+  }
+  window._pcMountShowsC3d = _pcMountShowsC3d;
   function _plShowRow(o){
     const a=o.art||{}, feedEsc=String(a.feedUrl||'').replace(/'/g,"\\'"), nameEsc=String(o.source||'').replace(/'/g,"\\'");
     const meta = `${o.count} épisode${o.count>1?'s':''} · ${relTime(o.latest)}`;
@@ -8486,8 +8818,9 @@ body.focus-mode .focus-exit{ display:flex; }
     // Toutes vos émissions — tous les podcasts abonnés (les shows), en liste verticale.
     const pods=_plMyPods();
     if(pods.length){
+      _pcShowsPods = pods;
       html += `<div class="pc-sec-head"${fresh.length?'':' style="margin-top:2px"'}><span class="pc-sec-t">Toutes vos émissions</span></div>`;
-      html += `<div class="pc-shows">` + pods.map(_plShowRow).join('') + `</div>`;
+      html += `<div class="c3d c3d--shows" id="pcShowsHost"></div>`;
     }
     return html;
   }
@@ -8555,6 +8888,7 @@ body.focus-mode .focus-exit{ display:flex; }
   function _plSyncPlaying(){
     const playing = !!_plCur && _plAudioEl() && !_plAudioEl().paused;
     document.querySelectorAll('#pcPaneAbonne .pl-ep, #pcPaneAbonne .pl-cont, #pcPaneAbonne .pl-pod, #podShowBody .pl-ep').forEach(el=>el.classList.toggle('playing', el.dataset.link===_plCur));
+    if(typeof _pcMountShowsC3d==='function') _pcMountShowsC3d();
     return playing;
   }
   window._plPlay = _plPlay;
@@ -9897,6 +10231,213 @@ body.focus-mode .focus-exit{ display:flex; }
     setTimeout(()=>{ if(typeof _plOpenShow==='function') _plOpenShow(feedUrl); }, 80);
   }
   function _fmRefresh(folder){ _fmFolder=null; _folderMenuOpen(folder); }
+  // Carrousel « À la une » : glisser-déposer + accrochage au centre avec un ressort
+  // rapide et dynamique — un swipe décisif avance directement d'une carte (comme un
+  // vrai carrousel de cartes), la carte centrée est à pleine échelle/opacité, les
+  // voisines reculent et s'estompent en suivant le doigt en temps réel.
+  // ── Carrousel 3D réutilisable (cylindre piloté au défilement natif) ──
+  // Le défilement horizontal natif d'une piste transparente pilote la rotation
+  // du cylindre (aucun conflit : on LIT scrollLeft, on n'y écrit pas). Chaque
+  // item = { img, title, sub, isNew, onOpen }. opts = { arW, arH, itemFrac, start }.
+  function _c3dMount(host, items, opts){
+    if(!host || !items || !items.length) return;
+    opts = opts || {};
+    const N = items.length;
+    const arW = opts.arW || 1, arH = opts.arH || 1;
+    const itemFrac = opts.itemFrac || 0.56;
+    let active = Math.max(0, Math.min(opts.start||0, N-1));
+    if(host._c3dCleanup) host._c3dCleanup();
+    host.classList.add('c3d');
+    host.innerHTML =
+      '<div class="c3d-stage"><div class="c3d-ring">'
+      + items.map((it,i)=>{
+          const nw = it.isNew ? '<span class="c3d-cell-new"></span>' : '';
+          const img = it.img ? '<img src="'+escAttr(it.img)+'" alt="" decoding="async" onerror="this.style.display=\'none\'">' : '';
+          return '<div class="c3d-cell" style="--i:'+i+'">'+nw+img+'</div>';
+        }).join('')
+      + '</div><div class="c3d-track">'
+      + items.map(()=>'<div class="c3d-slot"></div>').join('')
+      + '</div></div>'
+      + '<div class="c3d-cap"><div class="c3d-cap-sub"></div><div class="c3d-cap-title"></div></div>'
+      + '<div class="c3d-dots">'+items.map((_,i)=>'<span class="c3d-dot'+(i===active?' on':'')+'"></span>').join('')+'</div>';
+    const stage = host.querySelector('.c3d-stage');
+    const ring  = host.querySelector('.c3d-ring');
+    const track = host.querySelector('.c3d-track');
+    const capEl = host.querySelector('.c3d-cap');
+    const capSub= host.querySelector('.c3d-cap-sub');
+    const capTit= host.querySelector('.c3d-cap-title');
+    const cells = [...ring.querySelectorAll('.c3d-cell')];
+    const dots  = [...host.querySelectorAll('.c3d-dot')];
+    let angle=52, rafId=null, moved=false, downX=0, downY=0, settleT=null, userScrolled=false;
+
+    function scheduleSettle(){
+      clearTimeout(settleT);
+      settleT=setTimeout(()=>{
+        const c=cells[active];
+        if(c){ c.classList.remove('c3d-lock'); void c.offsetWidth; c.classList.add('c3d-lock'); }
+        if(userScrolled && navigator.vibrate){ try{ navigator.vibrate(7); }catch(e){} }
+        userScrolled=false;
+      }, 120);
+    }
+
+    function paintActive(){
+      cells.forEach((c,i)=>c.classList.toggle('is-active', i===active));
+      dots.forEach((d,i)=>d.classList.toggle('on', i===active));
+      const it=items[active]||{};
+      capSub.textContent = it.sub||'';
+      capTit.textContent = it.title||'';
+    }
+    function apply(){
+      rafId=null;
+      const slot = track.querySelector('.c3d-slot');
+      const slotW = slot ? slot.getBoundingClientRect().width : 0;
+      const p = slotW ? (track.scrollLeft/slotW) : 0;
+      ring.style.setProperty('--c3d-rot', (-p*angle)+'deg');
+      const idx = Math.max(0, Math.min(N-1, Math.round(p)));
+      if(idx!==active){ active=idx; paintActive(); }
+    }
+    function onScroll(){ userScrolled=true; if(rafId==null) rafId=requestAnimationFrame(apply); scheduleSettle(); }
+    track.addEventListener('scroll', onScroll, {passive:true});
+    track.addEventListener('pointerdown', e=>{ moved=false; downX=e.clientX; downY=e.clientY; }, {passive:true});
+    track.addEventListener('pointermove', e=>{ if(Math.abs(e.clientX-downX)>6||Math.abs(e.clientY-downY)>6) moved=true; }, {passive:true});
+    track.addEventListener('click', ()=>{ if(moved) return; const it=items[active]; if(it&&it.onOpen) it.onOpen(); });
+
+    function layout(){
+      const sw = stage.clientWidth || host.clientWidth || 0;
+      if(sw < 60){ setTimeout(layout, 180); return; }   // pas encore visible/mesurable
+      const cellW = Math.round(sw*itemFrac);
+      const cellH = Math.round(cellW*arH/arW);
+      angle = Math.min(360/N, 52);
+      const aRad = angle*Math.PI/180;
+      const gap = cellW*0.14;
+      const radius = Math.round((cellW+gap)/(2*Math.sin(aRad/2)));
+      const persp = Math.round(radius*4.2);
+      const frontScale = persp/(persp-radius);
+      host.style.setProperty('--c3d-w', cellW+'px');
+      host.style.setProperty('--c3d-h', cellH+'px');
+      host.style.setProperty('--c3d-angle', angle+'deg');
+      host.style.setProperty('--c3d-radius', radius+'px');
+      host.style.setProperty('--c3d-persp', persp+'px');
+      stage.style.height = Math.round(cellH*frontScale + 6)+'px';
+      const slot = track.querySelector('.c3d-slot');
+      const slotW = slot ? slot.getBoundingClientRect().width : 0;
+      if(slotW) track.scrollLeft = active*slotW;
+      apply();
+    }
+    paintActive();
+    requestAnimationFrame(layout);
+    setTimeout(layout, 140);
+    let rt=null;
+    const onResize=()=>{ clearTimeout(rt); rt=setTimeout(layout, 150); };
+    window.addEventListener('resize', onResize);
+    host._c3dCleanup = ()=>{ try{ window.removeEventListener('resize', onResize); track.removeEventListener('scroll', onScroll); }catch(e){} };
+    return { layout };
+  }
+  window._c3dMount = _c3dMount;
+
+  let _fmFeatArts = [];
+  function _initFeatCarousel(el){
+    if(!el || el._featInit) return;
+    el._featInit = true;
+    const cards = [...el.querySelectorAll('.fm-feat-card')];
+    if(!cards.length) return;
+
+    let rafFx = null;
+    function applyFx(){
+      rafFx = null;
+      const r = el.getBoundingClientRect();
+      const mid = r.left + r.width/2;
+      cards.forEach(c=>{
+        const cr = c.getBoundingClientRect();
+        const cc = cr.left + cr.width/2;
+        const d = Math.min(1, Math.abs(cc - mid) / (r.width*0.58));
+        // Courbe adoucie (easeOut) → la mise en avant se ressent plus organiquement
+        const e = 1 - Math.pow(1-d, 2);
+        const scale = 1 - e*0.20;
+        const op = 1 - e*0.58;
+        c.style.transform = 'scale(' + scale.toFixed(3) + ')';
+        c.style.opacity = op.toFixed(3);
+      });
+    }
+    function scheduleFx(){ if(rafFx==null) rafFx = requestAnimationFrame(applyFx); }
+    el.addEventListener('scroll', scheduleFx, { passive:true });
+    applyFx(); setTimeout(applyFx, 60); setTimeout(applyFx, 260);
+
+    const maxScroll = () => el.scrollWidth - el.clientWidth;
+    function centerOf(idx){
+      idx = Math.max(0, Math.min(cards.length-1, idx));
+      const c = cards[idx];
+      // position de scroll qui centre la carte idx (indépendant du scroll courant)
+      return c.offsetLeft - (el.clientWidth - c.offsetWidth)/2;
+    }
+    function nearestIdxTo(pos){
+      let best=0, bd=Infinity;
+      cards.forEach((c,i)=>{ const d=Math.abs(centerOf(i)-pos); if(d<bd){bd=d;best=i;} });
+      return best;
+    }
+
+    // — Défilement inertiel façon iOS : la vitesse du doigt est reportée puis
+    //   décroît en douceur (friction), et on atterrit sur la carte projetée avec un
+    //   easeOutCubic — pas de saut sec ni de rebond mécanique. —
+    let rafAnim=null;
+    const easeOutCubic = t => 1 - Math.pow(1-t, 3);
+    function animateTo(target, duration){
+      cancelAnimationFrame(rafAnim);
+      target = Math.max(0, Math.min(maxScroll(), target));
+      const startPos = el.scrollLeft, dist = target - startPos;
+      if(Math.abs(dist) < 0.5){ el.scrollLeft = target; return; }
+      const t0 = performance.now();
+      (function step(now){
+        const p = Math.min(1, (now - t0)/duration);
+        el.scrollLeft = startPos + dist*easeOutCubic(p);
+        if(p < 1) rafAnim = requestAnimationFrame(step);
+      })(t0);
+    }
+
+    // — Glisser (pointer), 1:1 avec le doigt —
+    let down=false, moved=false, startX=0, startScroll=0, hist=[];
+    el.addEventListener('pointerdown', e=>{
+      if(e.button!==0 && e.pointerType==='mouse') return;
+      cancelAnimationFrame(rafAnim);
+      down=true; moved=false; startX=e.clientX; startScroll=el.scrollLeft;
+      hist=[{x:e.clientX,t:e.timeStamp}];
+      el.classList.add('is-dragging'); el.setPointerCapture(e.pointerId);
+    }, { passive:true });
+    el.addEventListener('pointermove', e=>{
+      if(!down) return;
+      const dx=e.clientX-startX;
+      if(!moved && Math.abs(dx)>4) moved=true;
+      if(!moved) return;
+      el.scrollLeft = startScroll - dx;
+      hist.push({x:e.clientX,t:e.timeStamp}); if(hist.length>6) hist.shift();
+    }, { passive:true });
+    function endDrag(){
+      if(!down) return; down=false; el.classList.remove('is-dragging');
+      const curPos = el.scrollLeft;
+      if(!moved){ animateTo(centerOf(nearestIdxTo(curPos)), 260); return; }
+      // Vitesse au relâchement (px/ms) sur les derniers points
+      const a=hist[0], b=hist[hist.length-1], dt=Math.max(1,b.t-a.t);
+      const v = -(b.x-a.x)/dt; // sens du scroll : >0 vers la droite
+      // Position projetée par l'inertie (report de vitesse amorti)
+      const projected = curPos + v*140;
+      // On limite l'élan à ±1 carte autour de la carte courante pour rester posé
+      const curIdx = nearestIdxTo(curPos);
+      let target = nearestIdxTo(projected);
+      target = Math.max(curIdx-1, Math.min(curIdx+1, target));
+      // Un flick net garantit d'avancer même si le glissement fut court
+      const FLICK = 0.45;
+      if(target===curIdx && Math.abs(v) > FLICK) target = v>0 ? curIdx+1 : curIdx-1;
+      // Durée proportionnelle à la distance → glisse long si loin, vif si proche
+      const dist = Math.abs(centerOf(target) - curPos);
+      const duration = Math.max(280, Math.min(620, 260 + dist*0.9));
+      animateTo(centerOf(target), duration);
+    }
+    el.addEventListener('pointerup', endDrag, { passive:true });
+    el.addEventListener('pointercancel', endDrag, { passive:true });
+    // Empêche le clic d'ouvrir l'article si l'utilisateur a fait glisser
+    el.addEventListener('click', e=>{ if(moved){ e.stopPropagation(); e.preventDefault(); moved=false; } }, true);
+  }
+
   function _folderMenuOpen(folder){
     const inner=document.getElementById('fmInner'); if(!inner) return;
     if(_fmFolder===folder){ _folderMenuClose(); return; }   // re-tap = ferme
@@ -9917,23 +10458,41 @@ body.focus-mode .focus-exit{ display:flex; }
                      : '<div style="color:var(--text-muted);font-size:13px">Aucune source</div>')
       + '</div>';
     const _subjList=_subjPodList(folder);
+    // « Le brief du jour » : les 3 à 5 articles les plus SCORÉS du dossier
+    // (tendances = couverture multi-sources × fraîcheur, + perspicacité = moteur
+    //  de scoring de lecture), et non plus simplement les plus récents.
+    let _fmBriefHtml = '';
+    if(top){
+      const _fmCtx = (typeof _fltContext==='function') ? _fltContext() : { now:Date.now(), ts:null };
+      const _fmSeOn = !!(window._SE && _SE.isActive && _SE.isActive());
+      const _fmScore = a => {
+        let s = 0;
+        try{ s = _modeScore(a, 'trending', _fmCtx); }catch(e){ s = (a.pubDate||0)/1e10; }
+        if(_fmSeOn){ try{ s += (_SE.score(a)||0) * 60; }catch(e){} } // perspicacité
+        return s;
+      };
+      _fmFeatArts = arts.slice().sort((x,y)=>_fmScore(y)-_fmScore(x)).slice(0,5);
+      const _fmItems = _fmFeatArts.map((a,i)=>{
+        const cov = (typeof _artCoverage==='function') ? _artCoverage(a, _fmCtx.ts) : 1;
+        const src = escHtml(a.source||'');
+        return '<a class="fm-feat-item" data-act="art" data-link="'+escAttr(a.link||'')+'">'
+          + '<span class="fm-feat-rank">'+(i+1)+'</span>'
+          + '<span class="fm-feat-body">'
+          + '<span class="fm-feat-src">'+src+(cov>=2?' · <b>'+cov+' sources</b>':'')+'</span>'
+          + '<span class="fm-feat-tt">'+escHtml(a.title||'')+'</span>'
+          + '</span></a>';
+      }).join('');
+      _fmBriefHtml = '<div class="fm-head">Le brief du jour</div>'
+        + '<div class="fm-feat-list">'+_fmItems+'</div>';
+    }
     h+='<div class="fm-col fm-sm fm-deepen"><div class="fm-head">Approfondir</div>'
-      + '<a data-act="mode" data-mode="all">Le brief du jour</a>'
+      + _fmBriefHtml
       + '<div class="fm-pod-head"><span>Podcasts du sujet</span><button class="fm-pod-addbtn" data-act="subjadd" type="button" aria-label="Ajouter un podcast"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></div>'
       + (_subjList.length
           ? '<div class="fm-pod-grid">' + _subjList.map(p=>`<a class="fm-pod-sq" data-act="subjpod" data-feed="${escAttr(p.feedUrl)}"><span class="fm-pod-sq-cover" style="${p.coverCss}">${p.isNew?'<span class="fm-pod-sq-new" title="Nouveaux épisodes"></span>':''}</span><span class="fm-pod-sq-name">${escHtml(p.name)}</span></a>`).join('') + '</div>'
           : '<div class="fm-pod-empty">Aucun podcast lié. Touchez + pour en ajouter.</div>')
       + '<div class="fm-pod-picker" data-picker hidden></div>'
       + '</div>';
-    if(top){
-      h+='<div class="fm-col fm-prev"><div class="fm-head">À la une dans '+lab+'</div>'
-        + `<a class="fm-feat" data-act="art" data-link="${escAttr(top.link)}">`
-        + (top.imageUrl?`<div class="fm-feat-img"><img src="${escAttr(top.imageUrl)}" alt="" onerror="this.parentNode.style.display='none'"></div>`:'')
-        + `<div class="fm-feat-b"><div class="fm-feat-k">${escHtml(top.source||'')}</div><div class="fm-feat-t">${escHtml(top.title||'')}</div></div></a>`
-        + '<div class="fm-mini">'
-        + more.map(a=>`<a data-act="art" data-link="${escAttr(a.link)}"><span class="fm-mt">${escHtml(a.title||'')}</span><span class="fm-ms">${escHtml(a.source||'')} · ${escHtml(relTime(a.pubDate))}</span></a>`).join('')
-        + '</div></div>';
-    }
     inner.innerHTML=h;
     inner.querySelectorAll('[data-act]').forEach(el=>el.addEventListener('click',(e)=>{
       e.preventDefault(); const act=el.dataset.act;
@@ -10807,7 +11366,10 @@ body.focus-mode .focus-exit{ display:flex; }
     // Filtrage éventuel par source (rail global)
     const pool    = _railApplyFilter(_allArticles);
     const deduped = _dedupCtx(_smartDateSort([...pool]));
-    _editionArts  = deduped.slice(0, 60);
+    // Le 1ᵉʳ article (le + récent) est déjà mis en avant dans la carte vedette
+    // du hero au-dessus du flux — on démarre donc la liste au 2ᵉ pour éviter
+    // le doublon juste après le hero.
+    _editionArts  = deduped.slice(1, 61);
 
     // Jitter fix : ne re-rendre que si le contenu a changé
     const gridKey = _editionArts.slice(0,6).map(a=>a.link).join('|') + '#' + (_railFilterUrl || '') + '#' + (_smartCat || '') + '#' + _smartMode + '#' + _editionArts.length;
@@ -10907,6 +11469,66 @@ body.focus-mode .focus-exit{ display:flex; }
   };
 
 
+  // ── VUE MOSAÏQUE ──────────────────────────────────────────────
+  // Rythme éditorial répété inspiré de « Mosaic 4 » : une bande de 2 cartes
+  // égales, une carte vedette pleine largeur (image + titre superposés), puis
+  // une bande large+étroit. On réutilise le modèle d'article/ouverture existant.
+  let _mosArts = [];
+  function _mosCardHtml(a, idx, variant, opener){
+    const op   = opener || '_openMosaicArt';
+    const fav  = (typeof getFavicon==='function') ? getFavicon(a.feedUrl||a.link||'') : '';
+    const isRead = window._RS && _RS.has(a.link);
+    const time = relTime(a.pubDate);
+    if(variant==='feature'){
+      const bg = a.imageUrl
+        ? "background-image:url('"+String(a.imageUrl).replace(/'/g,"\\'")+"')"
+        : 'background:linear-gradient(135deg,rgba(10,132,255,.28),#0a0a0a)';
+      return '<article class="mos-card mos-feature'+(isRead?' is-read':'')+'" onclick="'+op+'('+idx+')">'
+        + '<div class="mos-feature-media" style="'+bg+'"><div class="mos-feature-scrim"></div>'
+        + '<div class="mos-feature-body">'
+        + '<div class="mos-src-row"><span class="mos-src-dot"><img src="'+escAttr(fav)+'" alt="" onerror="this.style.opacity=.3"></span><span class="mos-src-name">'+escHtml(a.source||'')+'</span><span class="mos-time">'+time+'</span></div>'
+        + '<h3 class="mos-feature-title">'+escHtml(a.title||'')+'</h3>'
+        + '</div></div></article>';
+    }
+    const fig = a.imageUrl
+      ? '<div class="mos-fig"><img src="'+escAttr(a.imageUrl)+'" alt="" decoding="async" loading="lazy" onerror="this.parentNode.style.visibility=\'hidden\'"></div>'
+      : '<div class="mos-fig"></div>';
+    const src = a.source
+      ? '<div class="mos-src-row"><span class="mos-src-dot"><img src="'+escAttr(fav)+'" alt="" onerror="this.style.opacity=.3"></span><span class="mos-src-name">'+escHtml(a.source)+'</span><span class="mos-time">'+time+'</span></div>'
+      : '';
+    return '<article class="mos-card mos-'+variant+(isRead?' is-read':'')+'" onclick="'+op+'('+idx+')">'
+      + fig + src + '<h3 class="mos-title">'+escHtml(a.title||'')+'</h3></article>';
+  }
+  function _mosBandsHtml(A, opener){
+    let h='', i=0; const n=A.length;
+    while(i<n){
+      // Bande 1 : 2 cartes égales
+      if(i<n){ h+='<div class="mos-band two">'+_mosCardHtml(A[i],i,'eq',opener)+(A[i+1]?_mosCardHtml(A[i+1],i+1,'eq',opener):'')+'</div>'; i+=2; }
+      // Bande 2 : carte vedette pleine largeur
+      if(i<n){ h+='<div class="mos-band full">'+_mosCardHtml(A[i],i,'feature',opener)+'</div>'; i+=1; }
+      // Bande 3 : large + étroit
+      if(i<n){ h+='<div class="mos-band wide">'+_mosCardHtml(A[i],i,'wide',opener)+(A[i+1]?_mosCardHtml(A[i+1],i+1,'narrow',opener):'')+'</div>'; i+=2; }
+    }
+    return '<div class="mos">'+h+'</div>';
+  }
+  function _renderMosaic(){
+    const wrap = document.getElementById('mosaicGrid'); if(!wrap) return;
+    if(!_allArticles.length){ wrap.innerHTML=''; wrap.dataset.key=''; return; }
+    const pool    = _railApplyFilter(_allArticles);
+    const deduped = _dedupCtx(_smartDateSort([...pool]));
+    _mosArts = deduped.slice(0, 60);
+    const key = _mosArts.slice(0,6).map(a=>a.link).join('|')+'#'+(_railFilterUrl||'')+'#'+(_smartCat||'')+'#'+_smartMode+'#'+_mosArts.length;
+    if(wrap.dataset.key === key) return;
+    wrap.innerHTML = _mosBandsHtml(_mosArts, '_openMosaicArt');
+    wrap.dataset.key = key;
+    if(typeof window._obsImage === 'function') setTimeout(window._obsImage, 50);
+  }
+  window._openMosaicArt = function(idx){
+    const a = _mosArts[idx]; if(!a) return;
+    if(window._RS) _RS.mark(a.link);
+    _showArtModal(a);
+  };
+
   // ── 14. loadAllFeeds — moteur principal ──────────────────────
   // ── Rendu de la vue courante (point unique) ───────────────
   function _renderCurrentView(){
@@ -10919,10 +11541,58 @@ body.focus-mode .focus-exit{ display:flex; }
     _renderSrcRail();   // rail partagé visible sur toutes les vues
     if(effView === 'editions')    _renderEditions();
     else if(effView === 'grille') _renderGrille();
+    else if(effView === 'mosaic') _renderMosaic();
     else if(effView === 'sequential') _renderSequential();
     else if(effView === 'liste')  _renderListe();
+    // Hero accueil (briefing + carte vedette) au-dessus des vues du flux
+    const _heroHost = document.getElementById('bfHomeHero');
+    if(_heroHost){
+      const _feedViews = ['editions','grille','mosaic','sequential','liste'];
+      if(_feedViews.indexOf(effView)>=0){ _heroHost.hidden=false; _renderHomeHero(); }
+      else { _heroHost.hidden=true; }
+    }
     if(window.BF_SMART && BF_SMART.renderSidebar){ try{ BF_SMART.renderSidebar(); }catch(e){} }
   }
+
+  // ── Hero accueil : briefing du jour (3 titres) + carte vedette (article le + récent) ──
+  function _renderHomeHero(){
+    const host = document.getElementById('bfHomeHero'); if(!host) return;
+    let pool = [];
+    try{ pool = _dedupCtx(_smartDateSort([..._railApplyFilter(_allArticles||[])])); }catch(e){ pool = (_allArticles||[]).slice(); }
+    if(!pool.length){ host.innerHTML=''; host.dataset.key=''; return; }
+    const feat = pool[0];
+    const key = pool.slice(0,4).map(a=>a.link).join('|')+'#'+(_railFilterUrl||'')+'#'+(_smartCat||'')+'#'+_smartMode;
+    if(host.dataset.key===key) return;
+    host.dataset.key=key;
+    const esc=escHtml;
+    const q = s=>String(s==null?'':s).replace(/'/g,"\\'");
+    const greetHi = (()=>{ const h=new Date().getHours(); return h<12?'Bonjour':h<18?'Bon après-midi':'Bonsoir'; })();
+    const dstr = (()=>{ try{ const s=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'}); return s.charAt(0).toUpperCase()+s.slice(1); }catch(e){ return ''; } })();
+    const briefHtml = '';
+    const desc = (typeof _edlSub==='function') ? (_edlSub(feat)||'') : '';
+    const media = feat.imageUrl
+      ? `style="background-image:url('${q(feat.imageUrl)}')"`
+      : 'style="background:linear-gradient(135deg,rgba(10,132,255,.22),#111)"';
+    const dateStr = (typeof relTime==='function') ? relTime(feat.pubDate) : '';
+    host.innerHTML =
+      `<div class="bf-hero">
+        <div class="bf-greet"><span class="bf-greet-hi">${esc(greetHi)}</span><span class="bf-greet-date">${esc(dstr)}</span></div>
+        <article class="bf-feat" onclick="_bfHeroOpen('${q(feat.link)}')">
+          <div class="bf-feat-body">
+            <div class="bf-feat-src">${esc(feat.source||'')}</div>
+            <h3 class="bf-feat-title">${esc(feat.title||'')}</h3>
+            ${desc?`<p class="bf-feat-desc">${esc(desc.slice(0,200))}</p>`:''}
+            <div class="bf-feat-meta">${esc(dateStr)}</div>
+            <span class="bf-feat-link">Lire l'article</span>
+          </div>
+          <div class="bf-feat-media" ${media}></div>
+        </article>
+      </div>`;
+  }
+  window._bfHeroOpen = function(link){
+    const a = (_allArticles||[]).find(x=>x && x.link===link);
+    if(a){ if(window._RS) _RS.mark(a.link); _showArtModal(a); }
+  };
 
   // Rendu stable : swap en place + préservation du défilement (zéro saut)
   function _smoothRenderCurrentView(cb){
@@ -11440,6 +12110,13 @@ body.focus-mode .focus-exit{ display:flex; }
       ctxEl.innerHTML = ext + ctx;
     }
 
+    // Coque : réinitialiser en mode compact + synchroniser les puces du pager
+    if(typeof _artShellReset==='function') _artShellReset();
+
+    // Contexte de navigation (swipe / chevrons article → article)
+    try{ _artSwipeCtx = _artResolveCtx(a); }catch(e){ _artSwipeCtx = {list:[a], idx:0}; }
+    if(typeof _artUpdateNav==='function') _artUpdateNav();
+
     // Ouvrir — on annule une éventuelle animation de fermeture en cours.
     // Si le modal était déjà ouvert ou en train de se fermer, son verrou de
     // scroll est toujours actif : on ne re-verrouille pas (sinon fuite).
@@ -11454,6 +12131,73 @@ body.focus-mode .focus-exit{ display:flex; }
   }
 
   window.openArtModal = _showArtModal;
+
+  // ── Coque contenue : expansion élastique + pager à puces (façon Mastercard) ──
+  let _artPage = 0;
+  function _artPagesVisible(){
+    const t = document.getElementById('artPagerTrack');
+    return t ? [...t.querySelectorAll('.art-page')].filter(p=>p.style.display!=='none') : [];
+  }
+  function _artGoPage(i, animate){
+    const track = document.getElementById('artPagerTrack');
+    const dots = document.getElementById('artDots');
+    if(!track) return;
+    const n = _artPagesVisible().length;
+    i = Math.max(0, Math.min(i, n-1));
+    _artPage = i;
+    track.style.transition = animate===false ? 'none' : '';
+    track.style.transform = 'translateX(' + (-i*100) + '%)';
+    if(dots) dots.querySelectorAll('.art-dot').forEach((d,di)=>d.classList.toggle('active', di===i));
+  }
+  function _artSyncDots(){
+    const dots = document.getElementById('artDots');
+    const shell = document.getElementById('artShell');
+    if(!dots || !shell) return;
+    // La page « contexte » n'existe que si elle a du contenu
+    const ctxPage = document.getElementById('artPageCtx');
+    const hasCtx = !!(document.getElementById('artModalContext')?.textContent||'').trim();
+    if(ctxPage) ctxPage.style.display = hasCtx ? '' : 'none';
+    const pages = _artPagesVisible();
+    dots.innerHTML = pages.map((p,i)=>`<button class="art-dot" data-i="${i}" aria-label="Page ${i+1}"></button>`).join('');
+    dots.style.display = (shell.classList.contains('is-expanded') && pages.length>1) ? 'flex' : 'none';
+    dots.querySelectorAll('.art-dot').forEach(d=>{ d.onclick = ()=>_artGoPage(+d.dataset.i, true); });
+    if(_artPage > pages.length-1) _artPage = pages.length-1;
+    _artGoPage(_artPage, false);
+  }
+  // Swipe horizontal (touch) — ne déclenche que sur geste franchement horizontal
+  function _artBindSwipe(){
+    const pager = document.getElementById('artPager');
+    if(!pager || window._artSwipeBound) return;
+    window._artSwipeBound = true;
+    let x0=0, y0=0, dx=0, dy=0, lock=null, active=false;
+    const start=e=>{ const t=e.touches?e.touches[0]:e; x0=t.clientX; y0=t.clientY; dx=dy=0; lock=null;
+      active=document.getElementById('artShell')?.classList.contains('is-expanded'); };
+    const move=e=>{ if(!active) return; const t=e.touches?e.touches[0]:e; dx=t.clientX-x0; dy=t.clientY-y0;
+      if(lock===null && (Math.abs(dx)>8||Math.abs(dy)>8)) lock = Math.abs(dx)>Math.abs(dy)?'x':'y';
+      if(lock==='x'){ e.preventDefault();
+        const track=document.getElementById('artPagerTrack');
+        if(track){ track.style.transition='none'; track.style.transform='translateX(calc('+(-_artPage*100)+'% + '+dx+'px))'; } } };
+    const end=()=>{ if(!active) return; const track=document.getElementById('artPagerTrack'); if(track) track.style.transition='';
+      if(lock==='x' && Math.abs(dx)>60) _artGoPage(_artPage + (dx<0?1:-1), true); else _artGoPage(_artPage, true); lock=null; };
+    pager.addEventListener('touchstart', start, {passive:true});
+    pager.addEventListener('touchmove', move, {passive:false});
+    pager.addEventListener('touchend', end, {passive:true});
+  }
+  window._artExpand = function(){
+    const shell = document.getElementById('artShell');
+    if(!shell || shell.classList.contains('is-expanded')) return;
+    shell.classList.add('is-expanded');
+    setTimeout(_artSyncDots, 60);
+  };
+  window._artShellReset = function(){
+    const shell = document.getElementById('artShell');
+    if(shell) shell.classList.remove('is-expanded');
+    _artPage = 0;
+    const body = document.getElementById('artModalBody');
+    if(body) body.scrollTop = 0;
+    _artBindSwipe();
+    _artSyncDots();
+  };
 
   window.artSwitchView = function(view){
     // Pour l'instant une seule vue "reader" — extensible
@@ -12313,6 +13057,9 @@ body.focus-mode .focus-exit{ display:flex; }
         return '<div class="grid2-card" onclick="' + arrName + 'Open(' + i + ')"><div class="grid2-img" style="' + imgStyle + '"></div><div class="grid2-title">' + escapeHtml(a.title) + '</div><div class="grid2-meta"><div class="grid2-fav"><img src="' + escAttr(fav) + '"></div><span>' + escapeHtml(a.source) + '</span><span style="margin-left:auto">' + relTime(a.pubDate) + '</span></div></div>';
       }).join('') + '</div>';
 
+    } else if(view === 'mosaic'){
+      container.innerHTML = _mosBandsHtml(arts, arrName + 'Open');
+
     } else if(view === 'sequential'){
       container.innerHTML = '<div class="seq-list">' + arts.map(function(a,i){
         var fav = getFavicon(a.feedUrl||a.link||'');
@@ -12756,6 +13503,50 @@ body.focus-mode .focus-exit{ display:flex; }
   // ── Swipe horizontal → article suivant/précédent ─────────────
   let _artSwipeCtx = {list:[], idx:0};
   window._artSetSwipeCtx = function(list,idx){ _artSwipeCtx={list,idx}; };
+  // Résout la meilleure liste de navigation pour un article donné : la sous-page
+  // ouverte (flux/dossier) sinon le flux principal, avec repli favoris/parcourir.
+  function _artResolveCtx(a){
+    if(!a) return {list:[], idx:0};
+    const dp=document.getElementById('folderPage'), fp=document.getElementById('feedPage');
+    const cands=[];
+    if(fp&&fp.classList.contains('open')&&Array.isArray(typeof _feedPageArts!=='undefined'?_feedPageArts:null)) cands.push(_feedPageArts);
+    if(dp&&dp.classList.contains('open')&&Array.isArray(typeof _folderPageArts!=='undefined'?_folderPageArts:null)) cands.push(_folderPageArts);
+    if(typeof _allArticles!=='undefined'&&Array.isArray(_allArticles)) cands.push(_allArticles);
+    if(typeof _favView!=='undefined'&&Array.isArray(_favView)) cands.push(_favView);
+    if(typeof _browseArts!=='undefined'&&Array.isArray(_browseArts)) cands.push(_browseArts);
+    for(const L of cands){ if(L&&L.length){ const i=L.findIndex(x=>x&&x.link===a.link); if(i>=0) return {list:L, idx:i}; } }
+    return {list:[a], idx:0};
+  }
+  function _artUpdateNav(){
+    const c=_artSwipeCtx;
+    const prev=document.getElementById('artNavPrev'), next=document.getElementById('artNavNext');
+    if(!prev||!next) return;
+    const has = c && c.list && c.list.length>1;
+    prev.classList.toggle('show', !!(has && c.idx>0));
+    next.classList.toggle('show', !!(has && c.idx<c.list.length-1));
+  }
+  window._artUpdateNav=_artUpdateNav;
+  // Navigation animée article → article (dir: -1 précédent, +1 suivant)
+  function _artNav(dir){
+    const c=_artSwipeCtx;
+    if(!c||!c.list||!c.list.length) return;
+    const ni=c.idx+dir;
+    if(ni<0||ni>=c.list.length) return;
+    const body=document.getElementById('artModalBody');
+    if(body){ body.classList.remove('art-slide-left','art-slide-right'); void body.offsetWidth; body.classList.add(dir>0?'art-slide-left':'art-slide-right'); }
+    const nx=c.list[ni];
+    if(window._RS && _RS.mark) _RS.mark(nx.link);
+    _showArtModal(nx);          // recalcule le contexte (même liste → idx = ni)
+    _artSwipeCtx.idx=ni;
+    _artUpdateNav();
+  }
+  window._artNav=_artNav;
+  document.addEventListener('keydown', e=>{
+    const m=document.getElementById('artModal');
+    if(!m || m.style.display!=='flex') return;
+    if(e.key==='ArrowLeft'){ _artNav(-1); }
+    else if(e.key==='ArrowRight'){ _artNav(1); }
+  });
   (function initArticleSwipe(){
     let sx=0, sy=0;
     document.addEventListener('touchstart', e=>{
@@ -12769,10 +13560,7 @@ body.focus-mode .focus-exit{ display:flex; }
       const dx=e.changedTouches[0].clientX-sx;
       const dy=Math.abs(e.changedTouches[0].clientY-sy);
       if(Math.abs(dx)<65||dy>70) return;
-      const {list,idx}=_artSwipeCtx;
-      if(!list.length) return;
-      if(dx<0&&idx<list.length-1){ const ni=idx+1; _showArtModal(list[ni]); _artSwipeCtx.idx=ni; }
-      if(dx>0&&idx>0){ const ni=idx-1; _showArtModal(list[ni]); _artSwipeCtx.idx=ni; }
+      _artNav(dx<0 ? 1 : -1);
     },{passive:true});
   })();
 
@@ -13434,38 +14222,38 @@ body.focus-mode .focus-exit{ display:flex; }
   <div id="refreshBadge"></div>
 
   <!-- ═══════════════ MODAL ARTICLE ═══════════════ -->
-  <div id="artModal" style="display:none;position:fixed;inset:0;z-index:7000;flex-direction:column;background:var(--bg)">
-    <!-- Topbar -->
-    <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;flex-shrink:0;position:relative;z-index:2">
-      <button onclick="closeArtModal()" style="width:34px;height:34px;border:none;border-radius:50%;background:rgba(255,255,255,.07);color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
-      </button>
-      <div style="flex:1"></div>
-      <button id="artModalSaveBtn" onclick="artModalToggleSave()" style="width:34px;height:34px;border:none;border-radius:50%;background:rgba(255,255,255,.07);color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-      </button>
+  <div id="artModal" style="display:none;position:fixed;inset:0;z-index:7000;align-items:center;justify-content:center;padding:22px">
+    <div class="art-scrim" onclick="closeArtModal()"></div>
+
+    <!-- Chevrons navigation article ← → -->
+    <div class="art-nav-chevron prev" id="artNavPrev" onclick="_artNav(-1)" aria-label="Article précédent">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </div>
+    <div class="art-nav-chevron next" id="artNavNext" onclick="_artNav(1)" aria-label="Article suivant">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
     </div>
 
-    <!-- Corps scrollable -->
-    <div id="artModalBody" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;position:relative">
+    <!-- Coque contenue -->
+    <div class="art-shell" id="artShell">
 
       <!-- Image hero -->
-      <div id="artModalHeroWrap" style="width:100%;aspect-ratio:16/9;background:#111;overflow:hidden;display:none">
-        <img id="artModalHeroImg" alt="" decoding="async" style="width:100%;height:100%;object-fit:cover" onerror="document.getElementById('artModalHeroWrap').style.display='none'">
+      <div id="artModalHeroWrap" class="art-shell-hero" style="display:none">
+        <img id="artModalHeroImg" alt="" decoding="async" onerror="document.getElementById('artModalHeroWrap').style.display='none'">
       </div>
 
-      <!-- Corps article -->
-      <div id="artModalContent" style="padding:20px 20px 0;position:relative">
-        <!-- Watermark date en arrière-plan -->
+      <!-- Contrôles flottants -->
+      <button class="art-float-btn art-float-close" onclick="closeArtModal()" aria-label="Fermer">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <button id="artModalSaveBtn" class="art-float-btn art-float-save" onclick="artModalToggleSave()" aria-label="Enregistrer">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+      </button>
+
+      <!-- Tête : date, titre, source -->
+      <div class="art-shell-head" id="artModalContent">
         <div class="art-modal-date-watermark" id="artModalDateWM"></div>
-
-        <!-- Date -->
         <div class="art-modal-date" id="artModalDate"></div>
-
-        <!-- Titre -->
         <h2 class="art-modal-title" id="artModalTitle"></h2>
-
-        <!-- Source row -->
         <div class="art-modal-source-row">
           <div class="art-modal-source-pill">
             <div class="art-modal-source-fav"><img id="artModalFav" alt="" onerror="this.style.opacity='.3'"></div>
@@ -13475,20 +14263,32 @@ body.focus-mode .focus-exit{ display:flex; }
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
           </button>
         </div>
-
-        <!-- Lecteur audio (podcasts) -->
-        <div id="artModalAudio" class="art-modal-audio" style="display:none"></div>
-
-        <!-- Étiquettes (tags) -->
-        <div id="artModalTags" class="art-modal-tags"></div>
-
-        <!-- Reader content -->
-        <div class="art-reader-section" id="artReaderSection"></div>
-        <div id="artModalContext"></div>
       </div>
 
-      <!-- Toolbar sticky bas -->
-      <div class="art-modal-toolbar">
+      <!-- Pager à puces (swipe interne) -->
+      <div class="art-pager-wrap">
+        <div class="art-pager" id="artPager">
+          <div class="art-pager-track" id="artPagerTrack">
+            <section class="art-page" id="artModalBody">
+              <div id="artModalAudio" class="art-modal-audio" style="display:none"></div>
+              <div id="artModalTags" class="art-modal-tags"></div>
+              <div class="art-reader-section" id="artReaderSection"></div>
+            </section>
+            <section class="art-page" id="artPageCtx">
+              <div class="art-page-eyebrow">Le sujet · autres sources</div>
+              <div id="artModalContext"></div>
+            </section>
+          </div>
+        </div>
+        <div class="art-teaser-fade"></div>
+      </div>
+
+      <!-- Pied : bouton « Lire la suite » (compact) ⇄ puces + barre d'outils (étendu) -->
+      <div class="art-shell-foot">
+        <button class="art-cta" id="artCta" onclick="_artExpand()">Lire la suite
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
+        <div class="art-dots" id="artDots"></div>
         <div class="art-toolbar-pill">
           <button class="art-toolbar-btn active" id="artBtnReader" title="Lecteur" onclick="artSwitchView('reader')">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
