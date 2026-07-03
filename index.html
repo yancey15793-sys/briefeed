@@ -11212,8 +11212,24 @@ body.focus-mode .focus-exit{ display:flex; }
     if(!html||html.length<80)return null;
     const div=document.createElement('div'); div.innerHTML=html;
     div.querySelectorAll('script,style,noscript,iframe,form,button,input').forEach(el=>el.remove());
-    const bl=[];
-    div.querySelectorAll('p,h2,h3,h4,li,blockquote').forEach(el=>{
+    const bl=[]; const seenImg=new Set();
+    // Résout l'URL réelle d'un <img> en tenant compte du lazy-load (src = pixel/base64,
+    // vraie image dans data-src/data-lazy-src/data-original/srcset). Beaucoup de flux
+    // WordPress (Trash Talk, etc.) embarquent leurs images ainsi dans content:encoded.
+    const _imgSrc = el => {
+      const ss = el.getAttribute('srcset') || el.getAttribute('data-srcset') || '';
+      const fromSet = ss ? String(ss).split(',').map(s=>s.trim().split(/\s+/)[0]).filter(u=>/^https?:/.test(u)).pop() : '';
+      const cand = el.getAttribute('data-src') || el.getAttribute('data-lazy-src') || el.getAttribute('data-original') || fromSet || el.getAttribute('src') || '';
+      return (/^https?:/.test(cand) && !/\b(1x1|spacer|blank|pixel|placeholder)\b/i.test(cand)) ? cand : '';
+    };
+    // On balaie p/titres/listes/citations ET les images, dans l'ordre du document
+    // (querySelectorAll respecte l'ordre DOM) pour préserver la mise en page.
+    div.querySelectorAll('p,h2,h3,h4,li,blockquote,img').forEach(el=>{
+      if(el.tagName==='IMG'){
+        const src=_imgSrc(el); if(!src||seenImg.has(src))return; seenImg.add(src);
+        bl.push('<img src="'+src.replace(/"/g,'&quot;')+'" alt="" decoding="async">');
+        return;
+      }
       const tx=el.textContent.trim(); if(tx.length<5)return;
       if(/^H[2-4]$/.test(el.tagName)) bl.push('<'+el.tagName.toLowerCase()+'>'+tx+'</'+el.tagName.toLowerCase()+'>');
       else if(el.tagName==='BLOCKQUOTE') bl.push('<blockquote>'+tx+'</blockquote>');
