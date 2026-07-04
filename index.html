@@ -5939,6 +5939,9 @@ body.focus-mode .focus-exit{ display:flex; }
     // Feuille générique Briefeed (bottom sheet) — au-dessus de tout (z 7200)
     const bfSheet = document.getElementById('bfSheet');
     if(bfSheet && bfSheet.classList.contains('open')) return window.bfSheetClose;
+    // Page Couverture (z 7100, posée par-dessus le modal article) — au-dessus de lui dans la pile.
+    const cvp = document.getElementById('cvPage');
+    if(cvp && cvp.classList.contains('open')) return window.closeCoverage;
     const am = document.getElementById('artModal');
     if(am && am.style.display === 'flex' && !_artClosing) return window.closeArtModal;
     const fpr = document.getElementById('feedPropsOverlay');
@@ -11554,9 +11557,9 @@ body.focus-mode .focus-exit{ display:flex; }
     // Niveau 3 — Contexte (autres sources du sujet), opt-in, replié par défaut
     const ctxEl = document.getElementById('artModalContext');
     if(ctxEl){
-      const ext = (typeof _groupExtendHtml==='function') ? _groupExtendHtml(a) : '';   // Niveau 1
-      const ctx = (typeof _groupContextHtml==='function') ? _groupContextHtml(a) : '';  // Niveau 3
-      ctxEl.innerHTML = ext + ctx;
+      const ext   = (typeof _groupExtendHtml==='function') ? _groupExtendHtml(a) : '';  // Niveau 1 (audio/vidéo)
+      const badge = (typeof _cvBadgeHtml==='function')     ? _cvBadgeHtml(a)     : '';  // Badge « N sources » → page Couverture
+      ctxEl.innerHTML = ext + badge;
     }
 
     // Ouvrir — on annule une éventuelle animation de fermeture en cours.
@@ -12119,6 +12122,224 @@ body.focus-mode .focus-exit{ display:flex; }
     else if(link){ try{ window.open(link,'_blank','noopener'); }catch(e){} }
   }
   window._openCtxArt = _openCtxArt;
+
+  // ═══════════════════════════════════════════════════════════════
+  //  PAGE COUVERTURE — le sujet comme objet central
+  //  100 % JS : le conteneur #cvPage est créé à la volée, rempli à
+  //  l'ouverture et vidé à la fermeture (même discipline mémoire que
+  //  les autres pages fixed). CSS .cv-* fourni séparément. Le
+  //  regroupement de sujet est une passe Jaccard DÉDIÉE, plus large
+  //  que le dédoublonnage (.55 → .28), calculée à la demande sur
+  //  _allArticles et bornée par la fenêtre 72 h. z-index posé en JS
+  //  (7100) car le modal article est à 7000 : la Couverture doit
+  //  passer au-dessus, sous la feuille générique bfSheet (7200).
+  // ═══════════════════════════════════════════════════════════════
+  const _CV_SIM = 0.28, _CV_WIN = 72*3600*1000;
+  let _cvCache = { link:null, data:null };
+  function _cvCluster(a){
+    if(!a || !a.title) return { arts:[], sources:[], bySrc:new Map() };
+    if(_cvCache.link === a.link && _cvCache.data) return _cvCache.data;
+    const base = _tokens(a.title);
+    const at = +new Date(a.pubDate||0);
+    const pool = (typeof _allArticles!=='undefined' ? _allArticles : []);
+    const arts = [a]; const seen = new Set([a.link]);
+    if(base.size){
+      for(const b of pool){
+        if(!b || seen.has(b.link) || !b.title) continue;
+        const bt = +new Date(b.pubDate||0);
+        if(at && bt && Math.abs(at-bt) > _CV_WIN) continue;
+        const tb = _tokens(b.title);
+        let inter = 0; base.forEach(w=>{ if(tb.has(w)) inter++; });
+        if(inter/(base.size + tb.size - inter || 1) >= _CV_SIM){ arts.push(b); seen.add(b.link); }
+      }
+    }
+    const bySrc = new Map();
+    arts.forEach(x=>{ const s=(x.source||'').trim(); if(!s) return; bySrc.set(s, (bySrc.get(s)||0)+1); });
+    const data = { arts, sources:Array.from(bySrc.keys()), bySrc };
+    _cvCache = { link:a.link, data };
+    return data;
+  }
+  // Badge « N sources » — point d'entrée UNIQUE (remplace le panneau CONTEXTE).
+  // Stylé en inline (pas de classe .cv-badge dans le CSS fourni) : bleu Apple, pill.
+  function _cvBadgeHtml(a){
+    const cl = _cvCluster(a); const n = cl.sources.length;
+    if(n < 2) return '';
+    const esc = String(a.link||'').replace(/'/g,"\\'");
+    const st = 'display:inline-flex;align-items:center;gap:8px;margin-top:16px;padding:9px 16px;'
+      + 'border:1px solid rgba(10,132,255,.32);border-radius:999px;background:rgba(10,132,255,.12);'
+      + 'color:#0a84ff;font-family:var(--font-inter);font-size:13px;font-weight:700;cursor:pointer';
+    const dot = '<span style="width:7px;height:7px;border-radius:50%;background:#0a84ff;box-shadow:0 0 8px rgba(10,132,255,.8)"></span>';
+    return `<button type="button" onclick="openCoverage('${esc}')" style="${st}">${dot}${n} sources</button>`;
+  }
+  window._cvBadgeHtml = _cvBadgeHtml;
+  // Étiquette d'angle heuristique — 100 % local, CONSERVATRICE : pas
+  // d'étiquette quand rien de net (l'intelligence reste invisible).
+  function _cvAngleTag(art){
+    const t = ((art&&art.title||'') + ' ' + (art&&art.description||'')).toLowerCase();
+    if(/(exclusif|exclusivit[ée]|selon nos informations|r[ée]v[èe]le\b|on a appris)/.test(t)) return 'Exclusif';
+    if(/(d[ée]ment|conteste|r[ée]fute|contredit|mise au point|fact[\s-]?check|d[ée]bunk|fausse? info)/.test(t)) return 'Point de friction';
+    if(/(rumeur|selon la presse|on murmure|aurait\b|serait\b)/.test(t)) return 'Rumeur';
+    // Réaction avant Officiel : « réagit/condamne/dénonce » est plus distinctif
+    // que le générique « annonce » (sinon « réagissent après l'annonce » = Officiel à tort).
+    if(/(r[ée]agit|r[ée]action|condamne|salue|d[ée]nonce|f[ée]licite|indign)/.test(t)) return 'Réaction';
+    if(/(officiel|communiqu[ée]|annonce\b|confirme|d[ée]clare|pr[ée]cise)/.test(t)) return 'Officiel';
+    if(/(analyse|d[ée]cryptage|d[ée]crypt|pourquoi\b|comment\b|ce que|explique|explication|enqu[êe]te)/.test(t)) return 'Analyse';
+    return '';
+  }
+  function _cvWhen(d){
+    const dt = d instanceof Date ? d : new Date(d||0);
+    if(isNaN(dt)) return '';
+    const now = new Date();
+    const hh = String(dt.getHours()).padStart(2,'0')+':'+String(dt.getMinutes()).padStart(2,'0');
+    if(dt.toDateString()===now.toDateString()) return hh;
+    const y = new Date(now); y.setDate(now.getDate()-1);
+    if(dt.toDateString()===y.toDateString()) return 'hier '+hh;
+    return dt.toLocaleDateString('fr-FR',{day:'numeric',month:'short'})+' '+hh;
+  }
+  // Silences — sources du/des dossier(s) de l'article n'ayant PAS couvert le sujet.
+  function _cvSilence(a, cl){
+    if(!a || !a.feedUrl || typeof folders==='undefined') return '';
+    const covered = new Set(cl.sources.map(s=>s.trim().toLowerCase()));
+    const silent = []; const seen = new Set();
+    (folders||[]).forEach(f=>{
+      const feeds = f.feeds||[];
+      if(feeds.indexOf(a.feedUrl) < 0) return;
+      feeds.forEach(url=>{
+        if(url === a.feedUrl) return;
+        const meta = (_feedMeta && _feedMeta[url]) || {};
+        const name = (meta.name||'').trim(); if(!name) return;
+        const k = name.toLowerCase();
+        if(covered.has(k) || seen.has(k)) return;
+        seen.add(k); silent.push(name);
+      });
+    });
+    if(!silent.length) return '';
+    const chips = silent.slice(0,12).map(s=>`<span class="cv-chip">${escHtml(s)}</span>`).join('');
+    const ic = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64A9 9 0 1 1 5.64 19.36"/><line x1="3" y1="3" x2="21" y2="21"/></svg>';
+    return `<div class="cv-silence">
+      <div class="cv-silence-title">${ic}Pas encore couvert par</div>
+      <div class="cv-silence-chips">${chips}</div>
+      <p class="cv-silence-note">Ces sources de ton dossier n'ont rien publié sur ce sujet.</p>
+    </div>`;
+  }
+  function _cvBuild(a, cl){
+    const arts = cl.arts.slice();
+    const n = cl.sources.length, total = arts.length;
+    // Spectre — sources par volume décroissant
+    const srcSorted = Array.from(cl.bySrc.entries()).sort((x,y)=>y[1]-x[1]);
+    const bar = srcSorted.map(([s,c])=>`<span style="flex:${c}"></span>`).join('');
+    const legend = srcSorted.map(([s,c])=>`<span class="cv-chip">${escHtml(s)} <b>${c}</b></span>`).join('');
+    // Angles — article le plus récent par source
+    const bySrcArt = new Map();
+    arts.forEach(x=>{ const s=(x.source||'').trim(); if(!s) return; const p=bySrcArt.get(s);
+      if(!p || +new Date(x.pubDate||0) > +new Date(p.pubDate||0)) bySrcArt.set(s, x); });
+    const angleArts = Array.from(bySrcArt.values()).sort((x,y)=>+new Date(y.pubDate||0)-+new Date(x.pubDate||0));
+    const angles = angleArts.map(x=>{
+      const esc = String(x.link||'').replace(/'/g,"\\'");
+      const tag = _cvAngleTag(x);
+      const lede = (x.description||'').replace(/<[^>]*>/g,'').trim();
+      const media = x.audioUrl ? ' · Audio' : '';
+      return `<div class="cv-angle">
+        <div class="cv-angle-head">
+          <span class="cv-angle-src">${escHtml(x.source||'')}</span>
+          <span class="cv-angle-time">${escHtml(_cvWhen(x.pubDate))}${media}</span>
+        </div>
+        ${tag?`<span class="cv-angle-tag">${tag}</span>`:''}
+        <div class="cv-angle-title">${escHtml(x.title||'')}</div>
+        ${lede?`<p class="cv-angle-lede">${escHtml(lede.slice(0,220))}</p>`:''}
+        <button class="cv-angle-cta" type="button" onclick="_cvOpenArt('${esc}')">Lire cet angle<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+      </div>`;
+    }).join('');
+    // Chronologie — ascendante, première mention marquée (.first)
+    const chrono = arts.slice().sort((x,y)=>+new Date(x.pubDate||0)-+new Date(y.pubDate||0));
+    const tl = chrono.map((x,i)=>{
+      const esc = String(x.link||'').replace(/'/g,"\\'");
+      return `<div class="cv-tl-item${i===0?' first':''}">
+        <div class="cv-tl-time"><b>${escHtml(x.source||'')}</b> · ${escHtml(_cvWhen(x.pubDate))}</div>
+        <div class="cv-tl-title" onclick="_cvOpenArt('${esc}')">${escHtml(x.title||'')}</div>
+      </div>`;
+    }).join('');
+    let oldest = Infinity; arts.forEach(x=>{ const t=+new Date(x.pubDate||0); if(t && t<oldest) oldest=t; });
+    const firstWhen = isFinite(oldest) ? _cvWhen(new Date(oldest)) : '';
+    const back = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>';
+    return `<div class="cv-scroll">
+      <div class="cv-topbar">
+        <button class="cv-back" type="button" onclick="closeCoverage()" aria-label="Retour">${back}</button>
+        <div class="cv-topbar-label">Couverture du sujet</div>
+      </div>
+      <div class="cv-hero">
+        <div class="bf-ghost" aria-hidden="true">Sujet</div>
+        <h1 class="cv-title">${escHtml(a.title||'')}</h1>
+        <div class="cv-meta"><strong>${n} sources</strong> couvrent ce sujet · ${total} article${total>1?'s':''}${firstWhen?` · première mention ${escHtml(firstWhen)}`:''}</div>
+      </div>
+      <div class="cv-spectrum">
+        <div class="cv-spectrum-head">
+          <span class="cv-spectrum-title">Qui en parle</span>
+          <span class="cv-spectrum-count">${n}<small>sources</small></span>
+        </div>
+        <div class="cv-bar">${bar}</div>
+        <div class="cv-legend">${legend}</div>
+      </div>
+      <div class="cv-tabs">
+        <button class="cv-tab active" type="button" onclick="_cvTab(this,'angles')">Angles</button>
+        <button class="cv-tab" type="button" onclick="_cvTab(this,'timeline')">Chronologie</button>
+      </div>
+      <div class="cv-pane" id="cvPaneAngles">${angles}</div>
+      <div class="cv-pane" id="cvPaneTimeline" hidden><div class="cv-timeline">${tl}</div></div>
+      ${_cvSilence(a, cl)}
+      <div class="cv-foot-pad"></div>
+    </div>`;
+  }
+  function _cvEnsurePage(){
+    let p = document.getElementById('cvPage');
+    if(!p){
+      p = document.createElement('div');
+      p.id = 'cvPage'; p.className = 'cv-page';
+      p.style.zIndex = '7100';
+      p.setAttribute('aria-hidden','true');
+      document.body.appendChild(p);
+    }
+    return p;
+  }
+  function openCoverage(link){
+    const a = (typeof _allArticles!=='undefined'?_allArticles:[]).find(x=>x && x.link===link);
+    if(!a) return;
+    const cl = _cvCluster(a);
+    if(cl.sources.length < 2) return;
+    const page = _cvEnsurePage();
+    page.innerHTML = _cvBuild(a, cl);
+    page.style.display = 'flex';
+    void page.offsetWidth;   // reflow → la transition .open joue
+    page.classList.add('open'); page.setAttribute('aria-hidden','false');
+    if(typeof lockScroll==='function') lockScroll();
+    if(typeof navArm==='function') navArm();
+  }
+  window.openCoverage = openCoverage;
+  function closeCoverage(){
+    const page = document.getElementById('cvPage');
+    if(!page || !page.classList.contains('open')) return;
+    page.classList.remove('open'); page.setAttribute('aria-hidden','true');
+    if(typeof unlockScroll==='function') unlockScroll();
+    // Purge du DOM après la transition (discipline mémoire iOS).
+    setTimeout(()=>{ if(!page.classList.contains('open')){ page.style.display='none'; page.innerHTML=''; } }, 500);
+  }
+  window.closeCoverage = closeCoverage;
+  function _cvTab(btn, which){
+    const page = document.getElementById('cvPage'); if(!page) return;
+    page.querySelectorAll('.cv-tab').forEach(b=>b.classList.toggle('active', b===btn));
+    const ang = page.querySelector('#cvPaneAngles'), tl = page.querySelector('#cvPaneTimeline');
+    if(ang) ang.hidden = which!=='angles';
+    if(tl) tl.hidden = which!=='timeline';
+  }
+  window._cvTab = _cvTab;
+  function _cvOpenArt(link){
+    closeCoverage();
+    const a = (typeof _allArticles!=='undefined'?_allArticles:[]).find(x=>x && x.link===link);
+    if(a && typeof _showArtModal==='function') _showArtModal(a);
+    else if(link){ try{ window.open(link,'_blank','noopener'); }catch(e){} }
+  }
+  window._cvOpenArt = _cvOpenArt;
+
   function _edlCardHtml(a, i){
     const isRead = _RS.has(a.link);
     const fig = a.imageUrl
