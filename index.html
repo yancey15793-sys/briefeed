@@ -8178,6 +8178,15 @@ body.focus-mode .focus-exit{ display:flex; }
     if(!pcPage || !pcPage.classList.contains('open')) return;
     pcPage.classList.remove('open'); pcPage.setAttribute('aria-hidden','true');
     unlockScroll();
+    // Libère le DOM des panneaux (pochettes, carrousels) après la transition :
+    // pcSetTab reconstruit tout à la prochaine ouverture. Réduit l'empreinte
+    // mémoire d'une page fixed gardée montée (bug « l'app redémarre » iOS).
+    setTimeout(()=>{
+      if(pcPage.classList.contains('open')) return;   // ré-ouverte entre-temps
+      const abo=document.getElementById('pcPaneAbonne'), dec=document.getElementById('pcPaneDecouvrir');
+      if(abo) abo.innerHTML='';
+      if(dec) dec.innerHTML='';
+    }, 600);
   }
   window.openPodcast = openPodcast;
   window.closePodcast = closePodcast;
@@ -8385,6 +8394,13 @@ body.focus-mode .focus-exit{ display:flex; }
     if(!page||!page.classList.contains('open')) return;
     page.classList.remove('open'); page.setAttribute('aria-hidden','true');
     if(typeof unlockScroll==='function') unlockScroll();
+    // Libère le DOM du show après la transition — _plOpenShow reconstruit
+    // body.innerHTML à chaque ouverture.
+    setTimeout(()=>{
+      if(page.classList.contains('open')) return;     // ré-ouverte entre-temps
+      const body=document.getElementById('podShowBody');
+      if(body) body.innerHTML='';
+    }, 600);
   }
   window.closePodShow=closePodShow;
   const PC_CATS=[['Actualités','actualité'],['Société','société'],['Culture','culture'],['Histoire','histoire'],['Sciences','science'],['Sport','sport'],['Économie','économie'],['Humour','humour'],['True crime','true crime'],['Politique','politique']];
@@ -11577,6 +11593,14 @@ body.focus-mode .focus-exit{ display:flex; }
         _artCloseTimer = null; _artClosing = false;
         unlockScroll();
         // Retour d'article : conserver la position de défilement (ne pas remonter).
+        // Libère le contenu lourd (texte du lecteur + images, hero, contexte) :
+        // _showArtModal/_loadArtReader (cache) reconstruisent tout à la prochaine
+        // ouverture ; une réouverture pendant la fermeture annule ce timer.
+        const rs=document.getElementById('artReaderSection'); if(rs) rs.innerHTML='';
+        const hi=document.getElementById('artModalHeroImg'); if(hi) hi.removeAttribute('src');
+        const cx=document.getElementById('artModalContext'); if(cx) cx.innerHTML='';
+        const auw=document.getElementById('artModalAudio');
+        if(auw){ const au=auw.querySelector('audio'); if(!au || au.paused){ auw.innerHTML=''; auw.style.display='none'; } }
       }, 300);
       if(_artAbort){ try{_artAbort.abort();}catch(e){} _artAbort=null; }
       const fv = document.querySelector('.view[data-view="favoris"]');
