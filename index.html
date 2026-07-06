@@ -12,18 +12,25 @@
 <meta name="apple-mobile-web-app-title" content="Briefeed">
 <meta name="theme-color" content="#000000">
 
-<!-- Polices par option -->
+<!-- Polices critiques (rendu immédiat) : Inter (défaut) + DM Serif Display + Oswald -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;590;700;800&family=Geist:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=DM+Serif+Display&family=Oswald:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<!-- Fontshare : Aeonik + Satoshi -->
-<link href="https://api.fontshare.com/v2/css?f[]=aeonik@400,500,700&f[]=satoshi@400,500,700,900&display=swap" rel="stylesheet">
-<!-- Cal Sans -->
-<link href="https://fonts.cdnfonts.com/css/cal-sans" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;590;700;800&family=DM+Serif+Display&family=Oswald:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-<!-- Reader mode -->
-<script src="https://cdn.jsdelivr.net/npm/@mozilla/readability@0.5.0/Readability.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.min.js"></script>
+<!-- Polices alternatives (sélectionnables) : chargement non bloquant pour accélérer le 1er rendu mobile -->
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<link rel="preload" as="style" href="https://api.fontshare.com/v2/css?f[]=aeonik@400,500,700&f[]=satoshi@400,500,700,900&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cal+Sans&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Permanent+Marker:wght@300;400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Caveat:wght@300;400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://api.fontshare.com/v2/css?f[]=aeonik@400,500,700&f[]=satoshi@400,500,700,900&display=swap" rel="stylesheet">
+</noscript>
+
+<!-- Reader mode — différé (non requis au 1er rendu, évite 2 scripts bloquants) -->
+<script src="https://cdn.jsdelivr.net/npm/@mozilla/readability@0.5.0/Readability.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.min.js" defer></script>
 <script>
 // Polyfill AbortSignal.timeout pour iOS Safari < 17
 if(!AbortSignal.timeout){
@@ -876,7 +883,7 @@ button, .ob-btn, .ob-btn-ghost,
 .smart-nav{
   pointer-events:auto;
   display:flex;flex-direction:row;gap:8px;
-  width:356px;max-width:calc(100vw - 28px);height:66px;
+  width:300px;max-width:calc(100vw - 28px);height:58px;
   position:fixed;bottom:22px;left:50%;transform:translateX(-50%);
   z-index:500;
 }
@@ -905,15 +912,13 @@ body.bf-heavy-open .sbar-podcast{
   isolation:isolate;
   overflow:hidden;
 
-  background:rgba(22,22,26,0.58);
-  border:0.5px solid rgba(255,255,255,.18);
-  box-shadow:0px 6px 32px rgba(0,0,0,.32);
+  background:rgba(14,14,12,0.92);
+  border:1px solid rgba(255,255,255,.08);
+  box-shadow:0 16px 40px -8px rgba(14,14,12,.42), 0 4px 12px -4px rgba(14,14,12,.28);
 
-  /* Verre dépoli — cross browser */
-  backdrop-filter:blur(20px) saturate(1.8);
-  -webkit-backdrop-filter:blur(20px) saturate(1.8);
-  /* Liquid glass lens — cross browser (Aave technique) */
-  filter:url(#glass-pill);
+  /* Verre dépoli léger — cross browser (plus de lentille url() : pilule pleine façon Lecture) */
+  backdrop-filter:blur(22px);
+  -webkit-backdrop-filter:blur(22px);
 
   transition:flex-grow .42s cubic-bezier(.25,1,.4,1),flex-basis .42s cubic-bezier(.25,1,.4,1);
 }
@@ -932,13 +937,13 @@ body.bf-heavy-open .sbar-podcast{
 }
 .nav-capsule-left{flex-grow:1;flex-basis:0;}
 /* Le cercle search utilise sa propre map circulaire */
-.nav-capsule-right{flex-grow:0;flex-basis:66px;cursor:pointer;filter:url(#glass-circle);}
-.smart-nav.search-active .nav-capsule-left{flex-grow:0;flex-basis:66px;cursor:pointer;}
+.nav-capsule-right{flex-grow:0;flex-basis:58px;cursor:pointer;filter:url(#glass-circle);background:#F3F0EE;border-color:rgba(20,20,19,.12);}
+.smart-nav.search-active .nav-capsule-left{flex-grow:0;flex-basis:52px;cursor:pointer;}
 .smart-nav.search-active .nav-capsule-right{flex-grow:1;flex-basis:0;cursor:default;}
 
 /* Calques */
 .nav-layer{position:absolute;inset:0;display:flex;align-items:center;opacity:0;pointer-events:none;transition:opacity .25s ease;}
-.nav-layer-main{opacity:1;pointer-events:auto;padding:3px;position:relative;}
+.nav-layer-main{opacity:1;pointer-events:auto;padding:6px;position:relative;gap:4px;}
 .smart-nav.search-active .nav-layer-main{opacity:0;pointer-events:none;}
 .nav-layer-home{justify-content:center;cursor:pointer;}
 .smart-nav.search-active .nav-layer-home{opacity:1;pointer-events:auto;}
@@ -948,35 +953,35 @@ body.bf-heavy-open .sbar-podcast{
 .nav-layer-search-icon{flex-direction:column;justify-content:center;align-items:center;gap:3px;}
 .nav-layer-search-icon{opacity:1;pointer-events:auto;}
 .smart-nav.search-active .nav-layer-search-icon{opacity:0;pointer-events:none;}
-.nav-layer-search-icon svg{width:18px;height:18px;fill:none;stroke:rgba(195,203,210,.6);stroke-width:1.8;stroke-linecap:round;transition:stroke .2s;}
-.nav-layer-search-icon .nav-label{font-size:9.5px;font-weight:500;color:#C3CBD2;line-height:1;display:none;}
+.nav-layer-search-icon svg{width:18px;height:18px;fill:none;stroke:#141413;stroke-width:1.8;stroke-linecap:round;transition:stroke .2s;}
+.nav-layer-search-icon .nav-label{font-size:9.5px;font-weight:500;color:#141413;line-height:1;display:none;}
 .nav-layer-search-bar{padding:0 10px 0 14px;gap:8px;}
 .smart-nav.search-active .nav-layer-search-bar{opacity:1;pointer-events:auto;}
-.nav-layer-search-bar svg{width:15px;height:15px;flex-shrink:0;fill:none;stroke:rgba(195,203,210,.6);stroke-width:2;stroke-linecap:round;}
-.nav-layer-search-bar input{flex:1;background:transparent;border:none;outline:none;font-size:15px;font-weight:400;color:#fff;font-family:inherit;caret-color:rgba(255,255,255,.8);min-width:0;}
-.nav-layer-search-bar input::placeholder{color:rgba(195,203,210,.45);}
-[data-theme="light"] .nav-layer-search-bar input{color:#111;}
-[data-theme="light"] .nav-layer-search-bar input::placeholder{color:rgba(0,0,0,.3);}
-.nav-search-mic{flex-shrink:0;width:36px;height:36px;border-radius:99px;border:none;background:rgba(255,255,255,.1);color:rgba(195,203,210,.7);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s,color .15s,transform .15s;}
+.nav-layer-search-bar svg{width:15px;height:15px;flex-shrink:0;fill:none;stroke:rgba(20,20,19,.6);stroke-width:2;stroke-linecap:round;}
+.nav-layer-search-bar input{flex:1;background:transparent;border:none;outline:none;font-size:15px;font-weight:400;color:#141413;font-family:inherit;caret-color:rgba(20,20,19,.8);min-width:0;}
+.nav-layer-search-bar input::placeholder{color:rgba(20,20,19,.4);}
+[data-theme="light"] .nav-layer-search-bar input{color:#F3F0EE;}
+[data-theme="light"] .nav-layer-search-bar input::placeholder{color:rgba(243,240,238,.45);}
+.nav-search-mic{flex-shrink:0;width:36px;height:36px;border-radius:99px;border:none;background:rgba(20,20,19,.08);color:rgba(20,20,19,.7);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s,color .15s,transform .15s;}
 .nav-search-mic:active{transform:scale(.9);}
 .nav-search-mic svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;}
-[data-theme="light"] .nav-search-mic{background:rgba(0,0,0,.07);color:#444;}
+[data-theme="light"] .nav-search-mic{background:rgba(243,240,238,.18);color:#F3F0EE;}
 
 /* Items de navigation */
-.nav-item{position:relative;display:flex;flex-direction:column;justify-content:center;align-items:center;flex:1;height:60px;cursor:pointer;z-index:3;border:none;background:transparent;padding:8px 8px 7px;font-family:inherit;gap:1px;-webkit-tap-highlight-color:transparent;}
+.nav-item{position:relative;display:flex;flex-direction:row;justify-content:center;align-items:center;flex:1;height:46px;cursor:pointer;z-index:3;border:none;background:transparent;padding:0 8px;font-family:inherit;gap:0;border-radius:999px;-webkit-tap-highlight-color:transparent;transition:background .28s ease;}
 .nav-item:active{opacity:.7;transition:opacity .1s;}
+/* Onglet actif — pill cream (façon Lecture : var(--paper) sur pilule ink) */
+.nav-item.active{background:#F3F0EE;box-shadow:0 1px 3px rgba(0,0,0,.2);}
 /* Dark inactif — blanc semi-transparent */
-.nav-item svg{width:20px;height:20px;fill:none;stroke:rgba(255,255,255,.46);stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;transition:stroke .22s;flex-shrink:0;}
-/* Dark actif — blanc */
-.nav-item.active svg{stroke:#fff;}
-/* Label inactif */
-.nav-item .nav-label{font-size:9.5px;font-weight:600;letter-spacing:-.1px;color:rgba(255,255,255,.46);line-height:1;white-space:nowrap;transition:color .22s;}
-/* Label actif — blanc */
-.nav-item.active .nav-label{color:#fff;font-weight:700;}
+.nav-item svg{width:20px;height:20px;fill:none;stroke:rgba(255,255,255,.55);stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;transition:stroke .22s;flex-shrink:0;}
+/* Dark actif — ink sur pill cream */
+.nav-item.active svg{stroke:#141413;}
+/* Label retiré des boutons de nav (icônes seules) */
+.nav-item .nav-label{display:none;}
 .nav-badge{position:absolute;top:2px;right:4px;background:#ed1149;color:#fff;font-size:9px;font-weight:800;min-width:14px;height:14px;padding:0 3px;border-radius:7px;display:flex;align-items:center;justify-content:center;border:1.5px solid transparent;line-height:1;z-index:4;}
 .nav-badge.hidden{display:none;}
 .nav-pill-indicator{
-  position:absolute;
+  display:none;
   width:calc((100% - 8px) / 4);
   top:4px;bottom:4px;
   border-radius:100px;
@@ -987,14 +992,13 @@ body.bf-heavy-open .sbar-podcast{
   z-index:2;pointer-events:none;left:4px;
 }
 [data-theme="light"] .nav-capsule{
-  background:rgba(255,255,255,0.60);
-  border:0.5px solid rgba(255,255,255,.70);
-  box-shadow:0px 8px 40px rgba(0,0,0,.12);
-  backdrop-filter:blur(20px) saturate(1.6);
-  -webkit-backdrop-filter:blur(20px) saturate(1.6);
-  filter:url(#glass-pill);
+  background:rgba(14,14,12,0.92);
+  border:1px solid rgba(255,255,255,.08);
+  box-shadow:0 16px 40px -8px rgba(14,14,12,.28), 0 4px 12px -4px rgba(14,14,12,.18);
+  backdrop-filter:blur(22px);
+  -webkit-backdrop-filter:blur(22px);
 }
-[data-theme="light"] .nav-capsule-right{ filter:url(#glass-circle); }
+[data-theme="light"] .nav-capsule-right{ filter:url(#glass-circle); background:#141413; border-color:rgba(243,240,238,.16); }
 /* Light mode — exact Figma Doc 8 (blend modes fonctionnent sur fond clair) */
 [data-theme="light"] .nav-pill-indicator{
   background:#EDEDED;
@@ -1002,25 +1006,19 @@ body.bf-heavy-open .sbar-podcast{
   box-shadow:none;
 }
 [data-theme="light"] .nav-item svg{
-  stroke:#1A1A1A;
-  mix-blend-mode:plus-darker;
+  stroke:rgba(255,255,255,.55);
+  mix-blend-mode:normal;
 }
-[data-theme="light"] .nav-item .nav-label{
-  color:#1A1A1A;
-  mix-blend-mode:plus-darker;
+[data-theme="light"] .nav-item.active{
+  background:#F3F0EE;
+  box-shadow:0 1px 3px rgba(0,0,0,.2);
 }
 [data-theme="light"] .nav-item.active svg{
-  stroke:#0088FF;
+  stroke:#141413;
   mix-blend-mode:normal;
 }
-[data-theme="light"] .nav-item.active .nav-label{
-  color:#0088FF;
-  mix-blend-mode:normal;
-  font-weight:700;
-}
-[data-theme="light"] .nav-layer-search-icon svg{stroke:rgba(0,0,0,.4);}
-[data-theme="light"] .nav-layer-search-icon .nav-label{color:rgba(0,0,0,.4);}
-[data-theme="light"] .nav-layer-search-bar svg{stroke:rgba(0,0,0,.4);}
+[data-theme="light"] .nav-layer-search-icon svg{stroke:#F3F0EE;}
+[data-theme="light"] .nav-layer-search-bar svg{stroke:#F3F0EE;}
 
 /* Résultats de recherche */
 #navSearchResults{position:fixed;inset:0;bottom:90px;z-index:55;overflow-y:auto;padding:72px 20px 20px;scrollbar-width:none;pointer-events:none;opacity:0;transition:opacity .25s;}
@@ -1117,14 +1115,18 @@ body.bf-heavy-open .sbar-podcast{
   color:var(--text-muted);
 }
 
-.edition-label{
+.edition-block{
   align-self:stretch;
+  display:flex; flex-direction:column; align-items:center;
   text-align:center;
   margin:22px 0 16px;
+}
+.edition-label{
   font-family:var(--font-inter);
   font-size:12.5px; font-weight:700;
   letter-spacing:.18em; text-transform:uppercase;
   color:var(--text-muted);
+  margin:0;
 }
 
 .view{
@@ -1206,44 +1208,40 @@ body.bf-heavy-open .sbar-podcast{
   text-transform:uppercase;
   font-weight:700;
   color:var(--text-muted);
-  letter-spacing:.09em;
-  padding:0 0 12px 4px;
-}
-.sp-section-label::before{
-  content:""; width:6px; height:6px; border-radius:50%; flex:none;
-  background:var(--eyebrow-dot); box-shadow:0 0 10px var(--eyebrow-dot);
+  letter-spacing:.06em;
+  padding:0 0 8px 14px;
 }
 
-/* Card regroupant des items */
+/* Card regroupant des items — liste inset compacte (1d) */
 .sp-card{
   background:var(--surface-card);
-  border-radius:var(--r-card);
+  border-radius:16px;
   border:1px solid var(--border);
-  box-shadow:var(--shadow-soft);
+  box-shadow:0 4px 24px rgba(0,0,0,.18);
   overflow:hidden;
   margin:0;
 }
 [data-theme="light"] .sp-card{
   background:#FFFFFF;
   border:1px solid var(--border);
-  box-shadow:var(--shadow-soft);
+  box-shadow:0 4px 24px rgba(0,0,0,.06);
 }
 
 /* Séparateur entre items */
 .sp-divider{
   height:1px;
   background:rgba(255,255,255,.06);
-  margin:0 18px;
+  margin:0 15px;
 }
 [data-theme="light"] .sp-divider{ background:rgba(0,0,0,.07); }
 
-/* Item individuel */
+/* Item individuel — rangée compacte (1d) */
 .sp-item{
   display:flex;
   align-items:center;
   justify-content:space-between;
-  padding:15px 18px;
-  gap:18px;
+  padding:13px 15px;
+  gap:16px;
 }
 .sp-item.sp-item-col{
   flex-direction:column;
@@ -1497,7 +1495,7 @@ body.bf-heavy-open .sbar-podcast{
 .pp-tabpane.active{ display:block; }
 
 /* Section = label + carte */
-.pp-section{ margin-bottom:32px; }
+.pp-section{ margin-bottom:24px; }
 .pp-section:last-child{ margin-bottom:0; }
 
 /* Aucun résultat de recherche */
@@ -1702,6 +1700,11 @@ body.bf-heavy-open .sbar-podcast{
 .dc-art-img{ width:258px; height:179px; border-radius:14px; overflow:hidden; background:rgba(127,127,127,.12); flex-shrink:0; margin-bottom:9px; }
 .dc-art-img img{ width:100%; height:100%; object-fit:cover; display:block; transition:transform .5s cubic-bezier(.22,1,.36,1); }
 .dc-art:active .dc-art-img img{ transform:scale(1.04); }
+/* Cartes légèrement réduites sur smartphone (iPhone) — desktop/tablette inchangés */
+@media (max-width:430px){
+  .dc-art{ width:232px; }
+  .dc-art-img{ width:232px; height:161px; }
+}
 .dc-art-no-img{ width:258px; height:179px; border-radius:14px; background:rgba(127,127,127,.1); display:flex; align-items:center; justify-content:center; margin-bottom:9px; }
 .dc-art-no-img-dot{ width:24px; height:24px; border-radius:50%; background:var(--accent); opacity:.25; }
 .dc-art-title{ font-family:var(--font-inter); font-size:13px; font-weight:600; letter-spacing:-.01em; color:var(--text); line-height:1.35; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
@@ -2001,13 +2004,14 @@ body.bf-heavy-open .sbar-podcast{
    ══════════════════════════════════════════════════════════════════ */
 .edl{
   display:grid; grid-template-columns:1fr;
-  gap:0; padding:2px 0 10px;
+  gap:28px; padding:2px 0 10px;
 }
 @media (min-width:768px){
   /* Magazine & Grille — sur tablette/ordi, on élargit le conteneur principal
      (fixé à 341px pour l'iPhone) et .row le re-centre (justify-content:center),
      donc marges gauche/droite égales. min(100%,980px) ne déborde jamais. */
   body[data-view="editions"] .column,
+  body[data-view="mosaic"]   .column,
   body[data-view="grille"]   .column{ width:min(100%, 980px); }
   /* minmax(0,1fr) : les colonnes peuvent rétrécir (un enfant à largeur fixe ne
      gonfle plus la piste). Cartes fluides : on annule le width:310px de base
@@ -2016,7 +2020,7 @@ body.bf-heavy-open .sbar-podcast{
   /* Toutes les cartes identiques sur tablette — annule les overrides mobile */
   .edl .edl-item,
   .edl .edl-item:first-child,
-  .edl .edl-item:not(:first-child){ align-items:flex-start; padding-top:0; border-top:none; }
+  .edl .edl-item:not(:first-child){ align-items:flex-start; padding-top:0; padding-bottom:0; border-top:none; border-bottom:none; }
   .edl .edl-item > *,
   .edl .edl-item:not(:first-child) > *{ width:100%; }
   .edl .edl-fig,
@@ -2025,11 +2029,11 @@ body.bf-heavy-open .sbar-podcast{
 .edl-item{
   display:flex; flex-direction:column; align-items:flex-start;
   gap:5px; cursor:pointer; -webkit-tap-highlight-color:transparent;
-  padding-top:40px; padding-bottom:8px;
-  border-top:1px solid rgba(255,255,255,.055);
+  padding-bottom:28px;
+  border-bottom:1px solid rgba(255,255,255,.12);
 }
-.edl-item:first-child{ border-top:none; padding-top:0; }
-[data-theme="light"] .edl-item{ border-top-color:rgba(0,0,0,.07); }
+.edl-item:last-child{ border-bottom:none; padding-bottom:8px; }
+[data-theme="light"] .edl-item{ border-bottom-color:rgba(0,0,0,.14); }
 .edl-item.is-read,
 .edl-item.is-read.in{ opacity:.42; }
 .edl-item:active{ transform:scale(.985); transition:transform .12s ease; }
@@ -2710,6 +2714,9 @@ body.bf-heavy-open .sbar-podcast{
   box-shadow:0 32px 64px -12px rgba(60,48,34,.22), 0 8px 24px -8px rgba(60,48,34,.12); }
 [data-theme="light"] .fm-ov{ background:rgba(40,32,22,.30); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); }
 .fm-inner{ max-width:1080px; margin:0 auto; padding:30px 26px calc(env(safe-area-inset-bottom,0px) + 120px); display:grid; grid-template-columns:1.2fr .9fr .9fr 1.4fr; gap:30px; }
+/* Les pistes grid ont un min-width implicite = max-content de leur contenu ; sans ce
+   reset, un carrousel large (la « À la une ») gonfle sa colonne et écrase les autres. */
+.fm-inner > div{ min-width:0; }
 @media(max-width:820px){
   .fm-inner{ grid-template-columns:1fr 1fr; gap:24px; padding:22px 18px calc(env(safe-area-inset-bottom,0px) + 120px); }
   /* Sur téléphone : « À la une » passe avant « Podcasts du sujet » (ordre visuel seulement,
@@ -2718,9 +2725,6 @@ body.bf-heavy-open .sbar-podcast{
   /* « Approfondir » (Podcasts du sujet) : sur téléphone, une demi-colonne écrase la grille
      de pochettes. On lui donne toute la largeur, comme à « À la une ». */
   .fm-deepen{ grid-column:1 / -1; border-top:1px solid var(--border); padding-top:18px; order:2; }
-  /* « À la une » : même gabarit d'image que les cartes secondaires de la vue magazine
-     (310×174, coins 12px) plutôt que le grand hero pleine largeur. */
-  .fm-feat-img{ width:310px; max-width:100%; aspect-ratio:310 / 174.38; border-radius:12px; }
   /* « Approfondir » compact : moins d'espace avant les pochettes, pour voir les podcasts
      liés d'un coup d'œil sans avoir à faire défiler. */
   .fm-deepen .fm-head{ margin-bottom:10px; }
@@ -2755,17 +2759,226 @@ body.bf-heavy-open .sbar-podcast{
 .fm-pod-sq-new{ position:absolute; top:-4px; right:-4px; width:10px; height:10px; border-radius:50%; background:var(--eyebrow-dot,#F37338); box-shadow:0 0 8px var(--eyebrow-dot,#F37338); }
 .fm-pod-picker{ margin-top:8px; display:flex; flex-wrap:wrap; gap:10px 12px; padding-top:8px; border-top:1px solid var(--border); }
 .fm-pod-picker[hidden]{ display:none; }
-.fm-feat{ display:block; text-decoration:none; color:inherit; cursor:pointer; transition:transform .25s var(--spring,cubic-bezier(.32,.72,0,1)); }
-.fm-feat:hover{ transform:translateY(-2px); }
-.fm-feat-img{ aspect-ratio:16/9; background:#111 center/cover; overflow:hidden; border-radius:16px; }
-.fm-feat-img img{ width:100%; height:100%; object-fit:cover; display:block; }
-.fm-feat-b{ padding:10px 2px 14px; }
-.fm-feat-k{ font-size:10.5px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; color:var(--accent); }
-.fm-feat-t{ font-family:var(--font-title); font-size:18px; line-height:1.22; margin-top:6px; color:var(--text); }
-.fm-mini{ margin-top:14px; }
-.fm-mini a{ display:block; text-decoration:none; padding:9px 0; border-top:1px solid var(--border); cursor:pointer; }
-.fm-mt{ display:block; font-size:13.5px; font-weight:600; color:var(--text); line-height:1.3; }
-.fm-ms{ display:block; font-size:11.5px; color:var(--text-muted); margin-top:2px; }
+/* « À la une » : carrousel des 5 articles les plus récents — cartes magazine
+   élégantes (image arrondie + source + titre, sans conteneur/boîte), avec un
+   effet dynamique au glissement (la carte centrée grandit, les voisines reculent). */
+/* « Le brief du jour » (méga-menu › Approfondir) : carrousel plein cadre des 3 à 5
+   articles les plus scorés du dossier (tendances × perspicacité) — une carte image
+   à la fois (16:9), titre sous l'image, swipe horizontal + puces indicatives et
+   cliquables, à la largeur de la colonne du menu. */
+.fm-brief-car{ position:relative; margin-bottom:18px; padding-bottom:16px; border-bottom:1px solid var(--border); }
+.fm-brief-viewport{ position:relative; overflow:hidden; border-radius:16px; aspect-ratio:16/9;
+  touch-action:pan-y; cursor:grab; background:#0f0e0d; }
+.fm-brief-viewport:active{ cursor:grabbing; }
+.fm-brief-track{ position:relative; width:100%; height:100%; }
+/* Spécificité renforcée : l'anchor générique ".fm-sm a" (liens du menu) impose
+   display:flex/margin/gap — on l'annule explicitement pour la carte carrousel. */
+.fm-brief-car a.fm-brief-slide{ position:absolute; inset:0; width:100%; height:100%; min-width:0; overflow:hidden;
+  text-decoration:none; color:#fff; display:block; align-items:unset; gap:unset; margin:0; font-size:unset; font-weight:unset;
+  cursor:pointer; -webkit-tap-highlight-color:transparent;
+  opacity:0; z-index:0; pointer-events:none;
+  transition:opacity .8s cubic-bezier(.25,1,.5,1); }
+.fm-brief-car a.fm-brief-slide.active{ opacity:1; z-index:2; pointer-events:auto; }
+/* Effet « Super Flow » : l'image est surdimensionnée et glisse/dézoome pendant le swipe
+   (parallaxe), pilotée en JS via --p (progression −1 → 0 → +1 relative au centre). */
+.fm-brief-img{ position:absolute; inset:-1px; width:calc(100% + 2px); height:calc(100% + 2px);
+  background:#151413 center/cover no-repeat;
+  transform:scale(1.05);
+  transition:transform .8s cubic-bezier(.25,1,.5,1);
+  will-change:transform; }
+.fm-brief-slide.active .fm-brief-img{ transform:scale(1); }
+/* Assombrissement uniforme + dégradé bas pour la lisibilité du texte (façon « Super Flow ») */
+.fm-brief-scrim{ position:absolute; inset:0; z-index:1; pointer-events:none;
+  background:linear-gradient(180deg, rgba(0,0,0,.28) 0%, rgba(0,0,0,.12) 38%, rgba(0,0,0,.66) 100%); }
+.fm-brief-dim{ display:none; }
+.fm-brief-info{ position:absolute; left:0; right:0; bottom:0; z-index:3; padding:14px 16px 44px;
+  display:flex; flex-direction:column; gap:4px; }
+.fm-brief-src{ font-family:var(--font-inter); font-size:10.5px; font-weight:700; letter-spacing:.07em;
+  text-transform:uppercase; color:rgba(255,255,255,.82); text-shadow:0 1px 6px rgba(0,0,0,.5); }
+.fm-brief-src b{ color:#fff; font-weight:700; }
+.fm-brief-tt{ font-size:16.5px; font-weight:700; line-height:1.24; letter-spacing:-.015em; color:#fff;
+  text-shadow:0 1px 10px rgba(0,0,0,.55); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+/* Puces « Super Flow » : pilule en verre dépoli superposée en bas de l'image */
+.fm-brief-dots{ position:absolute; left:50%; bottom:10px; z-index:10; transform:translateX(-50%);
+  display:flex; justify-content:center; align-items:center; gap:6px; padding:5px 9px; border-radius:999px;
+  background:rgba(200,200,200,.15); -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,.1); line-height:0; }
+.fm-brief-dot{ -webkit-appearance:none; appearance:none; box-sizing:border-box;
+  display:block; flex:0 0 auto; width:5px; height:5px; min-width:0; min-height:0; max-width:5px; max-height:5px;
+  border-radius:50%; border:none; padding:0; margin:0; font-size:0; line-height:0; cursor:pointer;
+  background:#fff; opacity:.3; transition:opacity .3s ease, transform .3s ease; -webkit-tap-highlight-color:transparent; }
+.fm-brief-dot.active{ opacity:1; transform:scale(1.2); }
+.fm-deepen .fm-pod-head{ margin-top:2px; }
+.fm-feat-carousel{
+  display:flex; gap:16px;
+  overflow-x:auto; overflow-y:visible;
+  scrollbar-width:none; -ms-overflow-style:none; -webkit-overflow-scrolling:touch;
+  /* Pas de scroll-snap-type CSS ici : "mandatory" entre en conflit avec le scrollLeft
+     piloté en JS (le navigateur réannule chaque set programmatique pour re-snapper),
+     ce qui bloquait tout glissement. Le recentrage est géré entièrement par le JS. */
+  margin:4px -26px 0; padding:8px 13% 14px;
+  cursor:grab; touch-action:pan-y; position:relative;
+}
+.fm-feat-carousel::-webkit-scrollbar{ display:none; }
+.fm-feat-carousel.is-dragging{ cursor:grabbing; }
+.fm-feat-card{
+  flex:0 0 74%;
+  display:flex; flex-direction:column; gap:6px;
+  cursor:pointer; -webkit-tap-highlight-color:transparent;
+  transform-origin:center bottom; will-change:transform, opacity;
+}
+.fm-feat-card .edl-fig{ width:100%; margin:0; box-shadow:0 10px 30px -6px rgba(0,0,0,.5); }
+.fm-feat-card .edl-fig img{ transition:transform .6s cubic-bezier(.22,1,.36,1); }
+.fm-feat-card:active .edl-fig img{ transform:scale(1.04); }
+.fm-feat-card .edl-src-row{ margin-top:9px; margin-bottom:0; }
+.fm-feat-card .edl-title{ font-size:14.5px; line-height:1.3; -webkit-line-clamp:2; margin-top:1px; }
+@media(max-width:820px){
+  .fm-feat-carousel{ margin:4px -18px 0; padding:8px 11% 14px; }
+  .fm-feat-card{ flex:0 0 78%; }
+  .fm-feat-card .edl-title{ font-size:16px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   VUE MOSAÏQUE — rythme éditorial répété (Mosaic 4, amélioré) :
+   bande 2-égal · bande vedette pleine largeur · bande large+étroit
+   ═══════════════════════════════════════════════════════════════ */
+.mos{ display:flex; flex-direction:column; gap:14px; padding:6px 0 90px; }
+.mos-band{ display:grid; gap:12px; }
+.mos-band.two{ grid-template-columns:1fr 1fr; }
+.mos-band.full{ grid-template-columns:1fr; }
+.mos-band.wide{ grid-template-columns:1.5fr 1fr; align-items:start; }
+
+.mos-card{ display:flex; flex-direction:column; cursor:pointer; -webkit-tap-highlight-color:transparent; min-width:0; }
+.mos-card:active{ transform:scale(.985); transition:transform .12s ease; }
+.mos-card.is-read{ opacity:.45; }
+.mos-fig{ width:100%; border-radius:12px; overflow:hidden; background:rgba(255,255,255,.05); aspect-ratio:4/3; }
+[data-theme="light"] .mos-fig{ background:rgba(0,0,0,.04); }
+.mos-fig img{ width:100%; height:100%; object-fit:cover; display:block; transition:transform .55s cubic-bezier(.22,1,.36,1); }
+@media(hover:hover){ .mos-card:hover .mos-fig img{ transform:scale(1.05); } }
+.mos-src-row{ display:flex; align-items:center; gap:7px; margin-top:8px; }
+.mos-src-dot{ flex:none; width:20px; height:20px; border-radius:50%; background:#333; overflow:hidden; display:flex; align-items:center; justify-content:center; box-shadow:0 0 0 2px rgba(255,255,255,.08); }
+.mos-src-dot img{ width:100%; height:100%; object-fit:cover; }
+.mos-src-name{ font-size:11px; font-weight:600; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; letter-spacing:.01em; }
+.mos-time{ margin-left:auto; font-size:10.5px; color:var(--text-muted); flex:none; padding-left:6px; }
+.mos-title{ font-family:var(--font-inter); font-weight:600; line-height:1.28; color:var(--text); margin:5px 0 0;
+  font-size:14.5px; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+/* Réglages par variante */
+.mos-eq .mos-fig{ aspect-ratio:4/3; }
+.mos-wide .mos-fig{ aspect-ratio:16/10; }
+.mos-narrow .mos-fig{ aspect-ratio:1/1; }
+.mos-narrow .mos-title{ font-size:13px; }
+
+/* Carte vedette pleine largeur — image + dégradé + titre superposés */
+.mos-feature{ position:relative; border-radius:16px; overflow:hidden; }
+.mos-feature-media{ position:relative; width:100%; aspect-ratio:16/9; background:#111 center/cover no-repeat; display:flex; align-items:flex-end; }
+.mos-feature-scrim{ position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,.85) 0%, rgba(0,0,0,.34) 46%, rgba(0,0,0,0) 76%); }
+.mos-feature-body{ position:relative; z-index:1; padding:16px 16px 15px; width:100%; }
+.mos-feature .mos-src-row{ margin-top:0; margin-bottom:7px; }
+.mos-feature .mos-src-name{ color:rgba(255,255,255,.94); }
+.mos-feature .mos-time{ color:rgba(255,255,255,.72); }
+.mos-feature .mos-src-dot{ box-shadow:0 0 0 2px rgba(255,255,255,.28); }
+.mos-feature-title{ font-family:var(--font-title,var(--font-inter)); font-weight:700; color:#fff; margin:0;
+  font-size:19px; line-height:1.22; letter-spacing:-.01em; text-shadow:0 1px 14px rgba(0,0,0,.45);
+  display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+
+@media(min-width:768px){
+  .mos{ gap:24px; }
+  .mos-band{ gap:22px; }
+  .mos-title{ font-size:15.5px; -webkit-line-clamp:2; }
+  .mos-feature-media{ aspect-ratio:21/9; }
+  .mos-feature-title{ font-size:27px; -webkit-line-clamp:2; }
+  .mos-feature-body{ padding:26px 28px 24px; max-width:72%; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CARROUSEL 3D (cylindre piloté au défilement) — « À la une » + pochettes
+   ═══════════════════════════════════════════════════════════════ */
+.c3d{ position:relative; width:100%; }
+.c3d-stage{ position:relative; width:100%; height:240px; perspective:var(--c3d-persp,1100px); overflow:hidden;
+  -webkit-mask:linear-gradient(90deg,transparent 0,#000 19%,#000 81%,transparent 100%);
+          mask:linear-gradient(90deg,transparent 0,#000 19%,#000 81%,transparent 100%); }
+.c3d-ring{ position:absolute; top:50%; left:50%; width:var(--c3d-w,180px); height:var(--c3d-h,180px);
+  transform-style:preserve-3d; pointer-events:none; will-change:transform;
+  transform:translate(-50%,-50%) rotateY(var(--c3d-rot,0deg)); }
+.c3d-cell{ position:absolute; inset:0; border-radius:16px; overflow:hidden; background:#111 center/cover no-repeat;
+  -webkit-backface-visibility:hidden; backface-visibility:hidden;
+  transform:rotateY(calc(var(--i) * var(--c3d-angle,52deg))) translateZ(var(--c3d-radius,240px));
+  box-shadow:0 16px 42px -12px rgba(0,0,0,.62);
+  filter:brightness(.6) saturate(.92); transition:filter .35s ease, box-shadow .35s ease; }
+[data-theme="light"] .c3d-cell{ background:#ddd center/cover no-repeat; box-shadow:0 14px 34px -12px rgba(60,48,34,.34); }
+.c3d-cell.is-active{ filter:none; box-shadow:0 26px 60px -14px rgba(0,0,0,.72); }
+/* Effet d'arr\u00eat : petite but\u00e9e d'\u00e9chelle quand la vignette s'accroche au centre */
+@keyframes c3dSettle{ 0%{ transform:rotateY(calc(var(--i) * var(--c3d-angle,52deg))) translateZ(var(--c3d-radius,240px)) scale(.93); } 55%{ transform:rotateY(calc(var(--i) * var(--c3d-angle,52deg))) translateZ(var(--c3d-radius,240px)) scale(1.035); } 100%{ transform:rotateY(calc(var(--i) * var(--c3d-angle,52deg))) translateZ(var(--c3d-radius,240px)) scale(1); } }
+.c3d-cell.c3d-settle{ animation:c3dSettle .34s cubic-bezier(.34,1.56,.64,1); }
+.c3d-cell img{ width:100%; height:100%; object-fit:cover; display:block; }
+.c3d-cell-new{ position:absolute; top:10px; left:10px; width:11px; height:11px; border-radius:50%; z-index:2; background:var(--eyebrow-dot,#F37338); box-shadow:0 0 8px var(--eyebrow-dot,#F37338); }
+.c3d-track{ position:absolute; inset:0; z-index:3; display:flex; overflow-x:auto; overflow-y:hidden; scrollbar-width:none;
+  -webkit-overflow-scrolling:touch; touch-action:pan-x; cursor:grab; scroll-snap-type:x mandatory;
+  padding-inline:calc((100% - var(--c3d-slot,60%))/2); }
+.c3d-track:active{ cursor:grabbing; }
+.c3d-track::-webkit-scrollbar{ display:none; }
+.c3d-slot{ flex:0 0 var(--c3d-slot,60%); height:100%; scroll-snap-align:center; scroll-snap-stop:always; }
+@keyframes c3dLockImg{ 0%{ transform:scale(1); } 45%{ transform:scale(1.055); } 100%{ transform:scale(1); } }
+.c3d-cell.c3d-lock img{ animation:c3dLockImg .34s cubic-bezier(.34,1.4,.64,1); }
+.c3d-cap{ text-align:center; padding:13px 12px 0; min-height:46px; }
+.c3d-cap-sub{ font-family:var(--font-inter); font-size:10.5px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.c3d-cap-title{ font-family:var(--font-inter); font-size:15px; font-weight:700; letter-spacing:-.01em; color:var(--text); line-height:1.3; margin-top:4px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.c3d-dots{ display:flex; justify-content:center; gap:6px; margin-top:11px; flex-wrap:wrap; }
+.c3d-dot{ width:6px; height:6px; border-radius:50%; background:var(--text-muted); opacity:.3; transition:opacity .2s ease, transform .2s ease; }
+.c3d-dot.on{ opacity:1; transform:scale(1.35); background:var(--text); }
+
+/* ═══════════════════════════════════════════════════════════════
+   HERO ACCUEIL — briefing du jour + carte vedette (article le + récent)
+   Repris du concept fourni, réécrit aux tokens Briefeed. Responsive :
+   empilé sur mobile, carte scindée (texte / image) sur iPad & desktop.
+   ═══════════════════════════════════════════════════════════════ */
+#bfHomeHero{ margin:2px 0 32px; }
+#bfHomeHero[hidden]{ display:none; }
+.bf-hero{ display:flex; flex-direction:column; gap:22px; }
+.bf-brief{ display:flex; flex-direction:column; gap:10px; }
+.bf-brief-eyebrow{ display:flex; align-items:center; gap:8px; font-family:var(--font-inter); font-size:11.5px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--text-muted); }
+.bf-brief-eyebrow::before{ content:""; width:6px; height:6px; border-radius:50%; background:var(--eyebrow-dot,#F37338); box-shadow:0 0 10px var(--eyebrow-dot,#F37338); }
+.bf-brief-list{ display:flex; flex-direction:column; }
+.bf-brief-item{ display:flex; align-items:flex-start; gap:12px; width:100%; text-align:left; background:none; border:none; border-top:1px solid var(--border); padding:11px 2px; cursor:pointer; font-family:var(--font-inter); -webkit-tap-highlight-color:transparent; transition:opacity .15s; }
+.bf-brief-item:first-child{ border-top:none; }
+.bf-brief-item:active{ opacity:.55; }
+.bf-brief-dot{ flex:none; width:6px; height:6px; margin-top:8px; border-radius:50%; background:var(--accent,#0a84ff); box-shadow:0 0 8px rgba(10,132,255,.4); }
+.bf-brief-tx{ font-size:16px; font-weight:500; line-height:1.4; letter-spacing:-.01em; color:var(--text); }
+.bf-greet{ display:flex; flex-direction:column; align-items:center; gap:3px; text-align:center; margin:0 0 6px; }
+.bf-greet-hi{ font-family:var(--font-inter); font-size:32px; font-weight:700; letter-spacing:-.02em; color:var(--text); }
+.bf-greet-date{ font-family:var(--font-inter); font-size:13px; color:var(--text-muted); letter-spacing:.02em; }
+.bf-feat{ display:grid; grid-template-columns:1fr; background:var(--surface-card,#1C1A18); border:1px solid var(--border); border-radius:var(--r-card,24px); overflow:hidden; cursor:pointer; box-shadow:var(--shadow-soft,0 20px 48px rgba(0,0,0,.4)); -webkit-tap-highlight-color:transparent; transition:transform .3s cubic-bezier(.16,1,.3,1); }
+.bf-feat:active{ transform:scale(.99); }
+.bf-feat-media{ order:-1; width:100%; aspect-ratio:16/9; background:#111 center/cover no-repeat; }
+.bf-feat-body{ display:flex; flex-direction:column; gap:9px; padding:20px 22px 24px; }
+.bf-feat-src{ font-family:var(--font-inter); font-size:12px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--accent,#0a84ff); }
+.bf-feat-title{ font-family:var(--font-title,var(--font-inter)); font-size:22px; font-weight:700; line-height:1.24; letter-spacing:-.015em; color:var(--text); }
+.bf-feat-desc{ font-family:var(--font-inter); font-size:15px; line-height:1.5; color:var(--text-muted); display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+.bf-feat-meta{ font-family:var(--font-inter); font-size:12.5px; color:var(--text-muted); margin-top:2px; }
+.bf-feat-link{ font-family:var(--font-inter); font-size:15px; font-weight:600; color:var(--accent,#0a84ff); margin-top:6px; }
+@media(min-width:768px){
+  .bf-hero{ gap:28px; }
+  .bf-feat{ grid-template-columns:1fr 1.15fr; align-items:stretch; border-radius:var(--r-container,40px); }
+  .bf-feat-media{ order:0; height:100%; aspect-ratio:auto; min-height:340px; }
+  .bf-feat-body{ padding:40px; justify-content:center; gap:12px; }
+  .bf-feat-title{ font-size:29px; }
+  .bf-brief-tx{ font-size:17px; }
+  .bf-greet-hi{ font-size:40px; }
+}
+
+/* Chevrons de navigation article → article (iPad / desktop) + transition */
+.art-nav-chevron{ position:fixed; top:50%; transform:translateY(-50%); width:46px; height:46px; border-radius:50%; border:.5px solid var(--lg-border,rgba(255,255,255,.18)); background:rgba(28,26,24,.6); -webkit-backdrop-filter:blur(18px) saturate(1.6); backdrop-filter:blur(18px) saturate(1.6); color:var(--text); display:none; align-items:center; justify-content:center; cursor:pointer; z-index:6; box-shadow:0 6px 20px rgba(0,0,0,.4); transition:transform .2s ease, background .2s ease; }
+[data-theme="light"] .art-nav-chevron{ background:rgba(252,251,250,.7); }
+.art-nav-chevron.show{ display:flex; }
+.art-nav-chevron:active{ transform:translateY(-50%) scale(.9); }
+.art-nav-chevron.prev{ left:16px; }
+.art-nav-chevron.next{ right:16px; }
+.art-nav-chevron svg{ width:22px; height:22px; }
+@media(hover:hover){ .art-nav-chevron:hover{ background:rgba(28,26,24,.85); transform:translateY(-50%) scale(1.06); } }
+#artModalBody.art-slide-left{ animation:artSlideL .34s cubic-bezier(.22,1,.36,1); }
+#artModalBody.art-slide-right{ animation:artSlideR .34s cubic-bezier(.22,1,.36,1); }
+@keyframes artSlideL{ from{ opacity:.25; transform:translateX(44px); } to{ opacity:1; transform:none; } }
+@keyframes artSlideR{ from{ opacity:.25; transform:translateX(-44px); } to{ opacity:1; transform:none; } }
 
 .bfr-ov{ position:fixed; inset:0; z-index:600; background:rgba(0,0,0,.5); opacity:0; visibility:hidden; transition:opacity .35s, visibility .35s; -webkit-backdrop-filter:blur(2px); backdrop-filter:blur(2px); }
 .bfr-ov.show{ opacity:1; visibility:visible; }
@@ -3444,21 +3657,13 @@ body.bf-heavy-open .sbar-podcast{
 .feed-item{ cursor:pointer; }
 .feed-item:active{ background:rgba(255,255,255,.06); }
 [data-theme="light"] .feed-item:active{ background:rgba(0,0,0,.04); }/* ── MODAL ARTICLE — watermark date + reader interne ─── */
-.art-modal-date-watermark{
-  position:absolute; top:12px; left:18px;
-  font-family:var(--font-dm),Georgia,serif;
-  font-weight:900; font-size:68px; line-height:1;
-  color:var(--text); opacity:.06;
-  letter-spacing:-.04em; pointer-events:none;
-  user-select:none; z-index:0;
-  font-variant-numeric:tabular-nums;
-}
+.art-modal-date-watermark{ display:none !important; }
 .art-modal-date{
   position:relative; z-index:1;
-  display:inline-flex; align-items:center; gap:7px;
+  display:inline-flex; align-items:center; gap:8px;
   font-family:var(--font-inter); font-size:11px; font-weight:700;
-  color:var(--text-muted); letter-spacing:.1em; text-transform:uppercase;
-  margin-bottom:10px;
+  color:var(--text-muted); letter-spacing:.11em; text-transform:uppercase;
+  margin-bottom:14px;
 }
 .art-modal-date::before{
   content:""; width:6px; height:6px; border-radius:50%; flex:none;
@@ -3466,34 +3671,26 @@ body.bf-heavy-open .sbar-podcast{
 }
 .art-modal-title{
   position:relative; z-index:1;
-  font-family:var(--font-title); font-size:26px; font-weight:700;
-  line-height:1.25; letter-spacing:-.015em; color:var(--text);
-  margin-bottom:16px;
+  font-family:var(--font-dm),Georgia,serif; font-size:31px; font-weight:400;
+  line-height:1.16; letter-spacing:-.01em; color:var(--text);
+  margin-bottom:20px; text-wrap:pretty;
 }
 .art-modal-source-row{
   position:relative; z-index:1;
-  display:flex; align-items:center; justify-content:space-between;
-  padding-bottom:16px; margin-bottom:16px;
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding-bottom:18px; margin-bottom:22px;
   border-bottom:1px solid var(--border);
 }
 [data-theme="light"] .art-modal-source-row{ border-color:rgba(0,0,0,.08); }
 .art-modal-source-pill{
-  display:flex; align-items:center; gap:7px;
-  background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.15);
-  -webkit-backdrop-filter:blur(12px) saturate(140%);
-  backdrop-filter:blur(12px) saturate(140%);
-  box-shadow:inset 1px 1px 0 0 rgba(255,255,255,.1);
-  border-radius:999px; padding:5px 12px 5px 6px;
+  display:flex; align-items:center; gap:11px;
+  background:none; border:none; box-shadow:none; padding:0;
+  -webkit-backdrop-filter:none; backdrop-filter:none; min-width:0;
 }
-[data-theme="light"] .art-modal-source-pill{
-  background:rgba(255,255,255,.65); border-color:rgba(255,255,255,.9);
-  -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.8);
-}
-.art-modal-source-fav{ width:28px; height:28px; border-radius:50%; overflow:hidden; background:#fff; flex-shrink:0; box-shadow:0 0 0 2.5px rgba(255,255,255,0.75); display:flex; align-items:center; justify-content:center; }
+.art-modal-source-fav{ width:38px; height:38px; border-radius:50%; overflow:hidden; background:#fff; flex-shrink:0; box-shadow:0 0 0 1.5px var(--border); display:flex; align-items:center; justify-content:center; }
 .art-modal-source-fav img{ width:82%; height:82%; object-fit:contain; border-radius:12%; display:block; }
-[data-theme="light"] .art-modal-source-fav{ box-shadow:0 0 0 2.5px rgba(0,0,0,0.18); }
-.art-modal-source-name{ font-family:var(--font-inter); font-size:12px; font-weight:700; color:var(--text); text-transform:uppercase; letter-spacing:.04em; }
+[data-theme="light"] .art-modal-source-fav{ box-shadow:0 0 0 1.5px rgba(0,0,0,0.1); }
+.art-modal-source-name{ font-family:var(--font-inter); font-size:14px; font-weight:600; color:var(--text); letter-spacing:-.01em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 /* Reader content */
 .art-reader-section{ position:relative; z-index:1; padding:4px 0 20px; }
 /* Niveau 3 — Contexte (déroulant opt-in, ouverture spring bezier) */
@@ -3545,17 +3742,114 @@ body.bf-heavy-open .sbar-podcast{
 [data-theme="light"] .art-reader-spinner{ border-color:rgba(0,0,0,.1); border-top-color:#0a84ff; }
 .art-reader-partial{ display:inline-flex; align-items:center; gap:5px; font-family:var(--font-inter); font-size:11px; color:var(--text-muted); background:rgba(255,255,255,.05); padding:5px 10px; border-radius:999px; margin-bottom:14px; }
 .art-reader-partial-spin{ width:9px; height:9px; border-radius:50%; border:1.5px solid rgba(255,255,255,.12); border-top-color:#0a84ff; animation:af-spin .8s linear infinite; }
-/* Toolbar bas */
-.art-modal-toolbar{ position:sticky; bottom:0; left:0; right:0; z-index:5; display:flex; align-items:center; justify-content:flex-end; padding:10px 20px 14px; background:linear-gradient(transparent,var(--bg) 40%); }
-/* artModal — entrée animée */
-/* Entrée du modal : monte depuis le bas avec spring naturel */
-#artModal{ transform:translateY(48px) scale(.98); opacity:0; transition:transform .48s cubic-bezier(.16,1,.3,1), opacity .3s ease; }
-#artModal.art-open{ transform:translateY(0) scale(1); opacity:1; }
-/* Sortie : rapide et directe vers le bas */
-#artModal.art-closing{ transform:translateY(64px) scale(.97); opacity:0; transition:transform .28s cubic-bezier(.4,0,1,1), opacity .2s ease; }
-.art-toolbar-pill{ display:flex; align-items:center; gap:2px; background:rgba(255,255,255,.08); border-radius:999px; padding:4px; }
-[data-theme="light"] .art-toolbar-pill{ background:rgba(0,0,0,.07); }
-.art-toolbar-btn{ width:36px; height:36px; border:none; background:transparent; color:var(--text-muted); cursor:pointer; display:flex; align-items:center; justify-content:center; border-radius:50%; transition:background .15s,color .15s; -webkit-tap-highlight-color:transparent; }
+/* ═══════════ MODAL ARTICLE — coque contenue (compact → expansion élastique) ═══════════
+   Ouverture en carte compacte centrée (squelette « tile » Apple : image + titre + source
+   + amorce) puis, au clic sur « Lire la suite », expansion à ressort vers un panneau plus
+   large — sans jamais couvrir toute la page — avec lecture au scroll interne, partage et
+   navigation interne en swipe à puces (façon Mastercard). */
+#artModal{ align-items:center; justify-content:center; padding:22px; }
+.art-scrim{ position:absolute; inset:0; z-index:0; background:rgba(0,0,0,.55);
+  -webkit-backdrop-filter:blur(9px) saturate(1.3); backdrop-filter:blur(9px) saturate(1.3);
+  opacity:0; transition:opacity .42s ease; }
+#artModal.art-open .art-scrim{ opacity:1; }
+#artModal.art-closing .art-scrim{ opacity:0; }
+[data-theme="light"] .art-scrim{ background:rgba(30,28,26,.42); }
+
+.art-shell{ position:relative; z-index:1; display:flex; flex-direction:column;
+  width:100%; max-width:430px; max-height:min(84vh,560px);
+  background:var(--surface-card,#1C1A18); border:1px solid var(--border);
+  border-radius:28px; overflow:hidden; box-shadow:0 34px 90px rgba(0,0,0,.62), 0 4px 18px rgba(0,0,0,.4);
+  transform:translateY(42px) scale(.965); opacity:0;
+  transition:transform .5s cubic-bezier(.16,1,.3,1), opacity .34s ease,
+    max-width .64s cubic-bezier(.34,1.56,.64,1), max-height .64s cubic-bezier(.34,1.56,.64,1),
+    border-radius .5s cubic-bezier(.34,1.56,.64,1); }
+#artModal.art-open .art-shell{ transform:none; opacity:1; }
+#artModal.art-closing .art-shell{ transform:translateY(46px) scale(.965); opacity:0;
+  transition:transform .28s cubic-bezier(.4,0,1,1), opacity .2s ease; }
+.art-shell.is-expanded{ max-width:min(760px,94vw); max-height:min(92vh,940px); border-radius:32px; }
+
+/* Boutons flottants (fermer / enregistrer) — glass, superposés au hero, cibles tactiles élargies */
+.art-float-btn{ position:absolute; top:13px; z-index:6; width:38px; height:38px; border:.5px solid rgba(255,255,255,.2);
+  border-radius:50%; background:rgba(20,20,19,.5); -webkit-backdrop-filter:blur(16px) saturate(1.6); backdrop-filter:blur(16px) saturate(1.6);
+  color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer;
+  box-shadow:0 4px 14px rgba(0,0,0,.35); transition:transform .16s ease, background .2s ease; -webkit-tap-highlight-color:transparent; }
+.art-float-btn:active{ transform:scale(.86); }
+.art-float-close{ left:13px; }
+.art-float-save{ right:13px; }
+[data-theme="light"] .art-float-btn{ background:rgba(252,251,250,.72); border-color:rgba(0,0,0,.08); color:#141413; }
+
+.art-shell-hero{ flex:none; width:100%; aspect-ratio:16/9; max-height:240px; background:#1a1815; overflow:hidden; position:relative; }
+.art-shell-hero::after{ content:""; position:absolute; inset:auto 0 0 0; height:64px; pointer-events:none;
+  background:linear-gradient(to bottom, rgba(28,26,24,0), var(--surface-card,#1C1A18)); }
+[data-theme="light"] .art-shell-hero::after{ background:linear-gradient(to bottom, rgba(252,251,250,0), var(--surface-card,#FCFBFA)); }
+.art-shell.is-expanded .art-shell-hero{ max-height:288px; transition:max-height .5s cubic-bezier(.34,1.56,.64,1); }
+.art-shell-hero img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+.art-shell-head{ flex:none; position:relative; padding:22px 26px 4px; }
+/* Sans image hero : dégage l'en-tête sous les boutons flottants (fermer / enregistrer) */
+.art-shell.no-hero .art-shell-head{ padding-top:62px; }
+
+/* Pager à puces (swipe interne façon Mastercard) — piste translatée */
+.art-pager-wrap{ position:relative; flex:1; min-height:0; display:flex; overflow:hidden; }
+.art-pager{ flex:1; min-width:0; overflow:hidden; }
+.art-pager-track{ display:flex; height:100%; will-change:transform;
+  transition:transform .52s cubic-bezier(.22,1,.36,1); }
+.art-page{ flex:0 0 100%; width:100%; overflow-y:hidden; overflow-x:hidden;
+  scrollbar-width:none; padding:8px 26px 26px; }
+.art-page::-webkit-scrollbar{ display:none; }
+.art-shell.is-expanded .art-page{ overflow-y:auto; -webkit-overflow-scrolling:touch; }
+/* En compact : seule la 1re page, tronquée, avec fondu + amorce */
+.art-shell:not(.is-expanded) .art-page ~ .art-page{ display:none !important; }
+.art-page-eyebrow{ display:inline-flex; align-items:center; gap:7px; font-family:var(--font-inter); font-size:11px;
+  font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--text-muted); margin:2px 0 12px; }
+.art-page-eyebrow::before{ content:""; width:6px; height:6px; border-radius:50%; background:var(--eyebrow-dot); box-shadow:0 0 10px var(--eyebrow-dot); }
+
+/* Amorce compacte : fondu de lecture au-dessus du pied (résiduel, invisible en mode étendu permanent) */
+.art-teaser-fade{ display:none; }
+
+/* Pied : puces de pages (au-dessus) + barre d'outils centrée — coque toujours déployée */
+.art-shell-foot{ flex:none; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px;
+  padding:12px 16px calc(16px + env(safe-area-inset-bottom,0px)); border-top:1px solid var(--border);
+  background:var(--surface-card,#1C1A18); }
+[data-theme="light"] .art-shell-foot{ border-color:rgba(0,0,0,.07); }
+
+/* Puces (façon Mastercard) + barre d'outils — toujours visibles, coque toujours étendue */
+.art-dots{ display:none; align-items:center; justify-content:center; gap:8px; }
+.art-dot{ width:7px; height:7px; border-radius:50%; border:none; padding:0; cursor:pointer;
+  background:var(--text-muted); opacity:.32; transition:opacity .25s ease, transform .3s cubic-bezier(.34,1.56,.64,1), width .3s cubic-bezier(.34,1.56,.64,1); -webkit-tap-highlight-color:transparent; }
+.art-dot.active{ opacity:1; width:20px; border-radius:999px; background:var(--accent,#0a84ff); }
+
+/* ── Mobile : coque plein-cadre, chevrons masqués (ils chevauchaient le titre),
+      amorce garantie sous le titre, « Lire la suite » toujours visible en pied ── */
+@media(max-width:767px){
+  #artModal{ padding:0; align-items:flex-end; }
+  .art-nav-chevron{ display:none !important; }
+  .art-shell{ max-width:100%; width:100%; max-height:97vh; border-radius:20px 20px 0 0;
+    transform:translateY(60px) scale(1); }
+  #artModal.art-open .art-shell{ transform:none; }
+  #artModal.art-closing .art-shell{ transform:translateY(80px) scale(1); }
+  .art-shell.is-expanded{ max-width:100%; max-height:97vh; border-radius:20px 20px 0 0; }
+  .art-shell-hero{ max-height:220px; }
+  .art-shell:not(.is-expanded) .art-shell-hero{ max-height:190px; }
+  .art-shell.is-expanded .art-shell-hero{ max-height:250px; }
+  .art-shell-head{ padding:18px 22px 2px; }
+  .art-pager-wrap{ min-height:118px; flex:1; }
+  /* Poignée de préhension (sheet) */
+  .art-shell::before{ content:""; position:absolute; top:8px; left:50%; transform:translateX(-50%);
+    width:38px; height:4px; border-radius:999px; background:var(--text-muted); opacity:.35; z-index:7; }
+  .art-float-close, .art-float-save{ top:12px; }
+  /* Carrousel article → article : puces indicatives remplaçant les flèches */
+  .art-folder-dots{ display:flex; justify-content:center; align-items:center; gap:5px; padding-bottom:11px; }
+}
+/* Masquées par défaut (tablette/desktop utilisent les flèches) */
+.art-folder-dots{ display:none; }
+.art-fdot{ width:6px; height:6px; border-radius:50%; background:var(--text-muted); opacity:.35;
+  transition:all .25s cubic-bezier(.34,1.56,.64,1); }
+.art-fdot.active{ width:16px; border-radius:999px; background:var(--accent,#0a84ff); opacity:1; }
+.art-fdot-edge{ opacity:.2; transform:scale(.7); }
+.art-toolbar-pill{ display:flex; align-items:center; gap:2px; background:rgba(255,255,255,.08); border-radius:999px; padding:5px; box-shadow:inset 0 1px .5px rgba(255,255,255,.1); }
+[data-theme="light"] .art-toolbar-pill{ background:rgba(0,0,0,.06); }
+.art-toolbar-btn{ width:40px; height:40px; border:none; background:transparent; color:var(--text-muted); cursor:pointer; display:flex; align-items:center; justify-content:center; border-radius:50%; transition:background .15s,color .15s,transform .15s; -webkit-tap-highlight-color:transparent; }
 .art-toolbar-btn:active{ transform:scale(.88); }
 .art-toolbar-btn:hover{ background:rgba(255,255,255,.1); color:var(--text); }
 .art-toolbar-btn.active{ color:#0a84ff; }
@@ -3749,7 +4043,7 @@ body.focus-mode .focus-exit{ display:flex; }
 /* Onboarding container */
 #ob-view{
   position:fixed; inset:0; z-index:98000;
-  background:#F9F9F6; color:#111;
+  background:#141413; color:#F3F0EE;
   display:flex; align-items:center; justify-content:center;
   overflow:hidden;
   opacity:0; pointer-events:none;
@@ -3770,39 +4064,45 @@ body.focus-mode .focus-exit{ display:flex; }
   letter-spacing:.35em; text-transform:uppercase;
 }
 .ob-onboard-brand{
-  margin-bottom:44px;
+  margin-bottom:40px; color:#F3F0EE;
   opacity:0; animation:obFadeIn 1s cubic-bezier(.16,1,.3,1) 2.3s forwards;
 }
 .ob-hero-title{
   align-self:stretch; width:100%;   /* pleine largeur : évite le shrink-to-fit qui faisait déborder le titre */
-  font-family:var(--font-dm); font-size:48px; line-height:1.12;
-  font-weight:700; letter-spacing:-.02em; color:#111; margin-bottom:20px;
+  font-family:var(--font-dm); font-size:42px; line-height:1.0;
+  font-weight:700; letter-spacing:-.02em; color:#F3F0EE; margin-bottom:16px;
   text-wrap:balance;
   opacity:0; animation:obFadeIn 1.2s cubic-bezier(.16,1,.3,1) 2.4s forwards;
 }
 .ob-hero-sub{
-  align-self:stretch; width:100%;
-  font-family:var(--font-inter); font-size:15px; color:#666; line-height:1.55;
-  margin-bottom:52px;
+  align-self:center; width:100%; max-width:270px;
+  font-family:var(--font-inter); font-size:14.5px; color:#9A958C; line-height:1.5;
+  margin-bottom:36px;
   opacity:0; animation:obFadeIn 1.2s cubic-bezier(.16,1,.3,1) 2.5s forwards;
 }
 .ob-btn-group{
-  display:flex; flex-direction:column; gap:10px; width:100%;
+  display:flex; flex-direction:column; align-items:center; gap:0; width:100%;
   opacity:0; animation:obFadeIn 1.2s cubic-bezier(.16,1,.3,1) 2.62s forwards;
 }
+.ob-card{
+  width:100%; display:flex; flex-direction:column; gap:10px;
+  background:#1C1A18; border:1px solid #2A2724; border-radius:24px;
+  padding:14px; box-shadow:0 20px 48px rgba(0,0,0,.4);
+}
 .ob-btn{
-  width:100%; height:52px;
-  font-family:var(--font-inter); font-size:13px; font-weight:600;
-  text-transform:uppercase; letter-spacing:.04em;
-  cursor:pointer; transition:transform .4s cubic-bezier(.16,1,.3,1);
+  width:100%; height:48px; border-radius:20px;
+  font-family:var(--font-inter); font-size:14.5px; font-weight:600;
+  letter-spacing:-.01em;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:transform .38s cubic-bezier(.34,1.56,.64,1), opacity .2s;
   -webkit-tap-highlight-color:transparent;
 }
-.ob-btn:active{ transform:scale(.96); }
-.ob-btn-primary{ background:#111; color:#fff; border:1px solid #111; }
-.ob-btn-outline{ background:transparent; color:#111; border:1px solid #111; }
+.ob-btn:active{ transform:scale(.96); opacity:.85; }
+.ob-btn-primary{ background:#F3F0EE; color:#141413; border:none; }
+.ob-btn-outline{ background:transparent; color:#F3F0EE; border:1.5px solid rgba(243,240,238,.22); }
 .ob-btn-ghost{
-  background:none; border:none; color:#888; font-size:13px;
-  text-decoration:underline; margin-top:6px; cursor:pointer;
+  background:none; border:none; color:#9A958C; font-size:13px;
+  text-decoration:underline; text-underline-offset:3px; margin-top:20px; cursor:pointer;
   font-family:var(--font-inter); font-weight:500; text-transform:none; letter-spacing:0;
 }
 /* Écran prénom */
@@ -4563,96 +4863,70 @@ body.focus-mode .focus-exit{ display:flex; }
 .sbar-trig-chev{ margin-left:2px; color:var(--text-muted); display:flex; }
 .sbar-trig-chev svg{ width:13px; height:13px; }
 
-/* ═══ PAGE COUVERTURE — le sujet comme objet central ═══ */
-.cv-page{ position:fixed; inset:0; z-index:6400; display:none; flex-direction:column;
-  background:var(--bg); opacity:0; transform:translateX(24px);
-  transition:opacity .38s cubic-bezier(.25,1,.5,1), transform .38s cubic-bezier(.25,1,.5,1); }
-.cv-page.open{ opacity:1; transform:none; }
-.cv-scroll{ flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
-.cv-scroll::-webkit-scrollbar{ display:none; }
-.cv-topbar{ position:sticky; top:0; z-index:5; display:flex; align-items:center; gap:12px;
-  padding:calc(env(safe-area-inset-top,0px) + 10px) 18px 12px;
-  background:linear-gradient(to bottom, var(--bg) 70%, transparent); }
-.cv-back{ width:36px; height:36px; border-radius:50%; border:1px solid var(--border);
-  background:var(--bg-elev); display:flex; align-items:center; justify-content:center;
-  color:var(--text); flex:none; cursor:pointer; }
-.cv-topbar-label{ font-family:'Oswald',sans-serif; font-size:12px; font-weight:500;
-  letter-spacing:.14em; text-transform:uppercase; color:var(--text-muted);
-  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.cv-hero{ position:relative; padding:18px 22px 26px; overflow:hidden; }
-.cv-hero .bf-ghost{ top:-6px; right:-14px; }
-.cv-title{ position:relative; z-index:1; font-family:var(--font-dm); font-weight:700;
-  font-size:clamp(30px,8.6vw,40px); line-height:1.04; letter-spacing:-.02em; margin:0 0 14px; }
-.cv-meta{ position:relative; z-index:1; font-size:13px; color:var(--text-muted); line-height:1.5; }
-.cv-meta strong{ color:var(--text); font-weight:590; }
-.cv-spectrum{ margin:4px 22px 8px; padding:18px; background:var(--surface-card);
-  border:1px solid var(--border); border-radius:var(--r-card); }
-.cv-spectrum-head{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:14px; }
-.cv-spectrum-title{ font-family:'Oswald',sans-serif; font-size:12px; font-weight:500;
-  letter-spacing:.14em; text-transform:uppercase; color:var(--text-muted); }
-.cv-spectrum-count{ font-family:var(--font-dm); font-size:22px; line-height:1; }
-.cv-spectrum-count small{ font-family:var(--font-inter); font-size:11px; color:var(--text-muted);
-  letter-spacing:.06em; text-transform:uppercase; margin-left:5px; }
-.cv-bar{ display:flex; height:8px; border-radius:var(--r-pill); overflow:hidden; gap:2px; margin-bottom:14px; }
-.cv-bar span{ background:var(--text); opacity:.9; border-radius:2px; min-width:6px; }
-.cv-bar span:nth-child(2){ opacity:.62; }
-.cv-bar span:nth-child(3){ opacity:.42; }
-.cv-bar span:nth-child(n+4){ opacity:.26; }
-.cv-legend{ display:flex; flex-wrap:wrap; gap:7px; }
-.cv-chip{ display:inline-flex; align-items:center; gap:6px; padding:6px 11px;
-  border:1px solid var(--border); border-radius:var(--r-pill);
-  font-size:12px; font-weight:590; color:var(--text); background:var(--bg); }
-.cv-chip b{ font-weight:700; font-size:11px; color:var(--text-muted); }
-.cv-tabs{ display:flex; gap:22px; margin:22px 22px 0; border-bottom:1px solid var(--border); }
-.cv-tab{ appearance:none; background:none; border:none; padding:0 0 12px; cursor:pointer;
-  font-family:'Oswald',sans-serif; font-size:13.5px; font-weight:500; letter-spacing:.12em;
-  text-transform:uppercase; color:var(--text-muted); position:relative; }
-.cv-tab.active{ color:var(--text); }
-.cv-tab.active::after{ content:""; position:absolute; left:0; right:0; bottom:-1px; height:2px;
-  background:var(--text); border-radius:2px; }
-.cv-pane{ padding:20px 22px 8px; }
-.cv-pane[hidden]{ display:none; }
-.cv-angle{ background:var(--surface-card); border:1px solid var(--border);
-  border-radius:var(--r-card); padding:18px; margin-bottom:14px; }
-.cv-angle-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:11px; }
-.cv-angle-src{ font-family:'Oswald',sans-serif; font-size:12.5px; font-weight:600;
-  letter-spacing:.13em; text-transform:uppercase; }
-.cv-angle-time{ font-size:11.5px; color:var(--text-muted); font-weight:500; flex:none; margin-left:10px; }
-.cv-angle-tag{ display:inline-block; margin-bottom:10px; padding:4px 10px;
-  border-radius:var(--r-pill); font-size:10.5px; font-weight:700; letter-spacing:.08em;
-  text-transform:uppercase; color:var(--accent); background:rgba(10,132,255,.1);
-  border:1px solid rgba(10,132,255,.28); }
-.cv-angle-title{ font-size:15.5px; font-weight:590; line-height:1.35; margin:0 0 8px; }
-.cv-angle-lede{ font-size:13.5px; line-height:1.55; color:var(--text-muted); margin:0;
-  display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
-.cv-angle-cta{ display:inline-flex; align-items:center; gap:6px; margin-top:12px;
-  font-size:12.5px; font-weight:590; color:var(--accent); text-decoration:none; cursor:pointer;
-  background:none; border:none; padding:0; font-family:inherit; }
-.cv-silence{ margin:8px 22px 26px; padding:18px; border:1px dashed var(--border);
-  border-radius:var(--r-card); }
-.cv-silence-title{ display:flex; align-items:center; gap:8px;
-  font-family:'Oswald',sans-serif; font-size:12px; font-weight:500; letter-spacing:.14em;
-  text-transform:uppercase; color:var(--text-muted); margin-bottom:12px; }
-.cv-silence-chips{ display:flex; flex-wrap:wrap; gap:7px; }
-.cv-silence .cv-chip{ color:var(--text-muted); background:transparent; }
-.cv-silence-note{ font-size:12px; color:var(--text-muted); line-height:1.5; margin:12px 0 0; }
-.cv-timeline{ position:relative; padding-left:24px; padding-bottom:calc(env(safe-area-inset-bottom,0px) + 34px); }
-.cv-timeline::before{ content:""; position:absolute; left:7px; top:6px; bottom:40px;
-  width:1px; background:var(--border); }
-.cv-tl-item{ position:relative; padding-bottom:22px; }
-.cv-tl-item::before{ content:""; position:absolute; left:-21px; top:5px; width:9px; height:9px;
-  border-radius:50%; background:var(--bg); border:2px solid var(--text-muted); }
-.cv-tl-item.first::before{ border-color:var(--eyebrow-dot); background:var(--eyebrow-dot);
-  box-shadow:0 0 10px var(--eyebrow-dot); }
-.cv-tl-time{ font-family:'Oswald',sans-serif; font-size:11.5px; font-weight:500;
-  letter-spacing:.1em; text-transform:uppercase; color:var(--text-muted); margin-bottom:5px; }
-.cv-tl-time b{ color:var(--text); font-weight:600; }
-.cv-tl-title{ font-size:14px; font-weight:590; line-height:1.4; cursor:pointer; }
-.cv-foot-pad{ height:calc(env(safe-area-inset-bottom,0px) + 34px); }
-
 </style>
-<link id="gfont-Permanent-Marker" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Permanent+Marker:wght@300;400;500;600;700&amp;display=swap">
-<link id="gfont-Caveat" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@300;400;500;600;700&amp;display=swap">
+<style id="mobile-optim">
+/* ═══════════════════════════════════════════════════════════════
+   OPTIMISATION MOBILE — cibles tactiles ≥44px, layout premium,
+   confort de lecture & fluidité. Scopé mobile : desktop inchangé.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Anti-débordement horizontal + rendu texte iOS stable (pas d'auto-zoom) */
+html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+@media (max-width:767px){
+  html,body{ max-width:100%; overflow-x:hidden; }
+  /* Défilement inertiel fluide sur toutes les zones scrollables */
+  .row, .feed-page-scroll, .folder-page-scroll, .sb-scroll,
+  .fm, .pc-page, .art-pager-wrap, .list-view, .sb-inner{
+    -webkit-overflow-scrolling:touch; overscroll-behavior-y:contain;
+  }
+}
+
+/* ── Cibles tactiles : minimum confortable 44×44 (Apple HIG) ─────── */
+@media (hover:none) and (pointer:coarse){
+  /* Barre d'outils article */
+  .art-toolbar-btn{ min-width:44px; min-height:44px; }
+  /* Boutons flottants (fermer / enregistrer) */
+  .art-float-btn{ width:44px; height:44px; }
+  /* Micro de recherche */
+  .nav-search-mic{ width:44px; height:44px; }
+  /* Chips de vue / catégories du menu */
+  .menu3-chip{ min-height:44px; display:inline-flex; align-items:center; }
+  /* Puces du carrousel : point visuel inchangé, zone tactile élargie */
+  .fm-brief-dot{ position:relative; }
+  .fm-brief-dot::after{ content:""; position:absolute; inset:-14px; border-radius:50%; }
+  /* Boutons circulaires génériques trop petits */
+  .pc-back, .fm-back, .sb-close, .art-nav-chevron{ min-width:44px; min-height:44px; }
+  /* Liens de sous-menu (police / options) : hauteur de frappe confortable */
+  .sub-link{ min-height:44px; display:flex; align-items:center; }
+}
+
+/* ── Layout premium mobile ───────────────────────────────────────── */
+@media (max-width:767px){
+  /* Safe-area : respecte l'encoche et la barre d'accueil iPhone */
+  .row, .feed-page-scroll{
+    padding-left:max(16px, env(safe-area-inset-left));
+    padding-right:max(16px, env(safe-area-inset-right));
+  }
+  /* Marge basse pour ne jamais masquer le dernier article sous la navbar flottante */
+  .row{ scroll-padding-bottom:120px; }
+  .edl, #mosaicGrid, #grilleGrid, #seqList, .list-view{ padding-bottom:104px; }
+
+  /* Confort de lecture : corps d'article plus aéré */
+  .art-pager-wrap, .art-reader-body{ font-size:16.5px; line-height:1.62; }
+
+  /* Titres hero légèrement réduits pour tenir sans césure agressive */
+  .bf-feat-title{ font-size:clamp(21px, 6.4vw, 27px); line-height:1.16; text-wrap:balance; }
+
+  /* Bloc d'édition (salutation + label) : marge haute réduite sur petits écrans */
+  .edition-block{ margin:16px 0 14px; }
+
+  /* Feedback tactile net, sans surbrillance grise iOS */
+  a, button, .menu3-chip, .nav-item, .art-toolbar-btn, .sub-link,
+  .grid2-card, .list-item, .seq-item, .edl-card, .dc-art{
+    -webkit-tap-highlight-color:transparent;
+  }
+}
+</style>
 </head>
 <body>
 
@@ -4697,9 +4971,11 @@ body.focus-mode .focus-exit{ display:flex; }
       <h1 class="ob-hero-title">La sélection<br>ultime.</h1>
       <p class="ob-hero-sub">Une curation exigeante de l'information, pensée pour le lecteur moderne.</p>
       <div class="ob-btn-group">
-        <button class="ob-btn ob-btn-primary" onclick="_obContinue('name')">Créer mon espace</button>
-        <button class="ob-btn ob-btn-outline" onclick="_obContinue('google')">Continuer avec Google</button>
-        <button class="ob-btn ob-btn-outline" onclick="_obContinue('apple')">Continuer avec Apple</button>
+        <div class="ob-card">
+          <button class="ob-btn ob-btn-primary" onclick="_obContinue('name')">Créer mon espace</button>
+          <button class="ob-btn ob-btn-outline" onclick="_obContinue('google')">Continuer avec Google</button>
+          <button class="ob-btn ob-btn-outline" onclick="_obContinue('apple')">Continuer avec Apple</button>
+        </div>
         <button class="ob-btn-ghost" onclick="_obContinue('guest')">Explorer en tant qu'invité</button>
       </div>
     </div>
@@ -4774,6 +5050,7 @@ body.focus-mode .focus-exit{ display:flex; }
               <a class="sub-link sub-link-sm" data-qview="editions"   onclick="qmenuSetView('editions')">Magazine</a>
               <a class="sub-link sub-link-sm" data-qview="liste"      onclick="qmenuSetView('liste')">Liste</a>
               <a class="sub-link sub-link-sm" data-qview="grille"     onclick="qmenuSetView('grille')">Grille</a>
+              <a class="sub-link sub-link-sm" data-qview="mosaic"     onclick="qmenuSetView('mosaic')">Mosaïque</a>
               <a class="sub-link sub-link-sm" data-qview="sequential" onclick="qmenuSetView('sequential')">Séquentiel</a>
               <div class="qmenu-sub-section-label" style="margin-top:10px">Police</div>
               <a class="sub-link sub-link-sm" data-qfont="inter"        onclick="qmenuSetFont('inter')"        style="font-family:'Inter',-apple-system,sans-serif">Inter</a>
@@ -4876,6 +5153,22 @@ body.focus-mode .focus-exit{ display:flex; }
         </svg>
       </div>
       <span class="vp-label">Grille</span>
+      <span class="vp-check"><svg viewBox="0 0 24 24" fill="none" stroke="#0a84ff" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+    </div>
+
+    <div class="vp-divider"></div>
+
+    <div class="vp-item" data-vpview="mosaic" onclick="vpSelect('mosaic')">
+      <div class="vp-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <rect x="3" y="3" width="8" height="6" rx="1.3"/>
+          <rect x="13" y="3" width="8" height="6" rx="1.3"/>
+          <rect x="3" y="11" width="18" height="5" rx="1.3"/>
+          <rect x="3" y="18" width="11" height="3.5" rx="1.3"/>
+          <rect x="16" y="18" width="5" height="3.5" rx="1.3"/>
+        </svg>
+      </div>
+      <span class="vp-label">Mosaïque</span>
       <span class="vp-check"><svg viewBox="0 0 24 24" fill="none" stroke="#0a84ff" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></span>
     </div>
 
@@ -5586,8 +5879,14 @@ body.focus-mode .focus-exit{ display:flex; }
   <div class="row">
     <div class="column">
 
-      <!-- Label centré, toujours présent au-dessus de toutes les vues -->
-      <h2 class="edition-label">Mon magazine du jour</h2>
+      <!-- Bloc titre unique : salutation + date + label d'édition, centré, même typographie -->
+      <div class="edition-block">
+        <div id="bfGreetHost" hidden></div>
+        <h2 class="edition-label">Mon magazine du jour</h2>
+      </div>
+
+      <!-- Hero accueil : briefing du jour + carte vedette (au-dessus de toutes les vues du flux) -->
+      <div id="bfHomeHero" hidden></div>
 
       <!-- Smart Bar — segment intelligent + catégories (tiret animé) + sources (accordéon) -->
       <!-- #smartBar conservé (référencé par le JS) ; le rail vit désormais dans la topnav -->
@@ -5699,6 +5998,11 @@ body.focus-mode .focus-exit{ display:flex; }
       <div class="view" data-view="grille" hidden>
         <div class="grid2-wrap" id="grilleGrid"></div>
       </div><!-- /vue grille -->
+
+      <!-- ========== VUE MOSAÏQUE ========== -->
+      <div class="view" data-view="mosaic" hidden>
+        <div class="mosaic-wrap" id="mosaicGrid"></div>
+      </div><!-- /vue mosaïque -->
 
       <!-- ========== VUE SÉQUENTIELLE ========== -->
       <div class="view" data-view="sequential" hidden>
@@ -5894,7 +6198,7 @@ body.focus-mode .focus-exit{ display:flex; }
 
   // ---- Bouton œil : cycle éditions → grille → séquentiel → parcourir ----
   const views = document.querySelectorAll('.view');
-  const order = ['editions', 'liste', 'grille', 'sequential'];
+  const order = ['editions', 'liste', 'grille', 'mosaic', 'sequential'];
   let _currentView = (() => { try { const v = localStorage.getItem('bf_view'); return order.includes(v) ? v : 'editions'; } catch(e){ return 'editions'; } })();
   // Déclarés tôt pour éviter reference-before-declaration dans _switchView
   let _feedPageArts = [];
@@ -5939,9 +6243,6 @@ body.focus-mode .focus-exit{ display:flex; }
     // Feuille générique Briefeed (bottom sheet) — au-dessus de tout (z 7200)
     const bfSheet = document.getElementById('bfSheet');
     if(bfSheet && bfSheet.classList.contains('open')) return window.bfSheetClose;
-    // Page Couverture (z 7100, posée par-dessus le modal article) — au-dessus de lui dans la pile.
-    const cvp = document.getElementById('cvPage');
-    if(cvp && cvp.classList.contains('open')) return window.closeCoverage;
     const am = document.getElementById('artModal');
     if(am && am.style.display === 'flex' && !_artClosing) return window.closeArtModal;
     const fpr = document.getElementById('feedPropsOverlay');
@@ -6026,6 +6327,7 @@ body.focus-mode .focus-exit{ display:flex; }
       views.forEach(v => { v.hidden = v.dataset.view !== target; });
       if(target === 'browse')    renderBrowseTimeline();
       if(target === 'grille')    _renderGrille();
+      if(target === 'mosaic')    _renderMosaic();
       if(target === 'sequential')_renderSequential();
       if(target === 'liste')     _renderListe();
       if(target === 'essentiel') _renderEssentiel();
@@ -7057,6 +7359,7 @@ body.focus-mode .focus-exit{ display:flex; }
       document.querySelectorAll('.view').forEach(v=>{ v.hidden = v.dataset.view !== _currentView; });
       if(_currentView==='browse') renderBrowseTimeline();
       if(_currentView==='grille') _renderGrille();
+      if(_currentView==='mosaic') _renderMosaic();
       if(_currentView==='sequential') _renderSequential();
       if(_currentView==='liste') _renderListe();
     } else if(idx===1){
@@ -8181,15 +8484,6 @@ body.focus-mode .focus-exit{ display:flex; }
     if(!pcPage || !pcPage.classList.contains('open')) return;
     pcPage.classList.remove('open'); pcPage.setAttribute('aria-hidden','true');
     unlockScroll();
-    // Libère le DOM des panneaux (pochettes, carrousels) après la transition :
-    // pcSetTab reconstruit tout à la prochaine ouverture. Réduit l'empreinte
-    // mémoire d'une page fixed gardée montée (bug « l'app redémarre » iOS).
-    setTimeout(()=>{
-      if(pcPage.classList.contains('open')) return;   // ré-ouverte entre-temps
-      const abo=document.getElementById('pcPaneAbonne'), dec=document.getElementById('pcPaneDecouvrir');
-      if(abo) abo.innerHTML='';
-      if(dec) dec.innerHTML='';
-    }, 600);
   }
   window.openPodcast = openPodcast;
   window.closePodcast = closePodcast;
@@ -8277,6 +8571,20 @@ body.focus-mode .focus-exit{ display:flex; }
     return _plEpCard(fallbackArt, false);
   }
   // « Toutes vos émissions » — un show abonné (pochette + éditeur + dernier épisode + play). Unité = l'émission.
+  // « Toutes vos émissions » en carrousel 3D (cylindre). Les pods sont mémorisés
+  // par _plBuildAbos ; le montage est déclenché (idempotent) via _plSyncPlaying.
+  let _pcShowsPods = [];
+  function _pcMountShowsC3d(){
+    const host = document.getElementById('pcShowsHost'); if(!host) return;
+    const pods = _pcShowsPods || [];
+    if(!pods.length) return;
+    const key = pods.map(p=>((p.art&&p.art.feedUrl)||p.source||'')+(p.hasNew?'!':'')).join('|');
+    if(host.dataset.key===key && host.__mounted) return;
+    host.dataset.key = key; host.__mounted = true;
+    /* Carrousel plat (retire le rendu 3D en cylindre) — grandes cartes, défilement horizontal libre */
+    host.innerHTML = pods.map(_plShowRow).join('');
+  }
+  window._pcMountShowsC3d = _pcMountShowsC3d;
   function _plShowRow(o){
     const a=o.art||{}, feedEsc=String(a.feedUrl||'').replace(/'/g,"\\'"), nameEsc=String(o.source||'').replace(/'/g,"\\'");
     const meta = `${o.count} épisode${o.count>1?'s':''} · ${relTime(o.latest)}`;
@@ -8397,13 +8705,6 @@ body.focus-mode .focus-exit{ display:flex; }
     if(!page||!page.classList.contains('open')) return;
     page.classList.remove('open'); page.setAttribute('aria-hidden','true');
     if(typeof unlockScroll==='function') unlockScroll();
-    // Libère le DOM du show après la transition — _plOpenShow reconstruit
-    // body.innerHTML à chaque ouverture.
-    setTimeout(()=>{
-      if(page.classList.contains('open')) return;     // ré-ouverte entre-temps
-      const body=document.getElementById('podShowBody');
-      if(body) body.innerHTML='';
-    }, 600);
   }
   window.closePodShow=closePodShow;
   const PC_CATS=[['Actualités','actualité'],['Société','société'],['Culture','culture'],['Histoire','histoire'],['Sciences','science'],['Sport','sport'],['Économie','économie'],['Humour','humour'],['True crime','true crime'],['Politique','politique']];
@@ -8592,8 +8893,9 @@ body.focus-mode .focus-exit{ display:flex; }
     // Toutes vos émissions — tous les podcasts abonnés (les shows), en liste verticale.
     const pods=_plMyPods();
     if(pods.length){
+      _pcShowsPods = pods;
       html += `<div class="pc-sec-head"${fresh.length?'':' style="margin-top:2px"'}><span class="pc-sec-t">Toutes vos émissions</span></div>`;
-      html += `<div class="pc-shows">` + pods.map(_plShowRow).join('') + `</div>`;
+      html += `<div class="pc-shows" id="pcShowsHost"></div>`;
     }
     return html;
   }
@@ -8661,6 +8963,7 @@ body.focus-mode .focus-exit{ display:flex; }
   function _plSyncPlaying(){
     const playing = !!_plCur && _plAudioEl() && !_plAudioEl().paused;
     document.querySelectorAll('#pcPaneAbonne .pl-ep, #pcPaneAbonne .pl-cont, #pcPaneAbonne .pl-pod, #podShowBody .pl-ep').forEach(el=>el.classList.toggle('playing', el.dataset.link===_plCur));
+    if(typeof _pcMountShowsC3d==='function') _pcMountShowsC3d();
     return playing;
   }
   window._plPlay = _plPlay;
@@ -10003,6 +10306,213 @@ body.focus-mode .focus-exit{ display:flex; }
     setTimeout(()=>{ if(typeof _plOpenShow==='function') _plOpenShow(feedUrl); }, 80);
   }
   function _fmRefresh(folder){ _fmFolder=null; _folderMenuOpen(folder); }
+  // Carrousel « À la une » : glisser-déposer + accrochage au centre avec un ressort
+  // rapide et dynamique — un swipe décisif avance directement d'une carte (comme un
+  // vrai carrousel de cartes), la carte centrée est à pleine échelle/opacité, les
+  // voisines reculent et s'estompent en suivant le doigt en temps réel.
+  // ── Carrousel 3D réutilisable (cylindre piloté au défilement natif) ──
+  // Le défilement horizontal natif d'une piste transparente pilote la rotation
+  // du cylindre (aucun conflit : on LIT scrollLeft, on n'y écrit pas). Chaque
+  // item = { img, title, sub, isNew, onOpen }. opts = { arW, arH, itemFrac, start }.
+  function _c3dMount(host, items, opts){
+    if(!host || !items || !items.length) return;
+    opts = opts || {};
+    const N = items.length;
+    const arW = opts.arW || 1, arH = opts.arH || 1;
+    const itemFrac = opts.itemFrac || 0.56;
+    let active = Math.max(0, Math.min(opts.start||0, N-1));
+    if(host._c3dCleanup) host._c3dCleanup();
+    host.classList.add('c3d');
+    host.innerHTML =
+      '<div class="c3d-stage"><div class="c3d-ring">'
+      + items.map((it,i)=>{
+          const nw = it.isNew ? '<span class="c3d-cell-new"></span>' : '';
+          const img = it.img ? '<img src="'+escAttr(it.img)+'" alt="" decoding="async" onerror="this.style.display=\'none\'">' : '';
+          return '<div class="c3d-cell" style="--i:'+i+'">'+nw+img+'</div>';
+        }).join('')
+      + '</div><div class="c3d-track">'
+      + items.map(()=>'<div class="c3d-slot"></div>').join('')
+      + '</div></div>'
+      + '<div class="c3d-cap"><div class="c3d-cap-sub"></div><div class="c3d-cap-title"></div></div>'
+      + '<div class="c3d-dots">'+items.map((_,i)=>'<span class="c3d-dot'+(i===active?' on':'')+'"></span>').join('')+'</div>';
+    const stage = host.querySelector('.c3d-stage');
+    const ring  = host.querySelector('.c3d-ring');
+    const track = host.querySelector('.c3d-track');
+    const capEl = host.querySelector('.c3d-cap');
+    const capSub= host.querySelector('.c3d-cap-sub');
+    const capTit= host.querySelector('.c3d-cap-title');
+    const cells = [...ring.querySelectorAll('.c3d-cell')];
+    const dots  = [...host.querySelectorAll('.c3d-dot')];
+    let angle=52, rafId=null, moved=false, downX=0, downY=0, settleT=null, userScrolled=false;
+
+    function scheduleSettle(){
+      clearTimeout(settleT);
+      settleT=setTimeout(()=>{
+        const c=cells[active];
+        if(c){ c.classList.remove('c3d-lock'); void c.offsetWidth; c.classList.add('c3d-lock'); }
+        if(userScrolled && navigator.vibrate){ try{ navigator.vibrate(7); }catch(e){} }
+        userScrolled=false;
+      }, 120);
+    }
+
+    function paintActive(){
+      cells.forEach((c,i)=>c.classList.toggle('is-active', i===active));
+      dots.forEach((d,i)=>d.classList.toggle('on', i===active));
+      const it=items[active]||{};
+      capSub.textContent = it.sub||'';
+      capTit.textContent = it.title||'';
+    }
+    function apply(){
+      rafId=null;
+      const slot = track.querySelector('.c3d-slot');
+      const slotW = slot ? slot.getBoundingClientRect().width : 0;
+      const p = slotW ? (track.scrollLeft/slotW) : 0;
+      ring.style.setProperty('--c3d-rot', (-p*angle)+'deg');
+      const idx = Math.max(0, Math.min(N-1, Math.round(p)));
+      if(idx!==active){ active=idx; paintActive(); }
+    }
+    function onScroll(){ userScrolled=true; if(rafId==null) rafId=requestAnimationFrame(apply); scheduleSettle(); }
+    track.addEventListener('scroll', onScroll, {passive:true});
+    track.addEventListener('pointerdown', e=>{ moved=false; downX=e.clientX; downY=e.clientY; }, {passive:true});
+    track.addEventListener('pointermove', e=>{ if(Math.abs(e.clientX-downX)>6||Math.abs(e.clientY-downY)>6) moved=true; }, {passive:true});
+    track.addEventListener('click', ()=>{ if(moved) return; const it=items[active]; if(it&&it.onOpen) it.onOpen(); });
+
+    function layout(){
+      const sw = stage.clientWidth || host.clientWidth || 0;
+      if(sw < 60){ setTimeout(layout, 180); return; }   // pas encore visible/mesurable
+      const cellW = Math.round(sw*itemFrac);
+      const cellH = Math.round(cellW*arH/arW);
+      angle = Math.min(360/N, 52);
+      const aRad = angle*Math.PI/180;
+      const gap = cellW*0.14;
+      const radius = Math.round((cellW+gap)/(2*Math.sin(aRad/2)));
+      const persp = Math.round(radius*4.2);
+      const frontScale = persp/(persp-radius);
+      host.style.setProperty('--c3d-w', cellW+'px');
+      host.style.setProperty('--c3d-h', cellH+'px');
+      host.style.setProperty('--c3d-angle', angle+'deg');
+      host.style.setProperty('--c3d-radius', radius+'px');
+      host.style.setProperty('--c3d-persp', persp+'px');
+      stage.style.height = Math.round(cellH*frontScale + 6)+'px';
+      const slot = track.querySelector('.c3d-slot');
+      const slotW = slot ? slot.getBoundingClientRect().width : 0;
+      if(slotW) track.scrollLeft = active*slotW;
+      apply();
+    }
+    paintActive();
+    requestAnimationFrame(layout);
+    setTimeout(layout, 140);
+    let rt=null;
+    const onResize=()=>{ clearTimeout(rt); rt=setTimeout(layout, 150); };
+    window.addEventListener('resize', onResize);
+    host._c3dCleanup = ()=>{ try{ window.removeEventListener('resize', onResize); track.removeEventListener('scroll', onScroll); }catch(e){} };
+    return { layout };
+  }
+  window._c3dMount = _c3dMount;
+
+  let _fmFeatArts = [];
+  function _initFeatCarousel(el){
+    if(!el || el._featInit) return;
+    el._featInit = true;
+    const cards = [...el.querySelectorAll('.fm-feat-card')];
+    if(!cards.length) return;
+
+    let rafFx = null;
+    function applyFx(){
+      rafFx = null;
+      const r = el.getBoundingClientRect();
+      const mid = r.left + r.width/2;
+      cards.forEach(c=>{
+        const cr = c.getBoundingClientRect();
+        const cc = cr.left + cr.width/2;
+        const d = Math.min(1, Math.abs(cc - mid) / (r.width*0.58));
+        // Courbe adoucie (easeOut) → la mise en avant se ressent plus organiquement
+        const e = 1 - Math.pow(1-d, 2);
+        const scale = 1 - e*0.20;
+        const op = 1 - e*0.58;
+        c.style.transform = 'scale(' + scale.toFixed(3) + ')';
+        c.style.opacity = op.toFixed(3);
+      });
+    }
+    function scheduleFx(){ if(rafFx==null) rafFx = requestAnimationFrame(applyFx); }
+    el.addEventListener('scroll', scheduleFx, { passive:true });
+    applyFx(); setTimeout(applyFx, 60); setTimeout(applyFx, 260);
+
+    const maxScroll = () => el.scrollWidth - el.clientWidth;
+    function centerOf(idx){
+      idx = Math.max(0, Math.min(cards.length-1, idx));
+      const c = cards[idx];
+      // position de scroll qui centre la carte idx (indépendant du scroll courant)
+      return c.offsetLeft - (el.clientWidth - c.offsetWidth)/2;
+    }
+    function nearestIdxTo(pos){
+      let best=0, bd=Infinity;
+      cards.forEach((c,i)=>{ const d=Math.abs(centerOf(i)-pos); if(d<bd){bd=d;best=i;} });
+      return best;
+    }
+
+    // — Défilement inertiel façon iOS : la vitesse du doigt est reportée puis
+    //   décroît en douceur (friction), et on atterrit sur la carte projetée avec un
+    //   easeOutCubic — pas de saut sec ni de rebond mécanique. —
+    let rafAnim=null;
+    const easeOutCubic = t => 1 - Math.pow(1-t, 3);
+    function animateTo(target, duration){
+      cancelAnimationFrame(rafAnim);
+      target = Math.max(0, Math.min(maxScroll(), target));
+      const startPos = el.scrollLeft, dist = target - startPos;
+      if(Math.abs(dist) < 0.5){ el.scrollLeft = target; return; }
+      const t0 = performance.now();
+      (function step(now){
+        const p = Math.min(1, (now - t0)/duration);
+        el.scrollLeft = startPos + dist*easeOutCubic(p);
+        if(p < 1) rafAnim = requestAnimationFrame(step);
+      })(t0);
+    }
+
+    // — Glisser (pointer), 1:1 avec le doigt —
+    let down=false, moved=false, startX=0, startScroll=0, hist=[];
+    el.addEventListener('pointerdown', e=>{
+      if(e.button!==0 && e.pointerType==='mouse') return;
+      cancelAnimationFrame(rafAnim);
+      down=true; moved=false; startX=e.clientX; startScroll=el.scrollLeft;
+      hist=[{x:e.clientX,t:e.timeStamp}];
+      el.classList.add('is-dragging'); el.setPointerCapture(e.pointerId);
+    }, { passive:true });
+    el.addEventListener('pointermove', e=>{
+      if(!down) return;
+      const dx=e.clientX-startX;
+      if(!moved && Math.abs(dx)>4) moved=true;
+      if(!moved) return;
+      el.scrollLeft = startScroll - dx;
+      hist.push({x:e.clientX,t:e.timeStamp}); if(hist.length>6) hist.shift();
+    }, { passive:true });
+    function endDrag(){
+      if(!down) return; down=false; el.classList.remove('is-dragging');
+      const curPos = el.scrollLeft;
+      if(!moved){ animateTo(centerOf(nearestIdxTo(curPos)), 260); return; }
+      // Vitesse au relâchement (px/ms) sur les derniers points
+      const a=hist[0], b=hist[hist.length-1], dt=Math.max(1,b.t-a.t);
+      const v = -(b.x-a.x)/dt; // sens du scroll : >0 vers la droite
+      // Position projetée par l'inertie (report de vitesse amorti)
+      const projected = curPos + v*140;
+      // On limite l'élan à ±1 carte autour de la carte courante pour rester posé
+      const curIdx = nearestIdxTo(curPos);
+      let target = nearestIdxTo(projected);
+      target = Math.max(curIdx-1, Math.min(curIdx+1, target));
+      // Un flick net garantit d'avancer même si le glissement fut court
+      const FLICK = 0.45;
+      if(target===curIdx && Math.abs(v) > FLICK) target = v>0 ? curIdx+1 : curIdx-1;
+      // Durée proportionnelle à la distance → glisse long si loin, vif si proche
+      const dist = Math.abs(centerOf(target) - curPos);
+      const duration = Math.max(280, Math.min(620, 260 + dist*0.9));
+      animateTo(centerOf(target), duration);
+    }
+    el.addEventListener('pointerup', endDrag, { passive:true });
+    el.addEventListener('pointercancel', endDrag, { passive:true });
+    // Empêche le clic d'ouvrir l'article si l'utilisateur a fait glisser
+    el.addEventListener('click', e=>{ if(moved){ e.stopPropagation(); e.preventDefault(); moved=false; } }, true);
+  }
+
   function _folderMenuOpen(folder){
     const inner=document.getElementById('fmInner'); if(!inner) return;
     if(_fmFolder===folder){ _folderMenuClose(); return; }   // re-tap = ferme
@@ -10023,24 +10533,76 @@ body.focus-mode .focus-exit{ display:flex; }
                      : '<div style="color:var(--text-muted);font-size:13px">Aucune source</div>')
       + '</div>';
     const _subjList=_subjPodList(folder);
+    // « Le brief du jour » : les 3 à 5 articles les plus SCORÉS du dossier
+    // (tendances = couverture multi-sources × fraîcheur, + perspicacité = moteur
+    //  de scoring de lecture), et non plus simplement les plus récents.
+    let _fmBriefHtml = '';
+    if(top){
+      const _fmCtx = (typeof _fltContext==='function') ? _fltContext() : { now:Date.now(), ts:null };
+      const _fmSeOn = !!(window._SE && _SE.isActive && _SE.isActive());
+      const _fmScore = a => {
+        let s = 0;
+        try{ s = _modeScore(a, 'trending', _fmCtx); }catch(e){ s = (a.pubDate||0)/1e10; }
+        if(_fmSeOn){ try{ s += (_SE.score(a)||0) * 60; }catch(e){} } // perspicacité
+        return s;
+      };
+      _fmFeatArts = arts.slice().sort((x,y)=>_fmScore(y)-_fmScore(x)).slice(0,5);
+      const _fmSlides = _fmFeatArts.map((a,_i)=>{
+        const cov = (typeof _artCoverage==='function') ? _artCoverage(a, _fmCtx.ts) : 1;
+        const src = escHtml(a.source||'');
+        const imgStyle = a.imageUrl ? ` style="background-image:url('${escAttr(a.imageUrl)}')"` : '';
+        return '<a class="fm-brief-slide'+(_i===0?' active':'')+'" data-act="art" data-link="'+escAttr(a.link||'')+'">'
+          + '<div class="fm-brief-img"'+imgStyle+'></div>'
+          + '<div class="fm-brief-scrim"></div>'
+          + '<div class="fm-brief-dim"></div>'
+          + '<div class="fm-brief-info">'
+          + '<span class="fm-brief-src">'+src+(cov>=2?' · <b>'+cov+' sources</b>':'')+'</span>'
+          + '<span class="fm-brief-tt">'+escHtml(a.title||'')+'</span>'
+          + '</div></a>';
+      }).join('');
+      const _fmDots = _fmFeatArts.map((_,i)=>'<button type="button" class="fm-brief-dot'+(i===0?' active':'')+'" data-i="'+i+'" aria-label="Article '+(i+1)+'"></button>').join('');
+      _fmBriefHtml = _fmFeatArts.length
+        ? '<div class="fm-head">Le brief du jour</div>'
+          + '<div class="fm-brief-car" id="fmBriefCar">'
+          + '<div class="fm-brief-viewport"><div class="fm-brief-track" id="fmBriefTrack">'+_fmSlides+'</div>'
+          + (_fmFeatArts.length>1 ? '<div class="fm-brief-dots" id="fmBriefDots">'+_fmDots+'</div>' : '')
+          + '</div>'
+          + '</div>'
+        : '';
+    }
     h+='<div class="fm-col fm-sm fm-deepen"><div class="fm-head">Approfondir</div>'
-      + '<a data-act="mode" data-mode="all">Le brief du jour</a>'
+      + _fmBriefHtml
       + '<div class="fm-pod-head"><span>Podcasts du sujet</span><button class="fm-pod-addbtn" data-act="subjadd" type="button" aria-label="Ajouter un podcast"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></div>'
       + (_subjList.length
           ? '<div class="fm-pod-grid">' + _subjList.map(p=>`<a class="fm-pod-sq" data-act="subjpod" data-feed="${escAttr(p.feedUrl)}"><span class="fm-pod-sq-cover" style="${p.coverCss}">${p.isNew?'<span class="fm-pod-sq-new" title="Nouveaux épisodes"></span>':''}</span><span class="fm-pod-sq-name">${escHtml(p.name)}</span></a>`).join('') + '</div>'
           : '<div class="fm-pod-empty">Aucun podcast lié. Touchez + pour en ajouter.</div>')
       + '<div class="fm-pod-picker" data-picker hidden></div>'
       + '</div>';
-    if(top){
-      h+='<div class="fm-col fm-prev"><div class="fm-head">À la une dans '+lab+'</div>'
-        + `<a class="fm-feat" data-act="art" data-link="${escAttr(top.link)}">`
-        + (top.imageUrl?`<div class="fm-feat-img"><img src="${escAttr(top.imageUrl)}" alt="" onerror="this.parentNode.style.display='none'"></div>`:'')
-        + `<div class="fm-feat-b"><div class="fm-feat-k">${escHtml(top.source||'')}</div><div class="fm-feat-t">${escHtml(top.title||'')}</div></div></a>`
-        + '<div class="fm-mini">'
-        + more.map(a=>`<a data-act="art" data-link="${escAttr(a.link)}"><span class="fm-mt">${escHtml(a.title||'')}</span><span class="fm-ms">${escHtml(a.source||'')} · ${escHtml(relTime(a.pubDate))}</span></a>`).join('')
-        + '</div></div>';
-    }
     inner.innerHTML=h;
+    // « Le brief du jour » : carrousel « Super Flow » — crossfade + zoom, puces verre, pas d'auto-défilement
+    (function _fmBriefInit(){
+      const carEl=document.getElementById('fmBriefCar'); if(!carEl) return;
+      const track=document.getElementById('fmBriefTrack');
+      const dotsWrap=document.getElementById('fmBriefDots');
+      const n=_fmFeatArts.length; if(!track||!n) return;
+      const slides=[...track.querySelectorAll('.fm-brief-slide')];
+      let idx=0, x0=0, dx=0, dragging=false;
+      function goTo(i){
+        idx=Math.max(0,Math.min(i,n-1));
+        slides.forEach((s,si)=>s.classList.toggle('active', si===idx));
+        if(dotsWrap) dotsWrap.querySelectorAll('.fm-brief-dot').forEach((d,di)=>d.classList.toggle('active', di===idx));
+      }
+      if(dotsWrap) dotsWrap.querySelectorAll('.fm-brief-dot').forEach(d=>{
+        d.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); goTo(+d.dataset.i); });
+      });
+      // Swipe manuel (sans défilement automatique)
+      const vp=carEl.querySelector('.fm-brief-viewport');
+      vp.addEventListener('touchstart', e=>{ x0=e.touches[0].clientX; dx=0; dragging=true; }, {passive:true});
+      vp.addEventListener('touchmove', e=>{ if(!dragging) return; dx=e.touches[0].clientX-x0; }, {passive:true});
+      vp.addEventListener('touchend', ()=>{ if(!dragging) return; dragging=false;
+        if(Math.abs(dx)>40) goTo(idx + (dx<0?1:-1)); }, {passive:true});
+      goTo(0);
+    })();
     inner.querySelectorAll('[data-act]').forEach(el=>el.addEventListener('click',(e)=>{
       e.preventDefault(); const act=el.dataset.act;
       if(act==='subjadd'){
@@ -10054,7 +10616,7 @@ body.focus-mode .focus-exit{ display:flex; }
         picker.querySelectorAll('.fm-pod-sq').forEach(b=>b.addEventListener('click',(ev)=>{ ev.preventDefault(); ev.stopPropagation(); _subjPodLink(folder,b.dataset.feed,b.dataset.name); _fmRefresh(folder); }));
         picker.hidden=false; return;
       }
-      if(act==='subjpod'){ _subjPodOpen(el.dataset.feed); _folderMenuClose(); return; }
+      if(act==='subjpod'){ _subjPodOpen(el.dataset.feed); return; } /* menu dossier laissé ouvert (masqué derrière) : le retour depuis le podcast le retrouve tel quel */
       if(act==='mode') _applyFolderFilter(folder, el.dataset.mode, null);
       else if(act==='src') _applyFolderFilter(folder, null, el.dataset.url);
       else if(act==='art'){ if(typeof _openCtxArt==='function') _openCtxArt(el.dataset.link); }
@@ -10913,7 +11475,10 @@ body.focus-mode .focus-exit{ display:flex; }
     // Filtrage éventuel par source (rail global)
     const pool    = _railApplyFilter(_allArticles);
     const deduped = _dedupCtx(_smartDateSort([...pool]));
-    _editionArts  = deduped.slice(0, 60);
+    // Le 1ᵉʳ article (le + récent) est déjà mis en avant dans la carte vedette
+    // du hero au-dessus du flux — on démarre donc la liste au 2ᵉ pour éviter
+    // le doublon juste après le hero.
+    _editionArts  = deduped.slice(1, 61);
 
     // Jitter fix : ne re-rendre que si le contenu a changé
     const gridKey = _editionArts.slice(0,6).map(a=>a.link).join('|') + '#' + (_railFilterUrl || '') + '#' + (_smartCat || '') + '#' + _smartMode + '#' + _editionArts.length;
@@ -11013,6 +11578,67 @@ body.focus-mode .focus-exit{ display:flex; }
   };
 
 
+  // ── VUE MOSAÏQUE ──────────────────────────────────────────────
+  // Rythme éditorial répété inspiré de « Mosaic 4 » : une bande de 2 cartes
+  // égales, une carte vedette pleine largeur (image + titre superposés), puis
+  // une bande large+étroit. On réutilise le modèle d'article/ouverture existant.
+  let _mosArts = [];
+  function _mosCardHtml(a, idx, variant, opener){
+    const op   = opener || '_openMosaicArt';
+    const fav  = (typeof getFavicon==='function') ? getFavicon(a.feedUrl||a.link||'') : '';
+    const isRead = window._RS && _RS.has(a.link);
+    const time = relTime(a.pubDate);
+    if(variant==='feature'){
+      const bg = a.imageUrl
+        ? "background-image:url('"+String(a.imageUrl).replace(/'/g,"\\'")+"')"
+        : 'background:linear-gradient(135deg,rgba(10,132,255,.28),#0a0a0a)';
+      return '<article class="mos-card mos-feature'+(isRead?' is-read':'')+'" onclick="'+op+'('+idx+')">'
+        + '<div class="mos-feature-media" style="'+bg+'"><div class="mos-feature-scrim"></div>'
+        + '<div class="mos-feature-body">'
+        + '<div class="mos-src-row"><span class="mos-src-dot"><img src="'+escAttr(fav)+'" alt="" onerror="this.style.opacity=.3"></span><span class="mos-src-name">'+escHtml(a.source||'')+'</span><span class="mos-time">'+time+'</span></div>'
+        + '<h3 class="mos-feature-title">'+escHtml(a.title||'')+'</h3>'
+        + '</div></div></article>';
+    }
+    const fig = a.imageUrl
+      ? '<div class="mos-fig"><img src="'+escAttr(a.imageUrl)+'" alt="" decoding="async" loading="lazy" onerror="this.parentNode.style.visibility=\'hidden\'"></div>'
+      : '<div class="mos-fig"></div>';
+    const src = a.source
+      ? '<div class="mos-src-row"><span class="mos-src-dot"><img src="'+escAttr(fav)+'" alt="" onerror="this.style.opacity=.3"></span><span class="mos-src-name">'+escHtml(a.source)+'</span><span class="mos-time">'+time+'</span></div>'
+      : '';
+    return '<article class="mos-card mos-'+variant+(isRead?' is-read':'')+'" onclick="'+op+'('+idx+')">'
+      + fig + src + '<h3 class="mos-title">'+escHtml(a.title||'')+'</h3></article>';
+  }
+  function _mosBandsHtml(A, opener){
+    let h='', i=0; const n=A.length;
+    while(i<n){
+      // Bande 1 : 2 cartes égales
+      if(i<n){ h+='<div class="mos-band two">'+_mosCardHtml(A[i],i,'eq',opener)+(A[i+1]?_mosCardHtml(A[i+1],i+1,'eq',opener):'')+'</div>'; i+=2; }
+      // Bande 2 : carte vedette pleine largeur
+      if(i<n){ h+='<div class="mos-band full">'+_mosCardHtml(A[i],i,'feature',opener)+'</div>'; i+=1; }
+      // Bande 3 : large + étroit
+      if(i<n){ h+='<div class="mos-band wide">'+_mosCardHtml(A[i],i,'wide',opener)+(A[i+1]?_mosCardHtml(A[i+1],i+1,'narrow',opener):'')+'</div>'; i+=2; }
+    }
+    return '<div class="mos">'+h+'</div>';
+  }
+  function _renderMosaic(){
+    const wrap = document.getElementById('mosaicGrid'); if(!wrap) return;
+    if(!_allArticles.length){ wrap.innerHTML=''; wrap.dataset.key=''; return; }
+    const pool    = _railApplyFilter(_allArticles);
+    const deduped = _dedupCtx(_smartDateSort([...pool]));
+    // Exactement comme la vue Magazine : l'article vedette (le + récent) est déjà la grande image du hero au-dessus — on démarre au 2ᵉ par position (fiable, calculé une seule fois sur ce même tableau)
+    _mosArts = deduped.slice(1, 61);
+    const key = _mosArts.slice(0,6).map(a=>a.link).join('|')+'#'+(_railFilterUrl||'')+'#'+(_smartCat||'')+'#'+_smartMode+'#'+_mosArts.length;
+    if(wrap.dataset.key === key) return;
+    wrap.innerHTML = _mosBandsHtml(_mosArts, '_openMosaicArt');
+    wrap.dataset.key = key;
+    if(typeof window._obsImage === 'function') setTimeout(window._obsImage, 50);
+  }
+  window._openMosaicArt = function(idx){
+    const a = _mosArts[idx]; if(!a) return;
+    if(window._RS) _RS.mark(a.link);
+    _showArtModal(a);
+  };
+
   // ── 14. loadAllFeeds — moteur principal ──────────────────────
   // ── Rendu de la vue courante (point unique) ───────────────
   function _renderCurrentView(){
@@ -11025,10 +11651,68 @@ body.focus-mode .focus-exit{ display:flex; }
     _renderSrcRail();   // rail partagé visible sur toutes les vues
     if(effView === 'editions')    _renderEditions();
     else if(effView === 'grille') _renderGrille();
+    else if(effView === 'mosaic') _renderMosaic();
     else if(effView === 'sequential') _renderSequential();
     else if(effView === 'liste')  _renderListe();
+    // Hero accueil (briefing + carte vedette) au-dessus des vues du flux
+    const _heroHost = document.getElementById('bfHomeHero');
+    const _greetHost = document.getElementById('bfGreetHost');
+    if(_heroHost){
+      const _feedViews = ['editions','grille','mosaic','sequential','liste'];
+      if(_feedViews.indexOf(effView)>=0){ _heroHost.hidden=false; if(_greetHost) _greetHost.hidden=false; _renderHomeHero(); }
+      else { _heroHost.hidden=true; if(_greetHost) _greetHost.hidden=true; }
+    }
     if(window.BF_SMART && BF_SMART.renderSidebar){ try{ BF_SMART.renderSidebar(); }catch(e){} }
   }
+
+  // ── Hero accueil : briefing du jour (3 titres) + carte vedette (article le + récent) ──
+  // Lien de l'article vedette du hero (calculé à la demande, indépendant de l'ordre de rendu)
+  function _bfHeroLink(){
+    try{
+      const pool = _dedupCtx(_smartDateSort([..._railApplyFilter(_allArticles||[])]));
+      return pool.length ? pool[0].link : null;
+    }catch(e){ return null; }
+  }
+  function _renderHomeHero(){
+    const host = document.getElementById('bfHomeHero'); if(!host) return;
+    let pool = [];
+    try{ pool = _dedupCtx(_smartDateSort([..._railApplyFilter(_allArticles||[])])); }catch(e){ pool = (_allArticles||[]).slice(); }
+    if(!pool.length){ host.innerHTML=''; host.dataset.key=''; return; }
+    const feat = pool[0];
+    window._bfHeroFeatLink = feat ? feat.link : null;
+    const key = pool.slice(0,4).map(a=>a.link).join('|')+'#'+(_railFilterUrl||'')+'#'+(_smartCat||'')+'#'+_smartMode;
+    if(host.dataset.key===key) return;
+    host.dataset.key=key;
+    const esc=escHtml;
+    const q = s=>String(s==null?'':s).replace(/'/g,"\\'");
+    const greetHi = (()=>{ const h=new Date().getHours(); return h<12?'Bonjour':h<18?'Bon après-midi':'Bonsoir'; })();
+    const dstr = (()=>{ try{ const s=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'}); return s.charAt(0).toUpperCase()+s.slice(1); }catch(e){ return ''; } })();
+    const briefHtml = '';
+    const desc = (typeof _edlSub==='function') ? (_edlSub(feat)||'') : '';
+    const media = feat.imageUrl
+      ? `style="background-image:url('${q(feat.imageUrl)}')"`
+      : 'style="background:linear-gradient(135deg,rgba(10,132,255,.22),#111)"';
+    const dateStr = (typeof relTime==='function') ? relTime(feat.pubDate) : '';
+    const _greetHost = document.getElementById('bfGreetHost');
+    if(_greetHost){ _greetHost.innerHTML = `<div class="bf-greet"><span class="bf-greet-hi">${esc(greetHi)}</span><span class="bf-greet-date">${esc(dstr)}</span></div>`; }
+    host.innerHTML =
+      `<div class="bf-hero">
+        <article class="bf-feat" onclick="_bfHeroOpen('${q(feat.link)}')">
+          <div class="bf-feat-body">
+            <div class="bf-feat-src">${esc(feat.source||'')}</div>
+            <h3 class="bf-feat-title">${esc(feat.title||'')}</h3>
+            ${desc?`<p class="bf-feat-desc">${esc(desc.slice(0,200))}</p>`:''}
+            <div class="bf-feat-meta">${esc(dateStr)}</div>
+            <span class="bf-feat-link">Lire l'article</span>
+          </div>
+          <div class="bf-feat-media" ${media}></div>
+        </article>
+      </div>`;
+  }
+  window._bfHeroOpen = function(link){
+    const a = (_allArticles||[]).find(x=>x && x.link===link);
+    if(a){ if(window._RS) _RS.mark(a.link); _showArtModal(a); }
+  };
 
   // Rendu stable : swap en place + préservation du défilement (zéro saut)
   function _smoothRenderCurrentView(cb){
@@ -11318,24 +12002,8 @@ body.focus-mode .focus-exit{ display:flex; }
     if(!html||html.length<80)return null;
     const div=document.createElement('div'); div.innerHTML=html;
     div.querySelectorAll('script,style,noscript,iframe,form,button,input').forEach(el=>el.remove());
-    const bl=[]; const seenImg=new Set();
-    // Résout l'URL réelle d'un <img> en tenant compte du lazy-load (src = pixel/base64,
-    // vraie image dans data-src/data-lazy-src/data-original/srcset). Beaucoup de flux
-    // WordPress (Trash Talk, etc.) embarquent leurs images ainsi dans content:encoded.
-    const _imgSrc = el => {
-      const ss = el.getAttribute('srcset') || el.getAttribute('data-srcset') || '';
-      const fromSet = ss ? String(ss).split(',').map(s=>s.trim().split(/\s+/)[0]).filter(u=>/^https?:/.test(u)).pop() : '';
-      const cand = el.getAttribute('data-src') || el.getAttribute('data-lazy-src') || el.getAttribute('data-original') || fromSet || el.getAttribute('src') || '';
-      return (/^https?:/.test(cand) && !/\b(1x1|spacer|blank|pixel|placeholder)\b/i.test(cand)) ? cand : '';
-    };
-    // On balaie p/titres/listes/citations ET les images, dans l'ordre du document
-    // (querySelectorAll respecte l'ordre DOM) pour préserver la mise en page.
-    div.querySelectorAll('p,h2,h3,h4,li,blockquote,img').forEach(el=>{
-      if(el.tagName==='IMG'){
-        const src=_imgSrc(el); if(!src||seenImg.has(src))return; seenImg.add(src);
-        bl.push('<img src="'+src.replace(/"/g,'&quot;')+'" alt="" decoding="async">');
-        return;
-      }
+    const bl=[];
+    div.querySelectorAll('p,h2,h3,h4,li,blockquote').forEach(el=>{
       const tx=el.textContent.trim(); if(tx.length<5)return;
       if(/^H[2-4]$/.test(el.tagName)) bl.push('<'+el.tagName.toLowerCase()+'>'+tx+'</'+el.tagName.toLowerCase()+'>');
       else if(el.tagName==='BLOCKQUOTE') bl.push('<blockquote>'+tx+'</blockquote>');
@@ -11498,9 +12166,10 @@ body.focus-mode .focus-exit{ display:flex; }
     // Image hero
     const heroWrap = document.getElementById('artModalHeroWrap');
     const heroImg  = document.getElementById('artModalHeroImg');
+    const _shellEl = document.getElementById('artShell');
     if(heroWrap && heroImg){
-      if(a.imageUrl){ heroWrap.style.display='block'; heroImg.src=a.imageUrl; }
-      else { heroWrap.style.display='none'; heroImg.removeAttribute('src'); }
+      if(a.imageUrl){ heroWrap.style.display='block'; heroImg.src=a.imageUrl; if(_shellEl) _shellEl.classList.remove('no-hero'); }
+      else { heroWrap.style.display='none'; heroImg.removeAttribute('src'); if(_shellEl) _shellEl.classList.add('no-hero'); }
     }
 
     // Watermark date
@@ -11557,10 +12226,18 @@ body.focus-mode .focus-exit{ display:flex; }
     // Niveau 3 — Contexte (autres sources du sujet), opt-in, replié par défaut
     const ctxEl = document.getElementById('artModalContext');
     if(ctxEl){
-      const ext   = (typeof _groupExtendHtml==='function') ? _groupExtendHtml(a) : '';  // Niveau 1 (audio/vidéo)
-      const badge = (typeof _cvBadgeHtml==='function')     ? _cvBadgeHtml(a)     : '';  // Badge « N sources » → page Couverture
-      ctxEl.innerHTML = ext + badge;
+      const ext = (typeof _groupExtendHtml==='function') ? _groupExtendHtml(a) : '';   // Niveau 1
+      const ctx = (typeof _groupContextHtml==='function') ? _groupContextHtml(a) : '';  // Niveau 3
+      ctxEl.innerHTML = ext + ctx;
     }
+
+    // Coque : ouverture directement en mode étendu (déploiement automatique) + synchronise les puces du pager
+    if(typeof _artShellReset==='function') _artShellReset();
+    if(typeof _artExpand==='function') setTimeout(_artExpand, 0);
+
+    // Contexte de navigation (swipe / chevrons article → article)
+    try{ _artSwipeCtx = _artResolveCtx(a); }catch(e){ _artSwipeCtx = {list:[a], idx:0}; }
+    if(typeof _artUpdateNav==='function') _artUpdateNav();
 
     // Ouvrir — on annule une éventuelle animation de fermeture en cours.
     // Si le modal était déjà ouvert ou en train de se fermer, son verrou de
@@ -11576,6 +12253,75 @@ body.focus-mode .focus-exit{ display:flex; }
   }
 
   window.openArtModal = _showArtModal;
+
+  // ── Coque contenue : expansion élastique + pager à puces (façon Mastercard) ──
+  let _artPage = 0;
+  function _artPagesVisible(){
+    const t = document.getElementById('artPagerTrack');
+    return t ? [...t.querySelectorAll('.art-page')].filter(p=>p.style.display!=='none') : [];
+  }
+  function _artGoPage(i, animate){
+    const track = document.getElementById('artPagerTrack');
+    const dots = document.getElementById('artDots');
+    if(!track) return;
+    const n = _artPagesVisible().length;
+    i = Math.max(0, Math.min(i, n-1));
+    _artPage = i;
+    track.style.transition = animate===false ? 'none' : '';
+    track.style.transform = 'translateX(' + (-i*100) + '%)';
+    if(dots) dots.querySelectorAll('.art-dot').forEach((d,di)=>d.classList.toggle('active', di===i));
+  }
+  function _artSyncDots(){
+    const dots = document.getElementById('artDots');
+    const shell = document.getElementById('artShell');
+    if(!dots || !shell) return;
+    // La page « contexte » n'existe que si elle a du contenu
+    const ctxPage = document.getElementById('artPageCtx');
+    const hasCtx = !!(document.getElementById('artModalContext')?.textContent||'').trim();
+    if(ctxPage) ctxPage.style.display = hasCtx ? '' : 'none';
+    const pages = _artPagesVisible();
+    dots.innerHTML = pages.map((p,i)=>`<button class="art-dot" data-i="${i}" aria-label="Page ${i+1}"></button>`).join('');
+    dots.style.display = (shell.classList.contains('is-expanded') && pages.length>1) ? 'flex' : 'none';
+    dots.querySelectorAll('.art-dot').forEach(d=>{ d.onclick = ()=>_artGoPage(+d.dataset.i, true); });
+    if(_artPage > pages.length-1) _artPage = pages.length-1;
+    _artGoPage(_artPage, false);
+  }
+  // Swipe horizontal (touch) — ne déclenche que sur geste franchement horizontal
+  function _artBindSwipe(){
+    const pager = document.getElementById('artPager');
+    if(!pager || window._artSwipeBound) return;
+    window._artSwipeBound = true;
+    let x0=0, y0=0, dx=0, dy=0, lock=null, active=false;
+    const start=e=>{ const t=e.touches?e.touches[0]:e; x0=t.clientX; y0=t.clientY; dx=dy=0; lock=null; window._artPagerLockX=false;
+      active=document.getElementById('artShell')?.classList.contains('is-expanded'); };
+    const move=e=>{ if(!active) return; const t=e.touches?e.touches[0]:e; dx=t.clientX-x0; dy=t.clientY-y0;
+      if(lock===null && (Math.abs(dx)>8||Math.abs(dy)>8)) lock = Math.abs(dx)>Math.abs(dy)?'x':'y';
+      window._artPagerLockX = (lock==='x');
+      if(lock==='x'){ e.preventDefault();
+        const track=document.getElementById('artPagerTrack');
+        if(track){ track.style.transition='none'; track.style.transform='translateX(calc('+(-_artPage*100)+'% + '+dx+'px))'; } } };
+    const end=()=>{ if(!active) return; const track=document.getElementById('artPagerTrack'); if(track) track.style.transition='';
+      if(lock==='x' && Math.abs(dx)>60) _artGoPage(_artPage + (dx<0?1:-1), true); else _artGoPage(_artPage, true);
+      setTimeout(()=>{ window._artPagerLockX=false; }, 50); lock=null; };
+    pager.addEventListener('touchstart', start, {passive:true});
+    pager.addEventListener('touchmove', move, {passive:false});
+    pager.addEventListener('touchend', end, {passive:true});
+  }
+  window._artExpand = function(){
+    const shell = document.getElementById('artShell');
+    if(!shell || shell.classList.contains('is-expanded')) return;
+    shell.classList.add('is-expanded');
+    setTimeout(_artSyncDots, 60);
+  };
+  window._artShellReset = function(){
+    const shell = document.getElementById('artShell');
+    if(shell) shell.classList.remove('is-expanded');
+    _artPage = 0;
+    const body = document.getElementById('artModalBody');
+    if(body) body.scrollTop = 0;
+    _artBindSwipe();
+    _artSyncDots();
+  };
 
   window.artSwitchView = function(view){
     // Pour l'instant une seule vue "reader" — extensible
@@ -11596,14 +12342,6 @@ body.focus-mode .focus-exit{ display:flex; }
         _artCloseTimer = null; _artClosing = false;
         unlockScroll();
         // Retour d'article : conserver la position de défilement (ne pas remonter).
-        // Libère le contenu lourd (texte du lecteur + images, hero, contexte) :
-        // _showArtModal/_loadArtReader (cache) reconstruisent tout à la prochaine
-        // ouverture ; une réouverture pendant la fermeture annule ce timer.
-        const rs=document.getElementById('artReaderSection'); if(rs) rs.innerHTML='';
-        const hi=document.getElementById('artModalHeroImg'); if(hi) hi.removeAttribute('src');
-        const cx=document.getElementById('artModalContext'); if(cx) cx.innerHTML='';
-        const auw=document.getElementById('artModalAudio');
-        if(auw){ const au=auw.querySelector('audio'); if(!au || au.paused){ auw.innerHTML=''; auw.style.display='none'; } }
       }, 300);
       if(_artAbort){ try{_artAbort.abort();}catch(e){} _artAbort=null; }
       const fv = document.querySelector('.view[data-view="favoris"]');
@@ -11851,7 +12589,8 @@ body.focus-mode .focus-exit{ display:flex; }
     const wrap = document.getElementById('grilleGrid');
     if(!wrap) return;
     const arts = typeof _allArticles !== 'undefined' ? _dedupCtx(_smartDateSort(_railApplyFilter([..._allArticles]))) : [];
-    _grilleArts = arts.slice(0,60);
+    // Exactement comme la vue Magazine : démarrage au 2ᵉ article par position (le 1ᵉ est la grande image du hero au-dessus)
+    _grilleArts = arts.slice(1, 61);
     if(!_grilleArts.length){
       wrap.innerHTML = '<div style="grid-column:1/-1;padding:60px 0;text-align:center;color:var(--text-muted);font-size:14px;font-family:var(--font-inter)">Aucun article disponible</div>';
       return;
@@ -11859,7 +12598,7 @@ body.focus-mode .focus-exit{ display:flex; }
     wrap.innerHTML = _grilleArts.map((a,i)=>{
       const fav = getFavicon(a.feedUrl||a.link||'');
       const imgH = a.imageUrl
-        ? `<div class="grid2-img"><img src="${escAttr(a.imageUrl)}" alt="" decoding="async" onerror="this.parentNode.style.background='#1a1a1a'"></div>`
+        ? `<div class="grid2-img"><img src="${escAttr(a.imageUrl)}" alt="" decoding="async" loading="lazy" onerror="this.parentNode.style.background='#1a1a1a'"></div>`
         : `<div class="grid2-img" style="background:linear-gradient(135deg,rgba(10,132,255,.15),#0a0a0a)"></div>`;
       return `<div class="grid2-card reveal" onclick="_grilleOpen(${i})" style="position:relative">
         ${imgH}
@@ -12122,224 +12861,6 @@ body.focus-mode .focus-exit{ display:flex; }
     else if(link){ try{ window.open(link,'_blank','noopener'); }catch(e){} }
   }
   window._openCtxArt = _openCtxArt;
-
-  // ═══════════════════════════════════════════════════════════════
-  //  PAGE COUVERTURE — le sujet comme objet central
-  //  100 % JS : le conteneur #cvPage est créé à la volée, rempli à
-  //  l'ouverture et vidé à la fermeture (même discipline mémoire que
-  //  les autres pages fixed). CSS .cv-* fourni séparément. Le
-  //  regroupement de sujet est une passe Jaccard DÉDIÉE, plus large
-  //  que le dédoublonnage (.55 → .28), calculée à la demande sur
-  //  _allArticles et bornée par la fenêtre 72 h. z-index posé en JS
-  //  (7100) car le modal article est à 7000 : la Couverture doit
-  //  passer au-dessus, sous la feuille générique bfSheet (7200).
-  // ═══════════════════════════════════════════════════════════════
-  const _CV_SIM = 0.28, _CV_WIN = 72*3600*1000;
-  let _cvCache = { link:null, data:null };
-  function _cvCluster(a){
-    if(!a || !a.title) return { arts:[], sources:[], bySrc:new Map() };
-    if(_cvCache.link === a.link && _cvCache.data) return _cvCache.data;
-    const base = _tokens(a.title);
-    const at = +new Date(a.pubDate||0);
-    const pool = (typeof _allArticles!=='undefined' ? _allArticles : []);
-    const arts = [a]; const seen = new Set([a.link]);
-    if(base.size){
-      for(const b of pool){
-        if(!b || seen.has(b.link) || !b.title) continue;
-        const bt = +new Date(b.pubDate||0);
-        if(at && bt && Math.abs(at-bt) > _CV_WIN) continue;
-        const tb = _tokens(b.title);
-        let inter = 0; base.forEach(w=>{ if(tb.has(w)) inter++; });
-        if(inter/(base.size + tb.size - inter || 1) >= _CV_SIM){ arts.push(b); seen.add(b.link); }
-      }
-    }
-    const bySrc = new Map();
-    arts.forEach(x=>{ const s=(x.source||'').trim(); if(!s) return; bySrc.set(s, (bySrc.get(s)||0)+1); });
-    const data = { arts, sources:Array.from(bySrc.keys()), bySrc };
-    _cvCache = { link:a.link, data };
-    return data;
-  }
-  // Badge « N sources » — point d'entrée UNIQUE (remplace le panneau CONTEXTE).
-  // Stylé en inline (pas de classe .cv-badge dans le CSS fourni) : bleu Apple, pill.
-  function _cvBadgeHtml(a){
-    const cl = _cvCluster(a); const n = cl.sources.length;
-    if(n < 2) return '';
-    const esc = String(a.link||'').replace(/'/g,"\\'");
-    const st = 'display:inline-flex;align-items:center;gap:8px;margin-top:16px;padding:9px 16px;'
-      + 'border:1px solid rgba(10,132,255,.32);border-radius:999px;background:rgba(10,132,255,.12);'
-      + 'color:#0a84ff;font-family:var(--font-inter);font-size:13px;font-weight:700;cursor:pointer';
-    const dot = '<span style="width:7px;height:7px;border-radius:50%;background:#0a84ff;box-shadow:0 0 8px rgba(10,132,255,.8)"></span>';
-    return `<button type="button" onclick="openCoverage('${esc}')" style="${st}">${dot}${n} sources</button>`;
-  }
-  window._cvBadgeHtml = _cvBadgeHtml;
-  // Étiquette d'angle heuristique — 100 % local, CONSERVATRICE : pas
-  // d'étiquette quand rien de net (l'intelligence reste invisible).
-  function _cvAngleTag(art){
-    const t = ((art&&art.title||'') + ' ' + (art&&art.description||'')).toLowerCase();
-    if(/(exclusif|exclusivit[ée]|selon nos informations|r[ée]v[èe]le\b|on a appris)/.test(t)) return 'Exclusif';
-    if(/(d[ée]ment|conteste|r[ée]fute|contredit|mise au point|fact[\s-]?check|d[ée]bunk|fausse? info)/.test(t)) return 'Point de friction';
-    if(/(rumeur|selon la presse|on murmure|aurait\b|serait\b)/.test(t)) return 'Rumeur';
-    // Réaction avant Officiel : « réagit/condamne/dénonce » est plus distinctif
-    // que le générique « annonce » (sinon « réagissent après l'annonce » = Officiel à tort).
-    if(/(r[ée]agit|r[ée]action|condamne|salue|d[ée]nonce|f[ée]licite|indign)/.test(t)) return 'Réaction';
-    if(/(officiel|communiqu[ée]|annonce\b|confirme|d[ée]clare|pr[ée]cise)/.test(t)) return 'Officiel';
-    if(/(analyse|d[ée]cryptage|d[ée]crypt|pourquoi\b|comment\b|ce que|explique|explication|enqu[êe]te)/.test(t)) return 'Analyse';
-    return '';
-  }
-  function _cvWhen(d){
-    const dt = d instanceof Date ? d : new Date(d||0);
-    if(isNaN(dt)) return '';
-    const now = new Date();
-    const hh = String(dt.getHours()).padStart(2,'0')+':'+String(dt.getMinutes()).padStart(2,'0');
-    if(dt.toDateString()===now.toDateString()) return hh;
-    const y = new Date(now); y.setDate(now.getDate()-1);
-    if(dt.toDateString()===y.toDateString()) return 'hier '+hh;
-    return dt.toLocaleDateString('fr-FR',{day:'numeric',month:'short'})+' '+hh;
-  }
-  // Silences — sources du/des dossier(s) de l'article n'ayant PAS couvert le sujet.
-  function _cvSilence(a, cl){
-    if(!a || !a.feedUrl || typeof folders==='undefined') return '';
-    const covered = new Set(cl.sources.map(s=>s.trim().toLowerCase()));
-    const silent = []; const seen = new Set();
-    (folders||[]).forEach(f=>{
-      const feeds = f.feeds||[];
-      if(feeds.indexOf(a.feedUrl) < 0) return;
-      feeds.forEach(url=>{
-        if(url === a.feedUrl) return;
-        const meta = (_feedMeta && _feedMeta[url]) || {};
-        const name = (meta.name||'').trim(); if(!name) return;
-        const k = name.toLowerCase();
-        if(covered.has(k) || seen.has(k)) return;
-        seen.add(k); silent.push(name);
-      });
-    });
-    if(!silent.length) return '';
-    const chips = silent.slice(0,12).map(s=>`<span class="cv-chip">${escHtml(s)}</span>`).join('');
-    const ic = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64A9 9 0 1 1 5.64 19.36"/><line x1="3" y1="3" x2="21" y2="21"/></svg>';
-    return `<div class="cv-silence">
-      <div class="cv-silence-title">${ic}Pas encore couvert par</div>
-      <div class="cv-silence-chips">${chips}</div>
-      <p class="cv-silence-note">Ces sources de ton dossier n'ont rien publié sur ce sujet.</p>
-    </div>`;
-  }
-  function _cvBuild(a, cl){
-    const arts = cl.arts.slice();
-    const n = cl.sources.length, total = arts.length;
-    // Spectre — sources par volume décroissant
-    const srcSorted = Array.from(cl.bySrc.entries()).sort((x,y)=>y[1]-x[1]);
-    const bar = srcSorted.map(([s,c])=>`<span style="flex:${c}"></span>`).join('');
-    const legend = srcSorted.map(([s,c])=>`<span class="cv-chip">${escHtml(s)} <b>${c}</b></span>`).join('');
-    // Angles — article le plus récent par source
-    const bySrcArt = new Map();
-    arts.forEach(x=>{ const s=(x.source||'').trim(); if(!s) return; const p=bySrcArt.get(s);
-      if(!p || +new Date(x.pubDate||0) > +new Date(p.pubDate||0)) bySrcArt.set(s, x); });
-    const angleArts = Array.from(bySrcArt.values()).sort((x,y)=>+new Date(y.pubDate||0)-+new Date(x.pubDate||0));
-    const angles = angleArts.map(x=>{
-      const esc = String(x.link||'').replace(/'/g,"\\'");
-      const tag = _cvAngleTag(x);
-      const lede = (x.description||'').replace(/<[^>]*>/g,'').trim();
-      const media = x.audioUrl ? ' · Audio' : '';
-      return `<div class="cv-angle">
-        <div class="cv-angle-head">
-          <span class="cv-angle-src">${escHtml(x.source||'')}</span>
-          <span class="cv-angle-time">${escHtml(_cvWhen(x.pubDate))}${media}</span>
-        </div>
-        ${tag?`<span class="cv-angle-tag">${tag}</span>`:''}
-        <div class="cv-angle-title">${escHtml(x.title||'')}</div>
-        ${lede?`<p class="cv-angle-lede">${escHtml(lede.slice(0,220))}</p>`:''}
-        <button class="cv-angle-cta" type="button" onclick="_cvOpenArt('${esc}')">Lire cet angle<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
-      </div>`;
-    }).join('');
-    // Chronologie — ascendante, première mention marquée (.first)
-    const chrono = arts.slice().sort((x,y)=>+new Date(x.pubDate||0)-+new Date(y.pubDate||0));
-    const tl = chrono.map((x,i)=>{
-      const esc = String(x.link||'').replace(/'/g,"\\'");
-      return `<div class="cv-tl-item${i===0?' first':''}">
-        <div class="cv-tl-time"><b>${escHtml(x.source||'')}</b> · ${escHtml(_cvWhen(x.pubDate))}</div>
-        <div class="cv-tl-title" onclick="_cvOpenArt('${esc}')">${escHtml(x.title||'')}</div>
-      </div>`;
-    }).join('');
-    let oldest = Infinity; arts.forEach(x=>{ const t=+new Date(x.pubDate||0); if(t && t<oldest) oldest=t; });
-    const firstWhen = isFinite(oldest) ? _cvWhen(new Date(oldest)) : '';
-    const back = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>';
-    return `<div class="cv-scroll">
-      <div class="cv-topbar">
-        <button class="cv-back" type="button" onclick="closeCoverage()" aria-label="Retour">${back}</button>
-        <div class="cv-topbar-label">Couverture du sujet</div>
-      </div>
-      <div class="cv-hero">
-        <div class="bf-ghost" aria-hidden="true">Sujet</div>
-        <h1 class="cv-title">${escHtml(a.title||'')}</h1>
-        <div class="cv-meta"><strong>${n} sources</strong> couvrent ce sujet · ${total} article${total>1?'s':''}${firstWhen?` · première mention ${escHtml(firstWhen)}`:''}</div>
-      </div>
-      <div class="cv-spectrum">
-        <div class="cv-spectrum-head">
-          <span class="cv-spectrum-title">Qui en parle</span>
-          <span class="cv-spectrum-count">${n}<small>sources</small></span>
-        </div>
-        <div class="cv-bar">${bar}</div>
-        <div class="cv-legend">${legend}</div>
-      </div>
-      <div class="cv-tabs">
-        <button class="cv-tab active" type="button" onclick="_cvTab(this,'angles')">Angles</button>
-        <button class="cv-tab" type="button" onclick="_cvTab(this,'timeline')">Chronologie</button>
-      </div>
-      <div class="cv-pane" id="cvPaneAngles">${angles}</div>
-      <div class="cv-pane" id="cvPaneTimeline" hidden><div class="cv-timeline">${tl}</div></div>
-      ${_cvSilence(a, cl)}
-      <div class="cv-foot-pad"></div>
-    </div>`;
-  }
-  function _cvEnsurePage(){
-    let p = document.getElementById('cvPage');
-    if(!p){
-      p = document.createElement('div');
-      p.id = 'cvPage'; p.className = 'cv-page';
-      p.style.zIndex = '7100';
-      p.setAttribute('aria-hidden','true');
-      document.body.appendChild(p);
-    }
-    return p;
-  }
-  function openCoverage(link){
-    const a = (typeof _allArticles!=='undefined'?_allArticles:[]).find(x=>x && x.link===link);
-    if(!a) return;
-    const cl = _cvCluster(a);
-    if(cl.sources.length < 2) return;
-    const page = _cvEnsurePage();
-    page.innerHTML = _cvBuild(a, cl);
-    page.style.display = 'flex';
-    void page.offsetWidth;   // reflow → la transition .open joue
-    page.classList.add('open'); page.setAttribute('aria-hidden','false');
-    if(typeof lockScroll==='function') lockScroll();
-    if(typeof navArm==='function') navArm();
-  }
-  window.openCoverage = openCoverage;
-  function closeCoverage(){
-    const page = document.getElementById('cvPage');
-    if(!page || !page.classList.contains('open')) return;
-    page.classList.remove('open'); page.setAttribute('aria-hidden','true');
-    if(typeof unlockScroll==='function') unlockScroll();
-    // Purge du DOM après la transition (discipline mémoire iOS).
-    setTimeout(()=>{ if(!page.classList.contains('open')){ page.style.display='none'; page.innerHTML=''; } }, 500);
-  }
-  window.closeCoverage = closeCoverage;
-  function _cvTab(btn, which){
-    const page = document.getElementById('cvPage'); if(!page) return;
-    page.querySelectorAll('.cv-tab').forEach(b=>b.classList.toggle('active', b===btn));
-    const ang = page.querySelector('#cvPaneAngles'), tl = page.querySelector('#cvPaneTimeline');
-    if(ang) ang.hidden = which!=='angles';
-    if(tl) tl.hidden = which!=='timeline';
-  }
-  window._cvTab = _cvTab;
-  function _cvOpenArt(link){
-    closeCoverage();
-    const a = (typeof _allArticles!=='undefined'?_allArticles:[]).find(x=>x && x.link===link);
-    if(a && typeof _showArtModal==='function') _showArtModal(a);
-    else if(link){ try{ window.open(link,'_blank','noopener'); }catch(e){} }
-  }
-  window._cvOpenArt = _cvOpenArt;
-
   function _edlCardHtml(a, i){
     const isRead = _RS.has(a.link);
     const fig = a.imageUrl
@@ -12408,7 +12929,8 @@ body.focus-mode .focus-exit{ display:flex; }
     const arts = typeof _allArticles !== 'undefined'
       ? _dedupCtx(_smartDateSort(_railApplyFilter([..._allArticles])))
       : [];
-    _seqArts = arts.slice(0, 100);
+    // Exactement comme la vue Magazine : démarrage au 2ᵉ article par position (le 1ᵉ est la grande image du hero au-dessus)
+    _seqArts = arts.slice(1, 101);
     if(!_seqArts.length){
       list.innerHTML = '<div style="padding:80px 0;text-align:center;color:var(--text-muted);font-size:14px;font-family:var(--font-inter)">Aucun article disponible.<br>Ajoutez des sources pour commencer.</div>';
       return;
@@ -12432,7 +12954,8 @@ body.focus-mode .focus-exit{ display:flex; }
     const wrap = document.getElementById('listeList');
     if(!wrap) return;
     const arts = typeof _allArticles !== 'undefined' ? _dedupCtx(_smartDateSort(_railApplyFilter([..._allArticles]))) : [];
-    _listeArts = arts.slice(0, 100);
+    // Exactement comme la vue Magazine : démarrage au 2ᵉ article par position (le 1ᵉ est la grande image du hero au-dessus)
+    _listeArts = arts.slice(1, 101);
     if(!_listeArts.length){
       wrap.innerHTML = '<div style="padding:60px 0;text-align:center;color:var(--text-muted);font-size:14px;font-family:var(--font-inter)">Aucun article disponible</div>';
       return;
@@ -12440,7 +12963,7 @@ body.focus-mode .focus-exit{ display:flex; }
     wrap.innerHTML = _listeArts.map((a,i)=>{
       const fav = getFavicon(a.feedUrl||a.link||'');
       const thumb = a.imageUrl
-        ? `<div class="list-thumb"><img src="${escAttr(a.imageUrl)}" alt="" decoding="async" onerror="this.parentNode.className='list-thumb-empty'"></div>`
+        ? `<div class="list-thumb"><img src="${escAttr(a.imageUrl)}" alt="" decoding="async" loading="lazy" onerror="this.parentNode.className='list-thumb-empty'"></div>`
         : `<div class="list-thumb-empty"></div>`;
       return `<div class="list-item reveal" onclick="_listeOpen(${i})" style="position:relative">
         ${thumb}
@@ -12493,7 +13016,7 @@ body.focus-mode .focus-exit{ display:flex; }
       const fav   = getFavicon(a.feedUrl||a.link||'');
       const sc    = Math.round((a._sc||0)*100);
       const thumb = a.imageUrl
-        ? `<div class="essentiel-thumb"><img src="${escAttr(a.imageUrl)}" alt="" decoding="async" onerror="this.parentNode.style.display='none'"></div>`
+        ? `<div class="essentiel-thumb"><img src="${escAttr(a.imageUrl)}" alt="" decoding="async" loading="lazy" onerror="this.parentNode.style.display='none'"></div>`
         : '';
       const desc  = a.description ? `<div class="essentiel-desc">${escHtml(a.description)}</div>` : '';
       return `<div class="essentiel-card" onclick="_essentielOpen(${i})" style="position:relative">
@@ -12660,6 +13183,9 @@ body.focus-mode .focus-exit{ display:flex; }
         var imgStyle = a.imageUrl ? "background:url('" + a.imageUrl.replace(/'/g,"\\'") + "') center/cover no-repeat" : 'background:linear-gradient(135deg,rgba(10,132,255,.15),#0a0a0a)';
         return '<div class="grid2-card" onclick="' + arrName + 'Open(' + i + ')"><div class="grid2-img" style="' + imgStyle + '"></div><div class="grid2-title">' + escapeHtml(a.title) + '</div><div class="grid2-meta"><div class="grid2-fav"><img src="' + escAttr(fav) + '"></div><span>' + escapeHtml(a.source) + '</span><span style="margin-left:auto">' + relTime(a.pubDate) + '</span></div></div>';
       }).join('') + '</div>';
+
+    } else if(view === 'mosaic'){
+      container.innerHTML = _mosBandsHtml(arts, arrName + 'Open');
 
     } else if(view === 'sequential'){
       container.innerHTML = '<div class="seq-list">' + arts.map(function(a,i){
@@ -13104,6 +13630,84 @@ body.focus-mode .focus-exit{ display:flex; }
   // ── Swipe horizontal → article suivant/précédent ─────────────
   let _artSwipeCtx = {list:[], idx:0};
   window._artSetSwipeCtx = function(list,idx){ _artSwipeCtx={list,idx}; };
+  // Dossier (catégorie éditoriale) d'un article, déduit de son flux d'origine.
+  function _artFolderOf(a){
+    if(!a) return null;
+    try{
+      const { order, map } = _smartCatMap();
+      for(const cat of order){ if((map[cat]||[]).some(s=>s.url===a.feedUrl)) return cat; }
+    }catch(e){}
+    return null;
+  }
+  // Résout la meilleure liste de navigation pour un article donné : la sous-page
+  // ouverte (flux/dossier) sinon les autres articles du MÊME DOSSIER (catégorie),
+  // avec repli flux principal / favoris / parcourir.
+  function _artResolveCtx(a){
+    if(!a) return {list:[], idx:0};
+    const dp=document.getElementById('folderPage'), fp=document.getElementById('feedPage');
+    const cands=[];
+    if(fp&&fp.classList.contains('open')&&Array.isArray(typeof _feedPageArts!=='undefined'?_feedPageArts:null)) cands.push(_feedPageArts);
+    if(dp&&dp.classList.contains('open')&&Array.isArray(typeof _folderPageArts!=='undefined'?_folderPageArts:null)) cands.push(_folderPageArts);
+    // Pas de sous-page ouverte : naviguer entre les articles du même dossier que celui-ci
+    const folder = _artFolderOf(a);
+    if(folder && typeof _allArticles!=='undefined' && Array.isArray(_allArticles)){
+      const sameFolder = _allArticles.filter(x=>x && _artFolderOf(x)===folder);
+      if(sameFolder.length>1) cands.push(sameFolder);
+    }
+    if(typeof _allArticles!=='undefined'&&Array.isArray(_allArticles)) cands.push(_allArticles);
+    if(typeof _favView!=='undefined'&&Array.isArray(_favView)) cands.push(_favView);
+    if(typeof _browseArts!=='undefined'&&Array.isArray(_browseArts)) cands.push(_browseArts);
+    for(const L of cands){ if(L&&L.length){ const i=L.findIndex(x=>x&&x.link===a.link); if(i>=0) return {list:L, idx:i}; } }
+    return {list:[a], idx:0};
+  }
+  function _artUpdateNav(){
+    const c=_artSwipeCtx;
+    const prev=document.getElementById('artNavPrev'), next=document.getElementById('artNavNext');
+    const has = c && c.list && c.list.length>1;
+    if(prev&&next){
+      prev.classList.toggle('show', !!(has && c.idx>0));
+      next.classList.toggle('show', !!(has && c.idx<c.list.length-1));
+    }
+    // Carrousel mobile : puces indicatives de position dans le dossier
+    const dots=document.getElementById('artFolderDots');
+    if(dots){
+      if(!has){ dots.style.display='none'; dots.innerHTML=''; }
+      else{
+        dots.style.display='';
+        const n=c.list.length, idx=c.idx, maxDots=7;
+        let start=Math.max(0, idx-Math.floor(maxDots/2));
+        let end=Math.min(n, start+maxDots);
+        start=Math.max(0, end-maxDots);
+        let html='';
+        if(start>0) html+='<span class="art-fdot art-fdot-edge"></span>';
+        for(let i=start;i<end;i++) html+=`<span class="art-fdot${i===idx?' active':''}"></span>`;
+        if(end<n) html+='<span class="art-fdot art-fdot-edge"></span>';
+        dots.innerHTML=html;
+      }
+    }
+  }
+  window._artUpdateNav=_artUpdateNav;
+  // Navigation animée article → article (dir: -1 précédent, +1 suivant)
+  function _artNav(dir){
+    const c=_artSwipeCtx;
+    if(!c||!c.list||!c.list.length) return;
+    const ni=c.idx+dir;
+    if(ni<0||ni>=c.list.length) return;
+    const body=document.getElementById('artModalBody');
+    if(body){ body.classList.remove('art-slide-left','art-slide-right'); void body.offsetWidth; body.classList.add(dir>0?'art-slide-left':'art-slide-right'); }
+    const nx=c.list[ni];
+    if(window._RS && _RS.mark) _RS.mark(nx.link);
+    _showArtModal(nx);          // recalcule le contexte (même liste → idx = ni)
+    _artSwipeCtx.idx=ni;
+    _artUpdateNav();
+  }
+  window._artNav=_artNav;
+  document.addEventListener('keydown', e=>{
+    const m=document.getElementById('artModal');
+    if(!m || m.style.display!=='flex') return;
+    if(e.key==='ArrowLeft'){ _artNav(-1); }
+    else if(e.key==='ArrowRight'){ _artNav(1); }
+  });
   (function initArticleSwipe(){
     let sx=0, sy=0;
     document.addEventListener('touchstart', e=>{
@@ -13114,13 +13718,11 @@ body.focus-mode .focus-exit{ display:flex; }
     document.addEventListener('touchend', e=>{
       const modal=document.getElementById('artModal');
       if(!modal||modal.style.display!=='flex') return;
+      if(window._artPagerLockX) return; // le pager interne (article ⇄ contexte) a déjà consommé ce geste
       const dx=e.changedTouches[0].clientX-sx;
       const dy=Math.abs(e.changedTouches[0].clientY-sy);
       if(Math.abs(dx)<65||dy>70) return;
-      const {list,idx}=_artSwipeCtx;
-      if(!list.length) return;
-      if(dx<0&&idx<list.length-1){ const ni=idx+1; _showArtModal(list[ni]); _artSwipeCtx.idx=ni; }
-      if(dx>0&&idx>0){ const ni=idx-1; _showArtModal(list[ni]); _artSwipeCtx.idx=ni; }
+      _artNav(dx<0 ? 1 : -1);
     },{passive:true});
   })();
 
@@ -13558,13 +14160,13 @@ body.focus-mode .focus-exit{ display:flex; }
     /* Carousel « Toutes vos émissions » */
     .pc-shows{ display:flex; gap:16px; overflow-x:auto; scroll-snap-type:x mandatory; scrollbar-width:none; margin:0 -16px 26px; padding:4px 16px 8px; }
     .pc-shows::-webkit-scrollbar{ display:none; }
-    .pc-show{ flex:none; width:160px; scroll-snap-align:start; display:flex; flex-direction:column; align-items:flex-start; gap:9px; border:none; background:none!important; padding:0; cursor:pointer; text-align:left; -webkit-tap-highlight-color:transparent; transition:transform .26s cubic-bezier(.34,1.56,.64,1); position:relative; animation:pcRise .5s cubic-bezier(.34,1.56,.64,1) both; }
-    .pc-show:active{ transform:scale(.94); }
+    .pc-show{ flex:none; width:208px; scroll-snap-align:start; display:flex; flex-direction:column; align-items:flex-start; gap:11px; border:none; background:none!important; padding:0; cursor:pointer; text-align:left; -webkit-tap-highlight-color:transparent; transition:transform .26s cubic-bezier(.34,1.56,.64,1); position:relative; animation:pcRise .5s cubic-bezier(.34,1.56,.64,1) both; }
+    .pc-show:active{ transform:scale(.96); }
     @media (hover:hover){ .pc-show:hover .pc-show-cover{ transform:scale(1.03); } }
-    .pc-show-cover{ flex:none; width:160px; height:160px; border-radius:20px; background:#111 center/cover no-repeat; box-shadow:0 8px 28px rgba(0,0,0,.45); transition:transform .26s cubic-bezier(.34,1.56,.64,1); }
-    .pc-show-meta{ width:100%; display:flex; flex-direction:column; gap:2px; padding:0 2px; }
-    .pc-show-pub{ font-family:var(--font-inter); font-size:10px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .pc-show-title{ font-family:var(--font-inter); font-size:13.5px; font-weight:700; letter-spacing:-.01em; color:var(--text); line-height:1.25; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+    .pc-show-cover{ flex:none; width:208px; height:208px; border-radius:24px; background:#111 center/cover no-repeat; box-shadow:0 10px 34px rgba(0,0,0,.45); transition:transform .26s cubic-bezier(.34,1.56,.64,1); }
+    .pc-show-meta{ width:100%; display:flex; flex-direction:column; gap:3px; padding:0 2px; }
+    .pc-show-pub{ font-family:var(--font-inter); font-size:11px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .pc-show-title{ font-family:var(--font-inter); font-size:15.5px; font-weight:700; letter-spacing:-.01em; color:var(--text); line-height:1.28; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
     .pc-show-desc{ display:none; }
     .pc-show-play{ position:absolute; top:10px; right:10px; width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,.92); display:flex; align-items:center; justify-content:center; transition:transform .14s ease; box-shadow:0 2px 8px rgba(0,0,0,.35); }
     .pc-show:active .pc-show-play{ transform:scale(.88); }
@@ -13782,38 +14384,39 @@ body.focus-mode .focus-exit{ display:flex; }
   <div id="refreshBadge"></div>
 
   <!-- ═══════════════ MODAL ARTICLE ═══════════════ -->
-  <div id="artModal" style="display:none;position:fixed;inset:0;z-index:7000;flex-direction:column;background:var(--bg)">
-    <!-- Topbar -->
-    <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;flex-shrink:0;position:relative;z-index:2">
-      <button onclick="closeArtModal()" style="width:34px;height:34px;border:none;border-radius:50%;background:rgba(255,255,255,.07);color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
-      </button>
-      <div style="flex:1"></div>
-      <button id="artModalSaveBtn" onclick="artModalToggleSave()" style="width:34px;height:34px;border:none;border-radius:50%;background:rgba(255,255,255,.07);color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-      </button>
+  <div id="artModal" style="display:none;position:fixed;inset:0;z-index:7000;align-items:center;justify-content:center;padding:22px">
+    <div class="art-scrim" onclick="closeArtModal()"></div>
+
+    <!-- Chevrons navigation article ← → -->
+    <div class="art-nav-chevron prev" id="artNavPrev" onclick="_artNav(-1)" aria-label="Article précédent">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </div>
+    <div class="art-nav-chevron next" id="artNavNext" onclick="_artNav(1)" aria-label="Article suivant">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
     </div>
 
-    <!-- Corps scrollable -->
-    <div id="artModalBody" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;position:relative">
+    <!-- Coque contenue -->
+    <div class="art-shell" id="artShell">
 
       <!-- Image hero -->
-      <div id="artModalHeroWrap" style="width:100%;aspect-ratio:16/9;background:#111;overflow:hidden;display:none">
-        <img id="artModalHeroImg" alt="" decoding="async" style="width:100%;height:100%;object-fit:cover" onerror="document.getElementById('artModalHeroWrap').style.display='none'">
+      <div id="artModalHeroWrap" class="art-shell-hero" style="display:none">
+        <img id="artModalHeroImg" alt="" decoding="async" onerror="document.getElementById('artModalHeroWrap').style.display='none'">
       </div>
 
-      <!-- Corps article -->
-      <div id="artModalContent" style="padding:20px 20px 0;position:relative">
-        <!-- Watermark date en arrière-plan -->
+      <!-- Contrôles flottants -->
+      <button class="art-float-btn art-float-close" onclick="closeArtModal()" aria-label="Fermer">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <button id="artModalSaveBtn" class="art-float-btn art-float-save" onclick="artModalToggleSave()" aria-label="Enregistrer">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+      </button>
+
+      <!-- Tête : date, titre, source -->
+      <div class="art-shell-head" id="artModalContent">
+        <div class="art-folder-dots" id="artFolderDots"></div>
         <div class="art-modal-date-watermark" id="artModalDateWM"></div>
-
-        <!-- Date -->
         <div class="art-modal-date" id="artModalDate"></div>
-
-        <!-- Titre -->
         <h2 class="art-modal-title" id="artModalTitle"></h2>
-
-        <!-- Source row -->
         <div class="art-modal-source-row">
           <div class="art-modal-source-pill">
             <div class="art-modal-source-fav"><img id="artModalFav" alt="" onerror="this.style.opacity='.3'"></div>
@@ -13823,20 +14426,29 @@ body.focus-mode .focus-exit{ display:flex; }
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
           </button>
         </div>
-
-        <!-- Lecteur audio (podcasts) -->
-        <div id="artModalAudio" class="art-modal-audio" style="display:none"></div>
-
-        <!-- Étiquettes (tags) -->
-        <div id="artModalTags" class="art-modal-tags"></div>
-
-        <!-- Reader content -->
-        <div class="art-reader-section" id="artReaderSection"></div>
-        <div id="artModalContext"></div>
       </div>
 
-      <!-- Toolbar sticky bas -->
-      <div class="art-modal-toolbar">
+      <!-- Pager à puces (swipe interne) -->
+      <div class="art-pager-wrap">
+        <div class="art-pager" id="artPager">
+          <div class="art-pager-track" id="artPagerTrack">
+            <section class="art-page" id="artModalBody">
+              <div id="artModalAudio" class="art-modal-audio" style="display:none"></div>
+              <div id="artModalTags" class="art-modal-tags"></div>
+              <div class="art-reader-section" id="artReaderSection"></div>
+            </section>
+            <section class="art-page" id="artPageCtx">
+              <div class="art-page-eyebrow">Le sujet · autres sources</div>
+              <div id="artModalContext"></div>
+            </section>
+          </div>
+        </div>
+        <div class="art-teaser-fade"></div>
+      </div>
+
+      <!-- Pied : puces de pages + barre d'outils -->
+      <div class="art-shell-foot">
+        <div class="art-dots" id="artDots"></div>
         <div class="art-toolbar-pill">
           <button class="art-toolbar-btn active" id="artBtnReader" title="Lecteur" onclick="artSwitchView('reader')">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
