@@ -1684,6 +1684,18 @@ body.bf-heavy-open .sbar-podcast{
   display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
 }
 .dc-theme-tile-badge{ position:absolute; top:9px; right:9px; z-index:3; background:rgba(0,0,0,.4); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-radius:999px; padding:4px 10px; font-family:var(--font-inter); font-size:9.5px; font-weight:700; color:#fff; letter-spacing:.02em; }
+/* Chips de sous-catégories (thèmes fusionnés : Sport, Tech & Business…) */
+.dc-subchips{ display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch; padding:14px 18px 4px; }
+.dc-subchips::-webkit-scrollbar{ display:none; }
+.dc-subchips[hidden]{ display:none; }
+.dc-subchip{
+  flex:none; -webkit-tap-highlight-color:transparent; cursor:pointer;
+  border:1px solid var(--border); background:var(--bg-elev); color:var(--text-muted);
+  font-family:var(--font-inter); font-size:12.5px; font-weight:700;
+  padding:8px 14px; border-radius:999px; white-space:nowrap;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.dc-subchip.active{ background:var(--text); color:var(--bg); border-color:var(--text); }
 /* Ligne flux */
 .dc-feed-list{ padding:6px 18px 60px; }
 .dc-feed-card{ border-bottom:1px solid var(--border); }
@@ -5156,6 +5168,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
           </button>
           <span class="dc-detail-title" id="dcDetailTitle"></span>
         </div>
+        <div class="dc-subchips" id="dcSubchips" hidden></div>
         <div class="dc-feed-list" id="dcFeedList"></div>
       </div>
     </div>
@@ -7755,69 +7768,94 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
 
   // Catalogue : 8 thèmes — flux ordonnés pour qu'aucune couleur identique ne se suive
   const DC_THEMES = [
-    { id:'actu', name:'Actualités', illus:'globe', tileGrad:'linear-gradient(145deg,#0077b6 0%,#00b4d8 100%)', icon:'🌐',
-      desc:'Information internationale, politique et société',
-      feeds:[
-        // bleu → rouge → sombre → orange → vert → rouge
-        { name:'Le Monde',          domain:'lemonde.fr',            color:'#0a3c6e', url:'https://www.lemonde.fr/rss/une.xml',                 desc:'Journal de référence depuis 1944' },
-        { name:'France Info',       domain:'francetvinfo.fr',       color:'#d20000', url:'https://www.francetvinfo.fr/titres.rss',              desc:'Actualité en continu 24h/24' },
-        { name:'Bloomberg',         domain:'bloomberg.com',         color:'#222222', url:'https://feeds.bloomberg.com/markets/news.rss',        desc:'Finance, économie et marchés' },
-        { name:'Reuters',           domain:'reuters.com',           color:'#f36f21', url:'https://feeds.reuters.com/reuters/topNews',           desc:'Agence de presse mondiale' },
-        { name:'Mediapart',         domain:'mediapart.fr',          color:'#00a651', url:'https://www.mediapart.fr/articles/feed',              desc:'Investigation indépendante' },
-        { name:'Libération',        domain:'liberation.fr',         color:'#e8000d', url:'https://www.liberation.fr/arc/outboundfeeds/rss/',   desc:'Actu politique et société' },
-        { name:'Courrier International', domain:'courrierinternational.com', color:'#b8860b', url:'https://www.courrierinternational.com/feed/all/rss.xml', desc:'La presse mondiale vue depuis Paris' },
-        { name:'France 24', domain:'france24.com', color:'#003f8e', url:'https://www.france24.com/fr/monde/rss', desc:'Information internationale en continu' },
-        { name:'RFI', domain:'rfi.fr', color:'#c8000a', url:'https://www.rfi.fr/fr/monde/rss', desc:'Radio France Internationale' },
-        { name:'20 Minutes', domain:'20minutes.fr', color:'#e8000d', url:'https://www.20minutes.fr/feeds/rss-monde.xml', desc:'Actu monde en temps réel' },
-        { name:'L\'Express', domain:'lexpress.fr', color:'#1a1a2e', url:'https://www.lexpress.fr/arc/outboundfeeds/rss/monde.xml', desc:'Analyses et grand reportage' },
-        { name:'Le Nouvel Obs', domain:'nouvelobs.com', color:'#003f8e', url:'https://www.nouvelobs.com/a-la-une/rss.xml', desc:'L\'actualite vue par l\'Obs' },
-        { name:'HuffPost France', domain:'huffingtonpost.fr', color:'#d20000', url:'https://www.huffingtonpost.fr/france/rss_headline.xml', desc:'Info et societe en France' },
-        { name:'L\'Humanite', domain:'humanite.fr', color:'#c00020', url:'https://www.humanite.fr/feed', desc:'Journal de reference de gauche' },
-        { name:'NYT HomePage', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml', desc:'La une du New York Times' },
-        { name:'NYT World', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/World.xml', desc:'Actualité mondiale NYT' },
-        { name:'Reuters World', domain:'reutersbest.com', color:'#e87722', url:'https://reutersbest.com/feed/', desc:'Les meilleures enquêtes Reuters' },
-        { name:'Washington Post World', domain:'washingtonpost.com', color:'#1a1a2e', url:'https://feeds.washingtonpost.com/rss/world', desc:'Le monde selon le WaPo' },
-        { name:'NY Post', domain:'nypost.com', color:'#c8000a', url:'https://nypost.com/feed/', desc:'Actualité américaine directe' },
+    { id:'actu-monde', name:'Actualités & Monde', tileGrad:'linear-gradient(145deg,#0077b6 0%,#00b4d8 100%)', icon:'🌐',
+      desc:'Information française, internationale et géopolitique',
+      subcats:[
+        { id:'france', name:'France', feeds:[
+          { name:'Le Monde',          domain:'lemonde.fr',            color:'#0a3c6e', url:'https://www.lemonde.fr/rss/une.xml',                 desc:'Journal de référence depuis 1944' },
+          { name:'France Info',       domain:'francetvinfo.fr',       color:'#d20000', url:'https://www.francetvinfo.fr/titres.rss',              desc:'Actualité en continu 24h/24' },
+          { name:'Mediapart',         domain:'mediapart.fr',          color:'#00a651', url:'https://www.mediapart.fr/articles/feed',              desc:'Investigation indépendante' },
+          { name:'Libération',        domain:'liberation.fr',         color:'#e8000d', url:'https://www.liberation.fr/arc/outboundfeeds/rss/',   desc:'Actu politique et société' },
+          { name:'20 Minutes', domain:'20minutes.fr', color:'#e8000d', url:'https://www.20minutes.fr/feeds/rss-monde.xml', desc:'Actu monde en temps réel' },
+          { name:'L\'Express', domain:'lexpress.fr', color:'#1a1a2e', url:'https://www.lexpress.fr/arc/outboundfeeds/rss/monde.xml', desc:'Analyses et grand reportage' },
+          { name:'Le Nouvel Obs', domain:'nouvelobs.com', color:'#003f8e', url:'https://www.nouvelobs.com/a-la-une/rss.xml', desc:'L\'actualite vue par l\'Obs' },
+          { name:'HuffPost France', domain:'huffingtonpost.fr', color:'#d20000', url:'https://www.huffingtonpost.fr/france/rss_headline.xml', desc:'Info et societe en France' },
+          { name:'L\'Humanite', domain:'humanite.fr', color:'#c00020', url:'https://www.humanite.fr/feed', desc:'Journal de reference de gauche' },
+        ]},
+        { id:'international', name:'International', feeds:[
+          { name:'Bloomberg',         domain:'bloomberg.com',         color:'#222222', url:'https://feeds.bloomberg.com/markets/news.rss',        desc:'Finance, économie et marchés' },
+          { name:'Reuters',           domain:'reuters.com',           color:'#f36f21', url:'https://feeds.reuters.com/reuters/topNews',           desc:'Agence de presse mondiale' },
+          { name:'Courrier International', domain:'courrierinternational.com', color:'#b8860b', url:'https://www.courrierinternational.com/feed/all/rss.xml', desc:'La presse mondiale vue depuis Paris' },
+          { name:'France 24', domain:'france24.com', color:'#003f8e', url:'https://www.france24.com/fr/monde/rss', desc:'Information internationale en continu' },
+          { name:'RFI', domain:'rfi.fr', color:'#c8000a', url:'https://www.rfi.fr/fr/monde/rss', desc:'Radio France Internationale' },
+          { name:'NYT HomePage', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml', desc:'La une du New York Times' },
+          { name:'NYT World', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/World.xml', desc:'Actualité mondiale NYT' },
+          { name:'Reuters World', domain:'reutersbest.com', color:'#e87722', url:'https://reutersbest.com/feed/', desc:'Les meilleures enquêtes Reuters' },
+          { name:'Washington Post World', domain:'washingtonpost.com', color:'#1a1a2e', url:'https://feeds.washingtonpost.com/rss/world', desc:'Le monde selon le WaPo' },
+          { name:'NY Post', domain:'nypost.com', color:'#c8000a', url:'https://nypost.com/feed/', desc:'Actualité américaine directe' },
+        ]},
+        { id:'geopolitique', name:'Géopolitique', feeds:[
+          { name:'Le Grand Continent',   domain:'legrandcontinent.eu',  color:'#1a2a5e', url:'https://legrandcontinent.eu/fr/feed/',                                    desc:'Revue de géopolitique européenne de référence' },
+          { name:'IRIS France',          domain:'iris-france.org',       color:'#003f8e', url:'https://www.iris-france.org/feed/',                                       desc:'Institut de Relations Internationales et Stratégiques' },
+          { name:'Revue Conflits',       domain:'revueconflits.com',     color:'#8a1a1a', url:'https://www.revueconflits.com/feed/',                                     desc:'Géopolitique, stratégie et histoire des conflits' },
+          { name:'Orient XXI',           domain:'orientxxi.info',        color:'#1a4a2a', url:'https://orientxxi.info/?page=backend&lang=fr',                            desc:'Moyen-Orient et monde arabe décryptés' },
+          { name:'Élucid',         domain:'elucid.media',          color:'#2a1a4a', url:'https://elucid.media/feed',                                               desc:'Géopolitique et économie politique critique' },
+          { name:'DiploWeb',             domain:'diploweb.com',          color:'#1a3a5e', url:'https://www.diploweb.com/spip.php?page=backend',                          desc:'La revue géopolitique en ligne' },
+          { name:'RFI Géopolitique',domain:'rfi.fr',              color:'#c8000a', url:'https://www.rfi.fr/fr/tag/g%C3%A9opolitique/rss',                          desc:'Actualité géopolitique mondiale' },
+          { name:'Desk Russie',          domain:'desk-russie.eu',        color:'#2a2a6e', url:'https://desk-russie.eu/feed',                                             desc:'Russie et espace post-soviétique' },
+          { name:'Les yeux du monde',    domain:'les-yeux-du-monde.fr',  color:'#1a3a4e', url:'https://les-yeux-du-monde.fr/feed',                                       desc:'Géopolitique accessible et pédagogique' },
+          { name:'Zone Militaire',       domain:'opex360.com',           color:'#2a3a2a', url:'https://www.opex360.com/category/diplomatie/feed/',                       desc:'Défense et diplomatie internationale' },
+          { name:'Le Monde Géo',  domain:'lemonde.fr',            color:'#1a1a2e', url:'https://www.lemonde.fr/geopolitique/rss_full.xml',                         desc:'Analyse géopolitique du Monde' },
+          { name:'Regard sur l’Est',    domain:'regard-est.com',        color:'#3a2a1a', url:'https://regard-est.com/feed',                                             desc:'Europe centrale, orientale et Balkans' },
+          { name:'NYT Europe', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/Europe.xml', desc:'Europe et géopolitique NYT' },
+          { name:'Reuters Middle East', domain:'reutersbest.com', color:'#e87722', url:'https://reutersbest.com/region/middle-east/feed/', desc:'Moyen-Orient par Reuters' },
+          { name:'Reuters Africa', domain:'reutersbest.com', color:'#e87722', url:'https://reutersbest.com/region/africa/feed/', desc:'Afrique par Reuters Best' },
+          { name:'WaPo World', domain:'washingtonpost.com', color:'#1a1a2e', url:'https://feeds.washingtonpost.com/rss/world?itid=lk_inline_manual_', desc:'Géopolitique Washington Post' },
+        ]},
       ]},
-    { id:'geopolitique', name:'G\u00e9opolitique', illus:'geopolitique', tileGrad:'linear-gradient(145deg,#6c3483 0%,#9b59b6 100%)', icon:'\u{1F30D}',
-      desc:'Diplomatie, conflits et relations internationales',
-      feeds:[
-        { name:'Le Grand Continent',   domain:'legrandcontinent.eu',  color:'#1a2a5e', url:'https://legrandcontinent.eu/fr/feed/',                                    desc:'Revue de g\u00e9opolitique europ\u00e9enne de r\u00e9f\u00e9rence' },
-        { name:'IRIS France',          domain:'iris-france.org',       color:'#003f8e', url:'https://www.iris-france.org/feed/',                                       desc:'Institut de Relations Internationales et Strat\u00e9giques' },
-        { name:'Revue Conflits',       domain:'revueconflits.com',     color:'#8a1a1a', url:'https://www.revueconflits.com/feed/',                                     desc:'G\u00e9opolitique, strat\u00e9gie et histoire des conflits' },
-        { name:'Orient XXI',           domain:'orientxxi.info',        color:'#1a4a2a', url:'https://orientxxi.info/?page=backend&lang=fr',                            desc:'Moyen-Orient et monde arabe d\u00e9crypt\u00e9s' },
-        { name:'\u00c9lucid',         domain:'elucid.media',          color:'#2a1a4a', url:'https://elucid.media/feed',                                               desc:'G\u00e9opolitique et \u00e9conomie politique critique' },
-        { name:'DiploWeb',             domain:'diploweb.com',          color:'#1a3a5e', url:'https://www.diploweb.com/spip.php?page=backend',                          desc:'La revue g\u00e9opolitique en ligne' },
-        { name:'RFI G\u00e9opolitique',domain:'rfi.fr',              color:'#c8000a', url:'https://www.rfi.fr/fr/tag/g%C3%A9opolitique/rss',                          desc:'Actualit\u00e9 g\u00e9opolitique mondiale' },
-        { name:'Desk Russie',          domain:'desk-russie.eu',        color:'#2a2a6e', url:'https://desk-russie.eu/feed',                                             desc:'Russie et espace post-sovi\u00e9tique' },
-        { name:'Les yeux du monde',    domain:'les-yeux-du-monde.fr',  color:'#1a3a4e', url:'https://les-yeux-du-monde.fr/feed',                                       desc:'G\u00e9opolitique accessible et p\u00e9dagogique' },
-        { name:'Zone Militaire',       domain:'opex360.com',           color:'#2a3a2a', url:'https://www.opex360.com/category/diplomatie/feed/',                       desc:'D\u00e9fense et diplomatie internationale' },
-        { name:'Le Monde G\u00e9o',  domain:'lemonde.fr',            color:'#1a1a2e', url:'https://www.lemonde.fr/geopolitique/rss_full.xml',                         desc:'Analyse g\u00e9opolitique du Monde' },
-        { name:'Regard sur l’Est',    domain:'regard-est.com',        color:'#3a2a1a', url:'https://regard-est.com/feed',                                             desc:'Europe centrale, orientale et Balkans' },
-        { name:'NYT Europe', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/Europe.xml', desc:'Europe et géopolitique NYT' },
-        { name:'Reuters Middle East', domain:'reutersbest.com', color:'#e87722', url:'https://reutersbest.com/region/middle-east/feed/', desc:'Moyen-Orient par Reuters' },
-        { name:'Reuters Africa', domain:'reutersbest.com', color:'#e87722', url:'https://reutersbest.com/region/africa/feed/', desc:'Afrique par Reuters Best' },
-        { name:'WaPo World', domain:'washingtonpost.com', color:'#1a1a2e', url:'https://feeds.washingtonpost.com/rss/world?itid=lk_inline_manual_', desc:'Géopolitique Washington Post' },
-      ]},
-    { id:'finance', name:'Finance', illus:'finance', tileGrad:'linear-gradient(145deg,#1e4d00 0%,#27ae60 100%)', icon:'📈',
-      desc:'Marchés, économie mondiale et finance personnelle',
-      feeds:[
-        // bleu → sombre → rouge → orange → vert → bleu clair
-        { name:'Les Échos',         domain:'lesechos.fr',           color:'#003fa3', url:'https://www.lesechos.fr/rss/rss_monde.xml',          desc:'La référence économique française' },
-        { name:'Bloomberg',         domain:'bloomberg.com',         color:'#1a1a1a', url:'https://feeds.bloomberg.com/markets/news.rss',        desc:'Finance mondiale et marchés' },
-        { name:'Challenges',        domain:'challenges.fr',         color:'#c8000a', url:'https://www.challenges.fr/rss.xml',                  desc:'Économie, business et entrepreneuriat' },
-        { name:'Capital',           domain:'capital.fr',            color:'#e06000', url:'https://www.capital.fr/flux-rss/actualite.xml',      desc:'Argent, carrière et économie' },
-        { name:'The Economist',     domain:'economist.com',         color:'#cc0000', url:'https://www.economist.com/rss/the_world_this_week.xml', desc:'Analyse économique mondiale' },
-        { name:'Boursorama',        domain:'boursorama.com',        color:'#005f9e', url:'https://www.boursorama.com/bourse/actualites/rss/',   desc:'Bourse, marchés et patrimoine' },
-        { name:'Journal du Net', domain:'journaldunet.com', color:'#003fa3', url:'https://www.journaldunet.com/business/rss/', desc:'Business, finance et decideurs' },
-        { name:'L\'Express Eco', domain:'lexpress.fr', color:'#1a1a2e', url:'https://www.lexpress.fr/arc/outboundfeeds/rss/economie.xml', desc:'Economie, marches et entreprises' },
-        { name:'Le Figaro Eco', domain:'lefigaro.fr', color:'#1a3060', url:'https://www.lefigaro.fr/rss/figaro_economie.xml', desc:'Finance et economie francaise' },
-        { name:'NYT Economy', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/Economy.xml', desc:'Économie et marchés NYT' },
-        { name:'NYT DealBook', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/Dealbook.xml', desc:'Finance, fusions et acquisitions' },
-        { name:'Reuters Finance', domain:'reutersbest.com', color:'#e87722', url:'https://reutersbest.com/topic/business-finance/feed/', desc:'Finance mondiale Reuters' },
-        { name:'Reuters Markets', domain:'reutersbest.com', color:'#e87722', url:'https://reutersbest.com/topic/markets/feed/', desc:'Marchés financiers Reuters' },
-        { name:'Forbes Innovation', domain:'forbes.com', color:'#c8000a', url:'https://www.forbes.com/innovation/feed2/', desc:'Innovation et business Forbes' },
-        { name:'NY Post Business', domain:'nypost.com', color:'#c8000a', url:'https://nypost.com/business/feed/', desc:'Business à l\'américaine' },
+    { id:'finance-eco', name:'Finance & Économie', tileGrad:'linear-gradient(145deg,#1e4d00 0%,#27ae60 100%)', icon:'📈',
+      desc:'Marchés, économie mondiale et crypto',
+      subcats:[
+        { id:'marches', name:'Marchés & Bourse', feeds:[
+          { name:'Boursorama',        domain:'boursorama.com',        color:'#005f9e', url:'https://www.boursorama.com/bourse/actualites/rss/',   desc:'Bourse, marchés et patrimoine' },
+          { name:'Bloomberg',         domain:'bloomberg.com',         color:'#1a1a1a', url:'https://feeds.bloomberg.com/markets/news.rss',        desc:'Finance mondiale et marchés' },
+          { name:'The Economist',     domain:'economist.com',         color:'#cc0000', url:'https://www.economist.com/rss/the_world_this_week.xml', desc:'Analyse économique mondiale' },
+          { name:'Reuters Markets', domain:'reutersbest.com', color:'#e87722', url:'https://reutersbest.com/topic/markets/feed/', desc:'Marchés financiers Reuters' },
+          { name:'Reuters Finance', domain:'reutersbest.com', color:'#e87722', url:'https://reutersbest.com/topic/business-finance/feed/', desc:'Finance mondiale Reuters' },
+          { name:'NY Post Business', domain:'nypost.com', color:'#c8000a', url:'https://nypost.com/business/feed/', desc:'Business à l\'américaine' },
+          { name:'Investing.com', domain:'investing.com', color:'#0055a5', url:'https://www.investing.com/rss/news.rss', desc:'Cours, indices et analyses en temps réel' },
+          { name:'Seeking Alpha', domain:'seekingalpha.com', color:'#ff7a00', url:'https://seekingalpha.com/feed.xml', desc:'Analyses et opinions d\'investisseurs' },
+          { name:'Nasdaq', domain:'nasdaq.com', color:'#0089cc', url:'https://www.nasdaq.com/feed/nasdaq-original', desc:'Marchés et valeurs technologiques' },
+          { name:'Benzinga', domain:'benzinga.com', color:'#00a651', url:'https://feeds.benzinga.com/benzinga', desc:'Actualité boursière en continu' },
+          { name:'MarketWatch', domain:'marketwatch.com', color:'#004a8f', url:'https://feeds.content.dowjones.io/public/rss/mw_topstories', desc:'Marchés financiers, Dow Jones' },
+          { name:'CNBC Marchés', domain:'cnbc.com', color:'#005594', url:'https://www.cnbc.com/id/20910258/device/rss/rss.html', desc:'Bourse et économie CNBC' },
+        ]},
+        { id:'economie', name:'Économie mondiale', feeds:[
+          { name:'Les Échos',         domain:'lesechos.fr',           color:'#003fa3', url:'https://www.lesechos.fr/rss/rss_monde.xml',          desc:'La référence économique française' },
+          { name:'Challenges',        domain:'challenges.fr',         color:'#c8000a', url:'https://www.challenges.fr/rss.xml',                  desc:'Économie, business et entrepreneuriat' },
+          { name:'Capital',           domain:'capital.fr',            color:'#e06000', url:'https://www.capital.fr/flux-rss/actualite.xml',      desc:'Argent, carrière et économie' },
+          { name:'Journal du Net', domain:'journaldunet.com', color:'#003fa3', url:'https://www.journaldunet.com/business/rss/', desc:'Business, finance et decideurs' },
+          { name:'L\'Express Eco', domain:'lexpress.fr', color:'#1a1a2e', url:'https://www.lexpress.fr/arc/outboundfeeds/rss/economie.xml', desc:'Economie, marches et entreprises' },
+          { name:'Le Figaro Eco', domain:'lefigaro.fr', color:'#1a3060', url:'https://www.lefigaro.fr/rss/figaro_economie.xml', desc:'Finance et economie francaise' },
+          { name:'NYT Economy', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/Economy.xml', desc:'Économie et marchés NYT' },
+          { name:'NYT DealBook', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/Dealbook.xml', desc:'Finance, fusions et acquisitions' },
+          { name:'Forbes Innovation', domain:'forbes.com', color:'#c8000a', url:'https://www.forbes.com/innovation/feed2/', desc:'Innovation et business Forbes' },
+          { name:'Trading Economics', domain:'tradingeconomics.com', color:'#1a3a6e', url:'https://tradingeconomics.com/rss/news.aspx', desc:'Indicateurs économiques mondiaux' },
+          { name:'CEPR', domain:'cepr.org', color:'#00305a', url:'https://cepr.org/rss/news', desc:'Recherche en politique économique' },
+          { name:'Economics One', domain:'economicsone.com', color:'#5a3a1a', url:'https://economicsone.com/feed/', desc:'Analyse macroéconomique' },
+          { name:'Financial Times — Économie', domain:'ft.com', color:'#fff1e5', url:'https://www.ft.com/global-economy?format=rss', desc:'Économie mondiale, Financial Times' },
+          { name:'FiveThirtyEight Économie', domain:'fivethirtyeight.com', color:'#1a1a1a', url:'https://fivethirtyeight.com/economics/feed/', desc:'Données et analyses économiques' },
+        ]},
+        { id:'crypto', name:'Crypto & Web3', feeds:[
+          { name:'CoinDesk',          domain:'coindesk.com',          color:'#f7931a', url:'https://www.coindesk.com/arc/outboundfeeds/rss/',    desc:'Le média crypto de référence' },
+          { name:'Cointelegraph',     domain:'cointelegraph.com',     color:'#1a1a1a', url:'https://cointelegraph.com/rss',                      desc:'News blockchain et DeFi' },
+          { name:'Decrypt',           domain:'decrypt.co',            color:'#e20028', url:'https://decrypt.co/feed',                            desc:'Web3, NFTs et cryptomonnaies' },
+          { name:'The Block',         domain:'theblock.co',           color:'#555555', url:'https://www.theblock.co/rss.xml',                   desc:'Analyse et données crypto' },
+          { name:'Bitcoin Magazine',  domain:'bitcoinmagazine.com',   color:'#f09600', url:'https://bitcoinmagazine.com/feed',                   desc:'Tout sur le Bitcoin' },
+          { name:'CoinTelegraph FR',  domain:'fr.cointelegraph.com',  color:'#004a8f', url:'https://fr.cointelegraph.com/rss',                  desc:'Crypto en français' },
+          { name:'PC Crypto', domain:'presse-citron.net', color:'#f5a623', url:'https://www.presse-citron.net/category/crypto-monnaies/feed/', desc:'Cryptomonnaies et blockchain' },
+          { name:'01net Crypto', domain:'01net.com', color:'#003fa3', url:'https://www.01net.com/actualites/cryptomonnaie/feed/', desc:'Bitcoin et altcoins en francais' },
+        ]},
       ]},
     { id:'science', name:'Science', illus:'cosmos', tileGrad:'linear-gradient(145deg,#0d47a1 0%,#42a5f5 100%)', icon:'🔭',
       desc:'Espace, physique, biologie et grandes découvertes',
@@ -7849,27 +7887,69 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
         { name:'Nouvel Obs Sante', domain:'nouvelobs.com', color:'#003f8e', url:'https://www.nouvelobs.com/sante/rss.xml', desc:'Sante et medecine' },
         { name:'NYT Health', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/svc/collections/v1/publish/https://www.nytimes.com/section/health/rss.xml', desc:'Santé et médecine NYT' },
       ]},
-    { id:'tech-ia', name:'Tech & IA', illus:'neural', tileGrad:'linear-gradient(145deg,#4a235a 0%,#a044ff 100%)', icon:'🤖',
-      desc:'Intelligence artificielle, hardware et culture du code',
-      feeds:[
-        // rose → vert → orange → violet → sombre → rouge sombre
-        { name:'The Verge',         domain:'theverge.com',          color:'#e5007e', url:'https://www.theverge.com/rss/index.xml',             desc:'Tech, gadgets et culture numérique' },
-        { name:'TechCrunch',        domain:'techcrunch.com',        color:'#0a7d3e', url:'https://techcrunch.com/feed/',                       desc:'Startups, financement et disruption' },
-        { name:'Ars Technica',      domain:'arstechnica.com',       color:'#f46000', url:'https://feeds.arstechnica.com/arstechnica/index',    desc:'Science, technologie et culture geek' },
-        { name:'Numerama',          domain:'numerama.com',          color:'#6c63ff', url:'https://www.numerama.com/feed/',                     desc:'Tech et numérique en français' },
-        { name:'Wired',             domain:'wired.com',             color:'#1a1a1a', url:'https://www.wired.com/feed/rss',                     desc:"L'avenir de la technologie" },
-        { name:'MIT Tech Review',   domain:'technologyreview.com',  color:'#a00000', url:'https://www.technologyreview.com/topnews.rss',        desc:'Recherche et innovations en IA' },
-        { name:'01net', domain:'01net.com', color:'#003fa3', url:'https://www.01net.com/feed/', desc:'Tests, actus et dossiers high-tech' },
-        { name:'Presse-citron', domain:'presse-citron.net', color:'#f5a623', url:'https://www.presse-citron.net/feed/', desc:'Tech, IA et lifestyle numerique' },
-        { name:'Next.ink', domain:'next.ink', color:'#1a1a1a', url:'https://next.ink/feed/', desc:'L\'actu tech independante' },
-        { name:'Silicon.fr', domain:'silicon.fr', color:'#0a5a8a', url:'https://www.silicon.fr/feed', desc:'IT, cloud et transformation digitale' },
-        { name:'ZDNet France', domain:'zdnet.fr', color:'#cc0000', url:'https://www.zdnet.fr/feeds/rss/', desc:'High-tech pro et entreprises' },
-        { name:'Journal du Net IA', domain:'journaldunet.com', color:'#003fa3', url:'https://www.journaldunet.com/intelligence-artificielle/rss/', desc:'IA, business et numerique' },
-        { name:'NYT Technology', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml', desc:'High-tech et numérique NYT' },
-        { name:'NYT PersonalTech', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/PersonalTech.xml', desc:'Tech grand public NYT' },
-        { name:'WaPo Technology', domain:'washingtonpost.com', color:'#1a1a2e', url:'https://feeds.washingtonpost.com/rss/business/technology/', desc:'Tech et numérique WaPo' },
-        { name:'Forbes Big Data', domain:'forbes.com', color:'#c8000a', url:'https://www.forbes.com/big-data/feed2/', desc:'Big Data et IA Forbes' },
-        { name:'Forbes Cloud', domain:'forbes.com', color:'#c8000a', url:'https://www.forbes.com/cloud/feed2/', desc:'Cloud computing Forbes' },
+    { id:'tech-business', name:'Tech & Business', tileGrad:'linear-gradient(145deg,#4a235a 0%,#a044ff 100%)', icon:'🤖',
+      desc:'Intelligence artificielle, hardware, design produit et startups',
+      subcats:[
+        { id:'ai', name:'Intelligence Artificielle', feeds:[
+          { name:'MIT Tech Review',   domain:'technologyreview.com',  color:'#a00000', url:'https://www.technologyreview.com/topnews.rss',        desc:'Recherche et innovations en IA' },
+          { name:'Journal du Net IA', domain:'journaldunet.com', color:'#003fa3', url:'https://www.journaldunet.com/intelligence-artificielle/rss/', desc:'IA, business et numerique' },
+          { name:'Forbes Big Data', domain:'forbes.com', color:'#c8000a', url:'https://www.forbes.com/big-data/feed2/', desc:'Big Data et IA Forbes' },
+          { name:'OpenAI News', domain:'openai.com', color:'#10a37f', url:'https://openai.com/news/rss.xml', desc:'Annonces et recherche OpenAI' },
+          { name:'Google AI / DeepMind', domain:'research.google', color:'#4285f4', url:'https://research.google/blog/rss', desc:'Recherche IA de Google' },
+          { name:'BAIR Blog (Berkeley)', domain:'bair.berkeley.edu', color:'#003262', url:'https://bair.berkeley.edu/blog/feed.xml', desc:'Recherche IA de Berkeley' },
+          { name:'AI-TechPark', domain:'ai-techpark.com', color:'#5a2a8a', url:'https://ai-techpark.com/feed', desc:'Actualité IA et data' },
+          { name:'AI Accelerator Institute', domain:'aiacceleratorinstitute.com', color:'#2a5a8a', url:'https://www.aiacceleratorinstitute.com/rss/', desc:'IA appliquée et cas d\'usage' },
+          { name:'arXiv cs.AI', domain:'arxiv.org', color:'#b31b1b', url:'https://arxiv.org/rss/cs.AI', desc:'Publications de recherche en IA' },
+          { name:'Anthropic News', domain:'anthropic.com', color:'#d97757', url:'https://www.anthropic.com/news/rss.xml', desc:'Annonces et recherche Anthropic' },
+          { name:'Hugging Face Blog', domain:'huggingface.co', color:'#ffd21e', url:'https://huggingface.co/blog/feed.xml', desc:'Open-source IA et modèles' },
+          { name:'The Gradient', domain:'thegradient.pub', color:'#1a1a3a', url:'https://thegradient.pub/rss/', desc:'Analyses de fond sur l\'IA' },
+          { name:'MarkTechPost', domain:'marktechpost.com', color:'#0a5a8a', url:'https://www.marktechpost.com/feed', desc:'Recherche et actualité machine learning' },
+        ]},
+        { id:'hardware', name:'Hardware & Gadgets', feeds:[
+          { name:'The Verge',         domain:'theverge.com',          color:'#e5007e', url:'https://www.theverge.com/rss/index.xml',             desc:'Tech, gadgets et culture numérique' },
+          { name:'Ars Technica',      domain:'arstechnica.com',       color:'#f46000', url:'https://feeds.arstechnica.com/arstechnica/index',    desc:'Science, technologie et culture geek' },
+          { name:'Wired',             domain:'wired.com',             color:'#1a1a1a', url:'https://www.wired.com/feed/rss',                     desc:"L'avenir de la technologie" },
+          { name:'01net', domain:'01net.com', color:'#003fa3', url:'https://www.01net.com/feed/', desc:'Tests, actus et dossiers high-tech' },
+          { name:'Presse-citron', domain:'presse-citron.net', color:'#f5a623', url:'https://www.presse-citron.net/feed/', desc:'Tech, IA et lifestyle numerique' },
+          { name:'Next.ink', domain:'next.ink', color:'#1a1a1a', url:'https://next.ink/feed/', desc:'L\'actu tech independante' },
+          { name:'ZDNet France', domain:'zdnet.fr', color:'#cc0000', url:'https://www.zdnet.fr/feeds/rss/', desc:'High-tech pro et entreprises' },
+          { name:'Forbes Cloud', domain:'forbes.com', color:'#c8000a', url:'https://www.forbes.com/cloud/feed2/', desc:'Cloud computing Forbes' },
+          { name:'Numerama',          domain:'numerama.com',          color:'#6c63ff', url:'https://www.numerama.com/feed/',                     desc:'Tech et numérique en français' },
+          { name:'NYT Technology', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml', desc:'High-tech et numérique NYT' },
+          { name:'NYT PersonalTech', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/PersonalTech.xml', desc:'Tech grand public NYT' },
+          { name:'WaPo Technology', domain:'washingtonpost.com', color:'#1a1a2e', url:'https://feeds.washingtonpost.com/rss/business/technology/', desc:'Tech et numérique WaPo' },
+          { name:'CNET', domain:'cnet.com', color:'#e0001a', url:'https://www.cnet.com/rss/news/', desc:'Tests et actus gadgets' },
+          { name:'Tom\'s Hardware', domain:'tomshardware.com', color:'#e2231a', url:'https://www.tomshardware.com/feeds.xml', desc:'Composants et hardware' },
+          { name:'Engadget', domain:'engadget.com', color:'#00cad9', url:'https://www.engadget.com/rss.xml', desc:'Gadgets et électronique grand public' },
+          { name:'PCMag', domain:'pcmag.com', color:'#c8000a', url:'https://www.pcmag.com/feeds/rss/latest', desc:'Tests produits et comparatifs' },
+          { name:'TechRadar', domain:'techradar.com', color:'#e0004d', url:'https://www.techradar.com/feeds.xml', desc:'Gadgets, tests et guides d\'achat' },
+          { name:'ExtremeTech', domain:'extremetech.com', color:'#1a6a8a', url:'https://www.extremetech.com/feed', desc:'Hardware et technologies de pointe' },
+          { name:'Geeky Gadgets', domain:'geeky-gadgets.com', color:'#3a3a3a', url:'https://www.geeky-gadgets.com/feed', desc:'Nouveautés gadgets au quotidien' },
+        ]},
+        { id:'dev-design', name:'Développement & Design', feeds:[
+          { name:'Smashing Magazine', domain:'smashingmagazine.com',  color:'#e85c33', url:'https://www.smashingmagazine.com/feed/',             desc:'Design web, UX et front-end' },
+          { name:"It's Nice That",    domain:'itsnicethat.com',        color:'#ff2600', url:'https://www.itsnicethat.com/rss',                    desc:'Culture créative et art contemporain' },
+          { name:'CSS-Tricks',        domain:'css-tricks.com',        color:'#2965f1', url:'https://css-tricks.com/feed/',                       desc:'CSS, front-end et animations' },
+          { name:'Sidebar.io',        domain:'sidebar.io',            color:'#222222', url:'https://sidebar.io/feed.xml',                        desc:'Les 5 meilleurs liens design' },
+          { name:'A List Apart',      domain:'alistapart.com',        color:'#367eb6', url:'https://alistapart.com/main/feed/',                  desc:'Web design et bonnes pratiques' },
+          { name:'Abduzeedo',         domain:'abduzeedo.com',         color:'#1a7a6a', url:'https://abduzeedo.com/rss.xml',                      desc:'Inspiration design et motion' },
+          { name:'Codrops', domain:'tympanus.net', color:'#ff6b6b', url:'https://tympanus.net/codrops/feed', desc:'Tutoriels design et front-end' },
+          { name:'LogRocket Blog', domain:'blog.logrocket.com', color:'#764abc', url:'https://blog.logrocket.com/feed', desc:'Ingénierie front-end et produit' },
+          { name:'Design Shack', domain:'designshack.net', color:'#2a2a4a', url:'https://feedpress.me/designshack', desc:'Design web et graphique au quotidien' },
+        ]},
+        { id:'startups', name:'Startups & Business Tech', feeds:[
+          { name:'Hacker News',       domain:'news.ycombinator.com',  color:'#ff6600', url:'https://news.ycombinator.com/rss',                  desc:'Tech, startups et innovation' },
+          { name:'TechCrunch Start.', domain:'techcrunch.com',        color:'#005f9e', url:'https://techcrunch.com/category/startups/feed/',     desc:'Financement et disruption' },
+          { name:'Fast Company',      domain:'fastcompany.com',       color:'#111111', url:'https://www.fastcompany.com/rss.xml',                desc:'Innovation et leadership' },
+          { name:'Entrepreneur',      domain:'entrepreneur.com',      color:'#c8000a', url:'https://www.entrepreneur.com/latest.rss',            desc:'Conseils pour entrepreneurs' },
+          { name:'HBR',               domain:'hbr.org',               color:'#1a6a28', url:'http://feeds.hbr.org/harvardbusiness',              desc:'Harvard Business Review' },
+          { name:'L\'ADN',            domain:'ladn.eu',               color:'#444444', url:'https://www.ladn.eu/feed/',                          desc:'Innovation et futurs possibles' },
+          { name:'L\'Express Entrepreneurs', domain:'lexpress.fr', color:'#1a1a2e', url:'https://www.lexpress.fr/arc/outboundfeeds/rss/entrepreneurs.xml', desc:'Startups et entrepreneuriat' },
+          { name:'JDN Decideurs', domain:'journaldunet.com', color:'#003fa3', url:'https://www.journaldunet.com/decideurs/rss/', desc:'Dirigeants et strategie' },
+          { name:'PC Startups', domain:'presse-citron.net', color:'#f5a623', url:'https://www.presse-citron.net/category/startups/feed/', desc:'Startups et innovation' },
+          { name:'TechCrunch',        domain:'techcrunch.com',        color:'#0a7d3e', url:'https://techcrunch.com/feed/',                       desc:'Startups, financement et disruption' },
+          { name:'Silicon.fr', domain:'silicon.fr', color:'#0a5a8a', url:'https://www.silicon.fr/feed', desc:'IT, cloud et transformation digitale' },
+        ]},
       ]},
     { id:'climat', name:'Climat & Éco', illus:'climat', tileGrad:'linear-gradient(145deg,#0b5345 0%,#1abc9c 100%)', icon:'🌱',
       desc:'Environnement, énergie verte et transition écologique',
@@ -7887,99 +7967,110 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
         { name:'NYT Energy & Enviro', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/EnergyEnvironment.xml', desc:'Énergie et environnement NYT' },
         { name:'Reuters Énergie', domain:'reutersbest.com', color:'#e87722', url:'https://reutersbest.com/topic/commodities-energy/feed/', desc:'Énergie et matières premières' },
       ]},
-    { id:'startup', name:'Entrepreneuriat', illus:'entrepreneuriat', tileGrad:'linear-gradient(145deg,#7e4a00 0%,#f39c12 100%)', icon:'🚀',
-      desc:'Startups, innovation et culture du business',
-      feeds:[
-        // orange → bleu → sombre → rouge → vert → gris
-        { name:'Hacker News',       domain:'news.ycombinator.com',  color:'#ff6600', url:'https://news.ycombinator.com/rss',                  desc:'Tech, startups et innovation' },
-        { name:'TechCrunch Start.', domain:'techcrunch.com',        color:'#005f9e', url:'https://techcrunch.com/category/startups/feed/',     desc:'Financement et disruption' },
-        { name:'Fast Company',      domain:'fastcompany.com',       color:'#111111', url:'https://www.fastcompany.com/rss.xml',                desc:'Innovation et leadership' },
-        { name:'Entrepreneur',      domain:'entrepreneur.com',      color:'#c8000a', url:'https://www.entrepreneur.com/latest.rss',            desc:'Conseils pour entrepreneurs' },
-        { name:'HBR',               domain:'hbr.org',               color:'#1a6a28', url:'http://feeds.hbr.org/harvardbusiness',              desc:'Harvard Business Review' },
-        { name:'L\'ADN',            domain:'ladn.eu',               color:'#444444', url:'https://www.ladn.eu/feed/',                          desc:'Innovation et futurs possibles' },
-        { name:'L\'Express Entrepreneurs', domain:'lexpress.fr', color:'#1a1a2e', url:'https://www.lexpress.fr/arc/outboundfeeds/rss/entrepreneurs.xml', desc:'Startups et entrepreneuriat' },
-        { name:'JDN Decideurs', domain:'journaldunet.com', color:'#003fa3', url:'https://www.journaldunet.com/decideurs/rss/', desc:'Dirigeants et strategie' },
-        { name:'PC Startups', domain:'presse-citron.net', color:'#f5a623', url:'https://www.presse-citron.net/category/startups/feed/', desc:'Startups et innovation' },
+    { id:'sport', name:'Sport', tileGrad:'linear-gradient(145deg,#7d6608 0%,#f1c40f 100%)', icon:'🏆',
+      desc:'Football, basketball, tennis, F1, rugby, cyclisme et sport mondial',
+      subcats:[
+        { id:'football', name:'Football', feeds:[
+          { name:"L'Équipe",          domain:'lequipe.fr',            color:'#003f8e', url:'https://dwh.lequipe.fr/api/edito/rss?path=/Tous-sports/',   desc:'Le quotidien sportif de référence' },
+          { name:'RMC Sport',         domain:'rmcsport.com',    color:'#e2001a', url:'https://rmcsport.bfmtv.com/rss/football/',           desc:'Direct, analyses et mercato' },
+          { name:'SoFoot',            domain:'sofoot.com',            color:'#1a7a1a', url:'https://www.sofoot.com/feed',                        desc:'Football et culture foot' },
+          { name:'The Guardian Sport',domain:'theguardian.com',       color:'#0066cc', url:'https://www.theguardian.com/football/rss',           desc:'Football mondial et analyses' },
+          { name:'ESPN FC',           domain:'espn.com',              color:'#cc0000', url:'https://www.espn.com/espn/rss/soccer/news',          desc:'Football international et LDC' },
+          { name:'BBC Sport Football',domain:'bbc.com',               color:'#111111', url:'https://feeds.bbci.co.uk/sport/football/rss.xml',    desc:'Premier League et couverture mondiale' },
+          { name:'Athletic Premier League', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/athletic/rss/premier-league/', desc:'The Athletic - Premier League' },
+          { name:'Athletic Football', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/athletic/rss/football/', desc:'The Athletic - Football mondial' },
+        ]},
+        { id:'basketball', name:'Basketball / NBA', feeds:[
+          { name:'The Athletic NBA',  domain:'theathletic.com',      color:'#c8102e', url:'https://www.nytimes.com/athletic/rss/nba/',                  desc:'Analyses approfondies et coulisses NBA' },
+          { name:'Bleacher Report',   domain:'bleacherreport.com',    color:'#f5a623', url:'https://bleacherreport.com/articles/feed',           desc:'Breaking news et highlights' },
+          { name:'BasketSession',     domain:'basketsession.com',     color:'#003fa3', url:'https://www.basketsession.com/feed/',                desc:'La NBA en français' },
+          { name:'ESPN NBA',          domain:'espn.com',              color:'#cc0000', url:'http://sports.espn.go.com/espn/rss/nba/news',             desc:'Actus, scores et statistiques' },
+          { name:'HoopsHype',         domain:'hoopshype.com',         color:'#1a5a1a', url:'https://hoopshype.com/feed/',                        desc:'Rumeurs, trades et contrats' },
+          { name:'RealGM Basketball', domain:'realgm.com', color:'#0055a5', url:'https://basketball.realgm.com/rss/',                 desc:'Stats, transactions et draft' },
+        ]},
+        { id:'tennis', name:'Tennis', feeds:[
+          { name:'Athletic Tennis', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/athletic/rss/tennis/', desc:'The Athletic - Tennis mondial' },
+          { name:'L\'Équipe Tennis', domain:'lequipe.fr', color:'#003f8e', url:'https://dwh.lequipe.fr/api/edito/rss?path=/Tennis/', desc:'Tennis : résultats et analyses' },
+          { name:'ATP Tour', domain:'atptour.com', color:'#004b8d', url:'https://www.atptour.com/en/media/rss-feed', desc:'Circuit ATP officiel' },
+          { name:'WTA Tennis', domain:'wtatennis.com', color:'#5a0f8a', url:'https://www.wtatennis.com/rss', desc:'Circuit WTA officiel' },
+          { name:'Tennis Majors', domain:'tennismajors.com', color:'#1a6a3a', url:'https://www.tennismajors.com/feed', desc:'Actu tennis et grands tournois' },
+          { name:'BBC Sport Tennis', domain:'bbc.com', color:'#111111', url:'https://feeds.bbci.co.uk/sport/tennis/rss.xml', desc:'Tennis britannique et mondial' },
+          { name:'ESPN Tennis', domain:'espn.com', color:'#cc0000', url:'https://www.espn.com/espn/rss/tennis/news', desc:'Tennis, résultats et classements' },
+          { name:'The Guardian Tennis', domain:'theguardian.com', color:'#0066cc', url:'https://www.theguardian.com/sport/tennis/rss', desc:'Tennis mondial par le Guardian' },
+          { name:'Sky Sports Tennis', domain:'skysports.com', color:'#00a0dc', url:'https://www.skysports.com/rss/12040', desc:'Tennis britannique et mondial' },
+        ]},
+        { id:'f1', name:'Formule 1', feeds:[
+          { name:'L\'Équipe Formule 1', domain:'lequipe.fr', color:'#003f8e', url:'https://dwh.lequipe.fr/api/edito/rss?path=/Formule-1/', desc:'F1 : courses et paddock' },
+          { name:'Formula1.com', domain:'formula1.com', color:'#e10600', url:'https://www.formula1.com/en/latest/all.xml', desc:'Site officiel de la F1' },
+          { name:'Autosport F1', domain:'autosport.com', color:'#c8000a', url:'https://www.autosport.com/rss/f1/news', desc:'Course auto et F1' },
+          { name:'Motorsport.com', domain:'motorsport.com', color:'#1a1a1a', url:'https://www.motorsport.com/rss/f1/news/', desc:'Sport automobile international' },
+          { name:'FIA', domain:'fia.com', color:'#1a2a5e', url:'https://www.fia.com/media-center/rss-feed', desc:'Fédération Internationale de l\'Automobile' },
+          { name:'Grandprix.com', domain:'grandprix.com', color:'#8a1a1a', url:'https://www.grandprix.com/rss.xml', desc:'Actu et coulisses F1' },
+          { name:'F1Technical', domain:'f1technical.net', color:'#2a2a2a', url:'https://www.f1technical.net/rss/news.xml', desc:'Technique et ingénierie F1' },
+          { name:'BBC Sport F1', domain:'bbc.com', color:'#111111', url:'https://feeds.bbci.co.uk/sport/formula1/rss.xml', desc:'F1 par la BBC' },
+        ]},
+        { id:'rugby', name:'Rugby', feeds:[
+          { name:'L\'Équipe Rugby', domain:'lequipe.fr', color:'#003f8e', url:'https://dwh.lequipe.fr/api/edito/rss?path=/Rugby/', desc:'Rugby : Top 14 et international' },
+          { name:'BBC Sport Rugby Union', domain:'bbc.com', color:'#111111', url:'https://feeds.bbci.co.uk/sport/rugby-union/rss.xml', desc:'Rugby britannique et mondial' },
+          { name:'Planet Rugby', domain:'planet-rugby.com', color:'#1a6a28', url:'https://www.planet-rugby.com/rss-home', desc:'Actu rugby internationale' },
+          { name:'RugbyPass', domain:'rugbypass.com', color:'#0a3a6e', url:'https://www.rugbypass.com/feeds/rss', desc:'Rugby mondial, analyses et vidéos' },
+          { name:'The Rugby Paper', domain:'therugbypaper.co.uk', color:'#8a1a1a', url:'https://www.therugbypaper.co.uk/feed/', desc:'Rugby anglais en profondeur' },
+          { name:'WalesOnline Rugby', domain:'walesonline.co.uk', color:'#c8000a', url:'https://www.walesonline.co.uk/sport/rugby/rugby-news/?service=rss', desc:'Rugby gallois' },
+          { name:'RUCK.co.uk', domain:'ruck.co.uk', color:'#1a1a2e', url:'https://www.ruck.co.uk/feed', desc:'Actu rugby britannique' },
+          { name:'Midi Olympique', domain:'lemidiolympique.fr', color:'#e2001a', url:'https://www.lemidiolympique.fr/rss', desc:'Le spécialiste français du rugby' },
+        ]},
+        { id:'cyclisme', name:'Cyclisme', feeds:[
+          { name:'L\'Équipe Cyclisme', domain:'lequipe.fr', color:'#003f8e', url:'https://dwh.lequipe.fr/api/edito/rss?path=/Cyclisme/', desc:'Cyclisme : courses et classements' },
+          { name:'Cyclingnews', domain:'cyclingnews.com', color:'#e2001a', url:'https://www.cyclingnews.com/rss/', desc:'Cyclisme professionnel mondial' },
+          { name:'VeloNews', domain:'velonews.com', color:'#1a6a28', url:'https://www.velonews.com/feed', desc:'Cyclisme route et compétition' },
+          { name:'BikeRadar', domain:'bikeradar.com', color:'#0a5a8a', url:'https://www.bikeradar.com/feed', desc:'Matériel et actu cyclisme' },
+        ]},
+        { id:'sport-mondial', name:'Sport Mondial', feeds:[
+          { name:"L'Équipe Sport",    domain:'lequipe.fr',            color:'#003f8e', url:'https://dwh.lequipe.fr/api/edito/rss?path=/Tous-sports/',            desc:"Toute l'actu sportive française" },
+          { name:'Marca',             domain:'marca.com',             color:'#e8000d', url:'https://e00-marca.uecdn.es/rss/portada.xml',          desc:'Sport espagnol et international' },
+          { name:'Eurosport',         domain:'eurosport.fr',          color:'#f46000', url:'https://www.eurosport.fr/rss/story.xml',             desc:'Couverture multisports européenne' },
+          { name:'The Athletic',      domain:'theathletic.com',       color:'#1a1a2e', url:'https://theathletic.com/feed/',                      desc:'Journalisme sportif premium' },
+          { name:'Sky Sports',        domain:'skysports.com',         color:'#00a0dc', url:'https://www.skysports.com/rss/12040',                desc:'Sports britanniques et mondiaux' },
+          { name:'Athletic Olympics', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/athletic/rss/olympics/', desc:'The Athletic - Jeux Olympiques' },
+          { name:'Athletic MMA', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/athletic/rss/mma/', desc:'The Athletic - MMA et sports de combat' },
+          { name:'Reuters Amériques', domain:'reutersbest.com', color:'#e87722', url:'https://reutersbest.com/region/americas/feed/', desc:'Sport et actu Amériques' },
+        ]},
       ]},
-    { id:'crypto', name:'Crypto & Web3', illus:'crypto', tileGrad:'linear-gradient(145deg,#5a3e00 0%,#f7931a 100%)', icon:'₿',
-      desc:'Bitcoin, DeFi, blockchain et économie numérique',
-      feeds:[
-        // orange → sombre → rouge → gris → orange-vert → bleu
-        { name:'CoinDesk',          domain:'coindesk.com',          color:'#f7931a', url:'https://www.coindesk.com/arc/outboundfeeds/rss/',    desc:'Le média crypto de référence' },
-        { name:'Cointelegraph',     domain:'cointelegraph.com',     color:'#1a1a1a', url:'https://cointelegraph.com/rss',                      desc:'News blockchain et DeFi' },
-        { name:'Decrypt',           domain:'decrypt.co',            color:'#e20028', url:'https://decrypt.co/feed',                            desc:'Web3, NFTs et cryptomonnaies' },
-        { name:'The Block',         domain:'theblock.co',           color:'#555555', url:'https://www.theblock.co/rss.xml',                   desc:'Analyse et données crypto' },
-        { name:'Bitcoin Magazine',  domain:'bitcoinmagazine.com',   color:'#f09600', url:'https://bitcoinmagazine.com/feed',                   desc:'Tout sur le Bitcoin' },
-        { name:'CoinTelegraph FR',  domain:'fr.cointelegraph.com',  color:'#004a8f', url:'https://fr.cointelegraph.com/rss',                  desc:'Crypto en français' },
-        { name:'PC Crypto', domain:'presse-citron.net', color:'#f5a623', url:'https://www.presse-citron.net/category/crypto-monnaies/feed/', desc:'Cryptomonnaies et blockchain' },
-        { name:'01net Crypto', domain:'01net.com', color:'#003fa3', url:'https://www.01net.com/actualites/cryptomonnaie/feed/', desc:'Bitcoin et altcoins en francais' },
-      ]},
-    { id:'nba', name:'NBA', illus:'basketball', tileGrad:'linear-gradient(145deg,#6e2c00 0%,#e67e22 100%)', icon:'🏀',
-      desc:'Basketball américain, analyses et coulisses de la ligue',
-      feeds:[
-        // rouge → orange → bleu → rouge → vert → bleu
-        { name:'The Athletic NBA',  domain:'theathletic.com',      color:'#c8102e', url:'https://www.nytimes.com/athletic/rss/nba/',                  desc:'Analyses approfondies et coulisses NBA' },
-        { name:'Bleacher Report',   domain:'bleacherreport.com',    color:'#f5a623', url:'https://bleacherreport.com/articles/feed',           desc:'Breaking news et highlights' },
-        { name:'BasketSession',     domain:'basketsession.com',     color:'#003fa3', url:'https://www.basketsession.com/feed/',                desc:'La NBA en français' },
-        { name:'ESPN NBA',          domain:'espn.com',              color:'#cc0000', url:'http://sports.espn.go.com/espn/rss/nba/news',             desc:'Actus, scores et statistiques' },
-        { name:'HoopsHype',         domain:'hoopshype.com',         color:'#1a5a1a', url:'https://hoopshype.com/feed/',                        desc:'Rumeurs, trades et contrats' },
-        { name:'RealGM Basketball', domain:'realgm.com', color:'#0055a5', url:'https://basketball.realgm.com/rss/',                 desc:'Stats, transactions et draft' },
-      ]},
-    { id:'football', name:'Football', illus:'soccer', tileGrad:'linear-gradient(145deg,#0b5345 0%,#27ae60 100%)', icon:'⚽',
-      desc:'Championnats européens, Ligue des Champions et transferts',
-      feeds:[
-        // bleu → rouge → vert → bleu → rouge → sombre
-        { name:"L'Équipe",          domain:'lequipe.fr',            color:'#003f8e', url:'https://dwh.lequipe.fr/api/edito/rss?path=/Tous-sports/',   desc:'Le quotidien sportif de référence' },
-        { name:'RMC Sport',         domain:'rmcsport.com',    color:'#e2001a', url:'https://rmcsport.bfmtv.com/rss/football/',           desc:'Direct, analyses et mercato' },
-        { name:'SoFoot',            domain:'sofoot.com',            color:'#1a7a1a', url:'https://www.sofoot.com/feed',                        desc:'Football et culture foot' },
-        { name:'The Guardian Sport',domain:'theguardian.com',       color:'#0066cc', url:'https://www.theguardian.com/football/rss',           desc:'Football mondial et analyses' },
-        { name:'ESPN FC',           domain:'espn.com',              color:'#cc0000', url:'https://www.espn.com/espn/rss/soccer/news',          desc:'Football international et LDC' },
-        { name:'BBC Sport Football',domain:'bbc.com',               color:'#111111', url:'https://feeds.bbci.co.uk/sport/football/rss.xml',    desc:'Premier League et couverture mondiale' },
-        { name:'Athletic Premier League', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/athletic/rss/premier-league/', desc:'The Athletic - Premier League' },
-        { name:'Athletic Football', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/athletic/rss/football/', desc:'The Athletic - Football mondial' },
-      ]},
-    { id:'sport-mondial', name:'Sport Mondial', illus:'podium', tileGrad:'linear-gradient(145deg,#7d6608 0%,#f1c40f 100%)', icon:'🏆',
-      desc:'Athlétisme, tennis, F1 et multisports internationaux',
-      feeds:[
-        // bleu → rouge → orange → sombre → bleu clair
-        { name:"L'Équipe Sport",    domain:'lequipe.fr',            color:'#003f8e', url:'https://dwh.lequipe.fr/api/edito/rss?path=/Tous-sports/',            desc:"Toute l'actu sportive française" },
-        { name:'Marca',             domain:'marca.com',             color:'#e8000d', url:'https://e00-marca.uecdn.es/rss/portada.xml',          desc:'Sport espagnol et international' },
-        { name:'Eurosport',         domain:'eurosport.fr',          color:'#f46000', url:'https://www.eurosport.fr/rss/story.xml',             desc:'Couverture multisports européenne' },
-        { name:'The Athletic',      domain:'theathletic.com',       color:'#1a1a2e', url:'https://theathletic.com/feed/',                      desc:'Journalisme sportif premium' },
-        { name:'Sky Sports',        domain:'skysports.com',         color:'#00a0dc', url:'https://www.skysports.com/rss/12040',                desc:'Sports britanniques et mondiaux' },
-        { name:'Athletic Olympics', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/athletic/rss/olympics/', desc:'The Athletic - Jeux Olympiques' },
-        { name:'Athletic MMA', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/athletic/rss/mma/', desc:'The Athletic - MMA et sports de combat' },
-        { name:'Athletic Tennis', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/athletic/rss/tennis/', desc:'The Athletic - Tennis mondial' },
-        { name:'Reuters Amériques', domain:'reutersbest.com', color:'#e87722', url:'https://reutersbest.com/region/americas/feed/', desc:'Sport et actu Amériques' },
-      ]},
-    { id:'culture', name:'Culture', illus:'film', tileGrad:'linear-gradient(145deg,#6c0070 0%,#e91e8c 100%)', icon:'🎬',
-      desc:'Cinéma, musique, littérature et art de vivre',
-      feeds:[
-        // sombre → rouge → violet → rouge sombre → bleu → gris
-        { name:'Pitchfork',         domain:'pitchfork.com',         color:'#1a1a1a', url:'https://pitchfork.com/rss/news/',                    desc:'Critique musicale de référence' },
-        { name:'Les Inrocks',       domain:'lesinrocks.com',        color:'#d4001a', url:'https://www.lesinrocks.com/feed/',                   desc:'Musique, cinéma et culture pop' },
-        { name:'Brain Pickings',    domain:'themarginalian.org',    color:'#3a3a8c', url:'https://www.themarginalian.org/feed/',               desc:"Essais sur l'art et la vie" },
-        { name:'Variety',           domain:'variety.com',           color:'#7d0000', url:'https://variety.com/feed/',                          desc:'Industrie du divertissement' },
-        { name:'Première',          domain:'premiere.fr',           color:'#1a3a6e', url:'https://www.premiere.fr/rss/actu-cinema',            desc:'Le magazine du cinéma français' },
-        { name:'Kottke',            domain:'kottke.org',            color:'#4a4a4a', url:'https://feeds.kottke.org/main',                      desc:'Curiosités culturelles du web' },
-        { name:'Nouvel Obs Culture', domain:'nouvelobs.com', color:'#003f8e', url:'https://www.nouvelobs.com/culture/rss.xml', desc:'Cinema, musique et livres' },
-        { name:'L\'Express Culture', domain:'lexpress.fr', color:'#1a1a2e', url:'https://www.lexpress.fr/arc/outboundfeeds/rss/culture.xml', desc:'Critiques et sorties culturelles' },
-        { name:'HuffPost Culture', domain:'huffingtonpost.fr', color:'#d20000', url:'https://www.huffingtonpost.fr/culture/rss_headline.xml', desc:'Actualite culturelle' },
-        { name:'Telerama Arts', domain:'telerama.fr', color:'#1a6a28', url:'https://www.telerama.fr/rss/arts-expositions.xml', desc:'Expos, theatre et arts vivants' },
-        { name:'NYT Movies', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/Movies.xml', desc:'Cinéma et critiques NYT' },
-        { name:'NYT Arts & Music', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/svc/collections/v1/publish/https://www.nytimes.com/section/arts/music/rss.xml', desc:'Musique NYT' },
-        { name:'WaPo Arts', domain:'washingtonpost.com', color:'#1a1a2e', url:'https://feeds.washingtonpost.com/rss/entertainment', desc:'Arts et divertissement WaPo' },
-      ]},
-    { id:'design', name:'Design & Créa', illus:'bauhaus', tileGrad:'linear-gradient(145deg,#4a0080 0%,#a044ff 100%)', icon:'🎨',
-      desc:'UX, typographie, culture visuelle et outils créatifs',
-      feeds:[
-        // orange → rouge → bleu → sombre → bleu clair → sarcelle
-        { name:'Smashing Magazine', domain:'smashingmagazine.com',  color:'#e85c33', url:'https://www.smashingmagazine.com/feed/',             desc:'Design web, UX et front-end' },
-        { name:"It's Nice That",    domain:'itsnicethat.com',        color:'#ff2600', url:'https://www.itsnicethat.com/rss',                    desc:'Culture créative et art contemporain' },
-        { name:'CSS-Tricks',        domain:'css-tricks.com',        color:'#2965f1', url:'https://css-tricks.com/feed/',                       desc:'CSS, front-end et animations' },
-        { name:'Sidebar.io',        domain:'sidebar.io',            color:'#222222', url:'https://sidebar.io/feed.xml',                        desc:'Les 5 meilleurs liens design' },
-        { name:'A List Apart',      domain:'alistapart.com',        color:'#367eb6', url:'https://alistapart.com/main/feed/',                  desc:'Web design et bonnes pratiques' },
-        { name:'Abduzeedo',         domain:'abduzeedo.com',         color:'#1a7a6a', url:'https://abduzeedo.com/rss.xml',                      desc:'Inspiration design et motion' },
+    { id:'culture', name:'Culture', tileGrad:'linear-gradient(145deg,#6c0070 0%,#e91e8c 100%)', icon:'🎬',
+      desc:'Cinéma, séries, musique, littérature et art',
+      subcats:[
+        { id:'cinema', name:'Cinéma & Séries', feeds:[
+          { name:'Variety',           domain:'variety.com',           color:'#7d0000', url:'https://variety.com/feed/',                          desc:'Industrie du divertissement' },
+          { name:'Première',          domain:'premiere.fr',           color:'#1a3a6e', url:'https://www.premiere.fr/rss/actu-cinema',            desc:'Le magazine du cinéma français' },
+          { name:'NYT Movies', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/Movies.xml', desc:'Cinéma et critiques NYT' },
+          { name:'WaPo Arts', domain:'washingtonpost.com', color:'#1a1a2e', url:'https://feeds.washingtonpost.com/rss/entertainment', desc:'Arts et divertissement WaPo' },
+          { name:'HuffPost Culture', domain:'huffingtonpost.fr', color:'#d20000', url:'https://www.huffingtonpost.fr/culture/rss_headline.xml', desc:'Actualite culturelle' },
+          { name:'Nouvel Obs Culture', domain:'nouvelobs.com', color:'#003f8e', url:'https://www.nouvelobs.com/culture/rss.xml', desc:'Cinema, musique et livres' },
+          { name:'FilmsActu', domain:'jeuxactu.com', color:'#c8000a', url:'https://cinema.jeuxactu.com/rss.htm', desc:'Actu cinéma et bandes-annonces' },
+          { name:'20 Minutes Séries', domain:'20minutes.fr', color:'#e8000d', url:'https://www.20minutes.fr/feeds/rss-serie.xml', desc:'Actu séries TV' },
+          { name:'Cinéfil', domain:'cinefil.com', color:'#1a1a1a', url:'https://cinefil.com/rss', desc:'Critiques et sorties cinéma' },
+          { name:'Movie in the Air', domain:'movieintheair.com', color:'#5a2a8a', url:'https://movieintheair.com/en/feed', desc:'Cinéma et séries, regard francophone' },
+          { name:'AlloCiné', domain:'allocine.fr', color:'#ffe000', url:'https://www.allocine.fr/service/rss/', desc:'Cinéma, séries et box-office' },
+        ]},
+        { id:'musique', name:'Musique', feeds:[
+          { name:'Pitchfork',         domain:'pitchfork.com',         color:'#1a1a1a', url:'https://pitchfork.com/rss/news/',                    desc:'Critique musicale de référence' },
+          { name:'NYT Arts & Music', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/svc/collections/v1/publish/https://www.nytimes.com/section/arts/music/rss.xml', desc:'Musique NYT' },
+          { name:'Billboard', domain:'billboard.com', color:'#e2001a', url:'https://www.billboard.com/feed/', desc:'Charts et actu musicale' },
+          { name:'NME', domain:'nme.com', color:'#1a1a1a', url:'https://www.nme.com/feed', desc:'Musique et culture pop britannique' },
+          { name:'Alternative Press', domain:'altpress.com', color:'#c8000a', url:'https://www.altpress.com/feed', desc:'Rock et scène alternative' },
+          { name:'Diffuser', domain:'diffuser.fm', color:'#2a5a8a', url:'https://diffuser.fm/feed', desc:'Musique et culture rock' },
+          { name:'Sputnikmusic', domain:'sputnikmusic.com', color:'#3a3a3a', url:'https://www.sputnikmusic.com/blog/feed', desc:'Critiques d\'albums' },
+        ]},
+        { id:'litterature', name:'Littérature & Art', feeds:[
+          { name:'Les Inrocks',       domain:'lesinrocks.com',        color:'#d4001a', url:'https://www.lesinrocks.com/feed/',                   desc:'Musique, cinéma et culture pop' },
+          { name:'Brain Pickings',    domain:'themarginalian.org',    color:'#3a3a8c', url:'https://www.themarginalian.org/feed/',               desc:"Essais sur l'art et la vie" },
+          { name:'Kottke',            domain:'kottke.org',            color:'#4a4a4a', url:'https://feeds.kottke.org/main',                      desc:'Curiosités culturelles du web' },
+          { name:'Telerama Arts', domain:'telerama.fr', color:'#1a6a28', url:'https://www.telerama.fr/rss/arts-expositions.xml', desc:'Expos, theatre et arts vivants' },
+          { name:'L\'Express Culture', domain:'lexpress.fr', color:'#1a1a2e', url:'https://www.lexpress.fr/arc/outboundfeeds/rss/culture.xml', desc:'Critiques et sorties culturelles' },
+          { name:'ActuaLitté', domain:'actualitte.com', color:'#c8000a', url:'https://www.actualitte.com/rss', desc:'Actu du livre et de l\'édition' },
+          { name:'Fabula', domain:'fabula.org', color:'#1a3a6e', url:'https://www.fabula.org/rss/actualites.rss', desc:'Recherche en littérature' },
+          { name:'OpenEdition', domain:'openedition.org', color:'#2a6a4a', url:'https://www.openedition.org/backend', desc:'Sciences humaines et publications' },
+        ]},
       ]},
     { id:'gastro', name:'Gastronomie', illus:'gastronomie', tileGrad:'linear-gradient(145deg,#7b241c 0%,#e74c3c 100%)', icon:'🍽️',
       desc:'Cuisine, recettes et culture culinaire',
@@ -8022,9 +8113,14 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
       ]},
   ];
 
+  // Un thème est soit à plat (feeds directs), soit fusionné (subcats → feeds)
+  function dcThemeAllFeeds(theme){
+    return theme.subcats ? theme.subcats.flatMap(s => s.feeds || []) : (theme.feeds || []);
+  }
+
   // Dictionnaire rapide URL→{name,desc,domain} pour openFeedPage
   const _FEED_DB = {};
-  DC_THEMES.forEach(t => (t.feeds||[]).forEach(f => {
+  DC_THEMES.forEach(t => dcThemeAllFeeds(t).forEach(f => {
     _FEED_DB[f.url] = { name:f.name, desc:f.desc||'', domain:f.domain||'', color:f.color||'' };
   }));
 
@@ -8038,7 +8134,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     return `<div class="dc-theme-tile" data-desc="${escapeHtml(theme.desc||'')}" onclick="dcOpenTheme('${theme.id}')">
       <div class="dc-theme-tile-img" style="background:${grad}">
         <div class="dc-theme-tile-icon">${icon}</div>
-        <div class="dc-theme-tile-badge">${theme.feeds.length} flux</div>
+        <div class="dc-theme-tile-badge">${dcThemeAllFeeds(theme).length} flux</div>
         <div class="dc-theme-tile-name">${escapeHtml(theme.name)}</div>
       </div>
     </div>`;
@@ -8109,8 +8205,8 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     cont.innerHTML = `<div class="dc-arts-carousel">${cards}</div>`;
   }
 
-  async function _dcLoadThemeArts(theme, token){
-    const feeds = theme.feeds.slice();
+  async function _dcLoadThemeArts(feedsIn, token){
+    const feeds = feedsIn.slice();
     let idx = 0;
     const next = async()=>{
       while(idx < feeds.length){
@@ -8132,15 +8228,43 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     await Promise.all([next(), next(), next()]);   // 3 chargements parallèles max
   }
 
+  function dcRenderSubchips(theme, activeId){
+    const host = document.getElementById('dcSubchips');
+    host.hidden = false;
+    host.innerHTML = theme.subcats.map(s =>
+      `<button type="button" class="dc-subchip${s.id===activeId?' active':''}" onclick="dcSelectSub('${theme.id}','${s.id}')">${escapeHtml(s.name)}</button>`
+    ).join('');
+  }
+
+  function dcShowSubFeeds(sub){
+    const token = ++_dcThemeToken;
+    document.getElementById('dcFeedList').innerHTML = sub.feeds.map((f,i)=>dcRenderFeedRow(f,sub.name,i)).join('');
+    _dcLoadThemeArts(sub.feeds, token);
+  }
+
+  window.dcSelectSub = function(themeId, subId){
+    const theme = DC_THEMES.find(t=>t.id===themeId);
+    const sub = theme && theme.subcats && theme.subcats.find(s=>s.id===subId);
+    if(!sub) return;
+    dcRenderSubchips(theme, subId);
+    dcShowSubFeeds(sub);
+  };
+
   window.dcOpenTheme = function(id){
     const theme = DC_THEMES.find(t=>t.id===id);
     if(!theme) return;
-    const token = ++_dcThemeToken;
     document.getElementById('dcDetailTitle').textContent = theme.name;
-    document.getElementById('dcFeedList').innerHTML = theme.feeds.map((f,i)=>dcRenderFeedRow(f,theme.name,i)).join('');
     document.getElementById('dcCatalogPanel').classList.add('pushed');
     document.getElementById('dcDetailPanel').classList.add('visible');
-    _dcLoadThemeArts(theme, token);
+    if(theme.subcats){
+      dcRenderSubchips(theme, theme.subcats[0].id);
+      dcShowSubFeeds(theme.subcats[0]);
+    } else {
+      document.getElementById('dcSubchips').hidden = true;
+      const token = ++_dcThemeToken;
+      document.getElementById('dcFeedList').innerHTML = theme.feeds.map((f,i)=>dcRenderFeedRow(f,theme.name,i)).join('');
+      _dcLoadThemeArts(theme.feeds, token);
+    }
   };
 
   function dcCloseTheme(){
