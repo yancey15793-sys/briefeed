@@ -147,7 +147,7 @@ body{
 a, button, [onclick], [role="button"],
 .art-card, .feed-item, .folder-head, .sb-item,
 .dc-theme-tile, .dc-feed-row, .vp-item,
-.list-item, .grid2-card, .fav-item,
+.seq-item, .list-item, .grid2-card, .fav-item,
 .nav-item, .nav-capsule-left, .nav-capsule-right,
 .ob-btn, .ob-btn-ghost {
   -webkit-tap-highlight-color: transparent;
@@ -156,7 +156,7 @@ a, button, [onclick], [role="button"],
 
 /* 2. Pas de sélection de texte sur les surfaces tactiles */
 button, [onclick], .art-card, .feed-item,
-.list-item, .grid2-card, .dc-theme-tile {
+.seq-item, .list-item, .grid2-card, .dc-theme-tile {
   -webkit-user-select: none; user-select: none;
 }
 
@@ -194,11 +194,11 @@ button, .ob-btn, .ob-btn-ghost,
 }
 
 /* -- Items de liste (scale + décalage latéral micro) ------ */
-.list-item {
+.seq-item, .list-item {
   transition: transform .38s cubic-bezier(.34,1.56,.64,1),
               opacity   .38s cubic-bezier(.34,1.56,.64,1);
 }
-.list-item:active {
+.seq-item:active, .list-item:active {
   transform: scale(.984) translateX(3px);
   opacity: .72;
   transition: transform .07s ease-in, opacity .07s ease-in;
@@ -663,7 +663,6 @@ button, .ob-btn, .ob-btn-ghost,
 }
 .folder-head .chev-btn svg{ width:14px; height:14px; transition:transform .2s cubic-bezier(.2,.85,.25,1); }
 .folder.open .folder-head .chev-btn svg{ transform:rotate(90deg); }
-.folder-swatch{ width:26px; height:26px; border-radius:8px; flex:none; box-shadow:0 2px 8px rgba(0,0,0,.28); }
 .folder-head .f-name{
   flex:1; font-size:17px; font-weight:700; letter-spacing:-0.02em;
   cursor:pointer; -webkit-tap-highlight-color:transparent;
@@ -1128,34 +1127,6 @@ body.bf-heavy-open .sbar-podcast{
   letter-spacing:.18em; text-transform:uppercase;
   color:var(--text-muted);
   margin:0;
-}
-
-/* Rail des catégories — photo du dernier article du dossier + nom en valeur */
-.cat-hero-rail{
-  display:flex; gap:10px; overflow-x:auto; scrollbar-width:none;
-  -webkit-overflow-scrolling:touch; padding:2px 0 4px; margin:16px 0 6px;
-}
-.cat-hero-rail::-webkit-scrollbar{ display:none; }
-.cat-hero-rail[hidden]{ display:none; }
-.cat-hero-card{
-  flex:none; width:104px; height:104px; border-radius:16px;
-  position:relative; overflow:hidden; cursor:pointer;
-  background-color:#1a1a1a;
-  -webkit-tap-highlight-color:transparent;
-  box-shadow:0 4px 14px rgba(0,0,0,.28);
-  transition:transform .15s ease;
-}
-.cat-hero-card:active{ transform:scale(.96); }
-.cat-hero-card::after{
-  content:''; position:absolute; inset:0; pointer-events:none;
-  background:linear-gradient(180deg, rgba(0,0,0,.05) 40%, rgba(0,0,0,.6) 100%);
-}
-.cat-hero-card-name{
-  position:absolute; left:9px; right:9px; bottom:8px; z-index:2;
-  font-family:var(--font-inter); font-size:12.5px; font-weight:800;
-  color:#fff; letter-spacing:-.01em; line-height:1.16;
-  text-shadow:0 1px 6px rgba(0,0,0,.5);
-  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
 }
 
 .view{
@@ -1713,18 +1684,6 @@ body.bf-heavy-open .sbar-podcast{
   display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
 }
 .dc-theme-tile-badge{ position:absolute; top:9px; right:9px; z-index:3; background:rgba(0,0,0,.4); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-radius:999px; padding:4px 10px; font-family:var(--font-inter); font-size:9.5px; font-weight:700; color:#fff; letter-spacing:.02em; }
-/* Chips de sous-catégories (thèmes fusionnés : Sport, Tech & Business…) */
-.dc-subchips{ display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch; padding:14px 18px 4px; }
-.dc-subchips::-webkit-scrollbar{ display:none; }
-.dc-subchips[hidden]{ display:none; }
-.dc-subchip{
-  flex:none; -webkit-tap-highlight-color:transparent; cursor:pointer;
-  border:1px solid var(--border); background:var(--bg-elev); color:var(--text-muted);
-  font-family:var(--font-inter); font-size:12.5px; font-weight:700;
-  padding:8px 14px; border-radius:999px; white-space:nowrap;
-  transition:background .15s, color .15s, border-color .15s;
-}
-.dc-subchip.active{ background:var(--text); color:var(--bg); border-color:var(--text); }
 /* Ligne flux */
 .dc-feed-list{ padding:6px 18px 60px; }
 .dc-feed-card{ border-bottom:1px solid var(--border); }
@@ -1780,28 +1739,6 @@ body.bf-heavy-open .sbar-podcast{
 .pod-show-play-btn svg{ width:17px; height:17px; margin-left:-2px; }
 .pod-show-eps{ padding:6px 18px 48px; }
 .pod-show-eps .pl-ep:first-child{ border-top:1px solid var(--border); padding-top:20px; }
-/* Header émission — composant de marque (fidèle Figma, adapté mobile) */
-.pod-show-page .pc-topbar{ display:none; }
-.psf-hero{ position:relative; width:100%; height:256px; overflow:hidden; isolation:isolate; }
-.psf-bg{ position:absolute; inset:0; background:#000 center 35%/cover no-repeat; z-index:0; }
-.psf-grad{ position:absolute; left:0; right:0; top:50%; bottom:0; background:linear-gradient(0deg,#000 40%,rgba(0,0,0,0) 100%); z-index:1; }
-.psf-topbar{ position:absolute; left:0; right:0; top:calc(env(safe-area-inset-top,0px) + 16px); display:flex; justify-content:space-between; align-items:flex-start; padding:0 20px; z-index:3; }
-.psf-actions{ display:flex; align-items:center; gap:8px; }
-.psf-btn{ display:flex; justify-content:center; align-items:center; height:40px; background:#FFFFFF; border:none; border-radius:999px; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:transform .14s ease; }
-.psf-btn:active{ transform:scale(.94); }
-.psf-btn-round{ width:40px; padding:0; }
-.psf-btn-round svg{ width:16px; height:16px; }
-.psf-follow{ padding:8px 8px 8px 14px; gap:6px; }
-.psf-follow-txt{ font-family:'Inter',var(--font-inter); font-weight:900; font-size:10px; line-height:15px; letter-spacing:.02em; text-transform:uppercase; color:#000; }
-.psf-follow svg{ width:22px; height:22px; }
-.psf-main{ position:absolute; left:0; right:0; bottom:0; display:flex; flex-direction:column; align-items:center; z-index:2; }
-.psf-logo{ font-family:'Inter',var(--font-inter); font-weight:900; font-size:22px; letter-spacing:.16em; text-transform:uppercase; color:#fff; text-align:center; padding:0 20px 12px; line-height:1.1; }
-.psf-tabs{ display:flex; justify-content:center; width:100%; }
-.psf-tab{ position:relative; display:flex; justify-content:center; align-items:center; min-width:72px; height:36px; padding:8px 14px; background:none; border:none; cursor:pointer; -webkit-tap-highlight-color:transparent; font-family:'Inter',var(--font-inter); font-weight:700; font-size:12px; line-height:18px; text-transform:uppercase; color:#9D9D9D; }
-.psf-tab.sel{ font-weight:900; color:#fff; }
-.psf-tab.sel::after{ content:''; position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:24px; height:2px; background:#fff; }
-.psf-pane[hidden]{ display:none; }
-.psf-about{ padding:22px 22px 48px; font-family:var(--font-inter); font-size:14px; line-height:1.6; color:var(--text-muted); max-width:560px; margin:0 auto; }
 .pc-topbar{ flex:none; display:flex; align-items:center; gap:12px; padding:14px 18px 4px; }
 .pc-back{ width:36px;height:36px;flex:none;border:0;cursor:pointer;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,.06);color:var(--text);transition:background .2s,transform .15s; }
 .pc-back:hover{ background:rgba(255,255,255,.12); }
@@ -1991,18 +1928,16 @@ body.bf-heavy-open .sbar-podcast{
 .sk-card{ background:rgba(255,255,255,.08); pointer-events:none; min-height:220px; }
 [data-theme="light"] .sk-card{ background:rgba(0,0,0,.06); }
 
-/* ── VUE GRILLE — 2 colonnes mobile (après la carte vedette) · 3 colonnes tablette/ordi ──── */
-.grid2-wrap{ display:grid; grid-template-columns:repeat(2,1fr); gap:24px 14px; padding:16px 0 80px; }
-@media (min-width:768px){ .grid2-wrap{ grid-template-columns:repeat(3,1fr); gap:24px; } }
+/* ── VUE GRILLE — 1 colonne mobile · 3 colonnes tablette/ordi ──────────────────────── */
+.grid2-wrap{ display:grid; grid-template-columns:1fr; gap:24px; padding:16px 0 80px; }
+@media (min-width:768px){ .grid2-wrap{ grid-template-columns:repeat(3,1fr); } }
 .grid2-card{ display:flex; flex-direction:column; cursor:pointer; -webkit-tap-highlight-color:transparent; }
-.grid2-img{ border-radius:8px; overflow:hidden; aspect-ratio:1/1; background:rgba(255,255,255,.04); margin-bottom:12px; }
+.grid2-img{ border-radius:10px; overflow:hidden; aspect-ratio:4/3; background:rgba(255,255,255,.04); margin-bottom:8px; }
 .grid2-img img{ width:100%; height:100%; object-fit:cover; display:block; }
-/* Première carte grille — hero pleine largeur 16:9 (350.25×197.16), radius 8px */
+/* Première carte grille — hero pleine largeur 16:9 (350.25×197.16), radius 14px */
 .grid2-card:first-child{ grid-column:1 / -1; }
-.grid2-card:first-child .grid2-img{ aspect-ratio:350.25 / 197.16; border-radius:8px; }
-.grid2-tags{ display:flex; flex-wrap:wrap; gap:4px; margin-bottom:6px; }
-.grid2-title{ font-family:var(--font-inter); font-size:13.5px; font-weight:700; line-height:1.3; color:var(--text); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-bottom:6px; }
-.grid2-card:first-child .grid2-title{ font-size:16px; -webkit-line-clamp:3; }
+.grid2-card:first-child .grid2-img{ aspect-ratio:350.25 / 197.16; border-radius:14px; }
+.grid2-title{ font-family:var(--font-inter); font-size:13px; font-weight:700; line-height:1.3; color:var(--text); display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; margin-bottom:5px; }
 .grid2-meta{ font-family:var(--font-inter); font-size:10.5px; color:var(--text-muted); font-weight:600; display:flex; align-items:center; gap:4px; }
 /* ── Logos sources — rond sans fond, professionnel ─────────── */
 /* xs : inline dans les cartes (12-14px) */
@@ -2038,12 +1973,12 @@ body.bf-heavy-open .sbar-podcast{
    que la marque ressorte quel que soit le thème + anneau fin à la couleur du
    thème (var(--border)). Le fond clair vaut pour les deux thèmes ; seul
    l'anneau s'adapte. object-fit:contain garde une marge naturelle. */
-.fav-xs, .fav-sm, .fav-md, .grid2-fav, .list-fav, .essentiel-source,
+.fav-xs, .fav-sm, .fav-md, .grid2-fav, .seq-fav, .list-fav, .essentiel-source,
 .art-modal-source-fav, .feed-page-fav, .sbar-srail-item .savatar{
   background:#fff;
   box-shadow:0 0 0 1px var(--border);
 }
-.fav-xs img, .fav-sm img, .fav-md img, .grid2-fav img, .list-fav img{
+.fav-xs img, .fav-sm img, .fav-md img, .grid2-fav img, .seq-fav img, .list-fav img{
   padding:1.5px; box-sizing:border-box;
 }
 
@@ -2069,13 +2004,14 @@ body.bf-heavy-open .sbar-podcast{
    ══════════════════════════════════════════════════════════════════ */
 .edl{
   display:grid; grid-template-columns:1fr;
-  gap:28px; padding:2px 0 10px;
+  gap:0; padding:2px 0 10px;
 }
 @media (min-width:768px){
   /* Magazine & Grille — sur tablette/ordi, on élargit le conteneur principal
      (fixé à 341px pour l'iPhone) et .row le re-centre (justify-content:center),
      donc marges gauche/droite égales. min(100%,980px) ne déborde jamais. */
   body[data-view="editions"] .column,
+  body[data-view="mosaic"]   .column,
   body[data-view="grille"]   .column{ width:min(100%, 980px); }
   /* minmax(0,1fr) : les colonnes peuvent rétrécir (un enfant à largeur fixe ne
      gonfle plus la piste). Cartes fluides : on annule le width:310px de base
@@ -2084,7 +2020,7 @@ body.bf-heavy-open .sbar-podcast{
   /* Toutes les cartes identiques sur tablette — annule les overrides mobile */
   .edl .edl-item,
   .edl .edl-item:first-child,
-  .edl .edl-item:not(:first-child){ align-items:flex-start; padding-top:0; padding-bottom:0; border-top:none; border-bottom:none; }
+  .edl .edl-item:not(:first-child){ align-items:flex-start; padding-top:0; border-top:none; }
   .edl .edl-item > *,
   .edl .edl-item:not(:first-child) > *{ width:100%; }
   .edl .edl-fig,
@@ -2093,11 +2029,11 @@ body.bf-heavy-open .sbar-podcast{
 .edl-item{
   display:flex; flex-direction:column; align-items:flex-start;
   gap:5px; cursor:pointer; -webkit-tap-highlight-color:transparent;
-  padding-bottom:28px;
-  border-bottom:1px solid rgba(255,255,255,.12);
+  padding-top:40px; padding-bottom:8px;
+  border-top:1px solid rgba(255,255,255,.055);
 }
-.edl-item:last-child{ border-bottom:none; padding-bottom:8px; }
-[data-theme="light"] .edl-item{ border-bottom-color:rgba(0,0,0,.14); }
+.edl-item:first-child{ border-top:none; padding-top:0; }
+[data-theme="light"] .edl-item{ border-top-color:rgba(0,0,0,.07); }
 .edl-item.is-read,
 .edl-item.is-read.in{ opacity:.42; }
 .edl-item:active{ transform:scale(.985); transition:transform .12s ease; }
@@ -2106,7 +2042,7 @@ body.bf-heavy-open .sbar-podcast{
   border-radius:12px; overflow:hidden;
   background:rgba(255,255,255,.04);
 }
-.edl-item:first-child .edl-fig{ width:100%; aspect-ratio:350.25 / 197.16; border-radius:8px; }
+.edl-item:first-child .edl-fig{ width:100%; aspect-ratio:350.25 / 197.16; border-radius:14px; }
 /* Cartes secondaires (310px) centrées dans la colonne — bloc image+texte aligné */
 .edl-item:not(:first-child){ align-items:center; }
 .edl-item:not(:first-child) > *{ width:310px; max-width:100%; }
@@ -2167,6 +2103,63 @@ body.bf-heavy-open .sbar-podcast{
   .edl-date{ font-size:9px; }
   .edl-tag{ font-size:9px; padding:3px 6px; }
 }
+
+/* ══════════════════════════════════════════════════════════════════
+   VUE SÉQUENTIEL — Liste numérotée éditoriale « wow »
+   grand numéro · source · titre · vignette
+   ══════════════════════════════════════════════════════════════════ */
+.seq-list{ display:flex; flex-direction:column; gap:0; padding:6px 0 90px; }
+.seq-progress{ display:none; }
+.seq-item{
+  display:flex; gap:16px; align-items:flex-start;
+  padding:28px 2px; border-bottom:1px solid rgba(255,255,255,.055);
+  cursor:pointer; -webkit-tap-highlight-color:transparent;
+}
+[data-theme="light"] .seq-item{ border-bottom-color:rgba(0,0,0,.07); }
+.seq-item:last-child{ border-bottom:none; }
+.seq-item:active{ transform:scale(.99); transition:transform .1s ease; }
+.seq-num{
+  font-family:var(--font-inter); font-weight:700;
+  font-size:26px; line-height:1; letter-spacing:-.05em;
+  min-width:38px; text-align:right; flex-shrink:0; padding-top:3px;
+  background:linear-gradient(180deg, rgba(255,255,255,.5) 0%, rgba(255,255,255,.18) 100%);
+  -webkit-background-clip:text; background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+.seq-body{ flex:1; min-width:0; }
+.seq-source{
+  font-family:var(--font-inter); font-size:10.5px; font-weight:700;
+  color:var(--text-muted); text-transform:uppercase; letter-spacing:.05em;
+  margin-bottom:6px; display:flex; align-items:center; gap:5px;
+}
+.seq-fav{ width:16px; height:16px; border-radius:22%; overflow:hidden; flex-shrink:0; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.18),0 0 0 .5px rgba(0,0,0,.06); display:flex; align-items:center; justify-content:center; }
+.seq-fav img{ width:80%; height:80%; object-fit:contain; border-radius:0; display:block; }
+.seq-title{
+  font-family:var(--font-title); font-size:var(--seq-title-size,18px); font-weight:700;
+  line-height:1.26; color:var(--text); letter-spacing:-.012em;
+  display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;
+}
+.seq-thumb{
+  width:104px; height:74px; flex-shrink:0; align-self:center;
+  border-radius:12px; overflow:hidden; background:#111;
+}
+.seq-thumb img{ width:100%; height:100%; object-fit:cover; display:block;
+  transition:transform .6s cubic-bezier(.22,1,.36,1); }
+/* Première carte séquentiel — hero plein cadre 16:9 (350.25×197.16), radius 20px */
+.seq-item:first-child{ flex-direction:column; align-items:stretch; gap:10px; }
+.seq-item:first-child .seq-thumb{ order:-1; width:100%; height:auto; aspect-ratio:350.25 / 197.16; border-radius:14px; align-self:stretch; }
+.seq-item:first-child .seq-num{ text-align:left; }
+@media (hover:hover) and (pointer:fine){
+  .seq-item:hover .seq-thumb img{ transform:scale(1.06); }
+}
+[data-theme="light"] .seq-num{
+  background-image:linear-gradient(180deg, rgba(0,0,0,.62) 0%, rgba(0,0,0,.3) 100%);
+  -webkit-background-clip:text; background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+.seq-item.is-read{ opacity:.42; }
+.seq-item.is-read .seq-title{ font-weight:600; color:var(--text-muted); }
+.seq-item.is-read .seq-thumb{ filter:grayscale(1); }
 
 /* ── PAGE DOSSIER ────────────────────────────────── */
 .folder-page{ position:fixed; inset:0; z-index:450; background:var(--bg); display:flex; flex-direction:column; transform:translateX(100%); transition:transform .38s cubic-bezier(.32,.72,0,1); }
@@ -2846,6 +2839,58 @@ body.bf-heavy-open .sbar-podcast{
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   VUE MOSAÏQUE — rythme éditorial répété (Mosaic 4, amélioré) :
+   bande 2-égal · bande vedette pleine largeur · bande large+étroit
+   ═══════════════════════════════════════════════════════════════ */
+.mos{ display:flex; flex-direction:column; gap:14px; padding:6px 0 90px; }
+.mos-band{ display:grid; gap:12px; }
+.mos-band.two{ grid-template-columns:1fr 1fr; }
+.mos-band.full{ grid-template-columns:1fr; }
+.mos-band.wide{ grid-template-columns:1.5fr 1fr; align-items:start; }
+
+.mos-card{ display:flex; flex-direction:column; cursor:pointer; -webkit-tap-highlight-color:transparent; min-width:0; }
+.mos-card:active{ transform:scale(.985); transition:transform .12s ease; }
+.mos-card.is-read{ opacity:.45; }
+.mos-fig{ width:100%; border-radius:12px; overflow:hidden; background:rgba(255,255,255,.05); aspect-ratio:4/3; }
+[data-theme="light"] .mos-fig{ background:rgba(0,0,0,.04); }
+.mos-fig img{ width:100%; height:100%; object-fit:cover; display:block; transition:transform .55s cubic-bezier(.22,1,.36,1); }
+@media(hover:hover){ .mos-card:hover .mos-fig img{ transform:scale(1.05); } }
+.mos-src-row{ display:flex; align-items:center; gap:7px; margin-top:8px; }
+.mos-src-dot{ flex:none; width:20px; height:20px; border-radius:50%; background:#333; overflow:hidden; display:flex; align-items:center; justify-content:center; box-shadow:0 0 0 2px rgba(255,255,255,.08); }
+.mos-src-dot img{ width:100%; height:100%; object-fit:cover; }
+.mos-src-name{ font-size:11px; font-weight:600; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; letter-spacing:.01em; }
+.mos-time{ margin-left:auto; font-size:10.5px; color:var(--text-muted); flex:none; padding-left:6px; }
+.mos-title{ font-family:var(--font-inter); font-weight:600; line-height:1.28; color:var(--text); margin:5px 0 0;
+  font-size:14.5px; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+/* Réglages par variante */
+.mos-eq .mos-fig{ aspect-ratio:4/3; }
+.mos-wide .mos-fig{ aspect-ratio:16/10; }
+.mos-narrow .mos-fig{ aspect-ratio:1/1; }
+.mos-narrow .mos-title{ font-size:13px; }
+
+/* Carte vedette pleine largeur — image + dégradé + titre superposés */
+.mos-feature{ position:relative; border-radius:16px; overflow:hidden; }
+.mos-feature-media{ position:relative; width:100%; aspect-ratio:16/9; background:#111 center/cover no-repeat; display:flex; align-items:flex-end; }
+.mos-feature-scrim{ position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,.85) 0%, rgba(0,0,0,.34) 46%, rgba(0,0,0,0) 76%); }
+.mos-feature-body{ position:relative; z-index:1; padding:16px 16px 15px; width:100%; }
+.mos-feature .mos-src-row{ margin-top:0; margin-bottom:7px; }
+.mos-feature .mos-src-name{ color:rgba(255,255,255,.94); }
+.mos-feature .mos-time{ color:rgba(255,255,255,.72); }
+.mos-feature .mos-src-dot{ box-shadow:0 0 0 2px rgba(255,255,255,.28); }
+.mos-feature-title{ font-family:var(--font-title,var(--font-inter)); font-weight:700; color:#fff; margin:0;
+  font-size:19px; line-height:1.22; letter-spacing:-.01em; text-shadow:0 1px 14px rgba(0,0,0,.45);
+  display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+
+@media(min-width:768px){
+  .mos{ gap:24px; }
+  .mos-band{ gap:22px; }
+  .mos-title{ font-size:15.5px; -webkit-line-clamp:2; }
+  .mos-feature-media{ aspect-ratio:21/9; }
+  .mos-feature-title{ font-size:27px; -webkit-line-clamp:2; }
+  .mos-feature-body{ padding:26px 28px 24px; max-width:72%; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
    CARROUSEL 3D (cylindre piloté au défilement) — « À la une » + pochettes
    ═══════════════════════════════════════════════════════════════ */
 .c3d{ position:relative; width:100%; }
@@ -2883,13 +2928,41 @@ body.bf-heavy-open .sbar-podcast{
 .c3d-dot.on{ opacity:1; transform:scale(1.35); background:var(--text); }
 
 /* ═══════════════════════════════════════════════════════════════
-   ACCUEIL — salutation du jour (la carte vedette a été retirée :
-   chaque vue affiche désormais son propre article le + récent en 1ʳᵉ carte)
+   HERO ACCUEIL — briefing du jour + carte vedette (article le + récent)
+   Repris du concept fourni, réécrit aux tokens Briefeed. Responsive :
+   empilé sur mobile, carte scindée (texte / image) sur iPad & desktop.
    ═══════════════════════════════════════════════════════════════ */
+#bfHomeHero{ margin:2px 0 32px; }
+#bfHomeHero[hidden]{ display:none; }
+.bf-hero{ display:flex; flex-direction:column; gap:22px; }
+.bf-brief{ display:flex; flex-direction:column; gap:10px; }
+.bf-brief-eyebrow{ display:flex; align-items:center; gap:8px; font-family:var(--font-inter); font-size:11.5px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--text-muted); }
+.bf-brief-eyebrow::before{ content:""; width:6px; height:6px; border-radius:50%; background:var(--eyebrow-dot,#F37338); box-shadow:0 0 10px var(--eyebrow-dot,#F37338); }
+.bf-brief-list{ display:flex; flex-direction:column; }
+.bf-brief-item{ display:flex; align-items:flex-start; gap:12px; width:100%; text-align:left; background:none; border:none; border-top:1px solid var(--border); padding:11px 2px; cursor:pointer; font-family:var(--font-inter); -webkit-tap-highlight-color:transparent; transition:opacity .15s; }
+.bf-brief-item:first-child{ border-top:none; }
+.bf-brief-item:active{ opacity:.55; }
+.bf-brief-dot{ flex:none; width:6px; height:6px; margin-top:8px; border-radius:50%; background:var(--accent,#0a84ff); box-shadow:0 0 8px rgba(10,132,255,.4); }
+.bf-brief-tx{ font-size:16px; font-weight:500; line-height:1.4; letter-spacing:-.01em; color:var(--text); }
 .bf-greet{ display:flex; flex-direction:column; align-items:center; gap:3px; text-align:center; margin:0 0 6px; }
 .bf-greet-hi{ font-family:var(--font-inter); font-size:32px; font-weight:700; letter-spacing:-.02em; color:var(--text); }
 .bf-greet-date{ font-family:var(--font-inter); font-size:13px; color:var(--text-muted); letter-spacing:.02em; }
+.bf-feat{ display:grid; grid-template-columns:1fr; background:var(--surface-card,#1C1A18); border:1px solid var(--border); border-radius:var(--r-card,24px); overflow:hidden; cursor:pointer; box-shadow:var(--shadow-soft,0 20px 48px rgba(0,0,0,.4)); -webkit-tap-highlight-color:transparent; transition:transform .3s cubic-bezier(.16,1,.3,1); }
+.bf-feat:active{ transform:scale(.99); }
+.bf-feat-media{ order:-1; width:100%; aspect-ratio:16/9; background:#111 center/cover no-repeat; }
+.bf-feat-body{ display:flex; flex-direction:column; gap:9px; padding:20px 22px 24px; }
+.bf-feat-src{ font-family:var(--font-inter); font-size:12px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--accent,#0a84ff); }
+.bf-feat-title{ font-family:var(--font-title,var(--font-inter)); font-size:22px; font-weight:700; line-height:1.24; letter-spacing:-.015em; color:var(--text); }
+.bf-feat-desc{ font-family:var(--font-inter); font-size:15px; line-height:1.5; color:var(--text-muted); display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+.bf-feat-meta{ font-family:var(--font-inter); font-size:12.5px; color:var(--text-muted); margin-top:2px; }
+.bf-feat-link{ font-family:var(--font-inter); font-size:15px; font-weight:600; color:var(--accent,#0a84ff); margin-top:6px; }
 @media(min-width:768px){
+  .bf-hero{ gap:28px; }
+  .bf-feat{ grid-template-columns:1fr 1.15fr; align-items:stretch; border-radius:var(--r-container,40px); }
+  .bf-feat-media{ order:0; height:100%; aspect-ratio:auto; min-height:340px; }
+  .bf-feat-body{ padding:40px; justify-content:center; gap:12px; }
+  .bf-feat-title{ font-size:29px; }
+  .bf-brief-tx{ font-size:17px; }
   .bf-greet-hi{ font-size:40px; }
 }
 
@@ -3355,23 +3428,6 @@ body.bf-heavy-open .sbar-podcast{
   transform:rotate(180deg); stroke:var(--accent);
 }
 
-/* Fond hero — photo du dossier (article le + récent avec image), _folderHeroBg */
-.browse-folder-hero{ position:relative; border-radius:20px; overflow:hidden; margin:14px 16px 0; }
-.browse-folder-hero::before{
-  content:''; position:absolute; inset:0; z-index:1; pointer-events:none;
-  background:linear-gradient(180deg, rgba(0,0,0,.35) 0%, rgba(0,0,0,.5) 100%);
-}
-.browse-folder-hero .browse-folder-head{ position:relative; z-index:2; padding:22px 16px; }
-.browse-folder-hero .browse-folder-name{ color:#fff; opacity:.35; text-shadow:0 2px 20px rgba(0,0,0,.4); }
-.browse-folder-item.bf-open .browse-folder-hero .browse-folder-name{ opacity:1; }
-.browse-folder-hero .bfn-inner{ --bfn-color:#fff; }
-.browse-folder-hero .browse-folder-count{ color:rgba(255,255,255,.55); }
-.browse-folder-item.bf-open .browse-folder-hero .browse-folder-count{ color:rgba(255,255,255,.85); }
-.browse-folder-hero .browse-folder-chevron svg{ stroke:rgba(255,255,255,.55); }
-.browse-folder-item.bf-open .browse-folder-hero .browse-folder-chevron svg{ stroke:#fff; }
-.browse-folder-hero .browse-folder-btn{ background:rgba(255,255,255,.18); color:#fff; }
-.browse-folder-hero .browse-folder-btn:hover{ background:rgba(255,255,255,.3); color:#fff; }
-
 /* ACCORDÉON */
 .browse-folder-body{
   display:grid; grid-template-rows:0fr;
@@ -3546,7 +3602,7 @@ body.bf-heavy-open .sbar-podcast{
 /* Première carte liste — hero plein cadre 16:9 (350.25×197.16), radius 20px */
 .list-item:first-child{ flex-direction:column; align-items:stretch; gap:12px; }
 .list-item:first-child .list-thumb,
-.list-item:first-child .list-thumb-empty{ width:100%; height:auto; aspect-ratio:350.25 / 197.16; border-radius:8px; }
+.list-item:first-child .list-thumb-empty{ width:100%; height:auto; aspect-ratio:350.25 / 197.16; border-radius:20px; }
 .list-body{ flex:1; min-width:0; }
 .list-source{ font-family:var(--font-inter); font-size:10.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.04em; margin-bottom:4px; display:flex; align-items:center; gap:4px; }
 .list-fav{ width:16px; height:16px; border-radius:22%; overflow:hidden; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.18),0 0 0 .5px rgba(0,0,0,.06); display:flex; align-items:center; justify-content:center; }
@@ -3601,13 +3657,21 @@ body.bf-heavy-open .sbar-podcast{
 .feed-item{ cursor:pointer; }
 .feed-item:active{ background:rgba(255,255,255,.06); }
 [data-theme="light"] .feed-item:active{ background:rgba(0,0,0,.04); }/* ── MODAL ARTICLE — watermark date + reader interne ─── */
-.art-modal-date-watermark{ display:none !important; }
+.art-modal-date-watermark{
+  position:absolute; top:12px; left:18px;
+  font-family:var(--font-dm),Georgia,serif;
+  font-weight:900; font-size:68px; line-height:1;
+  color:var(--text); opacity:.06;
+  letter-spacing:-.04em; pointer-events:none;
+  user-select:none; z-index:0;
+  font-variant-numeric:tabular-nums;
+}
 .art-modal-date{
   position:relative; z-index:1;
-  display:inline-flex; align-items:center; gap:8px;
+  display:inline-flex; align-items:center; gap:7px;
   font-family:var(--font-inter); font-size:11px; font-weight:700;
-  color:var(--text-muted); letter-spacing:.11em; text-transform:uppercase;
-  margin-bottom:14px;
+  color:var(--text-muted); letter-spacing:.1em; text-transform:uppercase;
+  margin-bottom:10px;
 }
 .art-modal-date::before{
   content:""; width:6px; height:6px; border-radius:50%; flex:none;
@@ -3615,26 +3679,34 @@ body.bf-heavy-open .sbar-podcast{
 }
 .art-modal-title{
   position:relative; z-index:1;
-  font-family:var(--font-dm),Georgia,serif; font-size:31px; font-weight:400;
-  line-height:1.16; letter-spacing:-.01em; color:var(--text);
-  margin-bottom:20px; text-wrap:pretty;
+  font-family:var(--font-title); font-size:26px; font-weight:700;
+  line-height:1.25; letter-spacing:-.015em; color:var(--text);
+  margin-bottom:16px;
 }
 .art-modal-source-row{
   position:relative; z-index:1;
-  display:flex; align-items:center; justify-content:space-between; gap:12px;
-  padding-bottom:18px; margin-bottom:22px;
+  display:flex; align-items:center; justify-content:space-between;
+  padding-bottom:16px; margin-bottom:16px;
   border-bottom:1px solid var(--border);
 }
 [data-theme="light"] .art-modal-source-row{ border-color:rgba(0,0,0,.08); }
 .art-modal-source-pill{
-  display:flex; align-items:center; gap:11px;
-  background:none; border:none; box-shadow:none; padding:0;
-  -webkit-backdrop-filter:none; backdrop-filter:none; min-width:0;
+  display:flex; align-items:center; gap:7px;
+  background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.15);
+  -webkit-backdrop-filter:blur(12px) saturate(140%);
+  backdrop-filter:blur(12px) saturate(140%);
+  box-shadow:inset 1px 1px 0 0 rgba(255,255,255,.1);
+  border-radius:999px; padding:5px 12px 5px 6px;
 }
-.art-modal-source-fav{ width:38px; height:38px; border-radius:50%; overflow:hidden; background:#fff; flex-shrink:0; box-shadow:0 0 0 1.5px var(--border); display:flex; align-items:center; justify-content:center; }
+[data-theme="light"] .art-modal-source-pill{
+  background:rgba(255,255,255,.65); border-color:rgba(255,255,255,.9);
+  -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.8);
+}
+.art-modal-source-fav{ width:28px; height:28px; border-radius:50%; overflow:hidden; background:#fff; flex-shrink:0; box-shadow:0 0 0 2.5px rgba(255,255,255,0.75); display:flex; align-items:center; justify-content:center; }
 .art-modal-source-fav img{ width:82%; height:82%; object-fit:contain; border-radius:12%; display:block; }
-[data-theme="light"] .art-modal-source-fav{ box-shadow:0 0 0 1.5px rgba(0,0,0,0.1); }
-.art-modal-source-name{ font-family:var(--font-inter); font-size:14px; font-weight:600; color:var(--text); letter-spacing:-.01em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+[data-theme="light"] .art-modal-source-fav{ box-shadow:0 0 0 2.5px rgba(0,0,0,0.18); }
+.art-modal-source-name{ font-family:var(--font-inter); font-size:12px; font-weight:700; color:var(--text); text-transform:uppercase; letter-spacing:.04em; }
 /* Reader content */
 .art-reader-section{ position:relative; z-index:1; padding:4px 0 20px; }
 /* Niveau 3 — Contexte (déroulant opt-in, ouverture spring bezier) */
@@ -3722,16 +3794,11 @@ body.bf-heavy-open .sbar-podcast{
 .art-float-save{ right:13px; }
 [data-theme="light"] .art-float-btn{ background:rgba(252,251,250,.72); border-color:rgba(0,0,0,.08); color:#141413; }
 
-.art-shell-hero{ flex:none; width:100%; aspect-ratio:16/9; max-height:240px; background:#1a1815; overflow:hidden; position:relative; }
-.art-shell-hero::after{ content:""; position:absolute; inset:auto 0 0 0; height:64px; pointer-events:none;
-  background:linear-gradient(to bottom, rgba(28,26,24,0), var(--surface-card,#1C1A18)); }
-[data-theme="light"] .art-shell-hero::after{ background:linear-gradient(to bottom, rgba(252,251,250,0), var(--surface-card,#FCFBFA)); }
-.art-shell.is-expanded .art-shell-hero{ max-height:288px; transition:max-height .5s cubic-bezier(.34,1.56,.64,1); }
+.art-shell-hero{ flex:none; width:100%; aspect-ratio:16/9; max-height:210px; background:#111; overflow:hidden; }
+.art-shell.is-expanded .art-shell-hero{ max-height:264px; transition:max-height .5s cubic-bezier(.34,1.56,.64,1); }
 .art-shell-hero img{ width:100%; height:100%; object-fit:cover; display:block; }
 
-.art-shell-head{ flex:none; position:relative; padding:22px 26px 4px; }
-/* Sans image hero : dégage l'en-tête sous les boutons flottants (fermer / enregistrer) */
-.art-shell.no-hero .art-shell-head{ padding-top:62px; }
+.art-shell-head{ flex:none; position:relative; padding:18px 22px 4px; }
 
 /* Pager à puces (swipe interne façon Mastercard) — piste translatée */
 .art-pager-wrap{ position:relative; flex:1; min-height:0; display:flex; overflow:hidden; }
@@ -3739,7 +3806,7 @@ body.bf-heavy-open .sbar-podcast{
 .art-pager-track{ display:flex; height:100%; will-change:transform;
   transition:transform .52s cubic-bezier(.22,1,.36,1); }
 .art-page{ flex:0 0 100%; width:100%; overflow-y:hidden; overflow-x:hidden;
-  scrollbar-width:none; padding:8px 26px 26px; }
+  scrollbar-width:none; padding:6px 22px 24px; }
 .art-page::-webkit-scrollbar{ display:none; }
 .art-shell.is-expanded .art-page{ overflow-y:auto; -webkit-overflow-scrolling:touch; }
 /* En compact : seule la 1re page, tronquée, avec fondu + amorce */
@@ -3776,7 +3843,7 @@ body.bf-heavy-open .sbar-podcast{
   .art-shell-hero{ max-height:220px; }
   .art-shell:not(.is-expanded) .art-shell-hero{ max-height:190px; }
   .art-shell.is-expanded .art-shell-hero{ max-height:250px; }
-  .art-shell-head{ padding:18px 22px 2px; }
+  .art-shell-head{ padding:16px 20px 2px; }
   .art-pager-wrap{ min-height:118px; flex:1; }
   /* Poignée de préhension (sheet) */
   .art-shell::before{ content:""; position:absolute; top:8px; left:50%; transform:translateX(-50%);
@@ -3893,6 +3960,7 @@ body.focus-mode .focus-exit{ display:flex; }
 .art-card:hover .art-share-btn,
 .grid2-card:hover .art-share-btn,
 .essentiel-card:hover .art-share-btn,
+.seq-item:hover .art-share-btn,
 .list-item:hover .art-share-btn{
   opacity:1;
 }
@@ -4094,6 +4162,7 @@ body.focus-mode .focus-exit{ display:flex; }
 .art-img-wrap,
 .list-thumb,
 .list-thumb-empty,
+.seq-thumb,
 .essentiel-thumb{
   background-color:#1a1a1a;
   background-image:linear-gradient(90deg,#1a1a1a 25%,#242424 50%,#1a1a1a 75%);
@@ -4107,12 +4176,14 @@ body.focus-mode .focus-exit{ display:flex; }
 /* Stopper le shimmer dès que l'image est chargée */
 .img-loaded .art-img-wrap,
 .img-loaded.grid2-img,
+.img-loaded.seq-thumb,
 .img-loaded.list-thumb{
   background-image:none; animation:none;
 }
 [data-theme="light"] .art-img-wrap,
 [data-theme="light"] .grid2-img,
 [data-theme="light"] .list-thumb,
+[data-theme="light"] .seq-thumb,
 [data-theme="light"] .essentiel-thumb{
   background-color:#e8e8ec;
   background-image:linear-gradient(90deg,#e8e8ec 25%,#f0f0f4 50%,#e8e8ec 75%);
@@ -4849,17 +4920,20 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   }
   /* Marge basse pour ne jamais masquer le dernier article sous la navbar flottante */
   .row{ scroll-padding-bottom:120px; }
-  .edl, #grilleGrid, .list-view{ padding-bottom:104px; }
+  .edl, #mosaicGrid, #grilleGrid, #seqList, .list-view{ padding-bottom:104px; }
 
   /* Confort de lecture : corps d'article plus aéré */
   .art-pager-wrap, .art-reader-body{ font-size:16.5px; line-height:1.62; }
+
+  /* Titres hero légèrement réduits pour tenir sans césure agressive */
+  .bf-feat-title{ font-size:clamp(21px, 6.4vw, 27px); line-height:1.16; text-wrap:balance; }
 
   /* Bloc d'édition (salutation + label) : marge haute réduite sur petits écrans */
   .edition-block{ margin:16px 0 14px; }
 
   /* Feedback tactile net, sans surbrillance grise iOS */
   a, button, .menu3-chip, .nav-item, .art-toolbar-btn, .sub-link,
-  .grid2-card, .list-item, .edl-card, .dc-art{
+  .grid2-card, .list-item, .seq-item, .edl-card, .dc-art{
     -webkit-tap-highlight-color:transparent;
   }
 }
@@ -4987,6 +5061,8 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
               <a class="sub-link sub-link-sm" data-qview="editions"   onclick="qmenuSetView('editions')">Magazine</a>
               <a class="sub-link sub-link-sm" data-qview="liste"      onclick="qmenuSetView('liste')">Liste</a>
               <a class="sub-link sub-link-sm" data-qview="grille"     onclick="qmenuSetView('grille')">Grille</a>
+              <a class="sub-link sub-link-sm" data-qview="mosaic"     onclick="qmenuSetView('mosaic')">Mosaïque</a>
+              <a class="sub-link sub-link-sm" data-qview="sequential" onclick="qmenuSetView('sequential')">Séquentiel</a>
               <div class="qmenu-sub-section-label" style="margin-top:10px">Police</div>
               <a class="sub-link sub-link-sm" data-qfont="inter"        onclick="qmenuSetFont('inter')"        style="font-family:'Inter',-apple-system,sans-serif">Inter</a>
               <a class="sub-link sub-link-sm" data-qfont="geist"        onclick="qmenuSetFont('geist')"        style="font-family:'Geist',-apple-system,sans-serif">Geist</a>
@@ -5088,6 +5164,39 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
         </svg>
       </div>
       <span class="vp-label">Grille</span>
+      <span class="vp-check"><svg viewBox="0 0 24 24" fill="none" stroke="#0a84ff" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+    </div>
+
+    <div class="vp-divider"></div>
+
+    <div class="vp-item" data-vpview="mosaic" onclick="vpSelect('mosaic')">
+      <div class="vp-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <rect x="3" y="3" width="8" height="6" rx="1.3"/>
+          <rect x="13" y="3" width="8" height="6" rx="1.3"/>
+          <rect x="3" y="11" width="18" height="5" rx="1.3"/>
+          <rect x="3" y="18" width="11" height="3.5" rx="1.3"/>
+          <rect x="16" y="18" width="5" height="3.5" rx="1.3"/>
+        </svg>
+      </div>
+      <span class="vp-label">Mosaïque</span>
+      <span class="vp-check"><svg viewBox="0 0 24 24" fill="none" stroke="#0a84ff" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+    </div>
+
+    <div class="vp-divider"></div>
+
+    <div class="vp-item" data-vpview="sequential" onclick="vpSelect('sequential')">
+      <div class="vp-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="8" y1="6" x2="21" y2="6"/>
+          <line x1="8" y1="12" x2="21" y2="12"/>
+          <line x1="8" y1="18" x2="21" y2="18"/>
+          <circle cx="3.5" cy="6" r="1.5" fill="currentColor" stroke="none"/>
+          <circle cx="3.5" cy="12" r="1.5" fill="currentColor" stroke="none"/>
+          <circle cx="3.5" cy="18" r="1.5" fill="currentColor" stroke="none"/>
+        </svg>
+      </div>
+      <span class="vp-label">Séquentiel</span>
       <span class="vp-check"><svg viewBox="0 0 24 24" fill="none" stroke="#0a84ff" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></span>
     </div>
 
@@ -5236,7 +5345,6 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
           </button>
           <span class="dc-detail-title" id="dcDetailTitle"></span>
         </div>
-        <div class="dc-subchips" id="dcSubchips" hidden></div>
         <div class="dc-feed-list" id="dcFeedList"></div>
       </div>
     </div>
@@ -5788,8 +5896,8 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
         <h2 class="edition-label">Mon magazine du jour</h2>
       </div>
 
-      <!-- Rail des catégories (dossiers) — photo du dernier article + nom en valeur -->
-      <div class="cat-hero-rail" id="catHeroRail" hidden></div>
+      <!-- Hero accueil : briefing du jour + carte vedette (au-dessus de toutes les vues du flux) -->
+      <div id="bfHomeHero" hidden></div>
 
       <!-- Smart Bar — segment intelligent + catégories (tiret animé) + sources (accordéon) -->
       <!-- #smartBar conservé (référencé par le JS) ; le rail vit désormais dans la topnav -->
@@ -5902,10 +6010,16 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
         <div class="grid2-wrap" id="grilleGrid"></div>
       </div><!-- /vue grille -->
 
-      <!-- ========== VUE PARCOURIR (par dossiers) ========== -->
-      <div class="view" data-view="browse" hidden>
-        <div class="browse" id="browseSection"></div>
-      </div><!-- /vue parcourir -->
+      <!-- ========== VUE MOSAÏQUE ========== -->
+      <div class="view" data-view="mosaic" hidden>
+        <div class="mosaic-wrap" id="mosaicGrid"></div>
+      </div><!-- /vue mosaïque -->
+
+      <!-- ========== VUE SÉQUENTIELLE ========== -->
+      <div class="view" data-view="sequential" hidden>
+        <div class="seq-progress" id="seqProgress"></div>
+        <div class="seq-list" id="seqList"></div>
+      </div><!-- /vue séquentielle -->
 
       <!-- ========== VUE FAVORIS ========== -->
       <div class="view" data-view="favoris" hidden>
@@ -6093,9 +6207,9 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   }));
   btns.forEach(x => x.setAttribute('aria-pressed', String(x.dataset.set === document.documentElement.dataset.font)));
 
-  // ---- Bouton œil : cycle éditions → liste → grille ----
+  // ---- Bouton œil : cycle éditions → grille → séquentiel → parcourir ----
   const views = document.querySelectorAll('.view');
-  const order = ['editions', 'liste', 'grille'];
+  const order = ['editions', 'liste', 'grille', 'mosaic', 'sequential'];
   let _currentView = (() => { try { const v = localStorage.getItem('bf_view'); return order.includes(v) ? v : 'editions'; } catch(e){ return 'editions'; } })();
   // Déclarés tôt pour éviter reference-before-declaration dans _switchView
   let _feedPageArts = [];
@@ -6224,6 +6338,8 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
       views.forEach(v => { v.hidden = v.dataset.view !== target; });
       if(target === 'browse')    renderBrowseTimeline();
       if(target === 'grille')    _renderGrille();
+      if(target === 'mosaic')    _renderMosaic();
+      if(target === 'sequential')_renderSequential();
       if(target === 'liste')     _renderListe();
       if(target === 'essentiel') _renderEssentiel();
       _stMain(false); // smooth scroll to top via le bon conteneur
@@ -6330,9 +6446,8 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
       // ── Item dossier ──
       html += `<div class="browse-folder-item" id="bf-item-${fi}">`;
 
-      // ── En-tête centré cliquable — fond hero coloré (même dégradés que Découvrir) ──
-      html += `<div class="browse-folder-hero" style="background:${_folderHeroBg(folder)}">
-      <div class="browse-folder-head" onclick="_bfToggle(${fi})">
+      // ── En-tête centré cliquable ──
+      html += `<div class="browse-folder-head" onclick="_bfToggle(${fi})">
         <span class="browse-folder-name"><span class="bfn-director"></span><span class="bfn-inner">${escapeHtml(folder.name)}</span></span>
         <div class="browse-folder-meta">
           <span class="browse-folder-count">${artCount} article${artCount > 1 ? 's' : ''}</span>
@@ -6350,7 +6465,6 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
             </button>
           </div>
         </div>
-      </div>
       </div>`;
 
       // ── Accordéon ──
@@ -6684,38 +6798,6 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   };
   const persist = () => { window._safeSet(FKEY, JSON.stringify(folders)); };
 
-  // Fond hero d'un dossier — photo du dernier article illustré, dégradé _folderGrad en repli
-  // (même fonction utilisée par la sidebar, Parcourir et la page dossier : un seul dossier = une seule image)
-  function _folderHeroBg(folder){
-    const feedUrls = new Set(folder.feeds || []);
-    const pool = (typeof _allArticles !== 'undefined') ? _allArticles : [];
-    const hit = pool
-      .filter(a => feedUrls.has(a.feedUrl||'') && a.imageUrl)
-      .sort((a,b) => new Date(b.pubDate) - new Date(a.pubDate))[0];
-    if(hit) return `url('${String(hit.imageUrl).replace(/'/g,"\\'")}') center/cover no-repeat`;
-    const [c1,c2] = _folderGrad(folder.name);
-    return `linear-gradient(145deg,${c1} 0%,${c2} 100%)`;
-  }
-  window._folderHeroBg = _folderHeroBg;
-
-  // Rail des catégories sur l'accueil — sous « Mon magazine du jour »
-  function _renderCatHeroRail(){
-    const rail = document.getElementById('catHeroRail');
-    if(!rail) return;
-    const cats = folders.filter(f => (f.name||'').toLowerCase() !== 'podcasts');
-    if(!cats.length){ rail.hidden = true; return; }
-    rail.hidden = false;
-    rail.innerHTML = cats.map(f =>
-      `<div class="cat-hero-card" style="background:${_folderHeroBg(f)}" onclick="_catHeroPick('${escapeHtml(f.name).replace(/'/g,"\\'")}')">
-        <span class="cat-hero-card-name">${escapeHtml(f.name)}</span>
-      </div>`
-    ).join('');
-  }
-  window._renderCatHeroRail = _renderCatHeroRail;
-  window._catHeroPick = function(name){
-    if(typeof _smartPickCat === 'function') _smartPickCat(name);
-  };
-
   const ICON_CHEV = '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>';
   const ICON_EDIT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
   const ICON_PLUS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
@@ -6724,7 +6806,6 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   const list = document.getElementById('folderList');
   function render(){
     list.innerHTML = '';
-    _renderCatHeroRail();
     if (!folders.length){
       list.innerHTML = '<div class="sb-empty">Aucun dossier pour l\'instant. Créez-en un pour organiser vos flux.</div>';
       return;
@@ -6753,7 +6834,6 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
         <div class="folder-head" data-i="${i}">
           <button class="f-drag" aria-label="Glisser pour réorganiser">${ICON_DRAG}</button>
           <button class="chev-btn" data-toggle="${i}" aria-label="Ouvrir dossier">${ICON_CHEV}</button>
-          <span class="folder-swatch" style="background:${_folderHeroBg(f)}"></span>
           <span class="f-name" data-open="${i}">${escapeHtml(f.name)}</span>
           <span class="f-count">${(f.feeds||[]).length}</span>
           <button class="f-edit" data-edit="${i}" aria-label="Renommer">${ICON_EDIT}</button>
@@ -7290,6 +7370,8 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
       document.querySelectorAll('.view').forEach(v=>{ v.hidden = v.dataset.view !== _currentView; });
       if(_currentView==='browse') renderBrowseTimeline();
       if(_currentView==='grille') _renderGrille();
+      if(_currentView==='mosaic') _renderMosaic();
+      if(_currentView==='sequential') _renderSequential();
       if(_currentView==='liste') _renderListe();
     } else if(idx===1){
       openDiscover();
@@ -7880,94 +7962,69 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
 
   // Catalogue : 8 thèmes — flux ordonnés pour qu'aucune couleur identique ne se suive
   const DC_THEMES = [
-    { id:'actu-monde', name:'Actualités & Monde', tileGrad:'linear-gradient(145deg,#0077b6 0%,#00b4d8 100%)', icon:'🌐',
-      desc:'Information française, internationale et géopolitique',
-      subcats:[
-        { id:'france', name:'France', feeds:[
-          { name:'Le Monde',          domain:'lemonde.fr',            color:'#0a3c6e', url:'https://www.lemonde.fr/rss/une.xml',                 desc:'Journal de référence depuis 1944' },
-          { name:'France Info',       domain:'francetvinfo.fr',       color:'#d20000', url:'https://www.francetvinfo.fr/titres.rss',              desc:'Actualité en continu 24h/24' },
-          { name:'Mediapart',         domain:'mediapart.fr',          color:'#00a651', url:'https://www.mediapart.fr/articles/feed',              desc:'Investigation indépendante' },
-          { name:'Libération',        domain:'liberation.fr',         color:'#e8000d', url:'https://www.liberation.fr/arc/outboundfeeds/rss/',   desc:'Actu politique et société' },
-          { name:'20 Minutes', domain:'20minutes.fr', color:'#e8000d', url:'https://www.20minutes.fr/feeds/rss-monde.xml', desc:'Actu monde en temps réel' },
-          { name:'L\'Express', domain:'lexpress.fr', color:'#1a1a2e', url:'https://www.lexpress.fr/arc/outboundfeeds/rss/monde.xml', desc:'Analyses et grand reportage' },
-          { name:'Le Nouvel Obs', domain:'nouvelobs.com', color:'#003f8e', url:'https://www.nouvelobs.com/a-la-une/rss.xml', desc:'L\'actualite vue par l\'Obs' },
-          { name:'HuffPost France', domain:'huffingtonpost.fr', color:'#d20000', url:'https://www.huffingtonpost.fr/france/rss_headline.xml', desc:'Info et societe en France' },
-          { name:'L\'Humanite', domain:'humanite.fr', color:'#c00020', url:'https://www.humanite.fr/feed', desc:'Journal de reference de gauche' },
-        ]},
-        { id:'international', name:'International', feeds:[
-          { name:'Bloomberg',         domain:'bloomberg.com',         color:'#222222', url:'https://feeds.bloomberg.com/markets/news.rss',        desc:'Finance, économie et marchés' },
-          { name:'Reuters',           domain:'reuters.com',           color:'#f36f21', url:'https://feeds.reuters.com/reuters/topNews',           desc:'Agence de presse mondiale' },
-          { name:'Courrier International', domain:'courrierinternational.com', color:'#b8860b', url:'https://www.courrierinternational.com/feed/all/rss.xml', desc:'La presse mondiale vue depuis Paris' },
-          { name:'France 24', domain:'france24.com', color:'#003f8e', url:'https://www.france24.com/fr/monde/rss', desc:'Information internationale en continu' },
-          { name:'RFI', domain:'rfi.fr', color:'#c8000a', url:'https://www.rfi.fr/fr/monde/rss', desc:'Radio France Internationale' },
-          { name:'NYT HomePage', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml', desc:'La une du New York Times' },
-          { name:'NYT World', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/World.xml', desc:'Actualité mondiale NYT' },
-          { name:'Reuters World', domain:'reutersbest.com', color:'#e87722', url:'https://reutersbest.com/feed/', desc:'Les meilleures enquêtes Reuters' },
-          { name:'Washington Post World', domain:'washingtonpost.com', color:'#1a1a2e', url:'https://feeds.washingtonpost.com/rss/world', desc:'Le monde selon le WaPo' },
-          { name:'NY Post', domain:'nypost.com', color:'#c8000a', url:'https://nypost.com/feed/', desc:'Actualité américaine directe' },
-        ]},
-        { id:'geopolitique', name:'Géopolitique', feeds:[
-          { name:'Le Grand Continent',   domain:'legrandcontinent.eu',  color:'#1a2a5e', url:'https://legrandcontinent.eu/fr/feed/',                                    desc:'Revue de géopolitique européenne de référence' },
-          { name:'IRIS France',          domain:'iris-france.org',       color:'#003f8e', url:'https://www.iris-france.org/feed/',                                       desc:'Institut de Relations Internationales et Stratégiques' },
-          { name:'Revue Conflits',       domain:'revueconflits.com',     color:'#8a1a1a', url:'https://www.revueconflits.com/feed/',                                     desc:'Géopolitique, stratégie et histoire des conflits' },
-          { name:'Orient XXI',           domain:'orientxxi.info',        color:'#1a4a2a', url:'https://orientxxi.info/?page=backend&lang=fr',                            desc:'Moyen-Orient et monde arabe décryptés' },
-          { name:'Élucid',         domain:'elucid.media',          color:'#2a1a4a', url:'https://elucid.media/feed',                                               desc:'Géopolitique et économie politique critique' },
-          { name:'DiploWeb',             domain:'diploweb.com',          color:'#1a3a5e', url:'https://www.diploweb.com/spip.php?page=backend',                          desc:'La revue géopolitique en ligne' },
-          { name:'RFI Géopolitique',domain:'rfi.fr',              color:'#c8000a', url:'https://www.rfi.fr/fr/tag/g%C3%A9opolitique/rss',                          desc:'Actualité géopolitique mondiale' },
-          { name:'Desk Russie',          domain:'desk-russie.eu',        color:'#2a2a6e', url:'https://desk-russie.eu/feed',                                             desc:'Russie et espace post-soviétique' },
-          { name:'Les yeux du monde',    domain:'les-yeux-du-monde.fr',  color:'#1a3a4e', url:'https://les-yeux-du-monde.fr/feed',                                       desc:'Géopolitique accessible et pédagogique' },
-          { name:'Zone Militaire',       domain:'opex360.com',           color:'#2a3a2a', url:'https://www.opex360.com/category/diplomatie/feed/',                       desc:'Défense et diplomatie internationale' },
-          { name:'Le Monde Géo',  domain:'lemonde.fr',            color:'#1a1a2e', url:'https://www.lemonde.fr/geopolitique/rss_full.xml',                         desc:'Analyse géopolitique du Monde' },
-          { name:'Regard sur l’Est',    domain:'regard-est.com',        color:'#3a2a1a', url:'https://regard-est.com/feed',                                             desc:'Europe centrale, orientale et Balkans' },
-          { name:'NYT Europe', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/Europe.xml', desc:'Europe et géopolitique NYT' },
-          { name:'Reuters Middle East', domain:'reutersbest.com', color:'#e87722', url:'https://reutersbest.com/region/middle-east/feed/', desc:'Moyen-Orient par Reuters' },
-          { name:'Reuters Africa', domain:'reutersbest.com', color:'#e87722', url:'https://reutersbest.com/region/africa/feed/', desc:'Afrique par Reuters Best' },
-          { name:'WaPo World', domain:'washingtonpost.com', color:'#1a1a2e', url:'https://feeds.washingtonpost.com/rss/world?itid=lk_inline_manual_', desc:'Géopolitique Washington Post' },
-        ]},
+    { id:'actu', name:'Actualités', illus:'globe', tileGrad:'linear-gradient(145deg,#0077b6 0%,#00b4d8 100%)', icon:'🌐',
+      desc:'Information internationale, politique et société',
+      feeds:[
+        // bleu → rouge → sombre → orange → vert → rouge
+        { name:'Le Monde',          domain:'lemonde.fr',            color:'#0a3c6e', url:'https://www.lemonde.fr/rss/une.xml',                 desc:'Journal de référence depuis 1944' },
+        { name:'France Info',       domain:'francetvinfo.fr',       color:'#d20000', url:'https://www.francetvinfo.fr/titres.rss',              desc:'Actualité en continu 24h/24' },
+        { name:'Bloomberg',         domain:'bloomberg.com',         color:'#222222', url:'https://feeds.bloomberg.com/markets/news.rss',        desc:'Finance, économie et marchés' },
+        { name:'Reuters',           domain:'reuters.com',           color:'#f36f21', url:'https://feeds.reuters.com/reuters/topNews',           desc:'Agence de presse mondiale' },
+        { name:'Mediapart',         domain:'mediapart.fr',          color:'#00a651', url:'https://www.mediapart.fr/articles/feed',              desc:'Investigation indépendante' },
+        { name:'Libération',        domain:'liberation.fr',         color:'#e8000d', url:'https://www.liberation.fr/arc/outboundfeeds/rss/',   desc:'Actu politique et société' },
+        { name:'Courrier International', domain:'courrierinternational.com', color:'#b8860b', url:'https://www.courrierinternational.com/feed/all/rss.xml', desc:'La presse mondiale vue depuis Paris' },
+        { name:'France 24', domain:'france24.com', color:'#003f8e', url:'https://www.france24.com/fr/monde/rss', desc:'Information internationale en continu' },
+        { name:'RFI', domain:'rfi.fr', color:'#c8000a', url:'https://www.rfi.fr/fr/monde/rss', desc:'Radio France Internationale' },
+        { name:'20 Minutes', domain:'20minutes.fr', color:'#e8000d', url:'https://www.20minutes.fr/feeds/rss-monde.xml', desc:'Actu monde en temps réel' },
+        { name:'L\'Express', domain:'lexpress.fr', color:'#1a1a2e', url:'https://www.lexpress.fr/arc/outboundfeeds/rss/monde.xml', desc:'Analyses et grand reportage' },
+        { name:'Le Nouvel Obs', domain:'nouvelobs.com', color:'#003f8e', url:'https://www.nouvelobs.com/a-la-une/rss.xml', desc:'L\'actualite vue par l\'Obs' },
+        { name:'HuffPost France', domain:'huffingtonpost.fr', color:'#d20000', url:'https://www.huffingtonpost.fr/france/rss_headline.xml', desc:'Info et societe en France' },
+        { name:'L\'Humanite', domain:'humanite.fr', color:'#c00020', url:'https://www.humanite.fr/feed', desc:'Journal de reference de gauche' },
+        { name:'NYT HomePage', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml', desc:'La une du New York Times' },
+        { name:'NYT World', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/World.xml', desc:'Actualité mondiale NYT' },
+        { name:'Reuters World', domain:'reutersbest.com', color:'#e87722', url:'https://reutersbest.com/feed/', desc:'Les meilleures enquêtes Reuters' },
+        { name:'Washington Post World', domain:'washingtonpost.com', color:'#1a1a2e', url:'https://feeds.washingtonpost.com/rss/world', desc:'Le monde selon le WaPo' },
+        { name:'NY Post', domain:'nypost.com', color:'#c8000a', url:'https://nypost.com/feed/', desc:'Actualité américaine directe' },
       ]},
-    { id:'finance-eco', name:'Finance & Économie', tileGrad:'linear-gradient(145deg,#1e4d00 0%,#27ae60 100%)', icon:'📈',
-      desc:'Marchés, économie mondiale et crypto',
-      subcats:[
-        { id:'marches', name:'Marchés & Bourse', feeds:[
-          { name:'Boursorama',        domain:'boursorama.com',        color:'#005f9e', url:'https://www.boursorama.com/bourse/actualites/rss/',   desc:'Bourse, marchés et patrimoine' },
-          { name:'Bloomberg',         domain:'bloomberg.com',         color:'#1a1a1a', url:'https://feeds.bloomberg.com/markets/news.rss',        desc:'Finance mondiale et marchés' },
-          { name:'The Economist',     domain:'economist.com',         color:'#cc0000', url:'https://www.economist.com/rss/the_world_this_week.xml', desc:'Analyse économique mondiale' },
-          { name:'Reuters Markets', domain:'reutersbest.com', color:'#e87722', url:'https://reutersbest.com/topic/markets/feed/', desc:'Marchés financiers Reuters' },
-          { name:'Reuters Finance', domain:'reutersbest.com', color:'#e87722', url:'https://reutersbest.com/topic/business-finance/feed/', desc:'Finance mondiale Reuters' },
-          { name:'NY Post Business', domain:'nypost.com', color:'#c8000a', url:'https://nypost.com/business/feed/', desc:'Business à l\'américaine' },
-          { name:'Investing.com', domain:'investing.com', color:'#0055a5', url:'https://www.investing.com/rss/news.rss', desc:'Cours, indices et analyses en temps réel' },
-          { name:'Seeking Alpha', domain:'seekingalpha.com', color:'#ff7a00', url:'https://seekingalpha.com/feed.xml', desc:'Analyses et opinions d\'investisseurs' },
-          { name:'Nasdaq', domain:'nasdaq.com', color:'#0089cc', url:'https://www.nasdaq.com/feed/nasdaq-original', desc:'Marchés et valeurs technologiques' },
-          { name:'Benzinga', domain:'benzinga.com', color:'#00a651', url:'https://feeds.benzinga.com/benzinga', desc:'Actualité boursière en continu' },
-          { name:'MarketWatch', domain:'marketwatch.com', color:'#004a8f', url:'https://feeds.content.dowjones.io/public/rss/mw_topstories', desc:'Marchés financiers, Dow Jones' },
-          { name:'CNBC Marchés', domain:'cnbc.com', color:'#005594', url:'https://www.cnbc.com/id/20910258/device/rss/rss.html', desc:'Bourse et économie CNBC' },
-        ]},
-        { id:'economie', name:'Économie mondiale', feeds:[
-          { name:'Les Échos',         domain:'lesechos.fr',           color:'#003fa3', url:'https://www.lesechos.fr/rss/rss_monde.xml',          desc:'La référence économique française' },
-          { name:'Challenges',        domain:'challenges.fr',         color:'#c8000a', url:'https://www.challenges.fr/rss.xml',                  desc:'Économie, business et entrepreneuriat' },
-          { name:'Capital',           domain:'capital.fr',            color:'#e06000', url:'https://www.capital.fr/flux-rss/actualite.xml',      desc:'Argent, carrière et économie' },
-          { name:'Journal du Net', domain:'journaldunet.com', color:'#003fa3', url:'https://www.journaldunet.com/business/rss/', desc:'Business, finance et decideurs' },
-          { name:'L\'Express Eco', domain:'lexpress.fr', color:'#1a1a2e', url:'https://www.lexpress.fr/arc/outboundfeeds/rss/economie.xml', desc:'Economie, marches et entreprises' },
-          { name:'Le Figaro Eco', domain:'lefigaro.fr', color:'#1a3060', url:'https://www.lefigaro.fr/rss/figaro_economie.xml', desc:'Finance et economie francaise' },
-          { name:'NYT Economy', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/Economy.xml', desc:'Économie et marchés NYT' },
-          { name:'NYT DealBook', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/Dealbook.xml', desc:'Finance, fusions et acquisitions' },
-          { name:'Forbes Innovation', domain:'forbes.com', color:'#c8000a', url:'https://www.forbes.com/innovation/feed2/', desc:'Innovation et business Forbes' },
-          { name:'Trading Economics', domain:'tradingeconomics.com', color:'#1a3a6e', url:'https://tradingeconomics.com/rss/news.aspx', desc:'Indicateurs économiques mondiaux' },
-          { name:'CEPR', domain:'cepr.org', color:'#00305a', url:'https://cepr.org/rss/news', desc:'Recherche en politique économique' },
-          { name:'Economics One', domain:'economicsone.com', color:'#5a3a1a', url:'https://economicsone.com/feed/', desc:'Analyse macroéconomique' },
-          { name:'Financial Times — Économie', domain:'ft.com', color:'#fff1e5', url:'https://www.ft.com/global-economy?format=rss', desc:'Économie mondiale, Financial Times' },
-          { name:'FiveThirtyEight Économie', domain:'fivethirtyeight.com', color:'#1a1a1a', url:'https://fivethirtyeight.com/economics/feed/', desc:'Données et analyses économiques' },
-        ]},
-        { id:'crypto', name:'Crypto & Web3', feeds:[
-          { name:'CoinDesk',          domain:'coindesk.com',          color:'#f7931a', url:'https://www.coindesk.com/arc/outboundfeeds/rss/',    desc:'Le média crypto de référence' },
-          { name:'Cointelegraph',     domain:'cointelegraph.com',     color:'#1a1a1a', url:'https://cointelegraph.com/rss',                      desc:'News blockchain et DeFi' },
-          { name:'Decrypt',           domain:'decrypt.co',            color:'#e20028', url:'https://decrypt.co/feed',                            desc:'Web3, NFTs et cryptomonnaies' },
-          { name:'The Block',         domain:'theblock.co',           color:'#555555', url:'https://www.theblock.co/rss.xml',                   desc:'Analyse et données crypto' },
-          { name:'Bitcoin Magazine',  domain:'bitcoinmagazine.com',   color:'#f09600', url:'https://bitcoinmagazine.com/feed',                   desc:'Tout sur le Bitcoin' },
-          { name:'CoinTelegraph FR',  domain:'fr.cointelegraph.com',  color:'#004a8f', url:'https://fr.cointelegraph.com/rss',                  desc:'Crypto en français' },
-          { name:'PC Crypto', domain:'presse-citron.net', color:'#f5a623', url:'https://www.presse-citron.net/category/crypto-monnaies/feed/', desc:'Cryptomonnaies et blockchain' },
-          { name:'01net Crypto', domain:'01net.com', color:'#003fa3', url:'https://www.01net.com/actualites/cryptomonnaie/feed/', desc:'Bitcoin et altcoins en francais' },
-        ]},
+    { id:'geopolitique', name:'G\u00e9opolitique', illus:'geopolitique', tileGrad:'linear-gradient(145deg,#6c3483 0%,#9b59b6 100%)', icon:'\u{1F30D}',
+      desc:'Diplomatie, conflits et relations internationales',
+      feeds:[
+        { name:'Le Grand Continent',   domain:'legrandcontinent.eu',  color:'#1a2a5e', url:'https://legrandcontinent.eu/fr/feed/',                                    desc:'Revue de g\u00e9opolitique europ\u00e9enne de r\u00e9f\u00e9rence' },
+        { name:'IRIS France',          domain:'iris-france.org',       color:'#003f8e', url:'https://www.iris-france.org/feed/',                                       desc:'Institut de Relations Internationales et Strat\u00e9giques' },
+        { name:'Revue Conflits',       domain:'revueconflits.com',     color:'#8a1a1a', url:'https://www.revueconflits.com/feed/',                                     desc:'G\u00e9opolitique, strat\u00e9gie et histoire des conflits' },
+        { name:'Orient XXI',           domain:'orientxxi.info',        color:'#1a4a2a', url:'https://orientxxi.info/?page=backend&lang=fr',                            desc:'Moyen-Orient et monde arabe d\u00e9crypt\u00e9s' },
+        { name:'\u00c9lucid',         domain:'elucid.media',          color:'#2a1a4a', url:'https://elucid.media/feed',                                               desc:'G\u00e9opolitique et \u00e9conomie politique critique' },
+        { name:'DiploWeb',             domain:'diploweb.com',          color:'#1a3a5e', url:'https://www.diploweb.com/spip.php?page=backend',                          desc:'La revue g\u00e9opolitique en ligne' },
+        { name:'RFI G\u00e9opolitique',domain:'rfi.fr',              color:'#c8000a', url:'https://www.rfi.fr/fr/tag/g%C3%A9opolitique/rss',                          desc:'Actualit\u00e9 g\u00e9opolitique mondiale' },
+        { name:'Desk Russie',          domain:'desk-russie.eu',        color:'#2a2a6e', url:'https://desk-russie.eu/feed',                                             desc:'Russie et espace post-sovi\u00e9tique' },
+        { name:'Les yeux du monde',    domain:'les-yeux-du-monde.fr',  color:'#1a3a4e', url:'https://les-yeux-du-monde.fr/feed',                                       desc:'G\u00e9opolitique accessible et p\u00e9dagogique' },
+        { name:'Zone Militaire',       domain:'opex360.com',           color:'#2a3a2a', url:'https://www.opex360.com/category/diplomatie/feed/',                       desc:'D\u00e9fense et diplomatie internationale' },
+        { name:'Le Monde G\u00e9o',  domain:'lemonde.fr',            color:'#1a1a2e', url:'https://www.lemonde.fr/geopolitique/rss_full.xml',                         desc:'Analyse g\u00e9opolitique du Monde' },
+        { name:'Regard sur l’Est',    domain:'regard-est.com',        color:'#3a2a1a', url:'https://regard-est.com/feed',                                             desc:'Europe centrale, orientale et Balkans' },
+        { name:'NYT Europe', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/Europe.xml', desc:'Europe et géopolitique NYT' },
+        { name:'Reuters Middle East', domain:'reutersbest.com', color:'#e87722', url:'https://reutersbest.com/region/middle-east/feed/', desc:'Moyen-Orient par Reuters' },
+        { name:'Reuters Africa', domain:'reutersbest.com', color:'#e87722', url:'https://reutersbest.com/region/africa/feed/', desc:'Afrique par Reuters Best' },
+        { name:'WaPo World', domain:'washingtonpost.com', color:'#1a1a2e', url:'https://feeds.washingtonpost.com/rss/world?itid=lk_inline_manual_', desc:'Géopolitique Washington Post' },
+      ]},
+    { id:'finance', name:'Finance', illus:'finance', tileGrad:'linear-gradient(145deg,#1e4d00 0%,#27ae60 100%)', icon:'📈',
+      desc:'Marchés, économie mondiale et finance personnelle',
+      feeds:[
+        // bleu → sombre → rouge → orange → vert → bleu clair
+        { name:'Les Échos',         domain:'lesechos.fr',           color:'#003fa3', url:'https://www.lesechos.fr/rss/rss_monde.xml',          desc:'La référence économique française' },
+        { name:'Bloomberg',         domain:'bloomberg.com',         color:'#1a1a1a', url:'https://feeds.bloomberg.com/markets/news.rss',        desc:'Finance mondiale et marchés' },
+        { name:'Challenges',        domain:'challenges.fr',         color:'#c8000a', url:'https://www.challenges.fr/rss.xml',                  desc:'Économie, business et entrepreneuriat' },
+        { name:'Capital',           domain:'capital.fr',            color:'#e06000', url:'https://www.capital.fr/flux-rss/actualite.xml',      desc:'Argent, carrière et économie' },
+        { name:'The Economist',     domain:'economist.com',         color:'#cc0000', url:'https://www.economist.com/rss/the_world_this_week.xml', desc:'Analyse économique mondiale' },
+        { name:'Boursorama',        domain:'boursorama.com',        color:'#005f9e', url:'https://www.boursorama.com/bourse/actualites/rss/',   desc:'Bourse, marchés et patrimoine' },
+        { name:'Journal du Net', domain:'journaldunet.com', color:'#003fa3', url:'https://www.journaldunet.com/business/rss/', desc:'Business, finance et decideurs' },
+        { name:'L\'Express Eco', domain:'lexpress.fr', color:'#1a1a2e', url:'https://www.lexpress.fr/arc/outboundfeeds/rss/economie.xml', desc:'Economie, marches et entreprises' },
+        { name:'Le Figaro Eco', domain:'lefigaro.fr', color:'#1a3060', url:'https://www.lefigaro.fr/rss/figaro_economie.xml', desc:'Finance et economie francaise' },
+        { name:'NYT Economy', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/Economy.xml', desc:'Économie et marchés NYT' },
+        { name:'NYT DealBook', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/Dealbook.xml', desc:'Finance, fusions et acquisitions' },
+        { name:'Reuters Finance', domain:'reutersbest.com', color:'#e87722', url:'https://reutersbest.com/topic/business-finance/feed/', desc:'Finance mondiale Reuters' },
+        { name:'Reuters Markets', domain:'reutersbest.com', color:'#e87722', url:'https://reutersbest.com/topic/markets/feed/', desc:'Marchés financiers Reuters' },
+        { name:'Forbes Innovation', domain:'forbes.com', color:'#c8000a', url:'https://www.forbes.com/innovation/feed2/', desc:'Innovation et business Forbes' },
+        { name:'NY Post Business', domain:'nypost.com', color:'#c8000a', url:'https://nypost.com/business/feed/', desc:'Business à l\'américaine' },
       ]},
     { id:'science', name:'Science', illus:'cosmos', tileGrad:'linear-gradient(145deg,#0d47a1 0%,#42a5f5 100%)', icon:'🔭',
       desc:'Espace, physique, biologie et grandes découvertes',
@@ -7999,69 +8056,27 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
         { name:'Nouvel Obs Sante', domain:'nouvelobs.com', color:'#003f8e', url:'https://www.nouvelobs.com/sante/rss.xml', desc:'Sante et medecine' },
         { name:'NYT Health', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/svc/collections/v1/publish/https://www.nytimes.com/section/health/rss.xml', desc:'Santé et médecine NYT' },
       ]},
-    { id:'tech-business', name:'Tech & Business', tileGrad:'linear-gradient(145deg,#4a235a 0%,#a044ff 100%)', icon:'🤖',
-      desc:'Intelligence artificielle, hardware, design produit et startups',
-      subcats:[
-        { id:'ai', name:'Intelligence Artificielle', feeds:[
-          { name:'MIT Tech Review',   domain:'technologyreview.com',  color:'#a00000', url:'https://www.technologyreview.com/topnews.rss',        desc:'Recherche et innovations en IA' },
-          { name:'Journal du Net IA', domain:'journaldunet.com', color:'#003fa3', url:'https://www.journaldunet.com/intelligence-artificielle/rss/', desc:'IA, business et numerique' },
-          { name:'Forbes Big Data', domain:'forbes.com', color:'#c8000a', url:'https://www.forbes.com/big-data/feed2/', desc:'Big Data et IA Forbes' },
-          { name:'OpenAI News', domain:'openai.com', color:'#10a37f', url:'https://openai.com/news/rss.xml', desc:'Annonces et recherche OpenAI' },
-          { name:'Google AI / DeepMind', domain:'research.google', color:'#4285f4', url:'https://research.google/blog/rss', desc:'Recherche IA de Google' },
-          { name:'BAIR Blog (Berkeley)', domain:'bair.berkeley.edu', color:'#003262', url:'https://bair.berkeley.edu/blog/feed.xml', desc:'Recherche IA de Berkeley' },
-          { name:'AI-TechPark', domain:'ai-techpark.com', color:'#5a2a8a', url:'https://ai-techpark.com/feed', desc:'Actualité IA et data' },
-          { name:'AI Accelerator Institute', domain:'aiacceleratorinstitute.com', color:'#2a5a8a', url:'https://www.aiacceleratorinstitute.com/rss/', desc:'IA appliquée et cas d\'usage' },
-          { name:'arXiv cs.AI', domain:'arxiv.org', color:'#b31b1b', url:'https://arxiv.org/rss/cs.AI', desc:'Publications de recherche en IA' },
-          { name:'Anthropic News', domain:'anthropic.com', color:'#d97757', url:'https://www.anthropic.com/news/rss.xml', desc:'Annonces et recherche Anthropic' },
-          { name:'Hugging Face Blog', domain:'huggingface.co', color:'#ffd21e', url:'https://huggingface.co/blog/feed.xml', desc:'Open-source IA et modèles' },
-          { name:'The Gradient', domain:'thegradient.pub', color:'#1a1a3a', url:'https://thegradient.pub/rss/', desc:'Analyses de fond sur l\'IA' },
-          { name:'MarkTechPost', domain:'marktechpost.com', color:'#0a5a8a', url:'https://www.marktechpost.com/feed', desc:'Recherche et actualité machine learning' },
-        ]},
-        { id:'hardware', name:'Hardware & Gadgets', feeds:[
-          { name:'The Verge',         domain:'theverge.com',          color:'#e5007e', url:'https://www.theverge.com/rss/index.xml',             desc:'Tech, gadgets et culture numérique' },
-          { name:'Ars Technica',      domain:'arstechnica.com',       color:'#f46000', url:'https://feeds.arstechnica.com/arstechnica/index',    desc:'Science, technologie et culture geek' },
-          { name:'Wired',             domain:'wired.com',             color:'#1a1a1a', url:'https://www.wired.com/feed/rss',                     desc:"L'avenir de la technologie" },
-          { name:'01net', domain:'01net.com', color:'#003fa3', url:'https://www.01net.com/feed/', desc:'Tests, actus et dossiers high-tech' },
-          { name:'Presse-citron', domain:'presse-citron.net', color:'#f5a623', url:'https://www.presse-citron.net/feed/', desc:'Tech, IA et lifestyle numerique' },
-          { name:'Next.ink', domain:'next.ink', color:'#1a1a1a', url:'https://next.ink/feed/', desc:'L\'actu tech independante' },
-          { name:'ZDNet France', domain:'zdnet.fr', color:'#cc0000', url:'https://www.zdnet.fr/feeds/rss/', desc:'High-tech pro et entreprises' },
-          { name:'Forbes Cloud', domain:'forbes.com', color:'#c8000a', url:'https://www.forbes.com/cloud/feed2/', desc:'Cloud computing Forbes' },
-          { name:'Numerama',          domain:'numerama.com',          color:'#6c63ff', url:'https://www.numerama.com/feed/',                     desc:'Tech et numérique en français' },
-          { name:'NYT Technology', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml', desc:'High-tech et numérique NYT' },
-          { name:'NYT PersonalTech', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/PersonalTech.xml', desc:'Tech grand public NYT' },
-          { name:'WaPo Technology', domain:'washingtonpost.com', color:'#1a1a2e', url:'https://feeds.washingtonpost.com/rss/business/technology/', desc:'Tech et numérique WaPo' },
-          { name:'CNET', domain:'cnet.com', color:'#e0001a', url:'https://www.cnet.com/rss/news/', desc:'Tests et actus gadgets' },
-          { name:'Tom\'s Hardware', domain:'tomshardware.com', color:'#e2231a', url:'https://www.tomshardware.com/feeds.xml', desc:'Composants et hardware' },
-          { name:'Engadget', domain:'engadget.com', color:'#00cad9', url:'https://www.engadget.com/rss.xml', desc:'Gadgets et électronique grand public' },
-          { name:'PCMag', domain:'pcmag.com', color:'#c8000a', url:'https://www.pcmag.com/feeds/rss/latest', desc:'Tests produits et comparatifs' },
-          { name:'TechRadar', domain:'techradar.com', color:'#e0004d', url:'https://www.techradar.com/feeds.xml', desc:'Gadgets, tests et guides d\'achat' },
-          { name:'ExtremeTech', domain:'extremetech.com', color:'#1a6a8a', url:'https://www.extremetech.com/feed', desc:'Hardware et technologies de pointe' },
-          { name:'Geeky Gadgets', domain:'geeky-gadgets.com', color:'#3a3a3a', url:'https://www.geeky-gadgets.com/feed', desc:'Nouveautés gadgets au quotidien' },
-        ]},
-        { id:'dev-design', name:'Développement & Design', feeds:[
-          { name:'Smashing Magazine', domain:'smashingmagazine.com',  color:'#e85c33', url:'https://www.smashingmagazine.com/feed/',             desc:'Design web, UX et front-end' },
-          { name:"It's Nice That",    domain:'itsnicethat.com',        color:'#ff2600', url:'https://www.itsnicethat.com/rss',                    desc:'Culture créative et art contemporain' },
-          { name:'CSS-Tricks',        domain:'css-tricks.com',        color:'#2965f1', url:'https://css-tricks.com/feed/',                       desc:'CSS, front-end et animations' },
-          { name:'Sidebar.io',        domain:'sidebar.io',            color:'#222222', url:'https://sidebar.io/feed.xml',                        desc:'Les 5 meilleurs liens design' },
-          { name:'A List Apart',      domain:'alistapart.com',        color:'#367eb6', url:'https://alistapart.com/main/feed/',                  desc:'Web design et bonnes pratiques' },
-          { name:'Abduzeedo',         domain:'abduzeedo.com',         color:'#1a7a6a', url:'https://abduzeedo.com/rss.xml',                      desc:'Inspiration design et motion' },
-          { name:'Codrops', domain:'tympanus.net', color:'#ff6b6b', url:'https://tympanus.net/codrops/feed', desc:'Tutoriels design et front-end' },
-          { name:'LogRocket Blog', domain:'blog.logrocket.com', color:'#764abc', url:'https://blog.logrocket.com/feed', desc:'Ingénierie front-end et produit' },
-          { name:'Design Shack', domain:'designshack.net', color:'#2a2a4a', url:'https://feedpress.me/designshack', desc:'Design web et graphique au quotidien' },
-        ]},
-        { id:'startups', name:'Startups & Business Tech', feeds:[
-          { name:'Hacker News',       domain:'news.ycombinator.com',  color:'#ff6600', url:'https://news.ycombinator.com/rss',                  desc:'Tech, startups et innovation' },
-          { name:'TechCrunch Start.', domain:'techcrunch.com',        color:'#005f9e', url:'https://techcrunch.com/category/startups/feed/',     desc:'Financement et disruption' },
-          { name:'Fast Company',      domain:'fastcompany.com',       color:'#111111', url:'https://www.fastcompany.com/rss.xml',                desc:'Innovation et leadership' },
-          { name:'Entrepreneur',      domain:'entrepreneur.com',      color:'#c8000a', url:'https://www.entrepreneur.com/latest.rss',            desc:'Conseils pour entrepreneurs' },
-          { name:'HBR',               domain:'hbr.org',               color:'#1a6a28', url:'http://feeds.hbr.org/harvardbusiness',              desc:'Harvard Business Review' },
-          { name:'L\'ADN',            domain:'ladn.eu',               color:'#444444', url:'https://www.ladn.eu/feed/',                          desc:'Innovation et futurs possibles' },
-          { name:'L\'Express Entrepreneurs', domain:'lexpress.fr', color:'#1a1a2e', url:'https://www.lexpress.fr/arc/outboundfeeds/rss/entrepreneurs.xml', desc:'Startups et entrepreneuriat' },
-          { name:'JDN Decideurs', domain:'journaldunet.com', color:'#003fa3', url:'https://www.journaldunet.com/decideurs/rss/', desc:'Dirigeants et strategie' },
-          { name:'PC Startups', domain:'presse-citron.net', color:'#f5a623', url:'https://www.presse-citron.net/category/startups/feed/', desc:'Startups et innovation' },
-          { name:'TechCrunch',        domain:'techcrunch.com',        color:'#0a7d3e', url:'https://techcrunch.com/feed/',                       desc:'Startups, financement et disruption' },
-          { name:'Silicon.fr', domain:'silicon.fr', color:'#0a5a8a', url:'https://www.silicon.fr/feed', desc:'IT, cloud et transformation digitale' },
-        ]},
+    { id:'tech-ia', name:'Tech & IA', illus:'neural', tileGrad:'linear-gradient(145deg,#4a235a 0%,#a044ff 100%)', icon:'🤖',
+      desc:'Intelligence artificielle, hardware et culture du code',
+      feeds:[
+        // rose → vert → orange → violet → sombre → rouge sombre
+        { name:'The Verge',         domain:'theverge.com',          color:'#e5007e', url:'https://www.theverge.com/rss/index.xml',             desc:'Tech, gadgets et culture numérique' },
+        { name:'TechCrunch',        domain:'techcrunch.com',        color:'#0a7d3e', url:'https://techcrunch.com/feed/',                       desc:'Startups, financement et disruption' },
+        { name:'Ars Technica',      domain:'arstechnica.com',       color:'#f46000', url:'https://feeds.arstechnica.com/arstechnica/index',    desc:'Science, technologie et culture geek' },
+        { name:'Numerama',          domain:'numerama.com',          color:'#6c63ff', url:'https://www.numerama.com/feed/',                     desc:'Tech et numérique en français' },
+        { name:'Wired',             domain:'wired.com',             color:'#1a1a1a', url:'https://www.wired.com/feed/rss',                     desc:"L'avenir de la technologie" },
+        { name:'MIT Tech Review',   domain:'technologyreview.com',  color:'#a00000', url:'https://www.technologyreview.com/topnews.rss',        desc:'Recherche et innovations en IA' },
+        { name:'01net', domain:'01net.com', color:'#003fa3', url:'https://www.01net.com/feed/', desc:'Tests, actus et dossiers high-tech' },
+        { name:'Presse-citron', domain:'presse-citron.net', color:'#f5a623', url:'https://www.presse-citron.net/feed/', desc:'Tech, IA et lifestyle numerique' },
+        { name:'Next.ink', domain:'next.ink', color:'#1a1a1a', url:'https://next.ink/feed/', desc:'L\'actu tech independante' },
+        { name:'Silicon.fr', domain:'silicon.fr', color:'#0a5a8a', url:'https://www.silicon.fr/feed', desc:'IT, cloud et transformation digitale' },
+        { name:'ZDNet France', domain:'zdnet.fr', color:'#cc0000', url:'https://www.zdnet.fr/feeds/rss/', desc:'High-tech pro et entreprises' },
+        { name:'Journal du Net IA', domain:'journaldunet.com', color:'#003fa3', url:'https://www.journaldunet.com/intelligence-artificielle/rss/', desc:'IA, business et numerique' },
+        { name:'NYT Technology', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml', desc:'High-tech et numérique NYT' },
+        { name:'NYT PersonalTech', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/PersonalTech.xml', desc:'Tech grand public NYT' },
+        { name:'WaPo Technology', domain:'washingtonpost.com', color:'#1a1a2e', url:'https://feeds.washingtonpost.com/rss/business/technology/', desc:'Tech et numérique WaPo' },
+        { name:'Forbes Big Data', domain:'forbes.com', color:'#c8000a', url:'https://www.forbes.com/big-data/feed2/', desc:'Big Data et IA Forbes' },
+        { name:'Forbes Cloud', domain:'forbes.com', color:'#c8000a', url:'https://www.forbes.com/cloud/feed2/', desc:'Cloud computing Forbes' },
       ]},
     { id:'climat', name:'Climat & Éco', illus:'climat', tileGrad:'linear-gradient(145deg,#0b5345 0%,#1abc9c 100%)', icon:'🌱',
       desc:'Environnement, énergie verte et transition écologique',
@@ -8079,110 +8094,99 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
         { name:'NYT Energy & Enviro', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/EnergyEnvironment.xml', desc:'Énergie et environnement NYT' },
         { name:'Reuters Énergie', domain:'reutersbest.com', color:'#e87722', url:'https://reutersbest.com/topic/commodities-energy/feed/', desc:'Énergie et matières premières' },
       ]},
-    { id:'sport', name:'Sport', tileGrad:'linear-gradient(145deg,#7d6608 0%,#f1c40f 100%)', icon:'🏆',
-      desc:'Football, basketball, tennis, F1, rugby, cyclisme et sport mondial',
-      subcats:[
-        { id:'football', name:'Football', feeds:[
-          { name:"L'Équipe",          domain:'lequipe.fr',            color:'#003f8e', url:'https://dwh.lequipe.fr/api/edito/rss?path=/Tous-sports/',   desc:'Le quotidien sportif de référence' },
-          { name:'RMC Sport',         domain:'rmcsport.com',    color:'#e2001a', url:'https://rmcsport.bfmtv.com/rss/football/',           desc:'Direct, analyses et mercato' },
-          { name:'SoFoot',            domain:'sofoot.com',            color:'#1a7a1a', url:'https://www.sofoot.com/feed',                        desc:'Football et culture foot' },
-          { name:'The Guardian Sport',domain:'theguardian.com',       color:'#0066cc', url:'https://www.theguardian.com/football/rss',           desc:'Football mondial et analyses' },
-          { name:'ESPN FC',           domain:'espn.com',              color:'#cc0000', url:'https://www.espn.com/espn/rss/soccer/news',          desc:'Football international et LDC' },
-          { name:'BBC Sport Football',domain:'bbc.com',               color:'#111111', url:'https://feeds.bbci.co.uk/sport/football/rss.xml',    desc:'Premier League et couverture mondiale' },
-          { name:'Athletic Premier League', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/athletic/rss/premier-league/', desc:'The Athletic - Premier League' },
-          { name:'Athletic Football', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/athletic/rss/football/', desc:'The Athletic - Football mondial' },
-        ]},
-        { id:'basketball', name:'Basketball / NBA', feeds:[
-          { name:'The Athletic NBA',  domain:'theathletic.com',      color:'#c8102e', url:'https://www.nytimes.com/athletic/rss/nba/',                  desc:'Analyses approfondies et coulisses NBA' },
-          { name:'Bleacher Report',   domain:'bleacherreport.com',    color:'#f5a623', url:'https://bleacherreport.com/articles/feed',           desc:'Breaking news et highlights' },
-          { name:'BasketSession',     domain:'basketsession.com',     color:'#003fa3', url:'https://www.basketsession.com/feed/',                desc:'La NBA en français' },
-          { name:'ESPN NBA',          domain:'espn.com',              color:'#cc0000', url:'http://sports.espn.go.com/espn/rss/nba/news',             desc:'Actus, scores et statistiques' },
-          { name:'HoopsHype',         domain:'hoopshype.com',         color:'#1a5a1a', url:'https://hoopshype.com/feed/',                        desc:'Rumeurs, trades et contrats' },
-          { name:'RealGM Basketball', domain:'realgm.com', color:'#0055a5', url:'https://basketball.realgm.com/rss/',                 desc:'Stats, transactions et draft' },
-        ]},
-        { id:'tennis', name:'Tennis', feeds:[
-          { name:'Athletic Tennis', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/athletic/rss/tennis/', desc:'The Athletic - Tennis mondial' },
-          { name:'L\'Équipe Tennis', domain:'lequipe.fr', color:'#003f8e', url:'https://dwh.lequipe.fr/api/edito/rss?path=/Tennis/', desc:'Tennis : résultats et analyses' },
-          { name:'ATP Tour', domain:'atptour.com', color:'#004b8d', url:'https://www.atptour.com/en/media/rss-feed', desc:'Circuit ATP officiel' },
-          { name:'WTA Tennis', domain:'wtatennis.com', color:'#5a0f8a', url:'https://www.wtatennis.com/rss', desc:'Circuit WTA officiel' },
-          { name:'Tennis Majors', domain:'tennismajors.com', color:'#1a6a3a', url:'https://www.tennismajors.com/feed', desc:'Actu tennis et grands tournois' },
-          { name:'BBC Sport Tennis', domain:'bbc.com', color:'#111111', url:'https://feeds.bbci.co.uk/sport/tennis/rss.xml', desc:'Tennis britannique et mondial' },
-          { name:'ESPN Tennis', domain:'espn.com', color:'#cc0000', url:'https://www.espn.com/espn/rss/tennis/news', desc:'Tennis, résultats et classements' },
-          { name:'The Guardian Tennis', domain:'theguardian.com', color:'#0066cc', url:'https://www.theguardian.com/sport/tennis/rss', desc:'Tennis mondial par le Guardian' },
-          { name:'Sky Sports Tennis', domain:'skysports.com', color:'#00a0dc', url:'https://www.skysports.com/rss/12040', desc:'Tennis britannique et mondial' },
-        ]},
-        { id:'f1', name:'Formule 1', feeds:[
-          { name:'L\'Équipe Formule 1', domain:'lequipe.fr', color:'#003f8e', url:'https://dwh.lequipe.fr/api/edito/rss?path=/Formule-1/', desc:'F1 : courses et paddock' },
-          { name:'Formula1.com', domain:'formula1.com', color:'#e10600', url:'https://www.formula1.com/en/latest/all.xml', desc:'Site officiel de la F1' },
-          { name:'Autosport F1', domain:'autosport.com', color:'#c8000a', url:'https://www.autosport.com/rss/f1/news', desc:'Course auto et F1' },
-          { name:'Motorsport.com', domain:'motorsport.com', color:'#1a1a1a', url:'https://www.motorsport.com/rss/f1/news/', desc:'Sport automobile international' },
-          { name:'FIA', domain:'fia.com', color:'#1a2a5e', url:'https://www.fia.com/media-center/rss-feed', desc:'Fédération Internationale de l\'Automobile' },
-          { name:'Grandprix.com', domain:'grandprix.com', color:'#8a1a1a', url:'https://www.grandprix.com/rss.xml', desc:'Actu et coulisses F1' },
-          { name:'F1Technical', domain:'f1technical.net', color:'#2a2a2a', url:'https://www.f1technical.net/rss/news.xml', desc:'Technique et ingénierie F1' },
-          { name:'BBC Sport F1', domain:'bbc.com', color:'#111111', url:'https://feeds.bbci.co.uk/sport/formula1/rss.xml', desc:'F1 par la BBC' },
-        ]},
-        { id:'rugby', name:'Rugby', feeds:[
-          { name:'L\'Équipe Rugby', domain:'lequipe.fr', color:'#003f8e', url:'https://dwh.lequipe.fr/api/edito/rss?path=/Rugby/', desc:'Rugby : Top 14 et international' },
-          { name:'BBC Sport Rugby Union', domain:'bbc.com', color:'#111111', url:'https://feeds.bbci.co.uk/sport/rugby-union/rss.xml', desc:'Rugby britannique et mondial' },
-          { name:'Planet Rugby', domain:'planet-rugby.com', color:'#1a6a28', url:'https://www.planet-rugby.com/rss-home', desc:'Actu rugby internationale' },
-          { name:'RugbyPass', domain:'rugbypass.com', color:'#0a3a6e', url:'https://www.rugbypass.com/feeds/rss', desc:'Rugby mondial, analyses et vidéos' },
-          { name:'The Rugby Paper', domain:'therugbypaper.co.uk', color:'#8a1a1a', url:'https://www.therugbypaper.co.uk/feed/', desc:'Rugby anglais en profondeur' },
-          { name:'WalesOnline Rugby', domain:'walesonline.co.uk', color:'#c8000a', url:'https://www.walesonline.co.uk/sport/rugby/rugby-news/?service=rss', desc:'Rugby gallois' },
-          { name:'RUCK.co.uk', domain:'ruck.co.uk', color:'#1a1a2e', url:'https://www.ruck.co.uk/feed', desc:'Actu rugby britannique' },
-          { name:'Midi Olympique', domain:'lemidiolympique.fr', color:'#e2001a', url:'https://www.lemidiolympique.fr/rss', desc:'Le spécialiste français du rugby' },
-        ]},
-        { id:'cyclisme', name:'Cyclisme', feeds:[
-          { name:'L\'Équipe Cyclisme', domain:'lequipe.fr', color:'#003f8e', url:'https://dwh.lequipe.fr/api/edito/rss?path=/Cyclisme/', desc:'Cyclisme : courses et classements' },
-          { name:'Cyclingnews', domain:'cyclingnews.com', color:'#e2001a', url:'https://www.cyclingnews.com/rss/', desc:'Cyclisme professionnel mondial' },
-          { name:'VeloNews', domain:'velonews.com', color:'#1a6a28', url:'https://www.velonews.com/feed', desc:'Cyclisme route et compétition' },
-          { name:'BikeRadar', domain:'bikeradar.com', color:'#0a5a8a', url:'https://www.bikeradar.com/feed', desc:'Matériel et actu cyclisme' },
-        ]},
-        { id:'sport-mondial', name:'Sport Mondial', feeds:[
-          { name:"L'Équipe Sport",    domain:'lequipe.fr',            color:'#003f8e', url:'https://dwh.lequipe.fr/api/edito/rss?path=/Tous-sports/',            desc:"Toute l'actu sportive française" },
-          { name:'Marca',             domain:'marca.com',             color:'#e8000d', url:'https://e00-marca.uecdn.es/rss/portada.xml',          desc:'Sport espagnol et international' },
-          { name:'Eurosport',         domain:'eurosport.fr',          color:'#f46000', url:'https://www.eurosport.fr/rss/story.xml',             desc:'Couverture multisports européenne' },
-          { name:'The Athletic',      domain:'theathletic.com',       color:'#1a1a2e', url:'https://theathletic.com/feed/',                      desc:'Journalisme sportif premium' },
-          { name:'Sky Sports',        domain:'skysports.com',         color:'#00a0dc', url:'https://www.skysports.com/rss/12040',                desc:'Sports britanniques et mondiaux' },
-          { name:'Athletic Olympics', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/athletic/rss/olympics/', desc:'The Athletic - Jeux Olympiques' },
-          { name:'Athletic MMA', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/athletic/rss/mma/', desc:'The Athletic - MMA et sports de combat' },
-          { name:'Reuters Amériques', domain:'reutersbest.com', color:'#e87722', url:'https://reutersbest.com/region/americas/feed/', desc:'Sport et actu Amériques' },
-        ]},
+    { id:'startup', name:'Entrepreneuriat', illus:'entrepreneuriat', tileGrad:'linear-gradient(145deg,#7e4a00 0%,#f39c12 100%)', icon:'🚀',
+      desc:'Startups, innovation et culture du business',
+      feeds:[
+        // orange → bleu → sombre → rouge → vert → gris
+        { name:'Hacker News',       domain:'news.ycombinator.com',  color:'#ff6600', url:'https://news.ycombinator.com/rss',                  desc:'Tech, startups et innovation' },
+        { name:'TechCrunch Start.', domain:'techcrunch.com',        color:'#005f9e', url:'https://techcrunch.com/category/startups/feed/',     desc:'Financement et disruption' },
+        { name:'Fast Company',      domain:'fastcompany.com',       color:'#111111', url:'https://www.fastcompany.com/rss.xml',                desc:'Innovation et leadership' },
+        { name:'Entrepreneur',      domain:'entrepreneur.com',      color:'#c8000a', url:'https://www.entrepreneur.com/latest.rss',            desc:'Conseils pour entrepreneurs' },
+        { name:'HBR',               domain:'hbr.org',               color:'#1a6a28', url:'http://feeds.hbr.org/harvardbusiness',              desc:'Harvard Business Review' },
+        { name:'L\'ADN',            domain:'ladn.eu',               color:'#444444', url:'https://www.ladn.eu/feed/',                          desc:'Innovation et futurs possibles' },
+        { name:'L\'Express Entrepreneurs', domain:'lexpress.fr', color:'#1a1a2e', url:'https://www.lexpress.fr/arc/outboundfeeds/rss/entrepreneurs.xml', desc:'Startups et entrepreneuriat' },
+        { name:'JDN Decideurs', domain:'journaldunet.com', color:'#003fa3', url:'https://www.journaldunet.com/decideurs/rss/', desc:'Dirigeants et strategie' },
+        { name:'PC Startups', domain:'presse-citron.net', color:'#f5a623', url:'https://www.presse-citron.net/category/startups/feed/', desc:'Startups et innovation' },
       ]},
-    { id:'culture', name:'Culture', tileGrad:'linear-gradient(145deg,#6c0070 0%,#e91e8c 100%)', icon:'🎬',
-      desc:'Cinéma, séries, musique, littérature et art',
-      subcats:[
-        { id:'cinema', name:'Cinéma & Séries', feeds:[
-          { name:'Variety',           domain:'variety.com',           color:'#7d0000', url:'https://variety.com/feed/',                          desc:'Industrie du divertissement' },
-          { name:'Première',          domain:'premiere.fr',           color:'#1a3a6e', url:'https://www.premiere.fr/rss/actu-cinema',            desc:'Le magazine du cinéma français' },
-          { name:'NYT Movies', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/Movies.xml', desc:'Cinéma et critiques NYT' },
-          { name:'WaPo Arts', domain:'washingtonpost.com', color:'#1a1a2e', url:'https://feeds.washingtonpost.com/rss/entertainment', desc:'Arts et divertissement WaPo' },
-          { name:'HuffPost Culture', domain:'huffingtonpost.fr', color:'#d20000', url:'https://www.huffingtonpost.fr/culture/rss_headline.xml', desc:'Actualite culturelle' },
-          { name:'Nouvel Obs Culture', domain:'nouvelobs.com', color:'#003f8e', url:'https://www.nouvelobs.com/culture/rss.xml', desc:'Cinema, musique et livres' },
-          { name:'FilmsActu', domain:'jeuxactu.com', color:'#c8000a', url:'https://cinema.jeuxactu.com/rss.htm', desc:'Actu cinéma et bandes-annonces' },
-          { name:'20 Minutes Séries', domain:'20minutes.fr', color:'#e8000d', url:'https://www.20minutes.fr/feeds/rss-serie.xml', desc:'Actu séries TV' },
-          { name:'Cinéfil', domain:'cinefil.com', color:'#1a1a1a', url:'https://cinefil.com/rss', desc:'Critiques et sorties cinéma' },
-          { name:'Movie in the Air', domain:'movieintheair.com', color:'#5a2a8a', url:'https://movieintheair.com/en/feed', desc:'Cinéma et séries, regard francophone' },
-          { name:'AlloCiné', domain:'allocine.fr', color:'#ffe000', url:'https://www.allocine.fr/service/rss/', desc:'Cinéma, séries et box-office' },
-        ]},
-        { id:'musique', name:'Musique', feeds:[
-          { name:'Pitchfork',         domain:'pitchfork.com',         color:'#1a1a1a', url:'https://pitchfork.com/rss/news/',                    desc:'Critique musicale de référence' },
-          { name:'NYT Arts & Music', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/svc/collections/v1/publish/https://www.nytimes.com/section/arts/music/rss.xml', desc:'Musique NYT' },
-          { name:'Billboard', domain:'billboard.com', color:'#e2001a', url:'https://www.billboard.com/feed/', desc:'Charts et actu musicale' },
-          { name:'NME', domain:'nme.com', color:'#1a1a1a', url:'https://www.nme.com/feed', desc:'Musique et culture pop britannique' },
-          { name:'Alternative Press', domain:'altpress.com', color:'#c8000a', url:'https://www.altpress.com/feed', desc:'Rock et scène alternative' },
-          { name:'Diffuser', domain:'diffuser.fm', color:'#2a5a8a', url:'https://diffuser.fm/feed', desc:'Musique et culture rock' },
-          { name:'Sputnikmusic', domain:'sputnikmusic.com', color:'#3a3a3a', url:'https://www.sputnikmusic.com/blog/feed', desc:'Critiques d\'albums' },
-        ]},
-        { id:'litterature', name:'Littérature & Art', feeds:[
-          { name:'Les Inrocks',       domain:'lesinrocks.com',        color:'#d4001a', url:'https://www.lesinrocks.com/feed/',                   desc:'Musique, cinéma et culture pop' },
-          { name:'Brain Pickings',    domain:'themarginalian.org',    color:'#3a3a8c', url:'https://www.themarginalian.org/feed/',               desc:"Essais sur l'art et la vie" },
-          { name:'Kottke',            domain:'kottke.org',            color:'#4a4a4a', url:'https://feeds.kottke.org/main',                      desc:'Curiosités culturelles du web' },
-          { name:'Telerama Arts', domain:'telerama.fr', color:'#1a6a28', url:'https://www.telerama.fr/rss/arts-expositions.xml', desc:'Expos, theatre et arts vivants' },
-          { name:'L\'Express Culture', domain:'lexpress.fr', color:'#1a1a2e', url:'https://www.lexpress.fr/arc/outboundfeeds/rss/culture.xml', desc:'Critiques et sorties culturelles' },
-          { name:'ActuaLitté', domain:'actualitte.com', color:'#c8000a', url:'https://www.actualitte.com/rss', desc:'Actu du livre et de l\'édition' },
-          { name:'Fabula', domain:'fabula.org', color:'#1a3a6e', url:'https://www.fabula.org/rss/actualites.rss', desc:'Recherche en littérature' },
-          { name:'OpenEdition', domain:'openedition.org', color:'#2a6a4a', url:'https://www.openedition.org/backend', desc:'Sciences humaines et publications' },
-        ]},
+    { id:'crypto', name:'Crypto & Web3', illus:'crypto', tileGrad:'linear-gradient(145deg,#5a3e00 0%,#f7931a 100%)', icon:'₿',
+      desc:'Bitcoin, DeFi, blockchain et économie numérique',
+      feeds:[
+        // orange → sombre → rouge → gris → orange-vert → bleu
+        { name:'CoinDesk',          domain:'coindesk.com',          color:'#f7931a', url:'https://www.coindesk.com/arc/outboundfeeds/rss/',    desc:'Le média crypto de référence' },
+        { name:'Cointelegraph',     domain:'cointelegraph.com',     color:'#1a1a1a', url:'https://cointelegraph.com/rss',                      desc:'News blockchain et DeFi' },
+        { name:'Decrypt',           domain:'decrypt.co',            color:'#e20028', url:'https://decrypt.co/feed',                            desc:'Web3, NFTs et cryptomonnaies' },
+        { name:'The Block',         domain:'theblock.co',           color:'#555555', url:'https://www.theblock.co/rss.xml',                   desc:'Analyse et données crypto' },
+        { name:'Bitcoin Magazine',  domain:'bitcoinmagazine.com',   color:'#f09600', url:'https://bitcoinmagazine.com/feed',                   desc:'Tout sur le Bitcoin' },
+        { name:'CoinTelegraph FR',  domain:'fr.cointelegraph.com',  color:'#004a8f', url:'https://fr.cointelegraph.com/rss',                  desc:'Crypto en français' },
+        { name:'PC Crypto', domain:'presse-citron.net', color:'#f5a623', url:'https://www.presse-citron.net/category/crypto-monnaies/feed/', desc:'Cryptomonnaies et blockchain' },
+        { name:'01net Crypto', domain:'01net.com', color:'#003fa3', url:'https://www.01net.com/actualites/cryptomonnaie/feed/', desc:'Bitcoin et altcoins en francais' },
+      ]},
+    { id:'nba', name:'NBA', illus:'basketball', tileGrad:'linear-gradient(145deg,#6e2c00 0%,#e67e22 100%)', icon:'🏀',
+      desc:'Basketball américain, analyses et coulisses de la ligue',
+      feeds:[
+        // rouge → orange → bleu → rouge → vert → bleu
+        { name:'The Athletic NBA',  domain:'theathletic.com',      color:'#c8102e', url:'https://www.nytimes.com/athletic/rss/nba/',                  desc:'Analyses approfondies et coulisses NBA' },
+        { name:'Bleacher Report',   domain:'bleacherreport.com',    color:'#f5a623', url:'https://bleacherreport.com/articles/feed',           desc:'Breaking news et highlights' },
+        { name:'BasketSession',     domain:'basketsession.com',     color:'#003fa3', url:'https://www.basketsession.com/feed/',                desc:'La NBA en français' },
+        { name:'ESPN NBA',          domain:'espn.com',              color:'#cc0000', url:'http://sports.espn.go.com/espn/rss/nba/news',             desc:'Actus, scores et statistiques' },
+        { name:'HoopsHype',         domain:'hoopshype.com',         color:'#1a5a1a', url:'https://hoopshype.com/feed/',                        desc:'Rumeurs, trades et contrats' },
+        { name:'RealGM Basketball', domain:'realgm.com', color:'#0055a5', url:'https://basketball.realgm.com/rss/',                 desc:'Stats, transactions et draft' },
+      ]},
+    { id:'football', name:'Football', illus:'soccer', tileGrad:'linear-gradient(145deg,#0b5345 0%,#27ae60 100%)', icon:'⚽',
+      desc:'Championnats européens, Ligue des Champions et transferts',
+      feeds:[
+        // bleu → rouge → vert → bleu → rouge → sombre
+        { name:"L'Équipe",          domain:'lequipe.fr',            color:'#003f8e', url:'https://dwh.lequipe.fr/api/edito/rss?path=/Tous-sports/',   desc:'Le quotidien sportif de référence' },
+        { name:'RMC Sport',         domain:'rmcsport.com',    color:'#e2001a', url:'https://rmcsport.bfmtv.com/rss/football/',           desc:'Direct, analyses et mercato' },
+        { name:'SoFoot',            domain:'sofoot.com',            color:'#1a7a1a', url:'https://www.sofoot.com/feed',                        desc:'Football et culture foot' },
+        { name:'The Guardian Sport',domain:'theguardian.com',       color:'#0066cc', url:'https://www.theguardian.com/football/rss',           desc:'Football mondial et analyses' },
+        { name:'ESPN FC',           domain:'espn.com',              color:'#cc0000', url:'https://www.espn.com/espn/rss/soccer/news',          desc:'Football international et LDC' },
+        { name:'BBC Sport Football',domain:'bbc.com',               color:'#111111', url:'https://feeds.bbci.co.uk/sport/football/rss.xml',    desc:'Premier League et couverture mondiale' },
+        { name:'Athletic Premier League', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/athletic/rss/premier-league/', desc:'The Athletic - Premier League' },
+        { name:'Athletic Football', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/athletic/rss/football/', desc:'The Athletic - Football mondial' },
+      ]},
+    { id:'sport-mondial', name:'Sport Mondial', illus:'podium', tileGrad:'linear-gradient(145deg,#7d6608 0%,#f1c40f 100%)', icon:'🏆',
+      desc:'Athlétisme, tennis, F1 et multisports internationaux',
+      feeds:[
+        // bleu → rouge → orange → sombre → bleu clair
+        { name:"L'Équipe Sport",    domain:'lequipe.fr',            color:'#003f8e', url:'https://dwh.lequipe.fr/api/edito/rss?path=/Tous-sports/',            desc:"Toute l'actu sportive française" },
+        { name:'Marca',             domain:'marca.com',             color:'#e8000d', url:'https://e00-marca.uecdn.es/rss/portada.xml',          desc:'Sport espagnol et international' },
+        { name:'Eurosport',         domain:'eurosport.fr',          color:'#f46000', url:'https://www.eurosport.fr/rss/story.xml',             desc:'Couverture multisports européenne' },
+        { name:'The Athletic',      domain:'theathletic.com',       color:'#1a1a2e', url:'https://theathletic.com/feed/',                      desc:'Journalisme sportif premium' },
+        { name:'Sky Sports',        domain:'skysports.com',         color:'#00a0dc', url:'https://www.skysports.com/rss/12040',                desc:'Sports britanniques et mondiaux' },
+        { name:'Athletic Olympics', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/athletic/rss/olympics/', desc:'The Athletic - Jeux Olympiques' },
+        { name:'Athletic MMA', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/athletic/rss/mma/', desc:'The Athletic - MMA et sports de combat' },
+        { name:'Athletic Tennis', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/athletic/rss/tennis/', desc:'The Athletic - Tennis mondial' },
+        { name:'Reuters Amériques', domain:'reutersbest.com', color:'#e87722', url:'https://reutersbest.com/region/americas/feed/', desc:'Sport et actu Amériques' },
+      ]},
+    { id:'culture', name:'Culture', illus:'film', tileGrad:'linear-gradient(145deg,#6c0070 0%,#e91e8c 100%)', icon:'🎬',
+      desc:'Cinéma, musique, littérature et art de vivre',
+      feeds:[
+        // sombre → rouge → violet → rouge sombre → bleu → gris
+        { name:'Pitchfork',         domain:'pitchfork.com',         color:'#1a1a1a', url:'https://pitchfork.com/rss/news/',                    desc:'Critique musicale de référence' },
+        { name:'Les Inrocks',       domain:'lesinrocks.com',        color:'#d4001a', url:'https://www.lesinrocks.com/feed/',                   desc:'Musique, cinéma et culture pop' },
+        { name:'Brain Pickings',    domain:'themarginalian.org',    color:'#3a3a8c', url:'https://www.themarginalian.org/feed/',               desc:"Essais sur l'art et la vie" },
+        { name:'Variety',           domain:'variety.com',           color:'#7d0000', url:'https://variety.com/feed/',                          desc:'Industrie du divertissement' },
+        { name:'Première',          domain:'premiere.fr',           color:'#1a3a6e', url:'https://www.premiere.fr/rss/actu-cinema',            desc:'Le magazine du cinéma français' },
+        { name:'Kottke',            domain:'kottke.org',            color:'#4a4a4a', url:'https://feeds.kottke.org/main',                      desc:'Curiosités culturelles du web' },
+        { name:'Nouvel Obs Culture', domain:'nouvelobs.com', color:'#003f8e', url:'https://www.nouvelobs.com/culture/rss.xml', desc:'Cinema, musique et livres' },
+        { name:'L\'Express Culture', domain:'lexpress.fr', color:'#1a1a2e', url:'https://www.lexpress.fr/arc/outboundfeeds/rss/culture.xml', desc:'Critiques et sorties culturelles' },
+        { name:'HuffPost Culture', domain:'huffingtonpost.fr', color:'#d20000', url:'https://www.huffingtonpost.fr/culture/rss_headline.xml', desc:'Actualite culturelle' },
+        { name:'Telerama Arts', domain:'telerama.fr', color:'#1a6a28', url:'https://www.telerama.fr/rss/arts-expositions.xml', desc:'Expos, theatre et arts vivants' },
+        { name:'NYT Movies', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/Movies.xml', desc:'Cinéma et critiques NYT' },
+        { name:'NYT Arts & Music', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/svc/collections/v1/publish/https://www.nytimes.com/section/arts/music/rss.xml', desc:'Musique NYT' },
+        { name:'WaPo Arts', domain:'washingtonpost.com', color:'#1a1a2e', url:'https://feeds.washingtonpost.com/rss/entertainment', desc:'Arts et divertissement WaPo' },
+      ]},
+    { id:'design', name:'Design & Créa', illus:'bauhaus', tileGrad:'linear-gradient(145deg,#4a0080 0%,#a044ff 100%)', icon:'🎨',
+      desc:'UX, typographie, culture visuelle et outils créatifs',
+      feeds:[
+        // orange → rouge → bleu → sombre → bleu clair → sarcelle
+        { name:'Smashing Magazine', domain:'smashingmagazine.com',  color:'#e85c33', url:'https://www.smashingmagazine.com/feed/',             desc:'Design web, UX et front-end' },
+        { name:"It's Nice That",    domain:'itsnicethat.com',        color:'#ff2600', url:'https://www.itsnicethat.com/rss',                    desc:'Culture créative et art contemporain' },
+        { name:'CSS-Tricks',        domain:'css-tricks.com',        color:'#2965f1', url:'https://css-tricks.com/feed/',                       desc:'CSS, front-end et animations' },
+        { name:'Sidebar.io',        domain:'sidebar.io',            color:'#222222', url:'https://sidebar.io/feed.xml',                        desc:'Les 5 meilleurs liens design' },
+        { name:'A List Apart',      domain:'alistapart.com',        color:'#367eb6', url:'https://alistapart.com/main/feed/',                  desc:'Web design et bonnes pratiques' },
+        { name:'Abduzeedo',         domain:'abduzeedo.com',         color:'#1a7a6a', url:'https://abduzeedo.com/rss.xml',                      desc:'Inspiration design et motion' },
       ]},
     { id:'gastro', name:'Gastronomie', illus:'gastronomie', tileGrad:'linear-gradient(145deg,#7b241c 0%,#e74c3c 100%)', icon:'🍽️',
       desc:'Cuisine, recettes et culture culinaire',
@@ -8225,14 +8229,9 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
       ]},
   ];
 
-  // Un thème est soit à plat (feeds directs), soit fusionné (subcats → feeds)
-  function dcThemeAllFeeds(theme){
-    return theme.subcats ? theme.subcats.flatMap(s => s.feeds || []) : (theme.feeds || []);
-  }
-
   // Dictionnaire rapide URL→{name,desc,domain} pour openFeedPage
   const _FEED_DB = {};
-  DC_THEMES.forEach(t => dcThemeAllFeeds(t).forEach(f => {
+  DC_THEMES.forEach(t => (t.feeds||[]).forEach(f => {
     _FEED_DB[f.url] = { name:f.name, desc:f.desc||'', domain:f.domain||'', color:f.color||'' };
   }));
 
@@ -8246,7 +8245,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     return `<div class="dc-theme-tile" data-desc="${escapeHtml(theme.desc||'')}" onclick="dcOpenTheme('${theme.id}')">
       <div class="dc-theme-tile-img" style="background:${grad}">
         <div class="dc-theme-tile-icon">${icon}</div>
-        <div class="dc-theme-tile-badge">${dcThemeAllFeeds(theme).length} flux</div>
+        <div class="dc-theme-tile-badge">${theme.feeds.length} flux</div>
         <div class="dc-theme-tile-name">${escapeHtml(theme.name)}</div>
       </div>
     </div>`;
@@ -8317,8 +8316,8 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     cont.innerHTML = `<div class="dc-arts-carousel">${cards}</div>`;
   }
 
-  async function _dcLoadThemeArts(feedsIn, token){
-    const feeds = feedsIn.slice();
+  async function _dcLoadThemeArts(theme, token){
+    const feeds = theme.feeds.slice();
     let idx = 0;
     const next = async()=>{
       while(idx < feeds.length){
@@ -8340,43 +8339,15 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     await Promise.all([next(), next(), next()]);   // 3 chargements parallèles max
   }
 
-  function dcRenderSubchips(theme, activeId){
-    const host = document.getElementById('dcSubchips');
-    host.hidden = false;
-    host.innerHTML = theme.subcats.map(s =>
-      `<button type="button" class="dc-subchip${s.id===activeId?' active':''}" onclick="dcSelectSub('${theme.id}','${s.id}')">${escapeHtml(s.name)}</button>`
-    ).join('');
-  }
-
-  function dcShowSubFeeds(sub){
-    const token = ++_dcThemeToken;
-    document.getElementById('dcFeedList').innerHTML = sub.feeds.map((f,i)=>dcRenderFeedRow(f,sub.name,i)).join('');
-    _dcLoadThemeArts(sub.feeds, token);
-  }
-
-  window.dcSelectSub = function(themeId, subId){
-    const theme = DC_THEMES.find(t=>t.id===themeId);
-    const sub = theme && theme.subcats && theme.subcats.find(s=>s.id===subId);
-    if(!sub) return;
-    dcRenderSubchips(theme, subId);
-    dcShowSubFeeds(sub);
-  };
-
   window.dcOpenTheme = function(id){
     const theme = DC_THEMES.find(t=>t.id===id);
     if(!theme) return;
+    const token = ++_dcThemeToken;
     document.getElementById('dcDetailTitle').textContent = theme.name;
+    document.getElementById('dcFeedList').innerHTML = theme.feeds.map((f,i)=>dcRenderFeedRow(f,theme.name,i)).join('');
     document.getElementById('dcCatalogPanel').classList.add('pushed');
     document.getElementById('dcDetailPanel').classList.add('visible');
-    if(theme.subcats){
-      dcRenderSubchips(theme, theme.subcats[0].id);
-      dcShowSubFeeds(theme.subcats[0]);
-    } else {
-      document.getElementById('dcSubchips').hidden = true;
-      const token = ++_dcThemeToken;
-      document.getElementById('dcFeedList').innerHTML = theme.feeds.map((f,i)=>dcRenderFeedRow(f,theme.name,i)).join('');
-      _dcLoadThemeArts(theme.feeds, token);
-    }
+    _dcLoadThemeArts(theme, token);
   };
 
   function dcCloseTheme(){
@@ -8673,7 +8644,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     const showPage=document.getElementById('podShowPage');
     if(showPage && showPage.classList.contains('open') && _plCurShowFeed===feedUrl){
       const tt=document.getElementById('podShowTopTitle'); if(tt) tt.textContent=clean;
-      const nm=document.querySelector('#podShowBody .psf-logo'); if(nm) nm.textContent=clean;
+      const nm=document.querySelector('#podShowBody .pod-show-name'); if(nm) nm.textContent=clean;
     }
   }
   window._plRenamePodcast=_plRenamePodcast;
@@ -8724,36 +8695,14 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     const count=eps.length;
     const desc=(head.description||'').replace(/<[^>]*>/g,'').trim();
     const lastEsc=String(head.link||'').replace(/'/g,"\\'");
-    const feedEsc=String(feedUrl).replace(/'/g,"\\'"), nameEsc=String(showName).replace(/'/g,"\\'");
-    const bgImg=head.imageUrl||head._channelImg||'';
-    const bgCss=bgImg?`background-image:url('${String(bgImg).replace(/'/g,"\\'")}')`:'';
-    const isSub=((typeof folders!=='undefined'&&folders)||[]).some(f=>(f.feeds||[]).indexOf(feedUrl)>-1);
-    body.innerHTML=`<div class="psf-hero">
-        <div class="psf-bg" style="${bgCss}"></div>
-        <div class="psf-grad"></div>
-        <div class="psf-topbar">
-          <button class="psf-btn psf-btn-round" type="button" aria-label="Retour" onclick="closePodShow()"><svg viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-          <div class="psf-actions">
-            <button class="psf-btn psf-btn-round" type="button" aria-label="Options du podcast" onclick="_plPodMenu('${feedEsc}','${nameEsc}')"><svg viewBox="0 0 24 24" fill="#000"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button>
-            <button class="psf-btn psf-follow" type="button" id="podShowFollow" onclick="_podShowToggleFollow('${feedEsc}','${nameEsc}')"><span class="psf-follow-txt">${isSub?'Suivi':'Suivre'}</span><svg viewBox="0 0 24 24" fill="#000"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM17 13H13V17H11V13H7V11H11V7H13V11H17V13Z"/></svg></button>
-          </div>
-        </div>
-        <div class="psf-main">
-          <div class="psf-logo">${escHtml(showName)}</div>
-          <div class="psf-tabs" role="tablist">
-            <button class="psf-tab sel" type="button" role="tab" data-tab="eps" onclick="_podShowTab('eps')">Épisodes</button>
-            <button class="psf-tab" type="button" role="tab" data-tab="about" onclick="_podShowTab('about')">À propos</button>
-          </div>
-        </div>
+    body.innerHTML=`<div class="pod-show-hero">
+        <div class="pod-show-cover" style="${_plArtCss(head)}"></div>
+        <div class="pod-show-name">${escHtml(showName)}</div>
+        <div class="pod-show-sub">${count} épisode${count>1?'s':''}</div>
+        ${desc?`<div class="pod-show-desc">${escHtml(desc.slice(0,300))}</div>`:''}
+        <button class="pod-show-play-btn" type="button" onclick="_plPlay('${lastEsc}')"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Lire le dernier épisode</button>
       </div>
-      <div class="psf-pane" data-pane="eps">
-        <div class="pod-show-sub" style="text-align:center;padding:14px 0 0">${count} épisode${count>1?'s':''}</div>
-        <button class="pod-show-play-btn" style="display:flex;margin:12px auto 2px" type="button" onclick="_plPlay('${lastEsc}')"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Lire le dernier épisode</button>
-        <div class="pod-show-eps">${eps.map(a=>_plEpCard(a,false)).join('')}</div>
-      </div>
-      <div class="psf-pane" data-pane="about" hidden>
-        <div class="psf-about">${desc?escHtml(desc):'<span style="opacity:.6">Aucune description disponible.</span>'}</div>
-      </div>`;
+      <div class="pod-show-eps">${eps.map(a=>_plEpCard(a,false)).join('')}</div>`;
     body.scrollTop=0;
     const tt=document.getElementById('podShowTopTitle'); if(tt) tt.textContent=showName;
     page.classList.add('open'); page.setAttribute('aria-hidden','false');
@@ -8762,19 +8711,6 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     if(typeof _plSyncPlaying==='function') _plSyncPlaying();
   }
   window._plOpenShow=_plOpenShow;
-  // Bascule des onglets du header émission (Épisodes / À propos).
-  window._podShowTab=function(name){
-    const body=document.getElementById('podShowBody'); if(!body) return;
-    body.querySelectorAll('.psf-tab').forEach(t=>t.classList.toggle('sel', t.dataset.tab===name));
-    body.querySelectorAll('.psf-pane').forEach(p=>{ p.hidden = (p.dataset.pane!==name); });
-  };
-  // Bouton « Suivre / Suivi » du header — abonne ou désabonne le podcast.
-  window._podShowToggleFollow=function(feedUrl,name){
-    const sub=((typeof folders!=='undefined'&&folders)||[]).some(f=>(f.feeds||[]).indexOf(feedUrl)>-1);
-    if(sub){ if(typeof _plUnsubscribePodcast==='function') _plUnsubscribePodcast(feedUrl); return; }
-    if(typeof _plSubscribe==='function') _plSubscribe(feedUrl,name);
-    const b=document.getElementById('podShowFollow'); if(b){ const s=b.querySelector('.psf-follow-txt'); if(s) s.textContent='Suivi'; }
-  };
   function closePodShow(){
     const page=document.getElementById('podShowPage');
     if(!page||!page.classList.contains('open')) return;
@@ -11550,7 +11486,10 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     // Filtrage éventuel par source (rail global)
     const pool    = _railApplyFilter(_allArticles);
     const deduped = _dedupCtx(_smartDateSort([...pool]));
-    _editionArts  = deduped.slice(0, 60);
+    // Le 1ᵉʳ article (le + récent) est déjà mis en avant dans la carte vedette
+    // du hero au-dessus du flux — on démarre donc la liste au 2ᵉ pour éviter
+    // le doublon juste après le hero.
+    _editionArts  = deduped.slice(1, 61);
 
     // Jitter fix : ne re-rendre que si le contenu a changé
     const gridKey = _editionArts.slice(0,6).map(a=>a.link).join('|') + '#' + (_railFilterUrl || '') + '#' + (_smartCat || '') + '#' + _smartMode + '#' + _editionArts.length;
@@ -11650,45 +11589,141 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   };
 
 
+  // ── VUE MOSAÏQUE ──────────────────────────────────────────────
+  // Rythme éditorial répété inspiré de « Mosaic 4 » : une bande de 2 cartes
+  // égales, une carte vedette pleine largeur (image + titre superposés), puis
+  // une bande large+étroit. On réutilise le modèle d'article/ouverture existant.
+  let _mosArts = [];
+  function _mosCardHtml(a, idx, variant, opener){
+    const op   = opener || '_openMosaicArt';
+    const fav  = (typeof getFavicon==='function') ? getFavicon(a.feedUrl||a.link||'') : '';
+    const isRead = window._RS && _RS.has(a.link);
+    const time = relTime(a.pubDate);
+    if(variant==='feature'){
+      const bg = a.imageUrl
+        ? "background-image:url('"+String(a.imageUrl).replace(/'/g,"\\'")+"')"
+        : 'background:linear-gradient(135deg,rgba(10,132,255,.28),#0a0a0a)';
+      return '<article class="mos-card mos-feature'+(isRead?' is-read':'')+'" onclick="'+op+'('+idx+')">'
+        + '<div class="mos-feature-media" style="'+bg+'"><div class="mos-feature-scrim"></div>'
+        + '<div class="mos-feature-body">'
+        + '<div class="mos-src-row"><span class="mos-src-dot"><img src="'+escAttr(fav)+'" alt="" onerror="this.style.opacity=.3"></span><span class="mos-src-name">'+escHtml(a.source||'')+'</span><span class="mos-time">'+time+'</span></div>'
+        + '<h3 class="mos-feature-title">'+escHtml(a.title||'')+'</h3>'
+        + '</div></div></article>';
+    }
+    const fig = a.imageUrl
+      ? '<div class="mos-fig"><img src="'+escAttr(a.imageUrl)+'" alt="" decoding="async" loading="lazy" onerror="this.parentNode.style.visibility=\'hidden\'"></div>'
+      : '<div class="mos-fig"></div>';
+    const src = a.source
+      ? '<div class="mos-src-row"><span class="mos-src-dot"><img src="'+escAttr(fav)+'" alt="" onerror="this.style.opacity=.3"></span><span class="mos-src-name">'+escHtml(a.source)+'</span><span class="mos-time">'+time+'</span></div>'
+      : '';
+    return '<article class="mos-card mos-'+variant+(isRead?' is-read':'')+'" onclick="'+op+'('+idx+')">'
+      + fig + src + '<h3 class="mos-title">'+escHtml(a.title||'')+'</h3></article>';
+  }
+  function _mosBandsHtml(A, opener){
+    let h='', i=0; const n=A.length;
+    while(i<n){
+      // Bande 1 : 2 cartes égales
+      if(i<n){ h+='<div class="mos-band two">'+_mosCardHtml(A[i],i,'eq',opener)+(A[i+1]?_mosCardHtml(A[i+1],i+1,'eq',opener):'')+'</div>'; i+=2; }
+      // Bande 2 : carte vedette pleine largeur
+      if(i<n){ h+='<div class="mos-band full">'+_mosCardHtml(A[i],i,'feature',opener)+'</div>'; i+=1; }
+      // Bande 3 : large + étroit
+      if(i<n){ h+='<div class="mos-band wide">'+_mosCardHtml(A[i],i,'wide',opener)+(A[i+1]?_mosCardHtml(A[i+1],i+1,'narrow',opener):'')+'</div>'; i+=2; }
+    }
+    return '<div class="mos">'+h+'</div>';
+  }
+  function _renderMosaic(){
+    const wrap = document.getElementById('mosaicGrid'); if(!wrap) return;
+    if(!_allArticles.length){ wrap.innerHTML=''; wrap.dataset.key=''; return; }
+    const pool    = _railApplyFilter(_allArticles);
+    const deduped = _dedupCtx(_smartDateSort([...pool]));
+    // Exactement comme la vue Magazine : l'article vedette (le + récent) est déjà la grande image du hero au-dessus — on démarre au 2ᵉ par position (fiable, calculé une seule fois sur ce même tableau)
+    _mosArts = deduped.slice(1, 61);
+    const key = _mosArts.slice(0,6).map(a=>a.link).join('|')+'#'+(_railFilterUrl||'')+'#'+(_smartCat||'')+'#'+_smartMode+'#'+_mosArts.length;
+    if(wrap.dataset.key === key) return;
+    wrap.innerHTML = _mosBandsHtml(_mosArts, '_openMosaicArt');
+    wrap.dataset.key = key;
+    if(typeof window._obsImage === 'function') setTimeout(window._obsImage, 50);
+  }
+  window._openMosaicArt = function(idx){
+    const a = _mosArts[idx]; if(!a) return;
+    if(window._RS) _RS.mark(a.link);
+    _showArtModal(a);
+  };
 
   // ── 14. loadAllFeeds — moteur principal ──────────────────────
   // ── Rendu de la vue courante (point unique) ───────────────
   function _renderCurrentView(){
     // Fallback si une vue supprimée était en localStorage
     if(!order.includes(_currentView)){ _currentView='editions'; try{localStorage.setItem('bf_view','editions');}catch(e){} }
-    // Mode Tendances : conserve la vue active (ranking géré par _smartDateSort)
-    const effView = _currentView;
+    // Mode Tendances : toujours la vue séquentielle (corps + numérotation) ; ranking conservé
+    const effView = (_smartMode === 'trending') ? 'sequential' : _currentView;
     try { document.body.dataset.view = effView; } catch(e) {}  // CSS responsive : reflète la vue réellement affichée
     views.forEach(v => { v.hidden = v.dataset.view !== effView; });
     _renderSrcRail();   // rail partagé visible sur toutes les vues
     if(effView === 'editions')    _renderEditions();
     else if(effView === 'grille') _renderGrille();
+    else if(effView === 'mosaic') _renderMosaic();
+    else if(effView === 'sequential') _renderSequential();
     else if(effView === 'liste')  _renderListe();
-    // Salutation du jour + rail des catégories au-dessus des vues du flux
+    // Hero accueil (briefing + carte vedette) au-dessus des vues du flux
+    const _heroHost = document.getElementById('bfHomeHero');
     const _greetHost = document.getElementById('bfGreetHost');
-    const _catRail   = document.getElementById('catHeroRail');
-    const _feedViews = ['editions','grille','liste'];
-    if(_greetHost){
-      if(_feedViews.indexOf(effView)>=0){ _greetHost.hidden=false; _renderGreet(); }
-      else { _greetHost.hidden=true; }
-    }
-    if(_catRail){
-      if(_feedViews.indexOf(effView)>=0){ _renderCatHeroRail(); }
-      else { _catRail.hidden=true; }
+    if(_heroHost){
+      const _feedViews = ['editions','grille','mosaic','sequential','liste'];
+      if(_feedViews.indexOf(effView)>=0){ _heroHost.hidden=false; if(_greetHost) _greetHost.hidden=false; _renderHomeHero(); }
+      else { _heroHost.hidden=true; if(_greetHost) _greetHost.hidden=true; }
     }
     if(window.BF_SMART && BF_SMART.renderSidebar){ try{ BF_SMART.renderSidebar(); }catch(e){} }
   }
 
-  // ── Salutation du jour (au-dessus des vues du flux) ──
-  function _renderGreet(){
-    const host = document.getElementById('bfGreetHost'); if(!host) return;
-    const greetHi = (()=>{ const h=new Date().getHours(); return h<12?'Bonjour':h<18?'Bon après-midi':'Bonsoir'; })();
-    const dstr = (()=>{ try{ const s=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'}); return s.charAt(0).toUpperCase()+s.slice(1); }catch(e){ return ''; } })();
-    const key = greetHi+'#'+dstr;
+  // ── Hero accueil : briefing du jour (3 titres) + carte vedette (article le + récent) ──
+  // Lien de l'article vedette du hero (calculé à la demande, indépendant de l'ordre de rendu)
+  function _bfHeroLink(){
+    try{
+      const pool = _dedupCtx(_smartDateSort([..._railApplyFilter(_allArticles||[])]));
+      return pool.length ? pool[0].link : null;
+    }catch(e){ return null; }
+  }
+  function _renderHomeHero(){
+    const host = document.getElementById('bfHomeHero'); if(!host) return;
+    let pool = [];
+    try{ pool = _dedupCtx(_smartDateSort([..._railApplyFilter(_allArticles||[])])); }catch(e){ pool = (_allArticles||[]).slice(); }
+    if(!pool.length){ host.innerHTML=''; host.dataset.key=''; return; }
+    const feat = pool[0];
+    window._bfHeroFeatLink = feat ? feat.link : null;
+    const key = pool.slice(0,4).map(a=>a.link).join('|')+'#'+(_railFilterUrl||'')+'#'+(_smartCat||'')+'#'+_smartMode;
     if(host.dataset.key===key) return;
     host.dataset.key=key;
-    host.innerHTML = `<div class="bf-greet"><span class="bf-greet-hi">${escHtml(greetHi)}</span><span class="bf-greet-date">${escHtml(dstr)}</span></div>`;
+    const esc=escHtml;
+    const q = s=>String(s==null?'':s).replace(/'/g,"\\'");
+    const greetHi = (()=>{ const h=new Date().getHours(); return h<12?'Bonjour':h<18?'Bon après-midi':'Bonsoir'; })();
+    const dstr = (()=>{ try{ const s=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'}); return s.charAt(0).toUpperCase()+s.slice(1); }catch(e){ return ''; } })();
+    const briefHtml = '';
+    const desc = (typeof _edlSub==='function') ? (_edlSub(feat)||'') : '';
+    const media = feat.imageUrl
+      ? `style="background-image:url('${q(feat.imageUrl)}')"`
+      : 'style="background:linear-gradient(135deg,rgba(10,132,255,.22),#111)"';
+    const dateStr = (typeof relTime==='function') ? relTime(feat.pubDate) : '';
+    const _greetHost = document.getElementById('bfGreetHost');
+    if(_greetHost){ _greetHost.innerHTML = `<div class="bf-greet"><span class="bf-greet-hi">${esc(greetHi)}</span><span class="bf-greet-date">${esc(dstr)}</span></div>`; }
+    host.innerHTML =
+      `<div class="bf-hero">
+        <article class="bf-feat" onclick="_bfHeroOpen('${q(feat.link)}')">
+          <div class="bf-feat-body">
+            <div class="bf-feat-src">${esc(feat.source||'')}</div>
+            <h3 class="bf-feat-title">${esc(feat.title||'')}</h3>
+            ${desc?`<p class="bf-feat-desc">${esc(desc.slice(0,200))}</p>`:''}
+            <div class="bf-feat-meta">${esc(dateStr)}</div>
+            <span class="bf-feat-link">Lire l'article</span>
+          </div>
+          <div class="bf-feat-media" ${media}></div>
+        </article>
+      </div>`;
   }
+  window._bfHeroOpen = function(link){
+    const a = (_allArticles||[]).find(x=>x && x.link===link);
+    if(a){ if(window._RS) _RS.mark(a.link); _showArtModal(a); }
+  };
 
   // Rendu stable : swap en place + préservation du défilement (zéro saut)
   function _smoothRenderCurrentView(cb){
@@ -12142,10 +12177,9 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     // Image hero
     const heroWrap = document.getElementById('artModalHeroWrap');
     const heroImg  = document.getElementById('artModalHeroImg');
-    const _shellEl = document.getElementById('artShell');
     if(heroWrap && heroImg){
-      if(a.imageUrl){ heroWrap.style.display='block'; heroImg.src=a.imageUrl; if(_shellEl) _shellEl.classList.remove('no-hero'); }
-      else { heroWrap.style.display='none'; heroImg.removeAttribute('src'); if(_shellEl) _shellEl.classList.add('no-hero'); }
+      if(a.imageUrl){ heroWrap.style.display='block'; heroImg.src=a.imageUrl; }
+      else { heroWrap.style.display='none'; heroImg.removeAttribute('src'); }
     }
 
     // Watermark date
@@ -12322,6 +12356,8 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
       if(_artAbort){ try{_artAbort.abort();}catch(e){} _artAbort=null; }
       const fv = document.querySelector('.view[data-view="favoris"]');
       if(fv && !fv.hidden) _renderFavoris();
+      const sq = document.querySelector('.view[data-view="sequential"]');
+      if(sq && !sq.hidden) _seqRefreshReadStates();
     }
   };
   window.artModalOpenExternal = function(){
@@ -12563,7 +12599,8 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     const wrap = document.getElementById('grilleGrid');
     if(!wrap) return;
     const arts = typeof _allArticles !== 'undefined' ? _dedupCtx(_smartDateSort(_railApplyFilter([..._allArticles]))) : [];
-    _grilleArts = arts.slice(0, 60);
+    // Exactement comme la vue Magazine : démarrage au 2ᵉ article par position (le 1ᵉ est la grande image du hero au-dessus)
+    _grilleArts = arts.slice(1, 61);
     if(!_grilleArts.length){
       wrap.innerHTML = '<div style="grid-column:1/-1;padding:60px 0;text-align:center;color:var(--text-muted);font-size:14px;font-family:var(--font-inter)">Aucun article disponible</div>';
       return;
@@ -12573,11 +12610,8 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
       const imgH = a.imageUrl
         ? `<div class="grid2-img"><img src="${escAttr(a.imageUrl)}" alt="" decoding="async" loading="lazy" onerror="this.parentNode.style.background='#1a1a1a'"></div>`
         : `<div class="grid2-img" style="background:linear-gradient(135deg,rgba(10,132,255,.15),#0a0a0a)"></div>`;
-      const kw = _extractKeywords(a, 1);
-      const tagH = kw.length ? `<div class="grid2-tags"><span class="edl-tag">${escHtml(kw[0])}</span></div>` : '';
       return `<div class="grid2-card reveal" onclick="_grilleOpen(${i})" style="position:relative">
         ${imgH}
-        ${tagH}
         ${_titleWithShare(escHtml(a.title), a.link, a.title, 'grid2-title')}
         <div class="grid2-meta">
           <div class="grid2-fav"><img src="${escAttr(fav)}" onerror="this.style.opacity='.3'"></div>
@@ -12590,8 +12624,13 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   }
   window._grilleOpen = function(i){ const a=_grilleArts[i]; if(a) _showArtModal(a); };
 
+  // ── VUE SÉQUENTIELLE ─────────────────────────────────────────
+  let _seqArts = [];
+
   // ════════════════════════════════════════════════════════════════
   //  Mémoire de lecture — articles déjà ouverts (persistant)
+  //  Socle de la vue Séquentielle : transforme la liste en un fil
+  //  avec une position mémorisée d'une session à l'autre.
   // ════════════════════════════════════════════════════════════════
   const _RS = (function(){
     const KEY = 'bf_read_v1';
@@ -12631,7 +12670,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     return t ? t.split(/\s+/).length : 0;
   }
 
-  // ── Vue Édition — helpers partagés ──
+  // ── Vues Édition / Séquentiel — helpers partagés ──
 
   // Apparition au défilement — observer générique (toutes les vues)
   let _revealIO = null;
@@ -12858,13 +12897,75 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   }
   window._edlCardHtml = _edlCardHtml;
 
+  // Vue séquentielle — liste numérotée éditoriale
+  function _seqRenderProgress(){ /* no-op */ }
+
+  function _seqRefreshReadStates(){
+    const list = document.getElementById('seqList');
+    if(!list || !_seqArts || !_seqArts.length) return;
+    list.querySelectorAll('.seq-item').forEach(el => {
+      const i = +el.getAttribute('data-seq-idx');
+      const a = _seqArts[i];
+      if(a) el.classList.toggle('is-read', _RS.has(a.link));
+    });
+  }
+
+  window._seqResume = function(){};
+  window._seqMarkAllRead = function(){
+    if(!_seqArts || !_seqArts.length) return;
+    _RS.markMany(_seqArts.map(a => a.link));
+    _seqRefreshReadStates();
+  };
+
+  function _seqItemHtml(a, i){
+    const isRead = _RS.has(a.link);
+    const fav = getFavicon(a.feedUrl||a.link||'');
+    const thumb = a.imageUrl
+      ? `<div class="seq-thumb"><img src="${escAttr(a.imageUrl)}" alt="" decoding="async" loading="lazy" onerror="this.parentNode.style.display='none'"></div>`
+      : '';
+    return `<div class="seq-item reveal${isRead?' is-read':''}" data-seq-idx="${i}" onclick="_seqOpen(${i})">
+      <span class="seq-num">${String(i+1).padStart(2,'0')}</span>
+      <div class="seq-body">
+        <div class="seq-source"><span class="seq-fav"><img src="${escAttr(fav)}" onerror="this.style.opacity='.3'"></span>${escHtml(a.source||'')} · ${relTime(a.pubDate)}${_groupMeta(a)}</div>
+        <div class="seq-title">${escHtml(a.title||'')}</div>
+      </div>
+      ${thumb}
+    </div>`;
+  }
+
+  function _renderSequential(){
+    const list = document.getElementById('seqList');
+    if(!list) return;
+    const arts = typeof _allArticles !== 'undefined'
+      ? _dedupCtx(_smartDateSort(_railApplyFilter([..._allArticles])))
+      : [];
+    // Exactement comme la vue Magazine : démarrage au 2ᵉ article par position (le 1ᵉ est la grande image du hero au-dessus)
+    _seqArts = arts.slice(1, 101);
+    if(!_seqArts.length){
+      list.innerHTML = '<div style="padding:80px 0;text-align:center;color:var(--text-muted);font-size:14px;font-family:var(--font-inter)">Aucun article disponible.<br>Ajoutez des sources pour commencer.</div>';
+      return;
+    }
+    list.innerHTML = _seqArts.map((a,i)=>_seqItemHtml(a,i)).join('');
+    _revealObserve(list);
+  }
+
+  window._seqOpen = function(i){
+    const a = _seqArts[i];
+    if(!a) return;
+    _RS.mark(a.link);
+    _showArtModal(a);
+    const el = document.querySelector('.seq-item[data-seq-idx="' + i + '"]');
+    if(el) el.classList.add('is-read');
+  };
+
   // ── VUE LISTE ─────────────────────────────────────────────────
   let _listeArts = [];
   function _renderListe(){
     const wrap = document.getElementById('listeList');
     if(!wrap) return;
     const arts = typeof _allArticles !== 'undefined' ? _dedupCtx(_smartDateSort(_railApplyFilter([..._allArticles]))) : [];
-    _listeArts = arts.slice(0, 100);
+    // Exactement comme la vue Magazine : démarrage au 2ᵉ article par position (le 1ᵉ est la grande image du hero au-dessus)
+    _listeArts = arts.slice(1, 101);
     if(!_listeArts.length){
       wrap.innerHTML = '<div style="padding:60px 0;text-align:center;color:var(--text-muted);font-size:14px;font-family:var(--font-inter)">Aucun article disponible</div>';
       return;
@@ -13040,11 +13141,12 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     }
   }
 
-  // ── Rafraîchir grille/liste après loadAllFeeds
+  // ── Rafraîchir grille/séquentiel/liste après loadAllFeeds
   const _origRenderEditions = _renderEditions;
   _renderEditions = function(){
     _origRenderEditions();
     if(_currentView==='grille') _renderGrille();
+    if(_currentView==='sequential') _renderSequential();
     if(_currentView==='liste') _renderListe();
     if(_currentView==='essentiel') _renderEssentiel();
     // Pré-chargement hors-ligne en arrière-plan (fire & forget)
@@ -13090,6 +13192,16 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
         var fav = getFavicon(a.feedUrl||a.link||'');
         var imgStyle = a.imageUrl ? "background:url('" + a.imageUrl.replace(/'/g,"\\'") + "') center/cover no-repeat" : 'background:linear-gradient(135deg,rgba(10,132,255,.15),#0a0a0a)';
         return '<div class="grid2-card" onclick="' + arrName + 'Open(' + i + ')"><div class="grid2-img" style="' + imgStyle + '"></div><div class="grid2-title">' + escapeHtml(a.title) + '</div><div class="grid2-meta"><div class="grid2-fav"><img src="' + escAttr(fav) + '"></div><span>' + escapeHtml(a.source) + '</span><span style="margin-left:auto">' + relTime(a.pubDate) + '</span></div></div>';
+      }).join('') + '</div>';
+
+    } else if(view === 'mosaic'){
+      container.innerHTML = _mosBandsHtml(arts, arrName + 'Open');
+
+    } else if(view === 'sequential'){
+      container.innerHTML = '<div class="seq-list">' + arts.map(function(a,i){
+        var fav = getFavicon(a.feedUrl||a.link||'');
+        var thumb = a.imageUrl ? '<div class="seq-thumb"><img src="' + escAttr(a.imageUrl) + '" decoding="async"></div>' : '';
+        return '<div class="seq-item" onclick="' + arrName + 'Open(' + i + ')" style="position:relative"><span class="seq-num">' + String(i+1).padStart(2,'0') + '</span><div class="seq-body"><div class="seq-source"><div class="seq-fav"><img src="' + escAttr(fav) + '"></div>' + escapeHtml(a.source) + ' · ' + relTime(a.pubDate) + '</div>' + _titleWithShare(escapeHtml(a.title), a.link, a.title, 'seq-title') + '</div>' + thumb + '</div>';
       }).join('') + '</div>';
 
     } else {
@@ -13370,24 +13482,12 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     const welcomeEl = document.getElementById('folderPageWelcome');
     if(welcomeEl) welcomeEl.textContent = _getFolderWelcome(folder.name);
 
-    // ── Articles (calculés avant le héro : sa photo vient du plus récent avec image) ──
-    const feedUrls = new Set(folder.feeds||[]);
-    const arts = typeof _allArticles !== 'undefined'
-      ? (_dedupFolders ? _dedup : _uniqByLink)([..._allArticles].filter(a=>feedUrls.has(a.feedUrl||'')).sort((a,b)=>b.pubDate-a.pubDate))
-      : [];
-    _folderPageArts = arts;
-
-    // ── Héro décoratif — photo du dossier (article le + récent avec image), dégradé en repli ──
+    // ── Héro décoratif (gradient + orbe lumineux) ───────────────────
     const [c1, c2] = _folderGrad(folder.name);
-    const heroImg = arts.find(a => a.imageUrl);
     const heroBg = document.getElementById('folderHeroBg');
-    if(heroBg){
-      heroBg.style.background = heroImg
-        ? `url('${String(heroImg.imageUrl).replace(/'/g,"\\'")}') center/cover no-repeat`
-        : `linear-gradient(145deg,${c1} 0%,${c2} 100%)`;
-    }
+    if(heroBg) heroBg.style.background = `linear-gradient(145deg,${c1} 0%,${c2} 100%)`;
     const heroOrb = document.getElementById('folderHeroOrb');
-    if(heroOrb){ heroOrb.style.background = c2; heroOrb.style.display = heroImg ? 'none' : ''; }
+    if(heroOrb){ heroOrb.style.background = c2; }
     const badgeEl = document.getElementById('folderHeroBadge');
     if(badgeEl){ const n = (folder.feeds||[]).length; badgeEl.textContent = n + ' source' + (n!==1?'s':''); }
 
@@ -13412,6 +13512,12 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
         + (feeds.length ? `<span class="folder-logo-row-count">${feeds.length} source${feeds.length!==1?'s':''}</span>` : '');
     }
 
+    // ── Articles ────────────────────────────────────────────────────
+    const feedUrls = new Set(folder.feeds||[]);
+    const arts = typeof _allArticles !== 'undefined'
+      ? (_dedupFolders ? _dedup : _uniqByLink)([..._allArticles].filter(a=>feedUrls.has(a.feedUrl||'')).sort((a,b)=>b.pubDate-a.pubDate))
+      : [];
+    _folderPageArts = arts;
     const content = document.getElementById('folderPageContent');
     _renderSubpageArts(_folderPageArts, _currentView, content, '_folderArt');
     _stFold(true);
@@ -13723,7 +13829,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
         {icon:'←', text:'Glissez depuis le bord gauche pour revenir en arrière sur n’importe quelle page ou modal.'},
         {icon:'↕', text:'Glissez vers le bas pour fermer un article. Glissez latéralement pour naviguer entre articles.'},
         {icon:'☰', text:'Glissez depuis le bord gauche de l’écran pour ouvrir la sidebar. Tapez un dossier pour voir ses articles.'},
-        {icon:'👁', text:'La pill ••• en haut à droite : tapez l’œil pour changer la vue (Éditions, Liste, Grille, Parcourir).'},
+        {icon:'👁', text:'La pill ••• en haut à droite : tapez l’œil pour changer la vue (Éditions, Liste, Grille, Séquentiel, Parcourir).'},
         {icon:'↓', text:'Tirez vers le bas depuis le haut de l’accueil pour actualiser tous vos flux.'},
       ];
       let cur=0;
@@ -13885,7 +13991,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
       entries.forEach(entry=>{
         if(!entry.isIntersecting) return;
         const el = entry.target;
-        // Images dans art-img-wrap, grid2-img, list-thumb
+        // Images dans art-img-wrap, grid2-img, seq-thumb, list-thumb
         const imgs = el.querySelectorAll('img[data-src]');
         imgs.forEach(img=>{
           img.src = img.dataset.src;
@@ -13902,7 +14008,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     // Observer tous les conteneurs d'images
     window._obsImage = function(container){
       container = container || document;
-      container.querySelectorAll('.art-img-wrap, .grid2-img, .list-thumb, .essentiel-thumb')
+      container.querySelectorAll('.art-img-wrap, .grid2-img, .seq-thumb, .list-thumb, .essentiel-thumb')
         .forEach(el=>obs.observe(el));
     };
     // Lancer sur le contenu actuel puis après chaque render
@@ -13911,7 +14017,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
 
   // ── EFFET DE DÉFILEMENT — révélation progressive des cartes au scroll ───
   (function _initScrollReveal(){
-    const SEL = '.art-card, .grid2-card, .list-item, .browse-folder-item, .bp-row';
+    const SEL = '.art-card, .grid2-card, .seq-item, .list-item, .browse-folder-item, .bp-row';
     const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if(!('IntersectionObserver' in window) || reduce){
       window._obsReveal = function(){}; // pas d'animation : contenu visible par défaut
@@ -14454,6 +14560,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
         <div class="menu3-chips" id="menu3ViewChips">
           <div class="menu3-chip active" data-view="editions" onclick="menu3SetView('editions')">Magazine</div>
           <div class="menu3-chip" data-view="grille" onclick="menu3SetView('grille')">Grille</div>
+          <div class="menu3-chip" data-view="sequential" onclick="menu3SetView('sequential')">Séquentiel</div>
           <div class="menu3-chip" data-view="browse" onclick="menu3SetView('browse')">Parcourir</div>
         </div>
       </div>
