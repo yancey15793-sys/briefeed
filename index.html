@@ -11950,11 +11950,25 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
       clearTimeout(t._t); t._t=setTimeout(()=>t.style.opacity='0',2800);
     }
 
+    // Le splash est purement décoratif : il ne doit JAMAIS capter de taps.
+    // Sur iOS (PWA standalone), le fill 'forwards' de l'animation obSplashOut
+    // peut ne pas appliquer visibility:hidden → couche invisible restée au-
+    // dessus de l'onboarding qui avale tous les taps (« rien ne se passe »).
+    if(splash){
+      splash.style.pointerEvents = 'none';
+      setTimeout(()=>{ splash.style.visibility = 'hidden'; splash.style.display = 'none'; }, 2900);
+    }
+
     // Splash TOUJOURS affiché. L'onboarding ne s'affiche qu'au premier
     // lancement ; sinon on masque la vue (les handlers restent définis).
     let _onboarded = false;
     try{ _onboarded = !!localStorage.getItem(OB_KEY); }catch(e){ _onboarded = true; }
     if(_onboarded){ view.style.display = 'none'; return; }
+
+    // Filet de sécurité : garantir que l'onboarding devient interactif même
+    // si l'animation d'entrée n'applique pas son état final (iOS/PWA,
+    // prefers-reduced-motion) — sinon pointer-events resterait à 'none'.
+    setTimeout(()=>{ view.style.opacity = '1'; view.style.pointerEvents = 'auto'; }, 2100);
 
     // Premier lancement — bloquer le scroll derrière l'onboarding
     lockScroll();
