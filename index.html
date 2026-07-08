@@ -2181,13 +2181,18 @@ body.bf-heavy-open .sbar-podcast{
 /* ── FOLDER PAGE — héro décoratif + logos flottants ─────────────────────── */
 .folder-hero{
   width:100%; position:relative; overflow:hidden; flex-shrink:0;
-  min-height:180px; display:flex; align-items:flex-end;
+  min-height:230px; display:flex; align-items:flex-end; justify-content:center;
   background:linear-gradient(145deg,#1a1a2e 0%,#16213e 100%);
 }
 .folder-hero-bg{
   position:absolute; inset:0;
   background-size:cover; background-position:center;
   opacity:.9;
+}
+/* Voile sombre bas → lisibilité du nom centré, quelle que soit la photo */
+.folder-hero::after{
+  content:''; position:absolute; inset:0; z-index:1; pointer-events:none;
+  background:linear-gradient(180deg, rgba(0,0,0,.05) 35%, rgba(0,0,0,.62) 100%);
 }
 /* Noise texture overlay */
 .folder-hero-noise{
@@ -2196,22 +2201,28 @@ body.bf-heavy-open .sbar-podcast{
   background-size:200px 200px;
 }
 .folder-hero-content{
-  position:relative; z-index:2; padding:28px 24px 24px;
-  width:100%;
+  position:relative; z-index:2; padding:28px 24px 22px;
+  width:100%; display:flex; flex-direction:column;
+  align-items:center; text-align:center;
 }
 .folder-hero-badge{
   display:inline-flex; align-items:center; gap:6px;
-  background:rgba(255,255,255,.12); border-radius:999px;
-  padding:4px 12px; margin-bottom:12px;
+  background:rgba(255,255,255,.14); border-radius:999px;
+  padding:4px 12px; margin-bottom:14px;
   font-family:var(--font-inter); font-size:10.5px; font-weight:700;
-  color:rgba(255,255,255,.8); letter-spacing:.06em; text-transform:uppercase;
+  color:rgba(255,255,255,.85); letter-spacing:.06em; text-transform:uppercase;
   backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
 }
-[data-theme="light"] .folder-hero-badge{ background:rgba(0,0,0,.12); color:rgba(0,0,0,.6); }
 .folder-hero-title{
   font-family:var(--font-inter); font-size:34px; font-weight:900;
-  letter-spacing:-.035em; color:#fff; line-height:1.1; margin-bottom:6px;
-  text-shadow:0 2px 12px rgba(0,0,0,.4);
+  letter-spacing:.01em; text-transform:uppercase;
+  color:#fff; line-height:1.05; margin:0;
+  text-shadow:0 2px 16px rgba(0,0,0,.5);
+}
+/* Trait souligné blanc sous le nom (signature About You) */
+.folder-hero-divider{
+  width:24px; height:2px; background:#fff; border-radius:2px;
+  margin-top:14px;
 }
 .folder-hero-sub{
   font-family:var(--font-inter); font-size:13.5px; font-weight:500;
@@ -14435,7 +14446,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
         <div class="folder-hero-content">
           <div class="folder-hero-badge" id="folderHeroBadge">Dossier</div>
           <div class="folder-hero-title" id="folderPageTitle"></div>
-          <div class="folder-hero-sub" id="folderPageWelcome"></div>
+          <div class="folder-hero-divider"></div>
         </div>
       </div>
       <!-- Logos flottants des sources -->
