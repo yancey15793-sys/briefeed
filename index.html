@@ -663,6 +663,7 @@ button, .ob-btn, .ob-btn-ghost,
 }
 .folder-head .chev-btn svg{ width:14px; height:14px; transition:transform .2s cubic-bezier(.2,.85,.25,1); }
 .folder.open .folder-head .chev-btn svg{ transform:rotate(90deg); }
+.folder-swatch{ width:26px; height:26px; border-radius:8px; flex:none; box-shadow:0 2px 8px rgba(0,0,0,.28); }
 .folder-head .f-name{
   flex:1; font-size:17px; font-weight:700; letter-spacing:-0.02em;
   cursor:pointer; -webkit-tap-highlight-color:transparent;
@@ -3304,6 +3305,19 @@ body.bf-heavy-open .sbar-podcast{
   transform:rotate(180deg); stroke:var(--accent);
 }
 
+/* Fond hero coloré — mêmes dégradés que les tuiles Découvrir (_heroGradFor) */
+.browse-folder-hero{ position:relative; border-radius:20px; overflow:hidden; margin:14px 16px 0; }
+.browse-folder-hero .browse-folder-head{ padding:22px 16px; }
+.browse-folder-hero .browse-folder-name{ color:#fff; opacity:.35; text-shadow:0 2px 20px rgba(0,0,0,.4); }
+.browse-folder-item.bf-open .browse-folder-hero .browse-folder-name{ opacity:1; }
+.browse-folder-hero .bfn-inner{ --bfn-color:#fff; }
+.browse-folder-hero .browse-folder-count{ color:rgba(255,255,255,.55); }
+.browse-folder-item.bf-open .browse-folder-hero .browse-folder-count{ color:rgba(255,255,255,.85); }
+.browse-folder-hero .browse-folder-chevron svg{ stroke:rgba(255,255,255,.55); }
+.browse-folder-item.bf-open .browse-folder-hero .browse-folder-chevron svg{ stroke:#fff; }
+.browse-folder-hero .browse-folder-btn{ background:rgba(255,255,255,.18); color:#fff; }
+.browse-folder-hero .browse-folder-btn:hover{ background:rgba(255,255,255,.3); color:#fff; }
+
 /* ACCORDÉON */
 .browse-folder-body{
   display:grid; grid-template-rows:0fr;
@@ -5831,6 +5845,11 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
         <div class="grid2-wrap" id="grilleGrid"></div>
       </div><!-- /vue grille -->
 
+      <!-- ========== VUE PARCOURIR (par dossiers) ========== -->
+      <div class="view" data-view="browse" hidden>
+        <div class="browse" id="browseSection"></div>
+      </div><!-- /vue parcourir -->
+
       <!-- ========== VUE FAVORIS ========== -->
       <div class="view" data-view="favoris" hidden>
         <div id="favorisList" style="padding:18px 0 100px"></div>
@@ -6254,8 +6273,9 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
       // ── Item dossier ──
       html += `<div class="browse-folder-item" id="bf-item-${fi}">`;
 
-      // ── En-tête centré cliquable ──
-      html += `<div class="browse-folder-head" onclick="_bfToggle(${fi})">
+      // ── En-tête centré cliquable — fond hero coloré (même dégradés que Découvrir) ──
+      html += `<div class="browse-folder-hero" style="background:${_heroGradFor(folder.name)}">
+      <div class="browse-folder-head" onclick="_bfToggle(${fi})">
         <span class="browse-folder-name"><span class="bfn-director"></span><span class="bfn-inner">${escapeHtml(folder.name)}</span></span>
         <div class="browse-folder-meta">
           <span class="browse-folder-count">${artCount} article${artCount > 1 ? 's' : ''}</span>
@@ -6273,6 +6293,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
             </button>
           </div>
         </div>
+      </div>
       </div>`;
 
       // ── Accordéon ──
@@ -6606,6 +6627,29 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   };
   const persist = () => { window._safeSet(FKEY, JSON.stringify(folders)); };
 
+  // Dégradés hero — mêmes couleurs que les tuiles Découvrir, assignées par hash du nom
+  // (déterministe : un dossier « Sport » garde toujours la même couleur d'une session à l'autre)
+  const _HERO_GRADS = [
+    'linear-gradient(145deg,#0077b6 0%,#00b4d8 100%)',
+    'linear-gradient(145deg,#1e4d00 0%,#27ae60 100%)',
+    'linear-gradient(145deg,#0d47a1 0%,#42a5f5 100%)',
+    'linear-gradient(145deg,#b71c1c 0%,#ef5350 100%)',
+    'linear-gradient(145deg,#4a235a 0%,#a044ff 100%)',
+    'linear-gradient(145deg,#0b5345 0%,#1abc9c 100%)',
+    'linear-gradient(145deg,#7d6608 0%,#f1c40f 100%)',
+    'linear-gradient(145deg,#6c0070 0%,#e91e8c 100%)',
+    'linear-gradient(145deg,#7b241c 0%,#e74c3c 100%)',
+    'linear-gradient(145deg,#0e4d6e 0%,#00b4d8 100%)',
+    'linear-gradient(145deg,#512e5f 0%,#9b59b6 100%)',
+  ];
+  function _heroGradFor(name){
+    const s = String(name || '');
+    let h = 0;
+    for(let i=0; i<s.length; i++){ h = (h*31 + s.charCodeAt(i)) >>> 0; }
+    return _HERO_GRADS[h % _HERO_GRADS.length];
+  }
+  window._heroGradFor = _heroGradFor;
+
   const ICON_CHEV = '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>';
   const ICON_EDIT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
   const ICON_PLUS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
@@ -6642,6 +6686,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
         <div class="folder-head" data-i="${i}">
           <button class="f-drag" aria-label="Glisser pour réorganiser">${ICON_DRAG}</button>
           <button class="chev-btn" data-toggle="${i}" aria-label="Ouvrir dossier">${ICON_CHEV}</button>
+          <span class="folder-swatch" style="background:${_heroGradFor(f.name)}"></span>
           <span class="f-name" data-open="${i}">${escapeHtml(f.name)}</span>
           <span class="f-count">${(f.feeds||[]).length}</span>
           <button class="f-edit" data-edit="${i}" aria-label="Renommer">${ICON_EDIT}</button>
