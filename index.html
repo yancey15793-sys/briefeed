@@ -2042,7 +2042,7 @@ body.bf-heavy-open .sbar-podcast{
   border-radius:12px; overflow:hidden;
   background:rgba(255,255,255,.04);
 }
-.edl-item:first-child .edl-fig{ width:100%; aspect-ratio:350.25 / 197.16; border-radius:14px; }
+.edl-item:first-child .edl-fig{ width:100%; aspect-ratio:350.25 / 197.16; border-radius:8px; }
 /* Cartes secondaires (310px) centrées dans la colonne — bloc image+texte aligné */
 .edl-item:not(:first-child){ align-items:center; }
 .edl-item:not(:first-child) > *{ width:310px; max-width:100%; }
@@ -2928,41 +2928,13 @@ body.bf-heavy-open .sbar-podcast{
 .c3d-dot.on{ opacity:1; transform:scale(1.35); background:var(--text); }
 
 /* ═══════════════════════════════════════════════════════════════
-   HERO ACCUEIL — briefing du jour + carte vedette (article le + récent)
-   Repris du concept fourni, réécrit aux tokens Briefeed. Responsive :
-   empilé sur mobile, carte scindée (texte / image) sur iPad & desktop.
+   ACCUEIL — salutation du jour (la carte vedette a été retirée :
+   chaque vue affiche désormais son propre article le + récent en 1ʳᵉ carte)
    ═══════════════════════════════════════════════════════════════ */
-#bfHomeHero{ margin:2px 0 32px; }
-#bfHomeHero[hidden]{ display:none; }
-.bf-hero{ display:flex; flex-direction:column; gap:22px; }
-.bf-brief{ display:flex; flex-direction:column; gap:10px; }
-.bf-brief-eyebrow{ display:flex; align-items:center; gap:8px; font-family:var(--font-inter); font-size:11.5px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--text-muted); }
-.bf-brief-eyebrow::before{ content:""; width:6px; height:6px; border-radius:50%; background:var(--eyebrow-dot,#F37338); box-shadow:0 0 10px var(--eyebrow-dot,#F37338); }
-.bf-brief-list{ display:flex; flex-direction:column; }
-.bf-brief-item{ display:flex; align-items:flex-start; gap:12px; width:100%; text-align:left; background:none; border:none; border-top:1px solid var(--border); padding:11px 2px; cursor:pointer; font-family:var(--font-inter); -webkit-tap-highlight-color:transparent; transition:opacity .15s; }
-.bf-brief-item:first-child{ border-top:none; }
-.bf-brief-item:active{ opacity:.55; }
-.bf-brief-dot{ flex:none; width:6px; height:6px; margin-top:8px; border-radius:50%; background:var(--accent,#0a84ff); box-shadow:0 0 8px rgba(10,132,255,.4); }
-.bf-brief-tx{ font-size:16px; font-weight:500; line-height:1.4; letter-spacing:-.01em; color:var(--text); }
 .bf-greet{ display:flex; flex-direction:column; align-items:center; gap:3px; text-align:center; margin:0 0 6px; }
 .bf-greet-hi{ font-family:var(--font-inter); font-size:32px; font-weight:700; letter-spacing:-.02em; color:var(--text); }
 .bf-greet-date{ font-family:var(--font-inter); font-size:13px; color:var(--text-muted); letter-spacing:.02em; }
-.bf-feat{ display:grid; grid-template-columns:1fr; background:var(--surface-card,#1C1A18); border:1px solid var(--border); border-radius:8px; overflow:hidden; cursor:pointer; box-shadow:var(--shadow-soft,0 20px 48px rgba(0,0,0,.4)); -webkit-tap-highlight-color:transparent; transition:transform .3s cubic-bezier(.16,1,.3,1); }
-.bf-feat:active{ transform:scale(.99); }
-.bf-feat-media{ order:-1; width:100%; aspect-ratio:16/9; background:#111 center/cover no-repeat; }
-.bf-feat-body{ display:flex; flex-direction:column; gap:9px; padding:20px 22px 24px; }
-.bf-feat-src{ font-family:var(--font-inter); font-size:12px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--accent,#0a84ff); }
-.bf-feat-title{ font-family:var(--font-title,var(--font-inter)); font-size:22px; font-weight:700; line-height:1.24; letter-spacing:-.015em; color:var(--text); }
-.bf-feat-desc{ font-family:var(--font-inter); font-size:15px; line-height:1.5; color:var(--text-muted); display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
-.bf-feat-meta{ font-family:var(--font-inter); font-size:12.5px; color:var(--text-muted); margin-top:2px; }
-.bf-feat-link{ font-family:var(--font-inter); font-size:15px; font-weight:600; color:var(--accent,#0a84ff); margin-top:6px; }
 @media(min-width:768px){
-  .bf-hero{ gap:28px; }
-  .bf-feat{ grid-template-columns:1fr 1.15fr; align-items:stretch; border-radius:8px; }
-  .bf-feat-media{ order:0; height:100%; aspect-ratio:auto; min-height:340px; }
-  .bf-feat-body{ padding:40px; justify-content:center; gap:12px; }
-  .bf-feat-title{ font-size:29px; }
-  .bf-brief-tx{ font-size:17px; }
   .bf-greet-hi{ font-size:40px; }
 }
 
@@ -4914,9 +4886,6 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   /* Confort de lecture : corps d'article plus aéré */
   .art-pager-wrap, .art-reader-body{ font-size:16.5px; line-height:1.62; }
 
-  /* Titres hero légèrement réduits pour tenir sans césure agressive */
-  .bf-feat-title{ font-size:clamp(21px, 6.4vw, 27px); line-height:1.16; text-wrap:balance; }
-
   /* Bloc d'édition (salutation + label) : marge haute réduite sur petits écrans */
   .edition-block{ margin:16px 0 14px; }
 
@@ -5884,9 +5853,6 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
         <div id="bfGreetHost" hidden></div>
         <h2 class="edition-label">Mon magazine du jour</h2>
       </div>
-
-      <!-- Hero accueil : briefing du jour + carte vedette (au-dessus de toutes les vues du flux) -->
-      <div id="bfHomeHero" hidden></div>
 
       <!-- Smart Bar — segment intelligent + catégories (tiret animé) + sources (accordéon) -->
       <!-- #smartBar conservé (référencé par le JS) ; le rail vit désormais dans la topnav -->
@@ -11475,10 +11441,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     // Filtrage éventuel par source (rail global)
     const pool    = _railApplyFilter(_allArticles);
     const deduped = _dedupCtx(_smartDateSort([...pool]));
-    // Le 1ᵉʳ article (le + récent) est déjà mis en avant dans la carte vedette
-    // du hero au-dessus du flux — on démarre donc la liste au 2ᵉ pour éviter
-    // le doublon juste après le hero.
-    _editionArts  = deduped.slice(1, 61);
+    _editionArts  = deduped.slice(0, 60);
 
     // Jitter fix : ne re-rendre que si le contenu a changé
     const gridKey = _editionArts.slice(0,6).map(a=>a.link).join('|') + '#' + (_railFilterUrl || '') + '#' + (_smartCat || '') + '#' + _smartMode + '#' + _editionArts.length;
@@ -11625,8 +11588,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     if(!_allArticles.length){ wrap.innerHTML=''; wrap.dataset.key=''; return; }
     const pool    = _railApplyFilter(_allArticles);
     const deduped = _dedupCtx(_smartDateSort([...pool]));
-    // Exactement comme la vue Magazine : l'article vedette (le + récent) est déjà la grande image du hero au-dessus — on démarre au 2ᵉ par position (fiable, calculé une seule fois sur ce même tableau)
-    _mosArts = deduped.slice(1, 61);
+    _mosArts = deduped.slice(0, 60);
     const key = _mosArts.slice(0,6).map(a=>a.link).join('|')+'#'+(_railFilterUrl||'')+'#'+(_smartCat||'')+'#'+_smartMode+'#'+_mosArts.length;
     if(wrap.dataset.key === key) return;
     wrap.innerHTML = _mosBandsHtml(_mosArts, '_openMosaicArt');
@@ -11654,65 +11616,26 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     else if(effView === 'mosaic') _renderMosaic();
     else if(effView === 'sequential') _renderSequential();
     else if(effView === 'liste')  _renderListe();
-    // Hero accueil (briefing + carte vedette) au-dessus des vues du flux
-    const _heroHost = document.getElementById('bfHomeHero');
+    // Salutation du jour au-dessus des vues du flux
     const _greetHost = document.getElementById('bfGreetHost');
-    if(_heroHost){
+    if(_greetHost){
       const _feedViews = ['editions','grille','mosaic','sequential','liste'];
-      if(_feedViews.indexOf(effView)>=0){ _heroHost.hidden=false; if(_greetHost) _greetHost.hidden=false; _renderHomeHero(); }
-      else { _heroHost.hidden=true; if(_greetHost) _greetHost.hidden=true; }
+      if(_feedViews.indexOf(effView)>=0){ _greetHost.hidden=false; _renderGreet(); }
+      else { _greetHost.hidden=true; }
     }
     if(window.BF_SMART && BF_SMART.renderSidebar){ try{ BF_SMART.renderSidebar(); }catch(e){} }
   }
 
-  // ── Hero accueil : briefing du jour (3 titres) + carte vedette (article le + récent) ──
-  // Lien de l'article vedette du hero (calculé à la demande, indépendant de l'ordre de rendu)
-  function _bfHeroLink(){
-    try{
-      const pool = _dedupCtx(_smartDateSort([..._railApplyFilter(_allArticles||[])]));
-      return pool.length ? pool[0].link : null;
-    }catch(e){ return null; }
-  }
-  function _renderHomeHero(){
-    const host = document.getElementById('bfHomeHero'); if(!host) return;
-    let pool = [];
-    try{ pool = _dedupCtx(_smartDateSort([..._railApplyFilter(_allArticles||[])])); }catch(e){ pool = (_allArticles||[]).slice(); }
-    if(!pool.length){ host.innerHTML=''; host.dataset.key=''; return; }
-    const feat = pool[0];
-    window._bfHeroFeatLink = feat ? feat.link : null;
-    const key = pool.slice(0,4).map(a=>a.link).join('|')+'#'+(_railFilterUrl||'')+'#'+(_smartCat||'')+'#'+_smartMode;
-    if(host.dataset.key===key) return;
-    host.dataset.key=key;
-    const esc=escHtml;
-    const q = s=>String(s==null?'':s).replace(/'/g,"\\'");
+  // ── Salutation du jour (au-dessus des vues du flux) ──
+  function _renderGreet(){
+    const host = document.getElementById('bfGreetHost'); if(!host) return;
     const greetHi = (()=>{ const h=new Date().getHours(); return h<12?'Bonjour':h<18?'Bon après-midi':'Bonsoir'; })();
     const dstr = (()=>{ try{ const s=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'}); return s.charAt(0).toUpperCase()+s.slice(1); }catch(e){ return ''; } })();
-    const briefHtml = '';
-    const desc = (typeof _edlSub==='function') ? (_edlSub(feat)||'') : '';
-    const media = feat.imageUrl
-      ? `style="background-image:url('${q(feat.imageUrl)}')"`
-      : 'style="background:linear-gradient(135deg,rgba(10,132,255,.22),#111)"';
-    const dateStr = (typeof relTime==='function') ? relTime(feat.pubDate) : '';
-    const _greetHost = document.getElementById('bfGreetHost');
-    if(_greetHost){ _greetHost.innerHTML = `<div class="bf-greet"><span class="bf-greet-hi">${esc(greetHi)}</span><span class="bf-greet-date">${esc(dstr)}</span></div>`; }
-    host.innerHTML =
-      `<div class="bf-hero">
-        <article class="bf-feat" onclick="_bfHeroOpen('${q(feat.link)}')">
-          <div class="bf-feat-body">
-            <div class="bf-feat-src">${esc(feat.source||'')}</div>
-            <h3 class="bf-feat-title">${esc(feat.title||'')}</h3>
-            ${desc?`<p class="bf-feat-desc">${esc(desc.slice(0,200))}</p>`:''}
-            <div class="bf-feat-meta">${esc(dateStr)}</div>
-            <span class="bf-feat-link">Lire l'article</span>
-          </div>
-          <div class="bf-feat-media" ${media}></div>
-        </article>
-      </div>`;
+    const key = greetHi+'#'+dstr;
+    if(host.dataset.key===key) return;
+    host.dataset.key=key;
+    host.innerHTML = `<div class="bf-greet"><span class="bf-greet-hi">${escHtml(greetHi)}</span><span class="bf-greet-date">${escHtml(dstr)}</span></div>`;
   }
-  window._bfHeroOpen = function(link){
-    const a = (_allArticles||[]).find(x=>x && x.link===link);
-    if(a){ if(window._RS) _RS.mark(a.link); _showArtModal(a); }
-  };
 
   // Rendu stable : swap en place + préservation du défilement (zéro saut)
   function _smoothRenderCurrentView(cb){
@@ -12589,8 +12512,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     const wrap = document.getElementById('grilleGrid');
     if(!wrap) return;
     const arts = typeof _allArticles !== 'undefined' ? _dedupCtx(_smartDateSort(_railApplyFilter([..._allArticles]))) : [];
-    // Exactement comme la vue Magazine : démarrage au 2ᵉ article par position (le 1ᵉ est la grande image du hero au-dessus)
-    _grilleArts = arts.slice(1, 61);
+    _grilleArts = arts.slice(0, 60);
     if(!_grilleArts.length){
       wrap.innerHTML = '<div style="grid-column:1/-1;padding:60px 0;text-align:center;color:var(--text-muted);font-size:14px;font-family:var(--font-inter)">Aucun article disponible</div>';
       return;
@@ -12929,8 +12851,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     const arts = typeof _allArticles !== 'undefined'
       ? _dedupCtx(_smartDateSort(_railApplyFilter([..._allArticles])))
       : [];
-    // Exactement comme la vue Magazine : démarrage au 2ᵉ article par position (le 1ᵉ est la grande image du hero au-dessus)
-    _seqArts = arts.slice(1, 101);
+    _seqArts = arts.slice(0, 100);
     if(!_seqArts.length){
       list.innerHTML = '<div style="padding:80px 0;text-align:center;color:var(--text-muted);font-size:14px;font-family:var(--font-inter)">Aucun article disponible.<br>Ajoutez des sources pour commencer.</div>';
       return;
@@ -12954,8 +12875,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     const wrap = document.getElementById('listeList');
     if(!wrap) return;
     const arts = typeof _allArticles !== 'undefined' ? _dedupCtx(_smartDateSort(_railApplyFilter([..._allArticles]))) : [];
-    // Exactement comme la vue Magazine : démarrage au 2ᵉ article par position (le 1ᵉ est la grande image du hero au-dessus)
-    _listeArts = arts.slice(1, 101);
+    _listeArts = arts.slice(0, 100);
     if(!_listeArts.length){
       wrap.innerHTML = '<div style="padding:60px 0;text-align:center;color:var(--text-muted);font-size:14px;font-family:var(--font-inter)">Aucun article disponible</div>';
       return;
