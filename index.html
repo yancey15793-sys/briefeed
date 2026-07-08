@@ -663,6 +663,7 @@ button, .ob-btn, .ob-btn-ghost,
 }
 .folder-head .chev-btn svg{ width:14px; height:14px; transition:transform .2s cubic-bezier(.2,.85,.25,1); }
 .folder.open .folder-head .chev-btn svg{ transform:rotate(90deg); }
+.folder-swatch{ width:26px; height:26px; border-radius:8px; flex:none; box-shadow:0 2px 8px rgba(0,0,0,.28); }
 .folder-head .f-name{
   flex:1; font-size:17px; font-weight:700; letter-spacing:-0.02em;
   cursor:pointer; -webkit-tap-highlight-color:transparent;
@@ -1127,6 +1128,34 @@ body.bf-heavy-open .sbar-podcast{
   letter-spacing:.18em; text-transform:uppercase;
   color:var(--text-muted);
   margin:0;
+}
+
+/* Rail des catégories — photo du dernier article du dossier + nom en valeur */
+.cat-hero-rail{
+  display:flex; gap:10px; overflow-x:auto; scrollbar-width:none;
+  -webkit-overflow-scrolling:touch; padding:2px 0 4px; margin:16px 0 6px;
+}
+.cat-hero-rail::-webkit-scrollbar{ display:none; }
+.cat-hero-rail[hidden]{ display:none; }
+.cat-hero-card{
+  flex:none; width:104px; height:104px; border-radius:16px;
+  position:relative; overflow:hidden; cursor:pointer;
+  background-color:#1a1a1a;
+  -webkit-tap-highlight-color:transparent;
+  box-shadow:0 4px 14px rgba(0,0,0,.28);
+  transition:transform .15s ease;
+}
+.cat-hero-card:active{ transform:scale(.96); }
+.cat-hero-card::after{
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background:linear-gradient(180deg, rgba(0,0,0,.05) 40%, rgba(0,0,0,.6) 100%);
+}
+.cat-hero-card-name{
+  position:absolute; left:9px; right:9px; bottom:8px; z-index:2;
+  font-family:var(--font-inter); font-size:12.5px; font-weight:800;
+  color:#fff; letter-spacing:-.01em; line-height:1.16;
+  text-shadow:0 1px 6px rgba(0,0,0,.5);
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
 }
 
 .view{
@@ -3303,6 +3332,23 @@ body.bf-heavy-open .sbar-podcast{
 .browse-folder-item.bf-open .browse-folder-chevron svg{
   transform:rotate(180deg); stroke:var(--accent);
 }
+
+/* Fond hero — photo du dossier (article le + récent avec image), _folderHeroBg */
+.browse-folder-hero{ position:relative; border-radius:20px; overflow:hidden; margin:14px 16px 0; }
+.browse-folder-hero::before{
+  content:''; position:absolute; inset:0; z-index:1; pointer-events:none;
+  background:linear-gradient(180deg, rgba(0,0,0,.35) 0%, rgba(0,0,0,.5) 100%);
+}
+.browse-folder-hero .browse-folder-head{ position:relative; z-index:2; padding:22px 16px; }
+.browse-folder-hero .browse-folder-name{ color:#fff; opacity:.35; text-shadow:0 2px 20px rgba(0,0,0,.4); }
+.browse-folder-item.bf-open .browse-folder-hero .browse-folder-name{ opacity:1; }
+.browse-folder-hero .bfn-inner{ --bfn-color:#fff; }
+.browse-folder-hero .browse-folder-count{ color:rgba(255,255,255,.55); }
+.browse-folder-item.bf-open .browse-folder-hero .browse-folder-count{ color:rgba(255,255,255,.85); }
+.browse-folder-hero .browse-folder-chevron svg{ stroke:rgba(255,255,255,.55); }
+.browse-folder-item.bf-open .browse-folder-hero .browse-folder-chevron svg{ stroke:#fff; }
+.browse-folder-hero .browse-folder-btn{ background:rgba(255,255,255,.18); color:#fff; }
+.browse-folder-hero .browse-folder-btn:hover{ background:rgba(255,255,255,.3); color:#fff; }
 
 /* ACCORDÉON */
 .browse-folder-body{
@@ -5720,6 +5766,9 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
         <h2 class="edition-label">Mon magazine du jour</h2>
       </div>
 
+      <!-- Rail des catégories (dossiers) — photo du dernier article + nom en valeur -->
+      <div class="cat-hero-rail" id="catHeroRail" hidden></div>
+
       <!-- Smart Bar — segment intelligent + catégories (tiret animé) + sources (accordéon) -->
       <!-- #smartBar conservé (référencé par le JS) ; le rail vit désormais dans la topnav -->
       <div id="smartBar" class="sbar" hidden></div>
@@ -5830,6 +5879,11 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
       <div class="view" data-view="grille" hidden>
         <div class="grid2-wrap" id="grilleGrid"></div>
       </div><!-- /vue grille -->
+
+      <!-- ========== VUE PARCOURIR (par dossiers) ========== -->
+      <div class="view" data-view="browse" hidden>
+        <div class="browse" id="browseSection"></div>
+      </div><!-- /vue parcourir -->
 
       <!-- ========== VUE FAVORIS ========== -->
       <div class="view" data-view="favoris" hidden>
@@ -6254,8 +6308,9 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
       // ── Item dossier ──
       html += `<div class="browse-folder-item" id="bf-item-${fi}">`;
 
-      // ── En-tête centré cliquable ──
-      html += `<div class="browse-folder-head" onclick="_bfToggle(${fi})">
+      // ── En-tête centré cliquable — fond hero coloré (même dégradés que Découvrir) ──
+      html += `<div class="browse-folder-hero" style="background:${_folderHeroBg(folder)}">
+      <div class="browse-folder-head" onclick="_bfToggle(${fi})">
         <span class="browse-folder-name"><span class="bfn-director"></span><span class="bfn-inner">${escapeHtml(folder.name)}</span></span>
         <div class="browse-folder-meta">
           <span class="browse-folder-count">${artCount} article${artCount > 1 ? 's' : ''}</span>
@@ -6273,6 +6328,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
             </button>
           </div>
         </div>
+      </div>
       </div>`;
 
       // ── Accordéon ──
@@ -6606,6 +6662,38 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   };
   const persist = () => { window._safeSet(FKEY, JSON.stringify(folders)); };
 
+  // Fond hero d'un dossier — photo du dernier article illustré, dégradé _folderGrad en repli
+  // (même fonction utilisée par la sidebar, Parcourir et la page dossier : un seul dossier = une seule image)
+  function _folderHeroBg(folder){
+    const feedUrls = new Set(folder.feeds || []);
+    const pool = (typeof _allArticles !== 'undefined') ? _allArticles : [];
+    const hit = pool
+      .filter(a => feedUrls.has(a.feedUrl||'') && a.imageUrl)
+      .sort((a,b) => new Date(b.pubDate) - new Date(a.pubDate))[0];
+    if(hit) return `url('${String(hit.imageUrl).replace(/'/g,"\\'")}') center/cover no-repeat`;
+    const [c1,c2] = _folderGrad(folder.name);
+    return `linear-gradient(145deg,${c1} 0%,${c2} 100%)`;
+  }
+  window._folderHeroBg = _folderHeroBg;
+
+  // Rail des catégories sur l'accueil — sous « Mon magazine du jour »
+  function _renderCatHeroRail(){
+    const rail = document.getElementById('catHeroRail');
+    if(!rail) return;
+    const cats = folders.filter(f => (f.name||'').toLowerCase() !== 'podcasts');
+    if(!cats.length){ rail.hidden = true; return; }
+    rail.hidden = false;
+    rail.innerHTML = cats.map(f =>
+      `<div class="cat-hero-card" style="background:${_folderHeroBg(f)}" onclick="_catHeroPick('${escapeHtml(f.name).replace(/'/g,"\\'")}')">
+        <span class="cat-hero-card-name">${escapeHtml(f.name)}</span>
+      </div>`
+    ).join('');
+  }
+  window._renderCatHeroRail = _renderCatHeroRail;
+  window._catHeroPick = function(name){
+    if(typeof _smartPickCat === 'function') _smartPickCat(name);
+  };
+
   const ICON_CHEV = '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>';
   const ICON_EDIT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
   const ICON_PLUS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
@@ -6614,6 +6702,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   const list = document.getElementById('folderList');
   function render(){
     list.innerHTML = '';
+    _renderCatHeroRail();
     if (!folders.length){
       list.innerHTML = '<div class="sb-empty">Aucun dossier pour l\'instant. Créez-en un pour organiser vos flux.</div>';
       return;
@@ -6642,6 +6731,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
         <div class="folder-head" data-i="${i}">
           <button class="f-drag" aria-label="Glisser pour réorganiser">${ICON_DRAG}</button>
           <button class="chev-btn" data-toggle="${i}" aria-label="Ouvrir dossier">${ICON_CHEV}</button>
+          <span class="folder-swatch" style="background:${_folderHeroBg(f)}"></span>
           <span class="f-name" data-open="${i}">${escapeHtml(f.name)}</span>
           <span class="f-count">${(f.feeds||[]).length}</span>
           <button class="f-edit" data-edit="${i}" aria-label="Renommer">${ICON_EDIT}</button>
@@ -11517,12 +11607,17 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     if(effView === 'editions')    _renderEditions();
     else if(effView === 'grille') _renderGrille();
     else if(effView === 'liste')  _renderListe();
-    // Salutation du jour au-dessus des vues du flux
+    // Salutation du jour + rail des catégories au-dessus des vues du flux
     const _greetHost = document.getElementById('bfGreetHost');
+    const _catRail   = document.getElementById('catHeroRail');
+    const _feedViews = ['editions','grille','liste'];
     if(_greetHost){
-      const _feedViews = ['editions','grille','liste'];
       if(_feedViews.indexOf(effView)>=0){ _greetHost.hidden=false; _renderGreet(); }
       else { _greetHost.hidden=true; }
+    }
+    if(_catRail){
+      if(_feedViews.indexOf(effView)>=0){ _renderCatHeroRail(); }
+      else { _catRail.hidden=true; }
     }
     if(window.BF_SMART && BF_SMART.renderSidebar){ try{ BF_SMART.renderSidebar(); }catch(e){} }
   }
@@ -13218,12 +13313,24 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     const welcomeEl = document.getElementById('folderPageWelcome');
     if(welcomeEl) welcomeEl.textContent = _getFolderWelcome(folder.name);
 
-    // ── Héro décoratif (gradient + orbe lumineux) ───────────────────
+    // ── Articles (calculés avant le héro : sa photo vient du plus récent avec image) ──
+    const feedUrls = new Set(folder.feeds||[]);
+    const arts = typeof _allArticles !== 'undefined'
+      ? (_dedupFolders ? _dedup : _uniqByLink)([..._allArticles].filter(a=>feedUrls.has(a.feedUrl||'')).sort((a,b)=>b.pubDate-a.pubDate))
+      : [];
+    _folderPageArts = arts;
+
+    // ── Héro décoratif — photo du dossier (article le + récent avec image), dégradé en repli ──
     const [c1, c2] = _folderGrad(folder.name);
+    const heroImg = arts.find(a => a.imageUrl);
     const heroBg = document.getElementById('folderHeroBg');
-    if(heroBg) heroBg.style.background = `linear-gradient(145deg,${c1} 0%,${c2} 100%)`;
+    if(heroBg){
+      heroBg.style.background = heroImg
+        ? `url('${String(heroImg.imageUrl).replace(/'/g,"\\'")}') center/cover no-repeat`
+        : `linear-gradient(145deg,${c1} 0%,${c2} 100%)`;
+    }
     const heroOrb = document.getElementById('folderHeroOrb');
-    if(heroOrb){ heroOrb.style.background = c2; }
+    if(heroOrb){ heroOrb.style.background = c2; heroOrb.style.display = heroImg ? 'none' : ''; }
     const badgeEl = document.getElementById('folderHeroBadge');
     if(badgeEl){ const n = (folder.feeds||[]).length; badgeEl.textContent = n + ' source' + (n!==1?'s':''); }
 
@@ -13248,12 +13355,6 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
         + (feeds.length ? `<span class="folder-logo-row-count">${feeds.length} source${feeds.length!==1?'s':''}</span>` : '');
     }
 
-    // ── Articles ────────────────────────────────────────────────────
-    const feedUrls = new Set(folder.feeds||[]);
-    const arts = typeof _allArticles !== 'undefined'
-      ? (_dedupFolders ? _dedup : _uniqByLink)([..._allArticles].filter(a=>feedUrls.has(a.feedUrl||'')).sort((a,b)=>b.pubDate-a.pubDate))
-      : [];
-    _folderPageArts = arts;
     const content = document.getElementById('folderPageContent');
     _renderSubpageArts(_folderPageArts, _currentView, content, '_folderArt');
     _stFold(true);
