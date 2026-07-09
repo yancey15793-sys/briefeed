@@ -126,6 +126,7 @@ html{
   height:100%; overflow:hidden;
   touch-action:manipulation;
   -webkit-text-size-adjust:100%;
+  overscroll-behavior-x:none;
 }
 body{
   background:var(--bg);
@@ -135,7 +136,7 @@ body{
   height:100%; overflow:hidden;
   overscroll-behavior:none;
   -webkit-overflow-scrolling:auto;
-  position:fixed; width:100%;
+  position:fixed; width:100%; overflow-x:hidden; touch-action:pan-y;
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -147,7 +148,7 @@ body{
 a, button, [onclick], [role="button"],
 .art-card, .feed-item, .folder-head, .sb-item,
 .dc-theme-tile, .dc-feed-row, .vp-item,
-.seq-item, .list-item, .grid2-card, .fav-item,
+.list-item, .grid2-card, .fav-item,
 .nav-item, .nav-capsule-left, .nav-capsule-right,
 .ob-btn, .ob-btn-ghost {
   -webkit-tap-highlight-color: transparent;
@@ -156,7 +157,7 @@ a, button, [onclick], [role="button"],
 
 /* 2. Pas de sélection de texte sur les surfaces tactiles */
 button, [onclick], .art-card, .feed-item,
-.seq-item, .list-item, .grid2-card, .dc-theme-tile {
+.list-item, .grid2-card, .dc-theme-tile {
   -webkit-user-select: none; user-select: none;
 }
 
@@ -194,11 +195,11 @@ button, .ob-btn, .ob-btn-ghost,
 }
 
 /* -- Items de liste (scale + décalage latéral micro) ------ */
-.seq-item, .list-item {
+.list-item {
   transition: transform .38s cubic-bezier(.34,1.56,.64,1),
               opacity   .38s cubic-bezier(.34,1.56,.64,1);
 }
-.seq-item:active, .list-item:active {
+.list-item:active {
   transform: scale(.984) translateX(3px);
   opacity: .72;
   transition: transform .07s ease-in, opacity .07s ease-in;
@@ -256,9 +257,11 @@ button, .ob-btn, .ob-btn-ghost,
   justify-content:center; align-items:flex-start;
   padding:48px 24px;
   /* Conteneur principal scrollable — body est fixed */
-  height:100vh; overflow-y:auto;
+  height:100vh; overflow-y:auto; overflow-x:hidden;
   -webkit-overflow-scrolling:touch;
   overscroll-behavior:none;
+  overscroll-behavior-x:none;
+  touch-action:pan-y;
   scrollbar-width:none;
 }
 .row::-webkit-scrollbar{ display:none; }
@@ -398,34 +401,29 @@ button, .ob-btn, .ob-btn-ghost,
    =========================================================== */
 .menu-btn{
   position:fixed;
-  top:calc(env(safe-area-inset-top,0px) + 10px);
-  left:10px; z-index:70;
+  top:calc(env(safe-area-inset-top,0px) + 14px);
+  left:14px; z-index:70;
   width:44px; height:44px;
   display:inline-flex; align-items:center; justify-content:center;
   border:0;
-  background:#1c1c1e;
-  box-shadow:
-    0 6px 20px rgba(0,0,0,.5),
-    0 2px 6px rgba(0,0,0,.35),
-    inset 0 0.5px 0 rgba(255,255,255,.07);
-  border-radius:50%;
-  color:rgba(255,255,255,.88); cursor:pointer;
+  background:transparent;
+  box-shadow:none;
+  color:#fff; cursor:pointer;
+  filter:drop-shadow(0 1px 4px rgba(0,0,0,.55));
   -webkit-tap-highlight-color:transparent;
-  transition:transform .22s cubic-bezier(.34,1.56,.64,1), background .18s ease;
+  transition:transform .22s cubic-bezier(.34,1.56,.64,1), opacity .18s ease;
 }
-.menu-btn:hover{ background:#2c2c2e; }
-.menu-btn:active{ transform:scale(.84); background:#111113; transition:transform .07s ease-in, background .07s ease-in; }
-.menu-btn svg{ width:20px; height:20px; }
+.menu-btn:hover{ opacity:.75; }
+.menu-btn:active{ transform:scale(.84); opacity:.6; transition:transform .07s ease-in, opacity .07s ease-in; }
+.menu-btn svg{ width:21px; height:21px; }
 [data-theme="light"] .menu-btn{
-  background:#f2f2f7;
-  box-shadow:
-    0 4px 16px rgba(0,0,0,.13),
-    0 1px 4px rgba(0,0,0,.08),
-    inset 0 -0.5px 0 rgba(0,0,0,.06);
-  color:#3a3a3c;
+  background:transparent;
+  box-shadow:none;
+  color:#fff;
+  filter:drop-shadow(0 1px 4px rgba(0,0,0,.55));
 }
-[data-theme="light"] .menu-btn:hover{ background:#e5e5ea; }
-[data-theme="light"] .menu-btn:active{ background:#d8d8de; }
+[data-theme="light"] .menu-btn:hover{ opacity:.75; }
+[data-theme="light"] .menu-btn:active{ opacity:.6; }
 
 /* Bouton sidebar — grille 3×3, secondaire au gear */
 .sb-open-btn{
@@ -663,6 +661,7 @@ button, .ob-btn, .ob-btn-ghost,
 }
 .folder-head .chev-btn svg{ width:14px; height:14px; transition:transform .2s cubic-bezier(.2,.85,.25,1); }
 .folder.open .folder-head .chev-btn svg{ transform:rotate(90deg); }
+.folder-swatch{ width:26px; height:26px; border-radius:8px; flex:none; box-shadow:0 2px 8px rgba(0,0,0,.28); }
 .folder-head .f-name{
   flex:1; font-size:17px; font-weight:700; letter-spacing:-0.02em;
   cursor:pointer; -webkit-tap-highlight-color:transparent;
@@ -887,6 +886,28 @@ button, .ob-btn, .ob-btn-ghost,
   position:fixed;bottom:22px;left:50%;transform:translateX(-50%);
   z-index:500;
 }
+
+/* Bouton « remonter en haut » — apparaît au scroll, glass, au-dessus de la nav */
+.bf-totop{
+  position:fixed; right:16px; bottom:96px; z-index:490;
+  width:44px; height:44px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(28,26,24,.82);
+  -webkit-backdrop-filter:blur(20px) saturate(1.8); backdrop-filter:blur(20px) saturate(1.8);
+  border:.5px solid rgba(255,255,255,.18);
+  box-shadow:0 6px 20px rgba(0,0,0,.5), 0 2px 6px rgba(0,0,0,.35), inset 0 1px .5px rgba(255,255,255,.50);
+  color:#F3F0EE; cursor:pointer; -webkit-tap-highlight-color:transparent;
+  opacity:0; pointer-events:none; transform:translateY(10px) scale(.9);
+  transition:opacity .3s ease, transform .3s cubic-bezier(.34,1.56,.64,1);
+}
+.bf-totop.show{ opacity:1; pointer-events:auto; transform:translateY(0) scale(1); }
+.bf-totop:active{ transform:scale(.84); transition:transform .07s ease-in; }
+.bf-totop svg{ width:20px; height:20px; }
+[data-theme="light"] .bf-totop{
+  background:rgba(252,251,250,.9); border-color:rgba(0,0,0,.08); color:#141413;
+  box-shadow:0 4px 16px rgba(0,0,0,.13), 0 1px 4px rgba(0,0,0,.08);
+}
+body.bf-heavy-open .bf-totop{ display:none; }
 
 /* Capsules */
 /* Anti-crash iOS : quand une page/modale plein écran est ouverte, on coupe le
@@ -1128,6 +1149,153 @@ body.bf-heavy-open .sbar-podcast{
   color:var(--text-muted);
   margin:0;
 }
+
+/* Header de catégorie — reproduit le « brand header » : hero photo + dégradé bas,
+   wordmark centré, onglets = dossiers (trait souligné 24×2px animé) */
+.cat-brand-header{
+  position:relative; width:100vw; min-height:230px; overflow:hidden;
+  margin:0 0 0 calc(50% - 50vw); background:#000;
+  display:flex; flex-direction:column; justify-content:space-between;
+  isolation:isolate;
+}
+.column:has(> #catBrandHeader:not([hidden])){
+  padding-top:calc(env(safe-area-inset-top,0px) + 8px);
+}
+.cat-bh-status{
+  position:relative; z-index:3; height:34px; flex:none;
+  display:flex; align-items:center; justify-content:center; gap:9px;
+  background:#fff; color:#000;
+  font-family:var(--font-inter); font-size:12px; font-weight:700;
+  letter-spacing:.06em; text-transform:uppercase;
+  font-variant-numeric:tabular-nums;
+}
+[data-theme="light"] .cat-bh-status{ background:#111; color:#fff; }
+.cat-bh-status .cat-bh-dot{ opacity:.45; font-weight:400; }
+.cat-brand-header[hidden]{ display:none; }
+.cat-brand-header::before{  /* photo — désaturée en niveaux de gris, façon éditorial noir sur blanc */
+  content:''; position:absolute; inset:0; z-index:0;
+  background-image:var(--hero-bg); background-position:center; background-size:cover; background-repeat:no-repeat;
+  filter:grayscale(1) contrast(1.06);
+}
+.cat-brand-header::after{  /* dégradé bas → fond app */
+  content:''; position:absolute; inset:0; z-index:1; pointer-events:none;
+  background:linear-gradient(180deg, rgba(0,0,0,.2) 0%, rgba(0,0,0,.72) 78%, var(--bg) 100%);
+}
+.cat-bh-top{
+  position:relative; z-index:2; display:flex; justify-content:space-between; align-items:center;
+  padding:16px 16px 0;
+}
+.cat-bh-pill{
+  height:38px; display:inline-flex; align-items:center; justify-content:center; gap:6px;
+  background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.2); border-radius:10px;
+  color:#fff; font-family:var(--font-inter); font-weight:700; font-size:11px;
+  text-transform:uppercase; letter-spacing:.04em; cursor:pointer;
+  -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px);
+  -webkit-tap-highlight-color:transparent;
+}
+.cat-bh-pill.back{ width:38px; padding:0; }
+.cat-bh-pill.follow{ padding:0 14px; }
+.cat-bh-pill svg{ width:16px; height:16px; }
+.cat-bh-inner{
+  position:relative; z-index:2; width:100%;
+  display:flex; flex-direction:column; align-items:center; padding:10px 0 20px;
+}
+.cat-bh-wordmark{
+  font-family:var(--font-inter); font-weight:900; font-size:clamp(24px,7vw,34px);
+  letter-spacing:.2em; text-transform:uppercase; color:#fff;
+  text-align:center; line-height:1; margin-bottom:18px; padding:0 20px;
+  text-shadow:0 2px 12px rgba(0,0,0,.5); cursor:pointer;
+  display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; max-width:100%;
+}
+.cat-bh-tabs{
+  display:flex; flex-direction:row; align-items:flex-start;
+  gap:0; max-width:100%; overflow-x:auto; overflow-y:hidden; scrollbar-width:none;
+  -webkit-overflow-scrolling:touch; padding:0 14px;
+  touch-action:pan-x; overscroll-behavior-x:contain; overscroll-behavior-y:none;
+}
+.cat-bh-tabs::-webkit-scrollbar{ display:none; }
+.cat-bh-tab{
+  flex:none; position:relative; height:36px; min-width:72px; padding:0 12px;
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-inter); font-weight:700; font-size:12px; line-height:18px;
+  text-transform:uppercase; letter-spacing:.02em; color:#9D9D9D;
+  cursor:pointer; -webkit-tap-highlight-color:transparent; white-space:nowrap;
+  background:none; border:none; transition:color .3s ease;
+}
+.cat-bh-tab.active{ font-weight:900; color:#fff; }
+.cat-bh-tab::after{
+  content:''; position:absolute; left:calc(50% - 12px); bottom:-1px;
+  width:24px; height:2px; background:#fff;
+  transform:scaleX(0); transition:transform .3s cubic-bezier(.4,0,.2,1);
+}
+.cat-bh-tab.active::after{ transform:scaleX(1); }
+
+/* Sous-nav = sous-dossiers, pastilles glass, collante en haut du flux */
+.cat-subnav{
+  position:sticky; top:0; z-index:10; margin:0 0 4px;
+  margin-left:calc(50% - 50vw); margin-right:calc(50% - 50vw);
+  width:100vw; max-width:100vw;
+  padding:14px 0;
+  background:color-mix(in srgb, var(--bg) 78%, transparent);
+  -webkit-backdrop-filter:blur(16px); backdrop-filter:blur(16px);
+  border-bottom:1px solid rgba(127,127,127,.12);
+  overflow-x:auto; overflow-y:hidden; scrollbar-width:none; -webkit-overflow-scrolling:touch;
+  touch-action:pan-x; overscroll-behavior-x:contain; overscroll-behavior-y:none;
+  box-sizing:border-box;
+}
+.cat-subnav[hidden]{ display:none; }
+.cat-subnav::-webkit-scrollbar{ display:none; }
+.cat-subnav-row{ display:inline-flex; gap:6px; padding:0 calc(50vw - 50% + 16px); }
+.cat-sub{
+  flex:none; background:transparent; color:var(--text-muted);
+  border:1px solid rgba(127,127,127,.22); border-radius:999px; padding:4px 9px;
+  font-family:var(--font-inter); font-size:8.5px; font-weight:600;
+  text-transform:uppercase; letter-spacing:.04em; white-space:nowrap;
+  cursor:pointer; -webkit-tap-highlight-color:transparent;
+  transition:color .25s ease, background .25s ease, border-color .25s ease, transform .18s cubic-bezier(.34,1.56,.64,1);
+}
+.cat-sub:hover{ color:var(--text); border-color:rgba(127,127,127,.4); }
+.cat-sub:active{ transform:scale(.94); }
+.cat-sub.active{
+  color:var(--bg); background:var(--text);
+  border-color:var(--text); font-weight:700;
+}
+
+/* Modal thématique (contexte d'une source) — verre, liens rapides, vedette, pagination */
+.cat-modal-overlay{ position:fixed; inset:0; z-index:500; display:flex; align-items:center; justify-content:center; padding:20px; pointer-events:none; }
+.cat-modal-backdrop{ position:absolute; inset:0; background:rgba(0,0,0,.45); opacity:0; transition:opacity .35s ease; }
+body.cat-modal-open .cat-modal-overlay{ pointer-events:auto; }
+body.cat-modal-open .cat-modal-backdrop{ opacity:1; }
+.cat-modal-card{
+  position:relative; width:100%; max-width:380px;
+  background:rgba(25,25,25,.85); -webkit-backdrop-filter:blur(25px); backdrop-filter:blur(25px);
+  border:1px solid rgba(255,255,255,.1); border-radius:20px; padding:22px; box-shadow:0 24px 48px rgba(0,0,0,.5);
+  opacity:0; transform:translateY(30px) scale(.95); user-select:none; -webkit-user-select:none;
+  transition:opacity .4s ease, transform .4s cubic-bezier(.32,.72,0,1);
+}
+[data-theme="light"] .cat-modal-card{ background:rgba(252,251,250,.92); border-color:rgba(0,0,0,.08); }
+body.cat-modal-open .cat-modal-card{ opacity:1; transform:translateY(0) scale(1); }
+.cat-modal-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:22px; }
+.cat-modal-title{ display:flex; align-items:center; gap:8px; font-family:var(--font-inter); font-weight:900; font-size:13px; letter-spacing:.09em; text-transform:uppercase; color:var(--text-muted); }
+.cat-modal-dot{ width:9px; height:9px; border-radius:50%; background:#FF5E00; flex:none; }
+.cat-modal-x{ background:none; border:none; color:var(--text); cursor:pointer; padding:4px; -webkit-tap-highlight-color:transparent; }
+.cat-modal-x svg{ width:22px; height:22px; }
+.cat-modal-links{ display:flex; flex-direction:column; gap:14px; margin-bottom:22px; }
+.cat-modal-link{ text-decoration:none; color:var(--text); font-family:var(--font-inter); font-size:21px; font-weight:500; letter-spacing:-.02em; cursor:pointer;
+  opacity:0; transform:translateX(-15px); }
+body.cat-modal-open .cat-modal-link{ opacity:1; transform:translateX(0); transition:opacity .5s ease, transform .5s cubic-bezier(.32,.72,0,1); }
+body.cat-modal-open .cat-modal-link:nth-child(1){ transition-delay:.06s; }
+body.cat-modal-open .cat-modal-link:nth-child(2){ transition-delay:.12s; }
+body.cat-modal-open .cat-modal-link:nth-child(3){ transition-delay:.18s; }
+body.cat-modal-open .cat-modal-link:nth-child(4){ transition-delay:.24s; }
+.cat-modal-link.primary{ font-weight:700; display:flex; align-items:center; gap:10px; }
+.cat-modal-link.primary::after{ content:'→'; font-size:18px; }
+.cat-modal-featured{ position:relative; width:100%; height:150px; border-radius:12px; overflow:hidden; margin-bottom:18px; background:#1a1a1a center/cover no-repeat; }
+.cat-modal-featured::after{ content:''; position:absolute; inset:0; background:rgba(0,0,0,.3); }
+.cat-modal-pag{ display:flex; justify-content:center; }
+.cat-modal-dots{ display:flex; align-items:center; gap:8px; }
+.cat-dot{ width:6px; height:6px; border-radius:50%; background:rgba(127,127,127,.35); cursor:pointer; transition:all .3s cubic-bezier(.25,.8,.25,1); -webkit-tap-highlight-color:transparent; }
+.cat-dot.active{ width:24px; border-radius:4px; background:#FF5E00; }
 
 .view{
   align-self:stretch;
@@ -1684,6 +1852,18 @@ body.bf-heavy-open .sbar-podcast{
   display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
 }
 .dc-theme-tile-badge{ position:absolute; top:9px; right:9px; z-index:3; background:rgba(0,0,0,.4); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-radius:999px; padding:4px 10px; font-family:var(--font-inter); font-size:9.5px; font-weight:700; color:#fff; letter-spacing:.02em; }
+/* Chips de sous-catégories (thèmes fusionnés : Sport, Tech & Business…) */
+.dc-subchips{ display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch; padding:14px 18px 4px; }
+.dc-subchips::-webkit-scrollbar{ display:none; }
+.dc-subchips[hidden]{ display:none; }
+.dc-subchip{
+  flex:none; -webkit-tap-highlight-color:transparent; cursor:pointer;
+  border:1px solid var(--border); background:var(--bg-elev); color:var(--text-muted);
+  font-family:var(--font-inter); font-size:12.5px; font-weight:700;
+  padding:8px 14px; border-radius:999px; white-space:nowrap;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.dc-subchip.active{ background:var(--text); color:var(--bg); border-color:var(--text); }
 /* Ligne flux */
 .dc-feed-list{ padding:6px 18px 60px; }
 .dc-feed-card{ border-bottom:1px solid var(--border); }
@@ -1928,16 +2108,18 @@ body.bf-heavy-open .sbar-podcast{
 .sk-card{ background:rgba(255,255,255,.08); pointer-events:none; min-height:220px; }
 [data-theme="light"] .sk-card{ background:rgba(0,0,0,.06); }
 
-/* ── VUE GRILLE — 1 colonne mobile · 3 colonnes tablette/ordi ──────────────────────── */
-.grid2-wrap{ display:grid; grid-template-columns:1fr; gap:24px; padding:16px 0 80px; }
-@media (min-width:768px){ .grid2-wrap{ grid-template-columns:repeat(3,1fr); } }
+/* ── VUE GRILLE — 2 colonnes mobile (après la carte vedette) · 3 colonnes tablette/ordi ──── */
+.grid2-wrap{ display:grid; grid-template-columns:repeat(2,1fr); gap:24px 14px; padding:16px 0 80px; }
+@media (min-width:768px){ .grid2-wrap{ grid-template-columns:repeat(3,1fr); gap:24px; } }
 .grid2-card{ display:flex; flex-direction:column; cursor:pointer; -webkit-tap-highlight-color:transparent; }
-.grid2-img{ border-radius:10px; overflow:hidden; aspect-ratio:4/3; background:rgba(255,255,255,.04); margin-bottom:8px; }
+.grid2-img{ border-radius:8px; overflow:hidden; aspect-ratio:1/1; background:rgba(255,255,255,.04); margin-bottom:12px; }
 .grid2-img img{ width:100%; height:100%; object-fit:cover; display:block; }
-/* Première carte grille — hero pleine largeur 16:9 (350.25×197.16), radius 14px */
+/* Première carte grille — hero pleine largeur 16:9 (350.25×197.16), radius 8px */
 .grid2-card:first-child{ grid-column:1 / -1; }
 .grid2-card:first-child .grid2-img{ aspect-ratio:350.25 / 197.16; border-radius:8px; }
-.grid2-title{ font-family:var(--font-inter); font-size:13px; font-weight:700; line-height:1.3; color:var(--text); display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; margin-bottom:5px; }
+.grid2-tags{ display:flex; flex-wrap:wrap; gap:4px; margin-bottom:6px; }
+.grid2-title{ font-family:var(--font-inter); font-size:13.5px; font-weight:700; line-height:1.3; color:var(--text); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-bottom:6px; }
+.grid2-card:first-child .grid2-title{ font-size:16px; -webkit-line-clamp:3; }
 .grid2-meta{ font-family:var(--font-inter); font-size:10.5px; color:var(--text-muted); font-weight:600; display:flex; align-items:center; gap:4px; }
 /* ── Logos sources — rond sans fond, professionnel ─────────── */
 /* xs : inline dans les cartes (12-14px) */
@@ -1973,12 +2155,12 @@ body.bf-heavy-open .sbar-podcast{
    que la marque ressorte quel que soit le thème + anneau fin à la couleur du
    thème (var(--border)). Le fond clair vaut pour les deux thèmes ; seul
    l'anneau s'adapte. object-fit:contain garde une marge naturelle. */
-.fav-xs, .fav-sm, .fav-md, .grid2-fav, .seq-fav, .list-fav, .essentiel-source,
+.fav-xs, .fav-sm, .fav-md, .grid2-fav, .list-fav, .essentiel-source,
 .art-modal-source-fav, .feed-page-fav, .sbar-srail-item .savatar{
   background:#fff;
   box-shadow:0 0 0 1px var(--border);
 }
-.fav-xs img, .fav-sm img, .fav-md img, .grid2-fav img, .seq-fav img, .list-fav img{
+.fav-xs img, .fav-sm img, .fav-md img, .grid2-fav img, .list-fav img{
   padding:1.5px; box-sizing:border-box;
 }
 
@@ -2011,7 +2193,6 @@ body.bf-heavy-open .sbar-podcast{
      (fixé à 341px pour l'iPhone) et .row le re-centre (justify-content:center),
      donc marges gauche/droite égales. min(100%,980px) ne déborde jamais. */
   body[data-view="editions"] .column,
-  body[data-view="mosaic"]   .column,
   body[data-view="grille"]   .column{ width:min(100%, 980px); }
   /* minmax(0,1fr) : les colonnes peuvent rétrécir (un enfant à largeur fixe ne
      gonfle plus la piste). Cartes fluides : on annule le width:310px de base
@@ -2104,63 +2285,6 @@ body.bf-heavy-open .sbar-podcast{
   .edl-tag{ font-size:9px; padding:3px 6px; }
 }
 
-/* ══════════════════════════════════════════════════════════════════
-   VUE SÉQUENTIEL — Liste numérotée éditoriale « wow »
-   grand numéro · source · titre · vignette
-   ══════════════════════════════════════════════════════════════════ */
-.seq-list{ display:flex; flex-direction:column; gap:0; padding:6px 0 90px; }
-.seq-progress{ display:none; }
-.seq-item{
-  display:flex; gap:16px; align-items:flex-start;
-  padding:28px 2px; border-bottom:1px solid rgba(255,255,255,.055);
-  cursor:pointer; -webkit-tap-highlight-color:transparent;
-}
-[data-theme="light"] .seq-item{ border-bottom-color:rgba(0,0,0,.07); }
-.seq-item:last-child{ border-bottom:none; }
-.seq-item:active{ transform:scale(.99); transition:transform .1s ease; }
-.seq-num{
-  font-family:var(--font-inter); font-weight:700;
-  font-size:26px; line-height:1; letter-spacing:-.05em;
-  min-width:38px; text-align:right; flex-shrink:0; padding-top:3px;
-  background:linear-gradient(180deg, rgba(255,255,255,.5) 0%, rgba(255,255,255,.18) 100%);
-  -webkit-background-clip:text; background-clip:text;
-  -webkit-text-fill-color:transparent;
-}
-.seq-body{ flex:1; min-width:0; }
-.seq-source{
-  font-family:var(--font-inter); font-size:10.5px; font-weight:700;
-  color:var(--text-muted); text-transform:uppercase; letter-spacing:.05em;
-  margin-bottom:6px; display:flex; align-items:center; gap:5px;
-}
-.seq-fav{ width:16px; height:16px; border-radius:22%; overflow:hidden; flex-shrink:0; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.18),0 0 0 .5px rgba(0,0,0,.06); display:flex; align-items:center; justify-content:center; }
-.seq-fav img{ width:80%; height:80%; object-fit:contain; border-radius:0; display:block; }
-.seq-title{
-  font-family:var(--font-title); font-size:var(--seq-title-size,18px); font-weight:700;
-  line-height:1.26; color:var(--text); letter-spacing:-.012em;
-  display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;
-}
-.seq-thumb{
-  width:104px; height:74px; flex-shrink:0; align-self:center;
-  border-radius:12px; overflow:hidden; background:#111;
-}
-.seq-thumb img{ width:100%; height:100%; object-fit:cover; display:block;
-  transition:transform .6s cubic-bezier(.22,1,.36,1); }
-/* Première carte séquentiel — hero plein cadre 16:9 (350.25×197.16), radius 20px */
-.seq-item:first-child{ flex-direction:column; align-items:stretch; gap:10px; }
-.seq-item:first-child .seq-thumb{ order:-1; width:100%; height:auto; aspect-ratio:350.25 / 197.16; border-radius:8px; align-self:stretch; }
-.seq-item:first-child .seq-num{ text-align:left; }
-@media (hover:hover) and (pointer:fine){
-  .seq-item:hover .seq-thumb img{ transform:scale(1.06); }
-}
-[data-theme="light"] .seq-num{
-  background-image:linear-gradient(180deg, rgba(0,0,0,.62) 0%, rgba(0,0,0,.3) 100%);
-  -webkit-background-clip:text; background-clip:text;
-  -webkit-text-fill-color:transparent;
-}
-.seq-item.is-read{ opacity:.42; }
-.seq-item.is-read .seq-title{ font-weight:600; color:var(--text-muted); }
-.seq-item.is-read .seq-thumb{ filter:grayscale(1); }
-
 /* ── PAGE DOSSIER ────────────────────────────────── */
 .folder-page{ position:fixed; inset:0; z-index:450; background:var(--bg); display:flex; flex-direction:column; transform:translateX(100%); transition:transform .38s cubic-bezier(.32,.72,0,1); }
 .folder-page.open{ transform:none; }
@@ -2181,18 +2305,13 @@ body.bf-heavy-open .sbar-podcast{
 /* ── FOLDER PAGE — héro décoratif + logos flottants ─────────────────────── */
 .folder-hero{
   width:100%; position:relative; overflow:hidden; flex-shrink:0;
-  min-height:230px; display:flex; align-items:flex-end; justify-content:center;
+  min-height:180px; display:flex; align-items:flex-end;
   background:linear-gradient(145deg,#1a1a2e 0%,#16213e 100%);
 }
 .folder-hero-bg{
   position:absolute; inset:0;
   background-size:cover; background-position:center;
   opacity:.9;
-}
-/* Voile sombre bas → lisibilité du nom centré, quelle que soit la photo */
-.folder-hero::after{
-  content:''; position:absolute; inset:0; z-index:1; pointer-events:none;
-  background:linear-gradient(180deg, rgba(0,0,0,.05) 35%, rgba(0,0,0,.62) 100%);
 }
 /* Noise texture overlay */
 .folder-hero-noise{
@@ -2201,28 +2320,22 @@ body.bf-heavy-open .sbar-podcast{
   background-size:200px 200px;
 }
 .folder-hero-content{
-  position:relative; z-index:2; padding:28px 24px 22px;
-  width:100%; display:flex; flex-direction:column;
-  align-items:center; text-align:center;
+  position:relative; z-index:2; padding:28px 24px 24px;
+  width:100%;
 }
 .folder-hero-badge{
   display:inline-flex; align-items:center; gap:6px;
-  background:rgba(255,255,255,.14); border-radius:999px;
-  padding:4px 12px; margin-bottom:14px;
+  background:rgba(255,255,255,.12); border-radius:999px;
+  padding:4px 12px; margin-bottom:12px;
   font-family:var(--font-inter); font-size:10.5px; font-weight:700;
-  color:rgba(255,255,255,.85); letter-spacing:.06em; text-transform:uppercase;
+  color:rgba(255,255,255,.8); letter-spacing:.06em; text-transform:uppercase;
   backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
 }
+[data-theme="light"] .folder-hero-badge{ background:rgba(0,0,0,.12); color:rgba(0,0,0,.6); }
 .folder-hero-title{
   font-family:var(--font-inter); font-size:34px; font-weight:900;
-  letter-spacing:.01em; text-transform:uppercase;
-  color:#fff; line-height:1.05; margin:0;
-  text-shadow:0 2px 16px rgba(0,0,0,.5);
-}
-/* Trait souligné blanc sous le nom (signature About You) */
-.folder-hero-divider{
-  width:24px; height:2px; background:#fff; border-radius:2px;
-  margin-top:14px;
+  letter-spacing:-.035em; color:#fff; line-height:1.1; margin-bottom:6px;
+  text-shadow:0 2px 12px rgba(0,0,0,.4);
 }
 .folder-hero-sub{
   font-family:var(--font-inter); font-size:13.5px; font-weight:500;
@@ -2376,32 +2489,39 @@ body.bf-heavy-open .sbar-podcast{
 }
 
 .morph-menu{
-  /* Dark par défaut */
+  /* Fermé : icône seule, immersive, sans halo */
   width:44px; height:44px;
-  background:rgba(28,26,24,.82);
-  -webkit-backdrop-filter:blur(22px) saturate(180%);
-  backdrop-filter:blur(22px) saturate(180%);
-  border:.5px solid var(--lg-border);
-  box-shadow:var(--lg-spec), 0 6px 22px rgba(0,0,0,.4);
+  background:transparent;
+  backdrop-filter:none; -webkit-backdrop-filter:none;
+  border:none;
+  box-shadow:none;
   border-radius:999px;
   overflow:hidden;
   transform-origin:top right;
-  color:var(--text);
+  color:#fff;
+  filter:drop-shadow(0 1px 4px rgba(0,0,0,.55));
   transition:
     width   .5s cubic-bezier(.25,.1,.25,1),
     height  .5s cubic-bezier(.25,.1,.25,1),
     border-radius .5s cubic-bezier(.25,.1,.25,1),
-    box-shadow .3s ease;
+    background .3s ease, box-shadow .3s ease, filter .3s ease;
 }
-[data-theme="light"] .morph-menu{
-  background:rgba(255,255,255,.86);
-  border-color:rgba(0,0,0,.06);
-  box-shadow:0 6px 18px rgba(0,0,0,.1), 0 1px 3px rgba(0,0,0,.06);
-}
+[data-theme="light"] .morph-menu{ color:#fff; }
 .morph-menu.open{
   width:300px; height:520px;
+  background:rgba(28,26,24,.82);
+  -webkit-backdrop-filter:blur(22px) saturate(180%);
+  backdrop-filter:blur(22px) saturate(180%);
+  border:.5px solid var(--lg-border);
   border-radius:22px;
   box-shadow:0 20px 60px rgba(0,0,0,.5), 0 2px 8px rgba(0,0,0,.3);
+  color:var(--text);
+  filter:none;
+}
+[data-theme="light"] .morph-menu.open{
+  background:rgba(255,255,255,.86);
+  border-color:rgba(0,0,0,.06);
+  box-shadow:0 20px 50px rgba(0,0,0,.16), 0 2px 8px rgba(0,0,0,.08);
 }
 /* Contenu décalé pour tenir compte de la nouvelle hauteur du header */
 .morph-menu.open .morph-content{ height:calc(100% - 44px); }
@@ -2847,58 +2967,6 @@ body.bf-heavy-open .sbar-podcast{
   .fm-feat-carousel{ margin:4px -18px 0; padding:8px 11% 14px; }
   .fm-feat-card{ flex:0 0 78%; }
   .fm-feat-card .edl-title{ font-size:16px; }
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   VUE MOSAÏQUE — rythme éditorial répété (Mosaic 4, amélioré) :
-   bande 2-égal · bande vedette pleine largeur · bande large+étroit
-   ═══════════════════════════════════════════════════════════════ */
-.mos{ display:flex; flex-direction:column; gap:14px; padding:6px 0 90px; }
-.mos-band{ display:grid; gap:12px; }
-.mos-band.two{ grid-template-columns:1fr 1fr; }
-.mos-band.full{ grid-template-columns:1fr; }
-.mos-band.wide{ grid-template-columns:1.5fr 1fr; align-items:start; }
-
-.mos-card{ display:flex; flex-direction:column; cursor:pointer; -webkit-tap-highlight-color:transparent; min-width:0; }
-.mos-card:active{ transform:scale(.985); transition:transform .12s ease; }
-.mos-card.is-read{ opacity:.45; }
-.mos-fig{ width:100%; border-radius:12px; overflow:hidden; background:rgba(255,255,255,.05); aspect-ratio:4/3; }
-[data-theme="light"] .mos-fig{ background:rgba(0,0,0,.04); }
-.mos-fig img{ width:100%; height:100%; object-fit:cover; display:block; transition:transform .55s cubic-bezier(.22,1,.36,1); }
-@media(hover:hover){ .mos-card:hover .mos-fig img{ transform:scale(1.05); } }
-.mos-src-row{ display:flex; align-items:center; gap:7px; margin-top:8px; }
-.mos-src-dot{ flex:none; width:20px; height:20px; border-radius:50%; background:#333; overflow:hidden; display:flex; align-items:center; justify-content:center; box-shadow:0 0 0 2px rgba(255,255,255,.08); }
-.mos-src-dot img{ width:100%; height:100%; object-fit:cover; }
-.mos-src-name{ font-size:11px; font-weight:600; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; letter-spacing:.01em; }
-.mos-time{ margin-left:auto; font-size:10.5px; color:var(--text-muted); flex:none; padding-left:6px; }
-.mos-title{ font-family:var(--font-inter); font-weight:600; line-height:1.28; color:var(--text); margin:5px 0 0;
-  font-size:14.5px; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
-/* Réglages par variante */
-.mos-eq .mos-fig{ aspect-ratio:4/3; }
-.mos-wide .mos-fig{ aspect-ratio:16/10; }
-.mos-narrow .mos-fig{ aspect-ratio:1/1; }
-.mos-narrow .mos-title{ font-size:13px; }
-
-/* Carte vedette pleine largeur — image + dégradé + titre superposés */
-.mos-feature{ position:relative; border-radius:16px; overflow:hidden; }
-.mos-feature-media{ position:relative; width:100%; aspect-ratio:16/9; background:#111 center/cover no-repeat; display:flex; align-items:flex-end; }
-.mos-feature-scrim{ position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,.85) 0%, rgba(0,0,0,.34) 46%, rgba(0,0,0,0) 76%); }
-.mos-feature-body{ position:relative; z-index:1; padding:16px 16px 15px; width:100%; }
-.mos-feature .mos-src-row{ margin-top:0; margin-bottom:7px; }
-.mos-feature .mos-src-name{ color:rgba(255,255,255,.94); }
-.mos-feature .mos-time{ color:rgba(255,255,255,.72); }
-.mos-feature .mos-src-dot{ box-shadow:0 0 0 2px rgba(255,255,255,.28); }
-.mos-feature-title{ font-family:var(--font-title,var(--font-inter)); font-weight:700; color:#fff; margin:0;
-  font-size:19px; line-height:1.22; letter-spacing:-.01em; text-shadow:0 1px 14px rgba(0,0,0,.45);
-  display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
-
-@media(min-width:768px){
-  .mos{ gap:24px; }
-  .mos-band{ gap:22px; }
-  .mos-title{ font-size:15.5px; -webkit-line-clamp:2; }
-  .mos-feature-media{ aspect-ratio:21/9; }
-  .mos-feature-title{ font-size:27px; -webkit-line-clamp:2; }
-  .mos-feature-body{ padding:26px 28px 24px; max-width:72%; }
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -3411,6 +3479,23 @@ body.bf-heavy-open .sbar-podcast{
   transform:rotate(180deg); stroke:var(--accent);
 }
 
+/* Fond hero de la vue Parcourir — dégradé léger du dossier (_folderGrad) */
+.browse-folder-hero{ position:relative; border-radius:20px; overflow:hidden; margin:14px 16px 0; }
+.browse-folder-hero::before{
+  content:''; position:absolute; inset:0; z-index:1; pointer-events:none;
+  background:linear-gradient(180deg, rgba(0,0,0,.35) 0%, rgba(0,0,0,.5) 100%);
+}
+.browse-folder-hero .browse-folder-head{ position:relative; z-index:2; padding:22px 16px; }
+.browse-folder-hero .browse-folder-name{ color:#fff; opacity:.35; text-shadow:0 2px 20px rgba(0,0,0,.4); }
+.browse-folder-item.bf-open .browse-folder-hero .browse-folder-name{ opacity:1; }
+.browse-folder-hero .bfn-inner{ --bfn-color:#fff; }
+.browse-folder-hero .browse-folder-count{ color:rgba(255,255,255,.55); }
+.browse-folder-item.bf-open .browse-folder-hero .browse-folder-count{ color:rgba(255,255,255,.85); }
+.browse-folder-hero .browse-folder-chevron svg{ stroke:rgba(255,255,255,.55); }
+.browse-folder-item.bf-open .browse-folder-hero .browse-folder-chevron svg{ stroke:#fff; }
+.browse-folder-hero .browse-folder-btn{ background:rgba(255,255,255,.18); color:#fff; }
+.browse-folder-hero .browse-folder-btn:hover{ background:rgba(255,255,255,.3); color:#fff; }
+
 /* ACCORDÉON */
 .browse-folder-body{
   display:grid; grid-template-rows:0fr;
@@ -3725,31 +3810,30 @@ body.bf-heavy-open .sbar-podcast{
 [data-theme="light"] .art-reader-spinner{ border-color:rgba(0,0,0,.1); border-top-color:#0a84ff; }
 .art-reader-partial{ display:inline-flex; align-items:center; gap:5px; font-family:var(--font-inter); font-size:11px; color:var(--text-muted); background:rgba(255,255,255,.05); padding:5px 10px; border-radius:999px; margin-bottom:14px; }
 .art-reader-partial-spin{ width:9px; height:9px; border-radius:50%; border:1.5px solid rgba(255,255,255,.12); border-top-color:#0a84ff; animation:af-spin .8s linear infinite; }
-/* ═══════════ MODAL ARTICLE — coque contenue (compact → expansion élastique) ═══════════
-   Ouverture en carte compacte centrée (squelette « tile » Apple : image + titre + source
-   + amorce) puis, au clic sur « Lire la suite », expansion à ressort vers un panneau plus
-   large — sans jamais couvrir toute la page — avec lecture au scroll interne, partage et
-   navigation interne en swipe à puces (façon Mastercard). */
-#artModal{ align-items:center; justify-content:center; padding:22px; }
-.art-scrim{ position:absolute; inset:0; z-index:0; background:rgba(0,0,0,.55);
-  -webkit-backdrop-filter:blur(9px) saturate(1.3); backdrop-filter:blur(9px) saturate(1.3);
-  opacity:0; transition:opacity .42s ease; }
+/* ═══════════ MODAL ARTICLE — page plein écran en rideau ═══════════
+   Le lecteur d'article s'ouvre directement en page pleine (pas de carte
+   compacte centrée) : elle glisse depuis le bas et recouvre tout l'écran,
+   comme un rideau qu'on tire. Lecture au scroll interne, partage et
+   navigation interne en swipe à puces (façon Mastercard) inchangés. */
+#artModal{ align-items:stretch; justify-content:stretch; padding:0; }
+.art-scrim{ position:absolute; inset:0; z-index:0; background:rgba(0,0,0,.4);
+  opacity:0; transition:opacity .3s ease; }
 #artModal.art-open .art-scrim{ opacity:1; }
 #artModal.art-closing .art-scrim{ opacity:0; }
-[data-theme="light"] .art-scrim{ background:rgba(30,28,26,.42); }
+[data-theme="light"] .art-scrim{ background:rgba(30,28,26,.28); }
 
 .art-shell{ position:relative; z-index:1; display:flex; flex-direction:column;
-  width:100%; max-width:430px; max-height:min(84vh,560px);
-  background:var(--surface-card,#1C1A18); border:1px solid var(--border);
-  border-radius:28px; overflow:hidden; box-shadow:0 34px 90px rgba(0,0,0,.62), 0 4px 18px rgba(0,0,0,.4);
-  transform:translateY(42px) scale(.965); opacity:0;
-  transition:transform .5s cubic-bezier(.16,1,.3,1), opacity .34s ease,
-    max-width .64s cubic-bezier(.34,1.56,.64,1), max-height .64s cubic-bezier(.34,1.56,.64,1),
-    border-radius .5s cubic-bezier(.34,1.56,.64,1); }
-#artModal.art-open .art-shell{ transform:none; opacity:1; }
-#artModal.art-closing .art-shell{ transform:translateY(46px) scale(.965); opacity:0;
-  transition:transform .28s cubic-bezier(.4,0,1,1), opacity .2s ease; }
-.art-shell.is-expanded{ max-width:min(760px,94vw); max-height:min(92vh,940px); border-radius:32px; }
+  width:100vw; max-width:100vw; height:100vh; max-height:100vh;
+  background:var(--surface-card,#1C1A18); border:none;
+  border-radius:0; overflow:hidden; box-shadow:0 -8px 40px rgba(0,0,0,.4);
+  transform:translateY(100%); opacity:1;
+  transition:transform .48s cubic-bezier(.16,1,.3,1); }
+#artModal.art-open .art-shell{ transform:translateY(0); opacity:1; }
+#artModal.art-closing .art-shell{ transform:translateY(100%); opacity:1;
+  transition:transform .32s cubic-bezier(.4,0,1,1); }
+.art-shell.is-expanded{ max-width:100vw; width:100vw; max-height:100vh; height:100vh; border-radius:0; }
+#artModal:has(.art-shell.is-expanded){ padding:0; }
+#artModal:has(.art-shell.is-expanded) .art-scrim{ display:none; }
 
 /* Boutons flottants (fermer / enregistrer) — glass, superposés au hero, cibles tactiles élargies */
 .art-float-btn{ position:absolute; top:13px; z-index:6; width:38px; height:38px; border:.5px solid rgba(255,255,255,.2);
@@ -3765,7 +3849,7 @@ body.bf-heavy-open .sbar-podcast{
 .art-shell-hero::after{ content:""; position:absolute; inset:auto 0 0 0; height:64px; pointer-events:none;
   background:linear-gradient(to bottom, rgba(28,26,24,0), var(--surface-card,#1C1A18)); }
 [data-theme="light"] .art-shell-hero::after{ background:linear-gradient(to bottom, rgba(252,251,250,0), var(--surface-card,#FCFBFA)); }
-.art-shell.is-expanded .art-shell-hero{ max-height:288px; transition:max-height .5s cubic-bezier(.34,1.56,.64,1); }
+.art-shell.is-expanded .art-shell-hero{ max-height:38vh; transition:max-height .5s cubic-bezier(.34,1.56,.64,1); }
 .art-shell-hero img{ width:100%; height:100%; object-fit:cover; display:block; }
 
 .art-shell-head{ flex:none; position:relative; padding:22px 26px 4px; }
@@ -3805,21 +3889,18 @@ body.bf-heavy-open .sbar-podcast{
 /* ── Mobile : coque plein-cadre, chevrons masqués (ils chevauchaient le titre),
       amorce garantie sous le titre, « Lire la suite » toujours visible en pied ── */
 @media(max-width:767px){
-  #artModal{ padding:0; align-items:flex-end; }
+  #artModal{ padding:0; align-items:stretch; }
   .art-nav-chevron{ display:none !important; }
-  .art-shell{ max-width:100%; width:100%; max-height:97vh; border-radius:20px 20px 0 0;
-    transform:translateY(60px) scale(1); }
-  #artModal.art-open .art-shell{ transform:none; }
-  #artModal.art-closing .art-shell{ transform:translateY(80px) scale(1); }
-  .art-shell.is-expanded{ max-width:100%; max-height:97vh; border-radius:20px 20px 0 0; }
+  .art-shell{ max-width:100vw; width:100vw; max-height:100vh; height:100vh; border-radius:0;
+    transform:translateY(100%); }
+  #artModal.art-open .art-shell{ transform:translateY(0); }
+  #artModal.art-closing .art-shell{ transform:translateY(100%); }
+  .art-shell.is-expanded{ max-width:100vw; width:100vw; max-height:100vh; height:100vh; border-radius:0; }
   .art-shell-hero{ max-height:220px; }
   .art-shell:not(.is-expanded) .art-shell-hero{ max-height:190px; }
-  .art-shell.is-expanded .art-shell-hero{ max-height:250px; }
+  .art-shell.is-expanded .art-shell-hero{ max-height:34vh; }
   .art-shell-head{ padding:18px 22px 2px; }
   .art-pager-wrap{ min-height:118px; flex:1; }
-  /* Poignée de préhension (sheet) */
-  .art-shell::before{ content:""; position:absolute; top:8px; left:50%; transform:translateX(-50%);
-    width:38px; height:4px; border-radius:999px; background:var(--text-muted); opacity:.35; z-index:7; }
   .art-float-close, .art-float-save{ top:12px; }
   /* Carrousel article → article : puces indicatives remplaçant les flèches */
   .art-folder-dots{ display:flex; justify-content:center; align-items:center; gap:5px; padding-bottom:11px; }
@@ -3932,7 +4013,6 @@ body.focus-mode .focus-exit{ display:flex; }
 .art-card:hover .art-share-btn,
 .grid2-card:hover .art-share-btn,
 .essentiel-card:hover .art-share-btn,
-.seq-item:hover .art-share-btn,
 .list-item:hover .art-share-btn{
   opacity:1;
 }
@@ -4134,7 +4214,6 @@ body.focus-mode .focus-exit{ display:flex; }
 .art-img-wrap,
 .list-thumb,
 .list-thumb-empty,
-.seq-thumb,
 .essentiel-thumb{
   background-color:#1a1a1a;
   background-image:linear-gradient(90deg,#1a1a1a 25%,#242424 50%,#1a1a1a 75%);
@@ -4148,14 +4227,12 @@ body.focus-mode .focus-exit{ display:flex; }
 /* Stopper le shimmer dès que l'image est chargée */
 .img-loaded .art-img-wrap,
 .img-loaded.grid2-img,
-.img-loaded.seq-thumb,
 .img-loaded.list-thumb{
   background-image:none; animation:none;
 }
 [data-theme="light"] .art-img-wrap,
 [data-theme="light"] .grid2-img,
 [data-theme="light"] .list-thumb,
-[data-theme="light"] .seq-thumb,
 [data-theme="light"] .essentiel-thumb{
   background-color:#e8e8ec;
   background-image:linear-gradient(90deg,#e8e8ec 25%,#f0f0f4 50%,#e8e8ec 75%);
@@ -4892,7 +4969,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   }
   /* Marge basse pour ne jamais masquer le dernier article sous la navbar flottante */
   .row{ scroll-padding-bottom:120px; }
-  .edl, #mosaicGrid, #grilleGrid, #seqList, .list-view{ padding-bottom:104px; }
+  .edl, #grilleGrid, .list-view{ padding-bottom:104px; }
 
   /* Confort de lecture : corps d'article plus aéré */
   .art-pager-wrap, .art-reader-body{ font-size:16.5px; line-height:1.62; }
@@ -4902,7 +4979,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
 
   /* Feedback tactile net, sans surbrillance grise iOS */
   a, button, .menu3-chip, .nav-item, .art-toolbar-btn, .sub-link,
-  .grid2-card, .list-item, .seq-item, .edl-card, .dc-art{
+  .grid2-card, .list-item, .edl-card, .dc-art{
     -webkit-tap-highlight-color:transparent;
   }
 }
@@ -4965,25 +5042,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   <!-- Barre de navigation NYTimes style — wordmark centré -->
   <div class="topnav" id="topNav" aria-hidden="true">
     <div class="topnav-bar"><span class="topnav-wordmark">Briefeed</span></div>
-    <!-- Barre de favoris (rail) — intégrée au header, sous le logo -->
-    <div class="bfr-rail">
-      <div class="bfr-edge left">
-        <button class="bfr-btn" id="bfrAll" type="button" aria-label="Tous">
-          <span class="bfr-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3.4"/><circle cx="12" cy="12" r="8.2" opacity=".5"/></svg></span>
-        </button>
-      </div>
-      <div class="bfr-scroll" id="bfrRail"><!-- favoris injectés par _renderHybRail() --></div>
-      <div class="bfr-edge right">
-        <button class="bfr-btn" id="sbarPodcastBtn" type="button" onclick="openPodListen()" aria-label="Podcast">
-          <span class="bfr-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 14v-2a9 9 0 0 1 18 0v2"/><rect x="2.5" y="13" width="4.5" height="8" rx="2"/><rect x="17" y="13" width="4.5" height="8" rx="2"/></svg></span>
-        </button>
-      </div>
-    </div>
   </div>
-
-  <!-- Méga-menu de dossier (façon Apple) -->
-  <div class="fm-ov" id="fmOv"></div>
-  <div class="fm" id="fmMenu" role="dialog" aria-modal="true"><div class="fm-inner" id="fmInner"></div></div>
 
   <!-- Bouton sidebar — grille 3×3, haut gauche -->
   <button class="menu-btn" id="menuBtn" aria-label="Ouvrir le menu">
@@ -5030,8 +5089,6 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
               <a class="sub-link sub-link-sm" data-qview="editions"   onclick="qmenuSetView('editions')">Magazine</a>
               <a class="sub-link sub-link-sm" data-qview="liste"      onclick="qmenuSetView('liste')">Liste</a>
               <a class="sub-link sub-link-sm" data-qview="grille"     onclick="qmenuSetView('grille')">Grille</a>
-              <a class="sub-link sub-link-sm" data-qview="mosaic"     onclick="qmenuSetView('mosaic')">Mosaïque</a>
-              <a class="sub-link sub-link-sm" data-qview="sequential" onclick="qmenuSetView('sequential')">Séquentiel</a>
               <div class="qmenu-sub-section-label" style="margin-top:10px">Police</div>
               <a class="sub-link sub-link-sm" data-qfont="inter"        onclick="qmenuSetFont('inter')"        style="font-family:'Inter',-apple-system,sans-serif">Inter</a>
               <a class="sub-link sub-link-sm" data-qfont="geist"        onclick="qmenuSetFont('geist')"        style="font-family:'Geist',-apple-system,sans-serif">Geist</a>
@@ -5133,39 +5190,6 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
         </svg>
       </div>
       <span class="vp-label">Grille</span>
-      <span class="vp-check"><svg viewBox="0 0 24 24" fill="none" stroke="#0a84ff" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-    </div>
-
-    <div class="vp-divider"></div>
-
-    <div class="vp-item" data-vpview="mosaic" onclick="vpSelect('mosaic')">
-      <div class="vp-icon">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <rect x="3" y="3" width="8" height="6" rx="1.3"/>
-          <rect x="13" y="3" width="8" height="6" rx="1.3"/>
-          <rect x="3" y="11" width="18" height="5" rx="1.3"/>
-          <rect x="3" y="18" width="11" height="3.5" rx="1.3"/>
-          <rect x="16" y="18" width="5" height="3.5" rx="1.3"/>
-        </svg>
-      </div>
-      <span class="vp-label">Mosaïque</span>
-      <span class="vp-check"><svg viewBox="0 0 24 24" fill="none" stroke="#0a84ff" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-    </div>
-
-    <div class="vp-divider"></div>
-
-    <div class="vp-item" data-vpview="sequential" onclick="vpSelect('sequential')">
-      <div class="vp-icon">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <line x1="8" y1="6" x2="21" y2="6"/>
-          <line x1="8" y1="12" x2="21" y2="12"/>
-          <line x1="8" y1="18" x2="21" y2="18"/>
-          <circle cx="3.5" cy="6" r="1.5" fill="currentColor" stroke="none"/>
-          <circle cx="3.5" cy="12" r="1.5" fill="currentColor" stroke="none"/>
-          <circle cx="3.5" cy="18" r="1.5" fill="currentColor" stroke="none"/>
-        </svg>
-      </div>
-      <span class="vp-label">Séquentiel</span>
       <span class="vp-check"><svg viewBox="0 0 24 24" fill="none" stroke="#0a84ff" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></span>
     </div>
 
@@ -5314,6 +5338,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
           </button>
           <span class="dc-detail-title" id="dcDetailTitle"></span>
         </div>
+        <div class="dc-subchips" id="dcSubchips" hidden></div>
         <div class="dc-feed-list" id="dcFeedList"></div>
       </div>
     </div>
@@ -5856,13 +5881,35 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     </div>
   </header>
 
-  <div class="row">
+  <div class="row" id="bfRow">
     <div class="column">
 
       <!-- Bloc titre unique : salutation + date + label d'édition, centré, même typographie -->
-      <div class="edition-block">
-        <div id="bfGreetHost" hidden></div>
-        <h2 class="edition-label">Mon magazine du jour</h2>
+      <div id="bfGreetHost" hidden></div>
+
+      <!-- Header de catégorie : hero + wordmark + onglets dossiers ; sous-nav = sous-dossiers -->
+      <div class="cat-brand-header" id="catBrandHeader" hidden></div>
+      <div class="cat-subnav" id="catSubnav" hidden></div>
+
+      <!-- Modal thématique (contexte d'une source) : liens rapides + vedette + pagination + swipe -->
+      <div class="cat-modal-overlay" id="catModalOverlay">
+        <div class="cat-modal-backdrop" onclick="_catModalClose()"></div>
+        <div class="cat-modal-card" id="catModalCard">
+          <div class="cat-modal-head">
+            <div class="cat-modal-title" id="catModalTitle"><span class="cat-modal-dot"></span>Source</div>
+            <button type="button" class="cat-modal-x" onclick="_catModalClose()" aria-label="Fermer">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          <div class="cat-modal-links">
+            <a class="cat-modal-link primary" onclick="_catModalPrimary()">Lire le flux</a>
+            <a class="cat-modal-link" onclick="_catModalOpenSource()">Ouvrir la source</a>
+            <a class="cat-modal-link" onclick="_catModalOpenFolder()">Voir le dossier</a>
+            <a class="cat-modal-link" onclick="_catModalFav()">Mes favoris</a>
+          </div>
+          <div class="cat-modal-featured" id="catModalFeatured"></div>
+          <div class="cat-modal-pag"><div class="cat-modal-dots" id="catModalDots"></div></div>
+        </div>
       </div>
 
       <!-- Smart Bar — segment intelligent + catégories (tiret animé) + sources (accordéon) -->
@@ -5976,16 +6023,10 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
         <div class="grid2-wrap" id="grilleGrid"></div>
       </div><!-- /vue grille -->
 
-      <!-- ========== VUE MOSAÏQUE ========== -->
-      <div class="view" data-view="mosaic" hidden>
-        <div class="mosaic-wrap" id="mosaicGrid"></div>
-      </div><!-- /vue mosaïque -->
-
-      <!-- ========== VUE SÉQUENTIELLE ========== -->
-      <div class="view" data-view="sequential" hidden>
-        <div class="seq-progress" id="seqProgress"></div>
-        <div class="seq-list" id="seqList"></div>
-      </div><!-- /vue séquentielle -->
+      <!-- ========== VUE PARCOURIR (par dossiers) ========== -->
+      <div class="view" data-view="browse" hidden>
+        <div class="browse" id="browseSection"></div>
+      </div><!-- /vue parcourir -->
 
       <!-- ========== VUE FAVORIS ========== -->
       <div class="view" data-view="favoris" hidden>
@@ -6143,6 +6184,9 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   </div>
 
 <!-- ============ NAVBAR BRIEFEED ============ -->
+<button type="button" class="bf-totop" id="bfToTop" aria-label="Remonter en haut" onclick="_bfScrollTop()">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M6 11l6-6 6 6"/></svg>
+</button>
 <nav class="smart-nav" id="smartNav">
     <svg width="0" height="0" style="position:absolute"><defs><linearGradient id="navGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#93C5FD"/><stop offset="33%" stop-color="#D8B4FE"/><stop offset="66%" stop-color="#FCA5A5"/><stop offset="100%" stop-color="#93C5FD"/></linearGradient></defs></svg>
     <div class="nav-capsule nav-capsule-left" id="navCapsuleLeft">
@@ -6173,9 +6217,9 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   }));
   btns.forEach(x => x.setAttribute('aria-pressed', String(x.dataset.set === document.documentElement.dataset.font)));
 
-  // ---- Bouton œil : cycle éditions → grille → séquentiel → parcourir ----
+  // ---- Bouton œil : cycle éditions → liste → grille ----
   const views = document.querySelectorAll('.view');
-  const order = ['editions', 'liste', 'grille', 'mosaic', 'sequential'];
+  const order = ['editions', 'liste', 'grille'];
   let _currentView = (() => { try { const v = localStorage.getItem('bf_view'); return order.includes(v) ? v : 'editions'; } catch(e){ return 'editions'; } })();
   // Déclarés tôt pour éviter reference-before-declaration dans _switchView
   let _feedPageArts = [];
@@ -6304,8 +6348,6 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
       views.forEach(v => { v.hidden = v.dataset.view !== target; });
       if(target === 'browse')    renderBrowseTimeline();
       if(target === 'grille')    _renderGrille();
-      if(target === 'mosaic')    _renderMosaic();
-      if(target === 'sequential')_renderSequential();
       if(target === 'liste')     _renderListe();
       if(target === 'essentiel') _renderEssentiel();
       _stMain(false); // smooth scroll to top via le bon conteneur
@@ -6412,8 +6454,9 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
       // ── Item dossier ──
       html += `<div class="browse-folder-item" id="bf-item-${fi}">`;
 
-      // ── En-tête centré cliquable ──
-      html += `<div class="browse-folder-head" onclick="_bfToggle(${fi})">
+      // ── En-tête centré cliquable — fond hero coloré (même dégradés que Découvrir) ──
+      html += `<div class="browse-folder-hero" style="background:linear-gradient(145deg,${_folderGrad(folder.name)[0]} 0%,${_folderGrad(folder.name)[1]} 100%)">
+      <div class="browse-folder-head" onclick="_bfToggle(${fi})">
         <span class="browse-folder-name"><span class="bfn-director"></span><span class="bfn-inner">${escapeHtml(folder.name)}</span></span>
         <div class="browse-folder-meta">
           <span class="browse-folder-count">${artCount} article${artCount > 1 ? 's' : ''}</span>
@@ -6431,6 +6474,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
             </button>
           </div>
         </div>
+      </div>
       </div>`;
 
       // ── Accordéon ──
@@ -6764,6 +6808,284 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   };
   const persist = () => { window._safeSet(FKEY, JSON.stringify(folders)); };
 
+  // Palette de gradients héro indexée sur le hash du nom du dossier (déclarée tôt :
+  // utilisée par la sidebar dès le premier render() au démarrage → éviter le TDZ).
+  const _FOLDER_GRADS = [
+    ['#0d47a1','#42a5f5'], // bleu
+    ['#4a0080','#a044ff'], // violet
+    ['#0b5345','#1abc9c'], // vert teal
+    ['#7b241c','#e74c3c'], // rouge
+    ['#7e4a00','#f39c12'], // orange
+    ['#6c0070','#e91e8c'], // rose
+    ['#0e4d6e','#00b4d8'], // cyan
+    ['#5a3e00','#f7931a'], // ambre
+    ['#0b5345','#27ae60'], // vert
+    ['#512e5f','#9b59b6'], // aubergine
+  ];
+  function _folderGrad(name){
+    let h = 0; for(let i=0;i<(name||'').length;i++) h = (h*31+name.charCodeAt(i))&0xffff;
+    return _FOLDER_GRADS[h % _FOLDER_GRADS.length];
+  }
+
+  // Photo du dernier article illustré d'un dossier, redimensionnée via wsrv.nl
+  // (largeur plafonnée → mémoire GPU maîtrisée sur iPhone, évite le crash « l'app redémarre »).
+  function _folderHeroImg(folder){
+    const feedUrls = new Set(folder.feeds || []);
+    const pool = (typeof _allArticles !== 'undefined') ? _allArticles : [];
+    const hit = pool
+      .filter(a => feedUrls.has(a.feedUrl||'') && a.imageUrl)
+      .sort((a,b) => new Date(b.pubDate) - new Date(a.pubDate))[0];
+    if(!hit) return null;
+    return 'https://wsrv.nl/?url=' + encodeURIComponent(hit.imageUrl) + '&w=720&output=webp&q=68';
+  }
+  window._folderHeroImg = _folderHeroImg;
+
+  // Header de catégorie sur l'accueil — « brand header » à 2 niveaux :
+  //  · hero photo + wordmark = dossier actif · onglets = dossiers (trait souligné animé)
+  //  · sous-nav collante = sources du dossier (pastilles glass)
+  // Le dossier actif est piloté par _smartCat, la source active par _railFilterUrl :
+  // les mêmes états qui filtrent le flux d'articles en dessous.
+  function _catFolders(){
+    return folders.map((f, i) => ({ f, i })).filter(o => (o.f.name||'').toLowerCase() !== 'podcasts');
+  }
+  function _catSourceName(url){
+    if(typeof _FEED_DB!=='undefined' && _FEED_DB[url] && _FEED_DB[url].name) return _FEED_DB[url].name;
+    try{ const m=JSON.parse(localStorage.getItem('reader.feedMeta')||'{}'); if(m[url]&&m[url].name) return m[url].name; }catch(e){}
+    try{ return new URL(url).hostname.replace(/^www\./,''); }catch(e){ return url; }
+  }
+  function _renderCatHeader(){
+    const host = document.getElementById('catBrandHeader');
+    const subEl = document.getElementById('catSubnav');
+    if(!host || !subEl) return;
+    // _smartCat/_railFilterUrl sont déclarés plus bas : si le header est rendu pendant
+    // l'init (render() au démarrage), on saute (TDZ) — _renderCurrentView re-rendra ensuite.
+    let smartCat, railUrl;
+    try { smartCat = _smartCat; railUrl = _railFilterUrl; } catch(e){ return; }
+    const cats = _catFolders();
+    if(!cats.length){ host.hidden = true; subEl.hidden = true; return; }
+    host.hidden = false; subEl.hidden = false;
+    // Dossier actif = _smartCat (défaut : 1er dossier)
+    let active = cats.find(o => o.f.name === smartCat);
+    if(!active){ active = cats[0]; _smartCat = active.f.name; smartCat = active.f.name; try{ localStorage.setItem('bf_smart_cat', smartCat); }catch(e){} }
+    const folder = active.f;
+    // Fond hero (photo redimensionnée, dégradé en repli)
+    const img = _folderHeroImg(folder);
+    if(img){ host.style.setProperty('--hero-bg', `url('${img.replace(/'/g,"\\'")}')`); }
+    else { const [c1,c2] = _folderGrad(folder.name); host.style.setProperty('--hero-bg', `linear-gradient(145deg,${c1} 0%,${c2} 100%)`); }
+    const tabs = cats.map(o =>
+      `<button type="button" class="cat-bh-tab${o.f.name===smartCat?' active':''}" data-idx="${o.i}" onclick="_catHeaderTab(${o.i})" onpointerdown="_catTabPullStart(event,this,${o.i})" onpointermove="_catTabPullMove(event)" onpointerup="_catTabPullEnd(event)" onpointercancel="_catTabPullEnd(event)">${escapeHtml(o.f.name)}</button>`
+    ).join('');
+    host.innerHTML =
+      `<div class="cat-bh-status" id="catBhStatus">
+        <span id="catBhDate"></span><span class="cat-bh-dot">·</span><span id="catBhTime"></span><span class="cat-bh-dot">·</span><span id="catBhLoc">…</span>
+      </div>
+      <div class="cat-bh-inner">
+        <div class="cat-bh-wordmark" data-rail="${escapeHtml(railUrl||'')}" onclick="_catHeaderOpen()" onpointerdown="_catBhPressStart(this)" onpointerup="_catBhPressEnd()" onpointerleave="_catBhPressEnd()" onpointercancel="_catBhPressEnd()">${escapeHtml(folder.name)}</div>
+        <div class="cat-bh-tabs">${tabs}</div>
+      </div>`;
+    _catBhStatusTick();
+    _catBhLocate();
+    // Sous-nav = sources du dossier
+    const feeds = folder.feeds || [];
+    const subs = [`<button type="button" class="cat-sub${!railUrl?' active':''}" onclick="_catSub('')">Tout</button>`]
+      .concat(feeds.map(u =>
+        `<button type="button" class="cat-sub${railUrl===u?' active':''}" onclick="_catSub('${escapeHtml(u).replace(/'/g,"\\'")}')">${escapeHtml(_catSourceName(u))}</button>`
+      ));
+    subEl.innerHTML = `<div class="cat-subnav-row">${subs.join('')}</div>`;
+  }
+  let _catBhLocCache = null;
+  function _catBhStatusTick(){
+    const dEl = document.getElementById('catBhDate');
+    const tEl = document.getElementById('catBhTime');
+    const lEl = document.getElementById('catBhLoc');
+    if(!dEl || !tEl) return;
+    const now = new Date();
+    dEl.textContent = now.toLocaleDateString('fr-FR', { weekday:'short', day:'numeric', month:'short' });
+    tEl.textContent = now.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+    if(lEl && _catBhLocCache) lEl.textContent = _catBhLocCache;
+  }
+  let _catBhTickTimer = null;
+  function _catBhStartTicker(){
+    if(_catBhTickTimer) return;
+    _catBhTickTimer = setInterval(_catBhStatusTick, 15000);
+  }
+  function _catBhLocate(){
+    const lEl = document.getElementById('catBhLoc');
+    if(_catBhLocCache){ if(lEl) lEl.textContent = _catBhLocCache; _catBhStartTicker(); return; }
+    _catBhStartTicker();
+    const fallback = () => {
+      try{
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+        const city = tz.split('/').pop().replace(/_/g,' ');
+        _catBhLocCache = city || 'Localisation indisponible';
+      } catch(e){ _catBhLocCache = 'Localisation indisponible'; }
+      const el = document.getElementById('catBhLoc');
+      if(el) el.textContent = _catBhLocCache;
+    };
+    if(!navigator.geolocation){ fallback(); return; }
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&localityLanguage=fr`)
+          .then(r => r.json())
+          .then(d => {
+            let city = d.city || d.locality || (d.localityInfo && d.localityInfo.administrative && d.localityInfo.administrative.length ? d.localityInfo.administrative[d.localityInfo.administrative.length-1].name : '') || '';
+            if(!city){
+              try{ city = (Intl.DateTimeFormat().resolvedOptions().timeZone||'').split('/').pop().replace(/_/g,' '); } catch(e){}
+            }
+            const country = d.countryName || '';
+            _catBhLocCache = [city, country].filter(Boolean).join(', ') || 'Position détectée';
+            const el = document.getElementById('catBhLoc');
+            if(el) el.textContent = _catBhLocCache;
+          })
+          .catch(fallback);
+      },
+      fallback,
+      { timeout:4000 }
+    );
+  }
+  window._renderCatHeader = _renderCatHeader;
+  window._catHeaderTab = function(idx){
+    if(_catTabPullFired){ _catTabPullFired = false; return; } // le tirage a déjà ouvert le modal : ignorer le tap qui suit
+    const f = folders[idx]; if(!f) return;
+    if(typeof _smartPickCat === 'function') _smartPickCat(f.name); // → maj _smartCat + re-rendu (dont ce header)
+  };
+  // Tirage vers le bas sur un onglet de dossier (rail du hero) → ouvre le modal thématique de ce dossier
+  let _catTabPull = { active:false, y0:0, idx:-1, el:null };
+  let _catTabPullFired = false;
+  window._catTabPullStart = function(e, el, idx){
+    _catTabPull.active = true; _catTabPull.y0 = e.clientY; _catTabPull.idx = idx; _catTabPull.el = el;
+    _catTabPullFired = false;
+  };
+  window._catTabPullMove = function(e){
+    if(!_catTabPull.active) return;
+    const dy = e.clientY - _catTabPull.y0;
+    if(_catTabPull.el) _catTabPull.el.style.transform = dy > 0 ? `translateY(${Math.min(dy*.35,16)}px)` : '';
+    if(dy > 34 && !_catTabPullFired){
+      _catTabPullFired = true;
+      if(navigator.vibrate) try{ navigator.vibrate(8); }catch(e){}
+      const f = folders[_catTabPull.idx];
+      if(f) _catOpenModalForFolder(f);
+    }
+  };
+  window._catTabPullEnd = function(){
+    if(_catTabPull.el){ _catTabPull.el.style.transform = ''; }
+    _catTabPull.active = false; _catTabPull.el = null;
+  };
+  function _catOpenModalForFolder(folder){
+    const feeds = folder.feeds || [];
+    const subs = [{ url:'', name:'À la une' }].concat(feeds.map(u => ({ url:u, name:_catSourceName(u) })));
+    _catModal.subs = subs; _catModal.idx = 0;
+    _catRenderModal();
+    document.body.classList.add('cat-modal-open');
+  }
+  window._catHeaderOpen = function(){
+    if(_catBhPressFired){ _catBhPressFired = false; return; } // l'appui long a déjà ouvert le modal : ignorer le clic qui suit
+    const c = _catFolders().find(o => o.f.name === _smartCat) || _catFolders()[0];
+    if(c) openFolderPage(c.i);
+  };
+  window._catHeaderSearch = function(){
+    if(typeof openNavSearch === 'function'){ openNavSearch(); return; }
+    const b = document.getElementById('navLayerSearchIcon');
+    if(b) b.click();
+  };
+  // Tap sur une source : filtre le flux (existant) + ouvre le modal thématique de contexte
+  window._catSub = function(url){
+    if(typeof _smartPickSource === 'function') _smartPickSource(url); // → maj _railFilterUrl + re-rendu
+  };
+  // Appui long sur le titre du dossier (hero) → ouvre le modal thématique, scindé du filtrage par tap
+  let _catBhPressTimer = null, _catBhPressFired = false;
+  window._catBhPressStart = function(el){
+    _catBhPressFired = false;
+    clearTimeout(_catBhPressTimer);
+    _catBhPressTimer = setTimeout(() => {
+      _catBhPressFired = true;
+      if(navigator.vibrate) try{ navigator.vibrate(8); }catch(e){}
+      _catOpenModalNow(el.dataset.rail || '');
+    }, 480);
+  };
+  window._catBhPressEnd = function(){ clearTimeout(_catBhPressTimer); };
+  function _catOpenModalNow(url){
+    const subs = _catModalSubs();
+    const idx = Math.max(0, subs.findIndex(s => s.url === (url||'')));
+    _catModal.subs = subs; _catModal.idx = idx;
+    _catRenderModal();
+    document.body.classList.add('cat-modal-open');
+  }
+
+  // ── Modal thématique (source) : liens rapides + vedette + pagination + swipe ──
+  const _catModal = {
+    subs: [],     // [{url, name}] : « À la une » + sources du dossier actif
+    idx: 0,
+    timer: null,
+    pending: null,
+  };
+  function _catModalSubs(){
+    const c = _catFolders().find(o => o.f.name === _smartCat) || _catFolders()[0];
+    if(!c) return [];
+    const feeds = c.f.feeds || [];
+    return [{ url:'', name:'À la une' }].concat(feeds.map(u => ({ url:u, name:_catSourceName(u) })));
+  }
+  function _catOpenModal(url){
+    const subs = _catModalSubs();
+    const idx = Math.max(0, subs.findIndex(s => s.url === (url||'')));
+    _catModal.subs = subs; _catModal.idx = idx;
+    // Délai d'intention : re-tap rapide si déjà ouvert (50 ms), sinon 250 ms (anti-spam)
+    clearTimeout(_catModal.timer);
+    _catModal.pending = url||'';
+    const isOpen = document.body.classList.contains('cat-modal-open');
+    _catModal.timer = setTimeout(() => {
+      if(_catModal.pending !== (url||'')) return;
+      _catRenderModal();
+      document.body.classList.add('cat-modal-open');
+    }, isOpen ? 50 : 250);
+  }
+  function _catRenderModal(){
+    const subs = _catModal.subs, i = _catModal.idx;
+    const cur = subs[i]; if(!cur) return;
+    const titleEl = document.getElementById('catModalTitle');
+    const imgEl   = document.getElementById('catModalFeatured');
+    const dotsEl  = document.getElementById('catModalDots');
+    if(titleEl) titleEl.innerHTML = `<span class="cat-modal-dot"></span>${escapeHtml(cur.name)}`;
+    if(imgEl){
+      let bg = '';
+      if(cur.url){ const im = _folderHeroImg({feeds:[cur.url]}); if(im) bg = `url('${im.replace(/'/g,"\\'")}')`; }
+      else { const c = _catFolders().find(o=>o.f.name===_smartCat); if(c){ const im=_folderHeroImg(c.f); if(im) bg=`url('${im.replace(/'/g,"\\'")}')`; } }
+      imgEl.style.backgroundImage = bg;
+    }
+    if(dotsEl){
+      dotsEl.innerHTML = subs.map((s,k)=>`<span class="cat-dot${k===i?' active':''}" onclick="_catModalGo(${k})"></span>`).join('');
+    }
+  }
+  window._catModalGo = function(k){
+    if(k<0 || k>=_catModal.subs.length) return;
+    _catModal.idx = k;
+    const s = _catModal.subs[k];
+    if(typeof _smartPickSource === 'function') _smartPickSource(s.url); // filtre en direct
+    _catRenderModal();
+  };
+  window._catModalClose = function(){ clearTimeout(_catModal.timer); _catModal.pending=null; document.body.classList.remove('cat-modal-open'); };
+  window._catModalPrimary = function(){ _catModalClose(); };  // « Lire le flux » = fermer (déjà filtré)
+  window._catModalOpenFolder = function(){ _catModalClose(); _catHeaderOpen(); };
+  window._catModalOpenSource = function(){
+    const s = _catModal.subs[_catModal.idx];
+    _catModalClose();
+    if(s && s.url && typeof openFeedPage==='function') openFeedPage(s.url, s.name);
+    else _catHeaderOpen();
+  };
+  window._catModalFav = function(){ _catModalClose(); if(typeof _switchView==='function'){ try{ _switchView('favoris'); }catch(e){} } };
+  // Swipe horizontal sur la carte → source précédente / suivante
+  (function _catModalSwipe(){
+    const card = document.getElementById('catModalCard');
+    if(!card) return;
+    let x0 = 0;
+    card.addEventListener('touchstart', e => { x0 = e.changedTouches[0].screenX; }, {passive:true});
+    card.addEventListener('touchend', e => {
+      const dx = e.changedTouches[0].screenX - x0;
+      if(Math.abs(dx) < 50) return;
+      _catModalGo(dx < 0 ? Math.min(_catModal.idx+1, _catModal.subs.length-1) : Math.max(_catModal.idx-1, 0));
+    }, {passive:true});
+  })();
+
   const ICON_CHEV = '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>';
   const ICON_EDIT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
   const ICON_PLUS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
@@ -6772,6 +7094,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   const list = document.getElementById('folderList');
   function render(){
     list.innerHTML = '';
+    _renderCatHeader();
     if (!folders.length){
       list.innerHTML = '<div class="sb-empty">Aucun dossier pour l\'instant. Créez-en un pour organiser vos flux.</div>';
       return;
@@ -6800,6 +7123,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
         <div class="folder-head" data-i="${i}">
           <button class="f-drag" aria-label="Glisser pour réorganiser">${ICON_DRAG}</button>
           <button class="chev-btn" data-toggle="${i}" aria-label="Ouvrir dossier">${ICON_CHEV}</button>
+          <span class="folder-swatch" style="background:linear-gradient(145deg,${_folderGrad(f.name)[0]} 0%,${_folderGrad(f.name)[1]} 100%)"></span>
           <span class="f-name" data-open="${i}">${escapeHtml(f.name)}</span>
           <span class="f-count">${(f.feeds||[]).length}</span>
           <button class="f-edit" data-edit="${i}" aria-label="Renommer">${ICON_EDIT}</button>
@@ -7336,8 +7660,6 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
       document.querySelectorAll('.view').forEach(v=>{ v.hidden = v.dataset.view !== _currentView; });
       if(_currentView==='browse') renderBrowseTimeline();
       if(_currentView==='grille') _renderGrille();
-      if(_currentView==='mosaic') _renderMosaic();
-      if(_currentView==='sequential') _renderSequential();
       if(_currentView==='liste') _renderListe();
     } else if(idx===1){
       openDiscover();
@@ -7928,69 +8250,94 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
 
   // Catalogue : 8 thèmes — flux ordonnés pour qu'aucune couleur identique ne se suive
   const DC_THEMES = [
-    { id:'actu', name:'Actualités', illus:'globe', tileGrad:'linear-gradient(145deg,#0077b6 0%,#00b4d8 100%)', icon:'🌐',
-      desc:'Information internationale, politique et société',
-      feeds:[
-        // bleu → rouge → sombre → orange → vert → rouge
-        { name:'Le Monde',          domain:'lemonde.fr',            color:'#0a3c6e', url:'https://www.lemonde.fr/rss/une.xml',                 desc:'Journal de référence depuis 1944' },
-        { name:'France Info',       domain:'francetvinfo.fr',       color:'#d20000', url:'https://www.francetvinfo.fr/titres.rss',              desc:'Actualité en continu 24h/24' },
-        { name:'Bloomberg',         domain:'bloomberg.com',         color:'#222222', url:'https://feeds.bloomberg.com/markets/news.rss',        desc:'Finance, économie et marchés' },
-        { name:'Reuters',           domain:'reuters.com',           color:'#f36f21', url:'https://feeds.reuters.com/reuters/topNews',           desc:'Agence de presse mondiale' },
-        { name:'Mediapart',         domain:'mediapart.fr',          color:'#00a651', url:'https://www.mediapart.fr/articles/feed',              desc:'Investigation indépendante' },
-        { name:'Libération',        domain:'liberation.fr',         color:'#e8000d', url:'https://www.liberation.fr/arc/outboundfeeds/rss/',   desc:'Actu politique et société' },
-        { name:'Courrier International', domain:'courrierinternational.com', color:'#b8860b', url:'https://www.courrierinternational.com/feed/all/rss.xml', desc:'La presse mondiale vue depuis Paris' },
-        { name:'France 24', domain:'france24.com', color:'#003f8e', url:'https://www.france24.com/fr/monde/rss', desc:'Information internationale en continu' },
-        { name:'RFI', domain:'rfi.fr', color:'#c8000a', url:'https://www.rfi.fr/fr/monde/rss', desc:'Radio France Internationale' },
-        { name:'20 Minutes', domain:'20minutes.fr', color:'#e8000d', url:'https://www.20minutes.fr/feeds/rss-monde.xml', desc:'Actu monde en temps réel' },
-        { name:'L\'Express', domain:'lexpress.fr', color:'#1a1a2e', url:'https://www.lexpress.fr/arc/outboundfeeds/rss/monde.xml', desc:'Analyses et grand reportage' },
-        { name:'Le Nouvel Obs', domain:'nouvelobs.com', color:'#003f8e', url:'https://www.nouvelobs.com/a-la-une/rss.xml', desc:'L\'actualite vue par l\'Obs' },
-        { name:'HuffPost France', domain:'huffingtonpost.fr', color:'#d20000', url:'https://www.huffingtonpost.fr/france/rss_headline.xml', desc:'Info et societe en France' },
-        { name:'L\'Humanite', domain:'humanite.fr', color:'#c00020', url:'https://www.humanite.fr/feed', desc:'Journal de reference de gauche' },
-        { name:'NYT HomePage', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml', desc:'La une du New York Times' },
-        { name:'NYT World', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/World.xml', desc:'Actualité mondiale NYT' },
-        { name:'Reuters World', domain:'reutersbest.com', color:'#e87722', url:'https://reutersbest.com/feed/', desc:'Les meilleures enquêtes Reuters' },
-        { name:'Washington Post World', domain:'washingtonpost.com', color:'#1a1a2e', url:'https://feeds.washingtonpost.com/rss/world', desc:'Le monde selon le WaPo' },
-        { name:'NY Post', domain:'nypost.com', color:'#c8000a', url:'https://nypost.com/feed/', desc:'Actualité américaine directe' },
+    { id:'actu-monde', name:'Actualités & Monde', tileGrad:'linear-gradient(145deg,#0077b6 0%,#00b4d8 100%)', icon:'🌐',
+      desc:'Information française, internationale et géopolitique',
+      subcats:[
+        { id:'france', name:'France', feeds:[
+          { name:'Le Monde',          domain:'lemonde.fr',            color:'#0a3c6e', url:'https://www.lemonde.fr/rss/une.xml',                 desc:'Journal de référence depuis 1944' },
+          { name:'France Info',       domain:'francetvinfo.fr',       color:'#d20000', url:'https://www.francetvinfo.fr/titres.rss',              desc:'Actualité en continu 24h/24' },
+          { name:'Mediapart',         domain:'mediapart.fr',          color:'#00a651', url:'https://www.mediapart.fr/articles/feed',              desc:'Investigation indépendante' },
+          { name:'Libération',        domain:'liberation.fr',         color:'#e8000d', url:'https://www.liberation.fr/arc/outboundfeeds/rss/',   desc:'Actu politique et société' },
+          { name:'20 Minutes', domain:'20minutes.fr', color:'#e8000d', url:'https://www.20minutes.fr/feeds/rss-monde.xml', desc:'Actu monde en temps réel' },
+          { name:'L\'Express', domain:'lexpress.fr', color:'#1a1a2e', url:'https://www.lexpress.fr/arc/outboundfeeds/rss/monde.xml', desc:'Analyses et grand reportage' },
+          { name:'Le Nouvel Obs', domain:'nouvelobs.com', color:'#003f8e', url:'https://www.nouvelobs.com/a-la-une/rss.xml', desc:'L\'actualite vue par l\'Obs' },
+          { name:'HuffPost France', domain:'huffingtonpost.fr', color:'#d20000', url:'https://www.huffingtonpost.fr/france/rss_headline.xml', desc:'Info et societe en France' },
+          { name:'L\'Humanite', domain:'humanite.fr', color:'#c00020', url:'https://www.humanite.fr/feed', desc:'Journal de reference de gauche' },
+        ]},
+        { id:'international', name:'International', feeds:[
+          { name:'Bloomberg',         domain:'bloomberg.com',         color:'#222222', url:'https://feeds.bloomberg.com/markets/news.rss',        desc:'Finance, économie et marchés' },
+          { name:'Reuters',           domain:'reuters.com',           color:'#f36f21', url:'https://feeds.reuters.com/reuters/topNews',           desc:'Agence de presse mondiale' },
+          { name:'Courrier International', domain:'courrierinternational.com', color:'#b8860b', url:'https://www.courrierinternational.com/feed/all/rss.xml', desc:'La presse mondiale vue depuis Paris' },
+          { name:'France 24', domain:'france24.com', color:'#003f8e', url:'https://www.france24.com/fr/monde/rss', desc:'Information internationale en continu' },
+          { name:'RFI', domain:'rfi.fr', color:'#c8000a', url:'https://www.rfi.fr/fr/monde/rss', desc:'Radio France Internationale' },
+          { name:'NYT HomePage', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml', desc:'La une du New York Times' },
+          { name:'NYT World', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/World.xml', desc:'Actualité mondiale NYT' },
+          { name:'Reuters World', domain:'reutersbest.com', color:'#e87722', url:'https://reutersbest.com/feed/', desc:'Les meilleures enquêtes Reuters' },
+          { name:'Washington Post World', domain:'washingtonpost.com', color:'#1a1a2e', url:'https://feeds.washingtonpost.com/rss/world', desc:'Le monde selon le WaPo' },
+          { name:'NY Post', domain:'nypost.com', color:'#c8000a', url:'https://nypost.com/feed/', desc:'Actualité américaine directe' },
+        ]},
+        { id:'geopolitique', name:'Géopolitique', feeds:[
+          { name:'Le Grand Continent',   domain:'legrandcontinent.eu',  color:'#1a2a5e', url:'https://legrandcontinent.eu/fr/feed/',                                    desc:'Revue de géopolitique européenne de référence' },
+          { name:'IRIS France',          domain:'iris-france.org',       color:'#003f8e', url:'https://www.iris-france.org/feed/',                                       desc:'Institut de Relations Internationales et Stratégiques' },
+          { name:'Revue Conflits',       domain:'revueconflits.com',     color:'#8a1a1a', url:'https://www.revueconflits.com/feed/',                                     desc:'Géopolitique, stratégie et histoire des conflits' },
+          { name:'Orient XXI',           domain:'orientxxi.info',        color:'#1a4a2a', url:'https://orientxxi.info/?page=backend&lang=fr',                            desc:'Moyen-Orient et monde arabe décryptés' },
+          { name:'Élucid',         domain:'elucid.media',          color:'#2a1a4a', url:'https://elucid.media/feed',                                               desc:'Géopolitique et économie politique critique' },
+          { name:'DiploWeb',             domain:'diploweb.com',          color:'#1a3a5e', url:'https://www.diploweb.com/spip.php?page=backend',                          desc:'La revue géopolitique en ligne' },
+          { name:'RFI Géopolitique',domain:'rfi.fr',              color:'#c8000a', url:'https://www.rfi.fr/fr/tag/g%C3%A9opolitique/rss',                          desc:'Actualité géopolitique mondiale' },
+          { name:'Desk Russie',          domain:'desk-russie.eu',        color:'#2a2a6e', url:'https://desk-russie.eu/feed',                                             desc:'Russie et espace post-soviétique' },
+          { name:'Les yeux du monde',    domain:'les-yeux-du-monde.fr',  color:'#1a3a4e', url:'https://les-yeux-du-monde.fr/feed',                                       desc:'Géopolitique accessible et pédagogique' },
+          { name:'Zone Militaire',       domain:'opex360.com',           color:'#2a3a2a', url:'https://www.opex360.com/category/diplomatie/feed/',                       desc:'Défense et diplomatie internationale' },
+          { name:'Le Monde Géo',  domain:'lemonde.fr',            color:'#1a1a2e', url:'https://www.lemonde.fr/geopolitique/rss_full.xml',                         desc:'Analyse géopolitique du Monde' },
+          { name:'Regard sur l’Est',    domain:'regard-est.com',        color:'#3a2a1a', url:'https://regard-est.com/feed',                                             desc:'Europe centrale, orientale et Balkans' },
+          { name:'NYT Europe', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/Europe.xml', desc:'Europe et géopolitique NYT' },
+          { name:'Reuters Middle East', domain:'reutersbest.com', color:'#e87722', url:'https://reutersbest.com/region/middle-east/feed/', desc:'Moyen-Orient par Reuters' },
+          { name:'Reuters Africa', domain:'reutersbest.com', color:'#e87722', url:'https://reutersbest.com/region/africa/feed/', desc:'Afrique par Reuters Best' },
+          { name:'WaPo World', domain:'washingtonpost.com', color:'#1a1a2e', url:'https://feeds.washingtonpost.com/rss/world?itid=lk_inline_manual_', desc:'Géopolitique Washington Post' },
+        ]},
       ]},
-    { id:'geopolitique', name:'G\u00e9opolitique', illus:'geopolitique', tileGrad:'linear-gradient(145deg,#6c3483 0%,#9b59b6 100%)', icon:'\u{1F30D}',
-      desc:'Diplomatie, conflits et relations internationales',
-      feeds:[
-        { name:'Le Grand Continent',   domain:'legrandcontinent.eu',  color:'#1a2a5e', url:'https://legrandcontinent.eu/fr/feed/',                                    desc:'Revue de g\u00e9opolitique europ\u00e9enne de r\u00e9f\u00e9rence' },
-        { name:'IRIS France',          domain:'iris-france.org',       color:'#003f8e', url:'https://www.iris-france.org/feed/',                                       desc:'Institut de Relations Internationales et Strat\u00e9giques' },
-        { name:'Revue Conflits',       domain:'revueconflits.com',     color:'#8a1a1a', url:'https://www.revueconflits.com/feed/',                                     desc:'G\u00e9opolitique, strat\u00e9gie et histoire des conflits' },
-        { name:'Orient XXI',           domain:'orientxxi.info',        color:'#1a4a2a', url:'https://orientxxi.info/?page=backend&lang=fr',                            desc:'Moyen-Orient et monde arabe d\u00e9crypt\u00e9s' },
-        { name:'\u00c9lucid',         domain:'elucid.media',          color:'#2a1a4a', url:'https://elucid.media/feed',                                               desc:'G\u00e9opolitique et \u00e9conomie politique critique' },
-        { name:'DiploWeb',             domain:'diploweb.com',          color:'#1a3a5e', url:'https://www.diploweb.com/spip.php?page=backend',                          desc:'La revue g\u00e9opolitique en ligne' },
-        { name:'RFI G\u00e9opolitique',domain:'rfi.fr',              color:'#c8000a', url:'https://www.rfi.fr/fr/tag/g%C3%A9opolitique/rss',                          desc:'Actualit\u00e9 g\u00e9opolitique mondiale' },
-        { name:'Desk Russie',          domain:'desk-russie.eu',        color:'#2a2a6e', url:'https://desk-russie.eu/feed',                                             desc:'Russie et espace post-sovi\u00e9tique' },
-        { name:'Les yeux du monde',    domain:'les-yeux-du-monde.fr',  color:'#1a3a4e', url:'https://les-yeux-du-monde.fr/feed',                                       desc:'G\u00e9opolitique accessible et p\u00e9dagogique' },
-        { name:'Zone Militaire',       domain:'opex360.com',           color:'#2a3a2a', url:'https://www.opex360.com/category/diplomatie/feed/',                       desc:'D\u00e9fense et diplomatie internationale' },
-        { name:'Le Monde G\u00e9o',  domain:'lemonde.fr',            color:'#1a1a2e', url:'https://www.lemonde.fr/geopolitique/rss_full.xml',                         desc:'Analyse g\u00e9opolitique du Monde' },
-        { name:'Regard sur l’Est',    domain:'regard-est.com',        color:'#3a2a1a', url:'https://regard-est.com/feed',                                             desc:'Europe centrale, orientale et Balkans' },
-        { name:'NYT Europe', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/Europe.xml', desc:'Europe et géopolitique NYT' },
-        { name:'Reuters Middle East', domain:'reutersbest.com', color:'#e87722', url:'https://reutersbest.com/region/middle-east/feed/', desc:'Moyen-Orient par Reuters' },
-        { name:'Reuters Africa', domain:'reutersbest.com', color:'#e87722', url:'https://reutersbest.com/region/africa/feed/', desc:'Afrique par Reuters Best' },
-        { name:'WaPo World', domain:'washingtonpost.com', color:'#1a1a2e', url:'https://feeds.washingtonpost.com/rss/world?itid=lk_inline_manual_', desc:'Géopolitique Washington Post' },
-      ]},
-    { id:'finance', name:'Finance', illus:'finance', tileGrad:'linear-gradient(145deg,#1e4d00 0%,#27ae60 100%)', icon:'📈',
-      desc:'Marchés, économie mondiale et finance personnelle',
-      feeds:[
-        // bleu → sombre → rouge → orange → vert → bleu clair
-        { name:'Les Échos',         domain:'lesechos.fr',           color:'#003fa3', url:'https://www.lesechos.fr/rss/rss_monde.xml',          desc:'La référence économique française' },
-        { name:'Bloomberg',         domain:'bloomberg.com',         color:'#1a1a1a', url:'https://feeds.bloomberg.com/markets/news.rss',        desc:'Finance mondiale et marchés' },
-        { name:'Challenges',        domain:'challenges.fr',         color:'#c8000a', url:'https://www.challenges.fr/rss.xml',                  desc:'Économie, business et entrepreneuriat' },
-        { name:'Capital',           domain:'capital.fr',            color:'#e06000', url:'https://www.capital.fr/flux-rss/actualite.xml',      desc:'Argent, carrière et économie' },
-        { name:'The Economist',     domain:'economist.com',         color:'#cc0000', url:'https://www.economist.com/rss/the_world_this_week.xml', desc:'Analyse économique mondiale' },
-        { name:'Boursorama',        domain:'boursorama.com',        color:'#005f9e', url:'https://www.boursorama.com/bourse/actualites/rss/',   desc:'Bourse, marchés et patrimoine' },
-        { name:'Journal du Net', domain:'journaldunet.com', color:'#003fa3', url:'https://www.journaldunet.com/business/rss/', desc:'Business, finance et decideurs' },
-        { name:'L\'Express Eco', domain:'lexpress.fr', color:'#1a1a2e', url:'https://www.lexpress.fr/arc/outboundfeeds/rss/economie.xml', desc:'Economie, marches et entreprises' },
-        { name:'Le Figaro Eco', domain:'lefigaro.fr', color:'#1a3060', url:'https://www.lefigaro.fr/rss/figaro_economie.xml', desc:'Finance et economie francaise' },
-        { name:'NYT Economy', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/Economy.xml', desc:'Économie et marchés NYT' },
-        { name:'NYT DealBook', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/Dealbook.xml', desc:'Finance, fusions et acquisitions' },
-        { name:'Reuters Finance', domain:'reutersbest.com', color:'#e87722', url:'https://reutersbest.com/topic/business-finance/feed/', desc:'Finance mondiale Reuters' },
-        { name:'Reuters Markets', domain:'reutersbest.com', color:'#e87722', url:'https://reutersbest.com/topic/markets/feed/', desc:'Marchés financiers Reuters' },
-        { name:'Forbes Innovation', domain:'forbes.com', color:'#c8000a', url:'https://www.forbes.com/innovation/feed2/', desc:'Innovation et business Forbes' },
-        { name:'NY Post Business', domain:'nypost.com', color:'#c8000a', url:'https://nypost.com/business/feed/', desc:'Business à l\'américaine' },
+    { id:'finance-eco', name:'Finance & Économie', tileGrad:'linear-gradient(145deg,#1e4d00 0%,#27ae60 100%)', icon:'📈',
+      desc:'Marchés, économie mondiale et crypto',
+      subcats:[
+        { id:'marches', name:'Marchés & Bourse', feeds:[
+          { name:'Boursorama',        domain:'boursorama.com',        color:'#005f9e', url:'https://www.boursorama.com/bourse/actualites/rss/',   desc:'Bourse, marchés et patrimoine' },
+          { name:'Bloomberg',         domain:'bloomberg.com',         color:'#1a1a1a', url:'https://feeds.bloomberg.com/markets/news.rss',        desc:'Finance mondiale et marchés' },
+          { name:'The Economist',     domain:'economist.com',         color:'#cc0000', url:'https://www.economist.com/rss/the_world_this_week.xml', desc:'Analyse économique mondiale' },
+          { name:'Reuters Markets', domain:'reutersbest.com', color:'#e87722', url:'https://reutersbest.com/topic/markets/feed/', desc:'Marchés financiers Reuters' },
+          { name:'Reuters Finance', domain:'reutersbest.com', color:'#e87722', url:'https://reutersbest.com/topic/business-finance/feed/', desc:'Finance mondiale Reuters' },
+          { name:'NY Post Business', domain:'nypost.com', color:'#c8000a', url:'https://nypost.com/business/feed/', desc:'Business à l\'américaine' },
+          { name:'Investing.com', domain:'investing.com', color:'#0055a5', url:'https://www.investing.com/rss/news.rss', desc:'Cours, indices et analyses en temps réel' },
+          { name:'Seeking Alpha', domain:'seekingalpha.com', color:'#ff7a00', url:'https://seekingalpha.com/feed.xml', desc:'Analyses et opinions d\'investisseurs' },
+          { name:'Nasdaq', domain:'nasdaq.com', color:'#0089cc', url:'https://www.nasdaq.com/feed/nasdaq-original', desc:'Marchés et valeurs technologiques' },
+          { name:'Benzinga', domain:'benzinga.com', color:'#00a651', url:'https://feeds.benzinga.com/benzinga', desc:'Actualité boursière en continu' },
+          { name:'MarketWatch', domain:'marketwatch.com', color:'#004a8f', url:'https://feeds.content.dowjones.io/public/rss/mw_topstories', desc:'Marchés financiers, Dow Jones' },
+          { name:'CNBC Marchés', domain:'cnbc.com', color:'#005594', url:'https://www.cnbc.com/id/20910258/device/rss/rss.html', desc:'Bourse et économie CNBC' },
+        ]},
+        { id:'economie', name:'Économie mondiale', feeds:[
+          { name:'Les Échos',         domain:'lesechos.fr',           color:'#003fa3', url:'https://www.lesechos.fr/rss/rss_monde.xml',          desc:'La référence économique française' },
+          { name:'Challenges',        domain:'challenges.fr',         color:'#c8000a', url:'https://www.challenges.fr/rss.xml',                  desc:'Économie, business et entrepreneuriat' },
+          { name:'Capital',           domain:'capital.fr',            color:'#e06000', url:'https://www.capital.fr/flux-rss/actualite.xml',      desc:'Argent, carrière et économie' },
+          { name:'Journal du Net', domain:'journaldunet.com', color:'#003fa3', url:'https://www.journaldunet.com/business/rss/', desc:'Business, finance et decideurs' },
+          { name:'L\'Express Eco', domain:'lexpress.fr', color:'#1a1a2e', url:'https://www.lexpress.fr/arc/outboundfeeds/rss/economie.xml', desc:'Economie, marches et entreprises' },
+          { name:'Le Figaro Eco', domain:'lefigaro.fr', color:'#1a3060', url:'https://www.lefigaro.fr/rss/figaro_economie.xml', desc:'Finance et economie francaise' },
+          { name:'NYT Economy', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/Economy.xml', desc:'Économie et marchés NYT' },
+          { name:'NYT DealBook', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/Dealbook.xml', desc:'Finance, fusions et acquisitions' },
+          { name:'Forbes Innovation', domain:'forbes.com', color:'#c8000a', url:'https://www.forbes.com/innovation/feed2/', desc:'Innovation et business Forbes' },
+          { name:'Trading Economics', domain:'tradingeconomics.com', color:'#1a3a6e', url:'https://tradingeconomics.com/rss/news.aspx', desc:'Indicateurs économiques mondiaux' },
+          { name:'CEPR', domain:'cepr.org', color:'#00305a', url:'https://cepr.org/rss/news', desc:'Recherche en politique économique' },
+          { name:'Economics One', domain:'economicsone.com', color:'#5a3a1a', url:'https://economicsone.com/feed/', desc:'Analyse macroéconomique' },
+          { name:'Financial Times — Économie', domain:'ft.com', color:'#fff1e5', url:'https://www.ft.com/global-economy?format=rss', desc:'Économie mondiale, Financial Times' },
+          { name:'FiveThirtyEight Économie', domain:'fivethirtyeight.com', color:'#1a1a1a', url:'https://fivethirtyeight.com/economics/feed/', desc:'Données et analyses économiques' },
+        ]},
+        { id:'crypto', name:'Crypto & Web3', feeds:[
+          { name:'CoinDesk',          domain:'coindesk.com',          color:'#f7931a', url:'https://www.coindesk.com/arc/outboundfeeds/rss/',    desc:'Le média crypto de référence' },
+          { name:'Cointelegraph',     domain:'cointelegraph.com',     color:'#1a1a1a', url:'https://cointelegraph.com/rss',                      desc:'News blockchain et DeFi' },
+          { name:'Decrypt',           domain:'decrypt.co',            color:'#e20028', url:'https://decrypt.co/feed',                            desc:'Web3, NFTs et cryptomonnaies' },
+          { name:'The Block',         domain:'theblock.co',           color:'#555555', url:'https://www.theblock.co/rss.xml',                   desc:'Analyse et données crypto' },
+          { name:'Bitcoin Magazine',  domain:'bitcoinmagazine.com',   color:'#f09600', url:'https://bitcoinmagazine.com/feed',                   desc:'Tout sur le Bitcoin' },
+          { name:'CoinTelegraph FR',  domain:'fr.cointelegraph.com',  color:'#004a8f', url:'https://fr.cointelegraph.com/rss',                  desc:'Crypto en français' },
+          { name:'PC Crypto', domain:'presse-citron.net', color:'#f5a623', url:'https://www.presse-citron.net/category/crypto-monnaies/feed/', desc:'Cryptomonnaies et blockchain' },
+          { name:'01net Crypto', domain:'01net.com', color:'#003fa3', url:'https://www.01net.com/actualites/cryptomonnaie/feed/', desc:'Bitcoin et altcoins en francais' },
+        ]},
       ]},
     { id:'science', name:'Science', illus:'cosmos', tileGrad:'linear-gradient(145deg,#0d47a1 0%,#42a5f5 100%)', icon:'🔭',
       desc:'Espace, physique, biologie et grandes découvertes',
@@ -8022,27 +8369,69 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
         { name:'Nouvel Obs Sante', domain:'nouvelobs.com', color:'#003f8e', url:'https://www.nouvelobs.com/sante/rss.xml', desc:'Sante et medecine' },
         { name:'NYT Health', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/svc/collections/v1/publish/https://www.nytimes.com/section/health/rss.xml', desc:'Santé et médecine NYT' },
       ]},
-    { id:'tech-ia', name:'Tech & IA', illus:'neural', tileGrad:'linear-gradient(145deg,#4a235a 0%,#a044ff 100%)', icon:'🤖',
-      desc:'Intelligence artificielle, hardware et culture du code',
-      feeds:[
-        // rose → vert → orange → violet → sombre → rouge sombre
-        { name:'The Verge',         domain:'theverge.com',          color:'#e5007e', url:'https://www.theverge.com/rss/index.xml',             desc:'Tech, gadgets et culture numérique' },
-        { name:'TechCrunch',        domain:'techcrunch.com',        color:'#0a7d3e', url:'https://techcrunch.com/feed/',                       desc:'Startups, financement et disruption' },
-        { name:'Ars Technica',      domain:'arstechnica.com',       color:'#f46000', url:'https://feeds.arstechnica.com/arstechnica/index',    desc:'Science, technologie et culture geek' },
-        { name:'Numerama',          domain:'numerama.com',          color:'#6c63ff', url:'https://www.numerama.com/feed/',                     desc:'Tech et numérique en français' },
-        { name:'Wired',             domain:'wired.com',             color:'#1a1a1a', url:'https://www.wired.com/feed/rss',                     desc:"L'avenir de la technologie" },
-        { name:'MIT Tech Review',   domain:'technologyreview.com',  color:'#a00000', url:'https://www.technologyreview.com/topnews.rss',        desc:'Recherche et innovations en IA' },
-        { name:'01net', domain:'01net.com', color:'#003fa3', url:'https://www.01net.com/feed/', desc:'Tests, actus et dossiers high-tech' },
-        { name:'Presse-citron', domain:'presse-citron.net', color:'#f5a623', url:'https://www.presse-citron.net/feed/', desc:'Tech, IA et lifestyle numerique' },
-        { name:'Next.ink', domain:'next.ink', color:'#1a1a1a', url:'https://next.ink/feed/', desc:'L\'actu tech independante' },
-        { name:'Silicon.fr', domain:'silicon.fr', color:'#0a5a8a', url:'https://www.silicon.fr/feed', desc:'IT, cloud et transformation digitale' },
-        { name:'ZDNet France', domain:'zdnet.fr', color:'#cc0000', url:'https://www.zdnet.fr/feeds/rss/', desc:'High-tech pro et entreprises' },
-        { name:'Journal du Net IA', domain:'journaldunet.com', color:'#003fa3', url:'https://www.journaldunet.com/intelligence-artificielle/rss/', desc:'IA, business et numerique' },
-        { name:'NYT Technology', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml', desc:'High-tech et numérique NYT' },
-        { name:'NYT PersonalTech', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/PersonalTech.xml', desc:'Tech grand public NYT' },
-        { name:'WaPo Technology', domain:'washingtonpost.com', color:'#1a1a2e', url:'https://feeds.washingtonpost.com/rss/business/technology/', desc:'Tech et numérique WaPo' },
-        { name:'Forbes Big Data', domain:'forbes.com', color:'#c8000a', url:'https://www.forbes.com/big-data/feed2/', desc:'Big Data et IA Forbes' },
-        { name:'Forbes Cloud', domain:'forbes.com', color:'#c8000a', url:'https://www.forbes.com/cloud/feed2/', desc:'Cloud computing Forbes' },
+    { id:'tech-business', name:'Tech & Business', tileGrad:'linear-gradient(145deg,#4a235a 0%,#a044ff 100%)', icon:'🤖',
+      desc:'Intelligence artificielle, hardware, design produit et startups',
+      subcats:[
+        { id:'ai', name:'Intelligence Artificielle', feeds:[
+          { name:'MIT Tech Review',   domain:'technologyreview.com',  color:'#a00000', url:'https://www.technologyreview.com/topnews.rss',        desc:'Recherche et innovations en IA' },
+          { name:'Journal du Net IA', domain:'journaldunet.com', color:'#003fa3', url:'https://www.journaldunet.com/intelligence-artificielle/rss/', desc:'IA, business et numerique' },
+          { name:'Forbes Big Data', domain:'forbes.com', color:'#c8000a', url:'https://www.forbes.com/big-data/feed2/', desc:'Big Data et IA Forbes' },
+          { name:'OpenAI News', domain:'openai.com', color:'#10a37f', url:'https://openai.com/news/rss.xml', desc:'Annonces et recherche OpenAI' },
+          { name:'Google AI / DeepMind', domain:'research.google', color:'#4285f4', url:'https://research.google/blog/rss', desc:'Recherche IA de Google' },
+          { name:'BAIR Blog (Berkeley)', domain:'bair.berkeley.edu', color:'#003262', url:'https://bair.berkeley.edu/blog/feed.xml', desc:'Recherche IA de Berkeley' },
+          { name:'AI-TechPark', domain:'ai-techpark.com', color:'#5a2a8a', url:'https://ai-techpark.com/feed', desc:'Actualité IA et data' },
+          { name:'AI Accelerator Institute', domain:'aiacceleratorinstitute.com', color:'#2a5a8a', url:'https://www.aiacceleratorinstitute.com/rss/', desc:'IA appliquée et cas d\'usage' },
+          { name:'arXiv cs.AI', domain:'arxiv.org', color:'#b31b1b', url:'https://arxiv.org/rss/cs.AI', desc:'Publications de recherche en IA' },
+          { name:'Anthropic News', domain:'anthropic.com', color:'#d97757', url:'https://www.anthropic.com/news/rss.xml', desc:'Annonces et recherche Anthropic' },
+          { name:'Hugging Face Blog', domain:'huggingface.co', color:'#ffd21e', url:'https://huggingface.co/blog/feed.xml', desc:'Open-source IA et modèles' },
+          { name:'The Gradient', domain:'thegradient.pub', color:'#1a1a3a', url:'https://thegradient.pub/rss/', desc:'Analyses de fond sur l\'IA' },
+          { name:'MarkTechPost', domain:'marktechpost.com', color:'#0a5a8a', url:'https://www.marktechpost.com/feed', desc:'Recherche et actualité machine learning' },
+        ]},
+        { id:'hardware', name:'Hardware & Gadgets', feeds:[
+          { name:'The Verge',         domain:'theverge.com',          color:'#e5007e', url:'https://www.theverge.com/rss/index.xml',             desc:'Tech, gadgets et culture numérique' },
+          { name:'Ars Technica',      domain:'arstechnica.com',       color:'#f46000', url:'https://feeds.arstechnica.com/arstechnica/index',    desc:'Science, technologie et culture geek' },
+          { name:'Wired',             domain:'wired.com',             color:'#1a1a1a', url:'https://www.wired.com/feed/rss',                     desc:"L'avenir de la technologie" },
+          { name:'01net', domain:'01net.com', color:'#003fa3', url:'https://www.01net.com/feed/', desc:'Tests, actus et dossiers high-tech' },
+          { name:'Presse-citron', domain:'presse-citron.net', color:'#f5a623', url:'https://www.presse-citron.net/feed/', desc:'Tech, IA et lifestyle numerique' },
+          { name:'Next.ink', domain:'next.ink', color:'#1a1a1a', url:'https://next.ink/feed/', desc:'L\'actu tech independante' },
+          { name:'ZDNet France', domain:'zdnet.fr', color:'#cc0000', url:'https://www.zdnet.fr/feeds/rss/', desc:'High-tech pro et entreprises' },
+          { name:'Forbes Cloud', domain:'forbes.com', color:'#c8000a', url:'https://www.forbes.com/cloud/feed2/', desc:'Cloud computing Forbes' },
+          { name:'Numerama',          domain:'numerama.com',          color:'#6c63ff', url:'https://www.numerama.com/feed/',                     desc:'Tech et numérique en français' },
+          { name:'NYT Technology', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml', desc:'High-tech et numérique NYT' },
+          { name:'NYT PersonalTech', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/PersonalTech.xml', desc:'Tech grand public NYT' },
+          { name:'WaPo Technology', domain:'washingtonpost.com', color:'#1a1a2e', url:'https://feeds.washingtonpost.com/rss/business/technology/', desc:'Tech et numérique WaPo' },
+          { name:'CNET', domain:'cnet.com', color:'#e0001a', url:'https://www.cnet.com/rss/news/', desc:'Tests et actus gadgets' },
+          { name:'Tom\'s Hardware', domain:'tomshardware.com', color:'#e2231a', url:'https://www.tomshardware.com/feeds.xml', desc:'Composants et hardware' },
+          { name:'Engadget', domain:'engadget.com', color:'#00cad9', url:'https://www.engadget.com/rss.xml', desc:'Gadgets et électronique grand public' },
+          { name:'PCMag', domain:'pcmag.com', color:'#c8000a', url:'https://www.pcmag.com/feeds/rss/latest', desc:'Tests produits et comparatifs' },
+          { name:'TechRadar', domain:'techradar.com', color:'#e0004d', url:'https://www.techradar.com/feeds.xml', desc:'Gadgets, tests et guides d\'achat' },
+          { name:'ExtremeTech', domain:'extremetech.com', color:'#1a6a8a', url:'https://www.extremetech.com/feed', desc:'Hardware et technologies de pointe' },
+          { name:'Geeky Gadgets', domain:'geeky-gadgets.com', color:'#3a3a3a', url:'https://www.geeky-gadgets.com/feed', desc:'Nouveautés gadgets au quotidien' },
+        ]},
+        { id:'dev-design', name:'Développement & Design', feeds:[
+          { name:'Smashing Magazine', domain:'smashingmagazine.com',  color:'#e85c33', url:'https://www.smashingmagazine.com/feed/',             desc:'Design web, UX et front-end' },
+          { name:"It's Nice That",    domain:'itsnicethat.com',        color:'#ff2600', url:'https://www.itsnicethat.com/rss',                    desc:'Culture créative et art contemporain' },
+          { name:'CSS-Tricks',        domain:'css-tricks.com',        color:'#2965f1', url:'https://css-tricks.com/feed/',                       desc:'CSS, front-end et animations' },
+          { name:'Sidebar.io',        domain:'sidebar.io',            color:'#222222', url:'https://sidebar.io/feed.xml',                        desc:'Les 5 meilleurs liens design' },
+          { name:'A List Apart',      domain:'alistapart.com',        color:'#367eb6', url:'https://alistapart.com/main/feed/',                  desc:'Web design et bonnes pratiques' },
+          { name:'Abduzeedo',         domain:'abduzeedo.com',         color:'#1a7a6a', url:'https://abduzeedo.com/rss.xml',                      desc:'Inspiration design et motion' },
+          { name:'Codrops', domain:'tympanus.net', color:'#ff6b6b', url:'https://tympanus.net/codrops/feed', desc:'Tutoriels design et front-end' },
+          { name:'LogRocket Blog', domain:'blog.logrocket.com', color:'#764abc', url:'https://blog.logrocket.com/feed', desc:'Ingénierie front-end et produit' },
+          { name:'Design Shack', domain:'designshack.net', color:'#2a2a4a', url:'https://feedpress.me/designshack', desc:'Design web et graphique au quotidien' },
+        ]},
+        { id:'startups', name:'Startups & Business Tech', feeds:[
+          { name:'Hacker News',       domain:'news.ycombinator.com',  color:'#ff6600', url:'https://news.ycombinator.com/rss',                  desc:'Tech, startups et innovation' },
+          { name:'TechCrunch Start.', domain:'techcrunch.com',        color:'#005f9e', url:'https://techcrunch.com/category/startups/feed/',     desc:'Financement et disruption' },
+          { name:'Fast Company',      domain:'fastcompany.com',       color:'#111111', url:'https://www.fastcompany.com/rss.xml',                desc:'Innovation et leadership' },
+          { name:'Entrepreneur',      domain:'entrepreneur.com',      color:'#c8000a', url:'https://www.entrepreneur.com/latest.rss',            desc:'Conseils pour entrepreneurs' },
+          { name:'HBR',               domain:'hbr.org',               color:'#1a6a28', url:'http://feeds.hbr.org/harvardbusiness',              desc:'Harvard Business Review' },
+          { name:'L\'ADN',            domain:'ladn.eu',               color:'#444444', url:'https://www.ladn.eu/feed/',                          desc:'Innovation et futurs possibles' },
+          { name:'L\'Express Entrepreneurs', domain:'lexpress.fr', color:'#1a1a2e', url:'https://www.lexpress.fr/arc/outboundfeeds/rss/entrepreneurs.xml', desc:'Startups et entrepreneuriat' },
+          { name:'JDN Decideurs', domain:'journaldunet.com', color:'#003fa3', url:'https://www.journaldunet.com/decideurs/rss/', desc:'Dirigeants et strategie' },
+          { name:'PC Startups', domain:'presse-citron.net', color:'#f5a623', url:'https://www.presse-citron.net/category/startups/feed/', desc:'Startups et innovation' },
+          { name:'TechCrunch',        domain:'techcrunch.com',        color:'#0a7d3e', url:'https://techcrunch.com/feed/',                       desc:'Startups, financement et disruption' },
+          { name:'Silicon.fr', domain:'silicon.fr', color:'#0a5a8a', url:'https://www.silicon.fr/feed', desc:'IT, cloud et transformation digitale' },
+        ]},
       ]},
     { id:'climat', name:'Climat & Éco', illus:'climat', tileGrad:'linear-gradient(145deg,#0b5345 0%,#1abc9c 100%)', icon:'🌱',
       desc:'Environnement, énergie verte et transition écologique',
@@ -8060,99 +8449,110 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
         { name:'NYT Energy & Enviro', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/EnergyEnvironment.xml', desc:'Énergie et environnement NYT' },
         { name:'Reuters Énergie', domain:'reutersbest.com', color:'#e87722', url:'https://reutersbest.com/topic/commodities-energy/feed/', desc:'Énergie et matières premières' },
       ]},
-    { id:'startup', name:'Entrepreneuriat', illus:'entrepreneuriat', tileGrad:'linear-gradient(145deg,#7e4a00 0%,#f39c12 100%)', icon:'🚀',
-      desc:'Startups, innovation et culture du business',
-      feeds:[
-        // orange → bleu → sombre → rouge → vert → gris
-        { name:'Hacker News',       domain:'news.ycombinator.com',  color:'#ff6600', url:'https://news.ycombinator.com/rss',                  desc:'Tech, startups et innovation' },
-        { name:'TechCrunch Start.', domain:'techcrunch.com',        color:'#005f9e', url:'https://techcrunch.com/category/startups/feed/',     desc:'Financement et disruption' },
-        { name:'Fast Company',      domain:'fastcompany.com',       color:'#111111', url:'https://www.fastcompany.com/rss.xml',                desc:'Innovation et leadership' },
-        { name:'Entrepreneur',      domain:'entrepreneur.com',      color:'#c8000a', url:'https://www.entrepreneur.com/latest.rss',            desc:'Conseils pour entrepreneurs' },
-        { name:'HBR',               domain:'hbr.org',               color:'#1a6a28', url:'http://feeds.hbr.org/harvardbusiness',              desc:'Harvard Business Review' },
-        { name:'L\'ADN',            domain:'ladn.eu',               color:'#444444', url:'https://www.ladn.eu/feed/',                          desc:'Innovation et futurs possibles' },
-        { name:'L\'Express Entrepreneurs', domain:'lexpress.fr', color:'#1a1a2e', url:'https://www.lexpress.fr/arc/outboundfeeds/rss/entrepreneurs.xml', desc:'Startups et entrepreneuriat' },
-        { name:'JDN Decideurs', domain:'journaldunet.com', color:'#003fa3', url:'https://www.journaldunet.com/decideurs/rss/', desc:'Dirigeants et strategie' },
-        { name:'PC Startups', domain:'presse-citron.net', color:'#f5a623', url:'https://www.presse-citron.net/category/startups/feed/', desc:'Startups et innovation' },
+    { id:'sport', name:'Sport', tileGrad:'linear-gradient(145deg,#7d6608 0%,#f1c40f 100%)', icon:'🏆',
+      desc:'Football, basketball, tennis, F1, rugby, cyclisme et sport mondial',
+      subcats:[
+        { id:'football', name:'Football', feeds:[
+          { name:"L'Équipe",          domain:'lequipe.fr',            color:'#003f8e', url:'https://dwh.lequipe.fr/api/edito/rss?path=/Tous-sports/',   desc:'Le quotidien sportif de référence' },
+          { name:'RMC Sport',         domain:'rmcsport.com',    color:'#e2001a', url:'https://rmcsport.bfmtv.com/rss/football/',           desc:'Direct, analyses et mercato' },
+          { name:'SoFoot',            domain:'sofoot.com',            color:'#1a7a1a', url:'https://www.sofoot.com/feed',                        desc:'Football et culture foot' },
+          { name:'The Guardian Sport',domain:'theguardian.com',       color:'#0066cc', url:'https://www.theguardian.com/football/rss',           desc:'Football mondial et analyses' },
+          { name:'ESPN FC',           domain:'espn.com',              color:'#cc0000', url:'https://www.espn.com/espn/rss/soccer/news',          desc:'Football international et LDC' },
+          { name:'BBC Sport Football',domain:'bbc.com',               color:'#111111', url:'https://feeds.bbci.co.uk/sport/football/rss.xml',    desc:'Premier League et couverture mondiale' },
+          { name:'Athletic Premier League', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/athletic/rss/premier-league/', desc:'The Athletic - Premier League' },
+          { name:'Athletic Football', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/athletic/rss/football/', desc:'The Athletic - Football mondial' },
+        ]},
+        { id:'basketball', name:'Basketball / NBA', feeds:[
+          { name:'The Athletic NBA',  domain:'theathletic.com',      color:'#c8102e', url:'https://www.nytimes.com/athletic/rss/nba/',                  desc:'Analyses approfondies et coulisses NBA' },
+          { name:'Bleacher Report',   domain:'bleacherreport.com',    color:'#f5a623', url:'https://bleacherreport.com/articles/feed',           desc:'Breaking news et highlights' },
+          { name:'BasketSession',     domain:'basketsession.com',     color:'#003fa3', url:'https://www.basketsession.com/feed/',                desc:'La NBA en français' },
+          { name:'ESPN NBA',          domain:'espn.com',              color:'#cc0000', url:'http://sports.espn.go.com/espn/rss/nba/news',             desc:'Actus, scores et statistiques' },
+          { name:'HoopsHype',         domain:'hoopshype.com',         color:'#1a5a1a', url:'https://hoopshype.com/feed/',                        desc:'Rumeurs, trades et contrats' },
+          { name:'RealGM Basketball', domain:'realgm.com', color:'#0055a5', url:'https://basketball.realgm.com/rss/',                 desc:'Stats, transactions et draft' },
+        ]},
+        { id:'tennis', name:'Tennis', feeds:[
+          { name:'Athletic Tennis', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/athletic/rss/tennis/', desc:'The Athletic - Tennis mondial' },
+          { name:'L\'Équipe Tennis', domain:'lequipe.fr', color:'#003f8e', url:'https://dwh.lequipe.fr/api/edito/rss?path=/Tennis/', desc:'Tennis : résultats et analyses' },
+          { name:'ATP Tour', domain:'atptour.com', color:'#004b8d', url:'https://www.atptour.com/en/media/rss-feed', desc:'Circuit ATP officiel' },
+          { name:'WTA Tennis', domain:'wtatennis.com', color:'#5a0f8a', url:'https://www.wtatennis.com/rss', desc:'Circuit WTA officiel' },
+          { name:'Tennis Majors', domain:'tennismajors.com', color:'#1a6a3a', url:'https://www.tennismajors.com/feed', desc:'Actu tennis et grands tournois' },
+          { name:'BBC Sport Tennis', domain:'bbc.com', color:'#111111', url:'https://feeds.bbci.co.uk/sport/tennis/rss.xml', desc:'Tennis britannique et mondial' },
+          { name:'ESPN Tennis', domain:'espn.com', color:'#cc0000', url:'https://www.espn.com/espn/rss/tennis/news', desc:'Tennis, résultats et classements' },
+          { name:'The Guardian Tennis', domain:'theguardian.com', color:'#0066cc', url:'https://www.theguardian.com/sport/tennis/rss', desc:'Tennis mondial par le Guardian' },
+          { name:'Sky Sports Tennis', domain:'skysports.com', color:'#00a0dc', url:'https://www.skysports.com/rss/12040', desc:'Tennis britannique et mondial' },
+        ]},
+        { id:'f1', name:'Formule 1', feeds:[
+          { name:'L\'Équipe Formule 1', domain:'lequipe.fr', color:'#003f8e', url:'https://dwh.lequipe.fr/api/edito/rss?path=/Formule-1/', desc:'F1 : courses et paddock' },
+          { name:'Formula1.com', domain:'formula1.com', color:'#e10600', url:'https://www.formula1.com/en/latest/all.xml', desc:'Site officiel de la F1' },
+          { name:'Autosport F1', domain:'autosport.com', color:'#c8000a', url:'https://www.autosport.com/rss/f1/news', desc:'Course auto et F1' },
+          { name:'Motorsport.com', domain:'motorsport.com', color:'#1a1a1a', url:'https://www.motorsport.com/rss/f1/news/', desc:'Sport automobile international' },
+          { name:'FIA', domain:'fia.com', color:'#1a2a5e', url:'https://www.fia.com/media-center/rss-feed', desc:'Fédération Internationale de l\'Automobile' },
+          { name:'Grandprix.com', domain:'grandprix.com', color:'#8a1a1a', url:'https://www.grandprix.com/rss.xml', desc:'Actu et coulisses F1' },
+          { name:'F1Technical', domain:'f1technical.net', color:'#2a2a2a', url:'https://www.f1technical.net/rss/news.xml', desc:'Technique et ingénierie F1' },
+          { name:'BBC Sport F1', domain:'bbc.com', color:'#111111', url:'https://feeds.bbci.co.uk/sport/formula1/rss.xml', desc:'F1 par la BBC' },
+        ]},
+        { id:'rugby', name:'Rugby', feeds:[
+          { name:'L\'Équipe Rugby', domain:'lequipe.fr', color:'#003f8e', url:'https://dwh.lequipe.fr/api/edito/rss?path=/Rugby/', desc:'Rugby : Top 14 et international' },
+          { name:'BBC Sport Rugby Union', domain:'bbc.com', color:'#111111', url:'https://feeds.bbci.co.uk/sport/rugby-union/rss.xml', desc:'Rugby britannique et mondial' },
+          { name:'Planet Rugby', domain:'planet-rugby.com', color:'#1a6a28', url:'https://www.planet-rugby.com/rss-home', desc:'Actu rugby internationale' },
+          { name:'RugbyPass', domain:'rugbypass.com', color:'#0a3a6e', url:'https://www.rugbypass.com/feeds/rss', desc:'Rugby mondial, analyses et vidéos' },
+          { name:'The Rugby Paper', domain:'therugbypaper.co.uk', color:'#8a1a1a', url:'https://www.therugbypaper.co.uk/feed/', desc:'Rugby anglais en profondeur' },
+          { name:'WalesOnline Rugby', domain:'walesonline.co.uk', color:'#c8000a', url:'https://www.walesonline.co.uk/sport/rugby/rugby-news/?service=rss', desc:'Rugby gallois' },
+          { name:'RUCK.co.uk', domain:'ruck.co.uk', color:'#1a1a2e', url:'https://www.ruck.co.uk/feed', desc:'Actu rugby britannique' },
+          { name:'Midi Olympique', domain:'lemidiolympique.fr', color:'#e2001a', url:'https://www.lemidiolympique.fr/rss', desc:'Le spécialiste français du rugby' },
+        ]},
+        { id:'cyclisme', name:'Cyclisme', feeds:[
+          { name:'L\'Équipe Cyclisme', domain:'lequipe.fr', color:'#003f8e', url:'https://dwh.lequipe.fr/api/edito/rss?path=/Cyclisme/', desc:'Cyclisme : courses et classements' },
+          { name:'Cyclingnews', domain:'cyclingnews.com', color:'#e2001a', url:'https://www.cyclingnews.com/rss/', desc:'Cyclisme professionnel mondial' },
+          { name:'VeloNews', domain:'velonews.com', color:'#1a6a28', url:'https://www.velonews.com/feed', desc:'Cyclisme route et compétition' },
+          { name:'BikeRadar', domain:'bikeradar.com', color:'#0a5a8a', url:'https://www.bikeradar.com/feed', desc:'Matériel et actu cyclisme' },
+        ]},
+        { id:'sport-mondial', name:'Sport Mondial', feeds:[
+          { name:"L'Équipe Sport",    domain:'lequipe.fr',            color:'#003f8e', url:'https://dwh.lequipe.fr/api/edito/rss?path=/Tous-sports/',            desc:"Toute l'actu sportive française" },
+          { name:'Marca',             domain:'marca.com',             color:'#e8000d', url:'https://e00-marca.uecdn.es/rss/portada.xml',          desc:'Sport espagnol et international' },
+          { name:'Eurosport',         domain:'eurosport.fr',          color:'#f46000', url:'https://www.eurosport.fr/rss/story.xml',             desc:'Couverture multisports européenne' },
+          { name:'The Athletic',      domain:'theathletic.com',       color:'#1a1a2e', url:'https://theathletic.com/feed/',                      desc:'Journalisme sportif premium' },
+          { name:'Sky Sports',        domain:'skysports.com',         color:'#00a0dc', url:'https://www.skysports.com/rss/12040',                desc:'Sports britanniques et mondiaux' },
+          { name:'Athletic Olympics', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/athletic/rss/olympics/', desc:'The Athletic - Jeux Olympiques' },
+          { name:'Athletic MMA', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/athletic/rss/mma/', desc:'The Athletic - MMA et sports de combat' },
+          { name:'Reuters Amériques', domain:'reutersbest.com', color:'#e87722', url:'https://reutersbest.com/region/americas/feed/', desc:'Sport et actu Amériques' },
+        ]},
       ]},
-    { id:'crypto', name:'Crypto & Web3', illus:'crypto', tileGrad:'linear-gradient(145deg,#5a3e00 0%,#f7931a 100%)', icon:'₿',
-      desc:'Bitcoin, DeFi, blockchain et économie numérique',
-      feeds:[
-        // orange → sombre → rouge → gris → orange-vert → bleu
-        { name:'CoinDesk',          domain:'coindesk.com',          color:'#f7931a', url:'https://www.coindesk.com/arc/outboundfeeds/rss/',    desc:'Le média crypto de référence' },
-        { name:'Cointelegraph',     domain:'cointelegraph.com',     color:'#1a1a1a', url:'https://cointelegraph.com/rss',                      desc:'News blockchain et DeFi' },
-        { name:'Decrypt',           domain:'decrypt.co',            color:'#e20028', url:'https://decrypt.co/feed',                            desc:'Web3, NFTs et cryptomonnaies' },
-        { name:'The Block',         domain:'theblock.co',           color:'#555555', url:'https://www.theblock.co/rss.xml',                   desc:'Analyse et données crypto' },
-        { name:'Bitcoin Magazine',  domain:'bitcoinmagazine.com',   color:'#f09600', url:'https://bitcoinmagazine.com/feed',                   desc:'Tout sur le Bitcoin' },
-        { name:'CoinTelegraph FR',  domain:'fr.cointelegraph.com',  color:'#004a8f', url:'https://fr.cointelegraph.com/rss',                  desc:'Crypto en français' },
-        { name:'PC Crypto', domain:'presse-citron.net', color:'#f5a623', url:'https://www.presse-citron.net/category/crypto-monnaies/feed/', desc:'Cryptomonnaies et blockchain' },
-        { name:'01net Crypto', domain:'01net.com', color:'#003fa3', url:'https://www.01net.com/actualites/cryptomonnaie/feed/', desc:'Bitcoin et altcoins en francais' },
-      ]},
-    { id:'nba', name:'NBA', illus:'basketball', tileGrad:'linear-gradient(145deg,#6e2c00 0%,#e67e22 100%)', icon:'🏀',
-      desc:'Basketball américain, analyses et coulisses de la ligue',
-      feeds:[
-        // rouge → orange → bleu → rouge → vert → bleu
-        { name:'The Athletic NBA',  domain:'theathletic.com',      color:'#c8102e', url:'https://www.nytimes.com/athletic/rss/nba/',                  desc:'Analyses approfondies et coulisses NBA' },
-        { name:'Bleacher Report',   domain:'bleacherreport.com',    color:'#f5a623', url:'https://bleacherreport.com/articles/feed',           desc:'Breaking news et highlights' },
-        { name:'BasketSession',     domain:'basketsession.com',     color:'#003fa3', url:'https://www.basketsession.com/feed/',                desc:'La NBA en français' },
-        { name:'ESPN NBA',          domain:'espn.com',              color:'#cc0000', url:'http://sports.espn.go.com/espn/rss/nba/news',             desc:'Actus, scores et statistiques' },
-        { name:'HoopsHype',         domain:'hoopshype.com',         color:'#1a5a1a', url:'https://hoopshype.com/feed/',                        desc:'Rumeurs, trades et contrats' },
-        { name:'RealGM Basketball', domain:'realgm.com', color:'#0055a5', url:'https://basketball.realgm.com/rss/',                 desc:'Stats, transactions et draft' },
-      ]},
-    { id:'football', name:'Football', illus:'soccer', tileGrad:'linear-gradient(145deg,#0b5345 0%,#27ae60 100%)', icon:'⚽',
-      desc:'Championnats européens, Ligue des Champions et transferts',
-      feeds:[
-        // bleu → rouge → vert → bleu → rouge → sombre
-        { name:"L'Équipe",          domain:'lequipe.fr',            color:'#003f8e', url:'https://dwh.lequipe.fr/api/edito/rss?path=/Tous-sports/',   desc:'Le quotidien sportif de référence' },
-        { name:'RMC Sport',         domain:'rmcsport.com',    color:'#e2001a', url:'https://rmcsport.bfmtv.com/rss/football/',           desc:'Direct, analyses et mercato' },
-        { name:'SoFoot',            domain:'sofoot.com',            color:'#1a7a1a', url:'https://www.sofoot.com/feed',                        desc:'Football et culture foot' },
-        { name:'The Guardian Sport',domain:'theguardian.com',       color:'#0066cc', url:'https://www.theguardian.com/football/rss',           desc:'Football mondial et analyses' },
-        { name:'ESPN FC',           domain:'espn.com',              color:'#cc0000', url:'https://www.espn.com/espn/rss/soccer/news',          desc:'Football international et LDC' },
-        { name:'BBC Sport Football',domain:'bbc.com',               color:'#111111', url:'https://feeds.bbci.co.uk/sport/football/rss.xml',    desc:'Premier League et couverture mondiale' },
-        { name:'Athletic Premier League', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/athletic/rss/premier-league/', desc:'The Athletic - Premier League' },
-        { name:'Athletic Football', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/athletic/rss/football/', desc:'The Athletic - Football mondial' },
-      ]},
-    { id:'sport-mondial', name:'Sport Mondial', illus:'podium', tileGrad:'linear-gradient(145deg,#7d6608 0%,#f1c40f 100%)', icon:'🏆',
-      desc:'Athlétisme, tennis, F1 et multisports internationaux',
-      feeds:[
-        // bleu → rouge → orange → sombre → bleu clair
-        { name:"L'Équipe Sport",    domain:'lequipe.fr',            color:'#003f8e', url:'https://dwh.lequipe.fr/api/edito/rss?path=/Tous-sports/',            desc:"Toute l'actu sportive française" },
-        { name:'Marca',             domain:'marca.com',             color:'#e8000d', url:'https://e00-marca.uecdn.es/rss/portada.xml',          desc:'Sport espagnol et international' },
-        { name:'Eurosport',         domain:'eurosport.fr',          color:'#f46000', url:'https://www.eurosport.fr/rss/story.xml',             desc:'Couverture multisports européenne' },
-        { name:'The Athletic',      domain:'theathletic.com',       color:'#1a1a2e', url:'https://theathletic.com/feed/',                      desc:'Journalisme sportif premium' },
-        { name:'Sky Sports',        domain:'skysports.com',         color:'#00a0dc', url:'https://www.skysports.com/rss/12040',                desc:'Sports britanniques et mondiaux' },
-        { name:'Athletic Olympics', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/athletic/rss/olympics/', desc:'The Athletic - Jeux Olympiques' },
-        { name:'Athletic MMA', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/athletic/rss/mma/', desc:'The Athletic - MMA et sports de combat' },
-        { name:'Athletic Tennis', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/athletic/rss/tennis/', desc:'The Athletic - Tennis mondial' },
-        { name:'Reuters Amériques', domain:'reutersbest.com', color:'#e87722', url:'https://reutersbest.com/region/americas/feed/', desc:'Sport et actu Amériques' },
-      ]},
-    { id:'culture', name:'Culture', illus:'film', tileGrad:'linear-gradient(145deg,#6c0070 0%,#e91e8c 100%)', icon:'🎬',
-      desc:'Cinéma, musique, littérature et art de vivre',
-      feeds:[
-        // sombre → rouge → violet → rouge sombre → bleu → gris
-        { name:'Pitchfork',         domain:'pitchfork.com',         color:'#1a1a1a', url:'https://pitchfork.com/rss/news/',                    desc:'Critique musicale de référence' },
-        { name:'Les Inrocks',       domain:'lesinrocks.com',        color:'#d4001a', url:'https://www.lesinrocks.com/feed/',                   desc:'Musique, cinéma et culture pop' },
-        { name:'Brain Pickings',    domain:'themarginalian.org',    color:'#3a3a8c', url:'https://www.themarginalian.org/feed/',               desc:"Essais sur l'art et la vie" },
-        { name:'Variety',           domain:'variety.com',           color:'#7d0000', url:'https://variety.com/feed/',                          desc:'Industrie du divertissement' },
-        { name:'Première',          domain:'premiere.fr',           color:'#1a3a6e', url:'https://www.premiere.fr/rss/actu-cinema',            desc:'Le magazine du cinéma français' },
-        { name:'Kottke',            domain:'kottke.org',            color:'#4a4a4a', url:'https://feeds.kottke.org/main',                      desc:'Curiosités culturelles du web' },
-        { name:'Nouvel Obs Culture', domain:'nouvelobs.com', color:'#003f8e', url:'https://www.nouvelobs.com/culture/rss.xml', desc:'Cinema, musique et livres' },
-        { name:'L\'Express Culture', domain:'lexpress.fr', color:'#1a1a2e', url:'https://www.lexpress.fr/arc/outboundfeeds/rss/culture.xml', desc:'Critiques et sorties culturelles' },
-        { name:'HuffPost Culture', domain:'huffingtonpost.fr', color:'#d20000', url:'https://www.huffingtonpost.fr/culture/rss_headline.xml', desc:'Actualite culturelle' },
-        { name:'Telerama Arts', domain:'telerama.fr', color:'#1a6a28', url:'https://www.telerama.fr/rss/arts-expositions.xml', desc:'Expos, theatre et arts vivants' },
-        { name:'NYT Movies', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/Movies.xml', desc:'Cinéma et critiques NYT' },
-        { name:'NYT Arts & Music', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/svc/collections/v1/publish/https://www.nytimes.com/section/arts/music/rss.xml', desc:'Musique NYT' },
-        { name:'WaPo Arts', domain:'washingtonpost.com', color:'#1a1a2e', url:'https://feeds.washingtonpost.com/rss/entertainment', desc:'Arts et divertissement WaPo' },
-      ]},
-    { id:'design', name:'Design & Créa', illus:'bauhaus', tileGrad:'linear-gradient(145deg,#4a0080 0%,#a044ff 100%)', icon:'🎨',
-      desc:'UX, typographie, culture visuelle et outils créatifs',
-      feeds:[
-        // orange → rouge → bleu → sombre → bleu clair → sarcelle
-        { name:'Smashing Magazine', domain:'smashingmagazine.com',  color:'#e85c33', url:'https://www.smashingmagazine.com/feed/',             desc:'Design web, UX et front-end' },
-        { name:"It's Nice That",    domain:'itsnicethat.com',        color:'#ff2600', url:'https://www.itsnicethat.com/rss',                    desc:'Culture créative et art contemporain' },
-        { name:'CSS-Tricks',        domain:'css-tricks.com',        color:'#2965f1', url:'https://css-tricks.com/feed/',                       desc:'CSS, front-end et animations' },
-        { name:'Sidebar.io',        domain:'sidebar.io',            color:'#222222', url:'https://sidebar.io/feed.xml',                        desc:'Les 5 meilleurs liens design' },
-        { name:'A List Apart',      domain:'alistapart.com',        color:'#367eb6', url:'https://alistapart.com/main/feed/',                  desc:'Web design et bonnes pratiques' },
-        { name:'Abduzeedo',         domain:'abduzeedo.com',         color:'#1a7a6a', url:'https://abduzeedo.com/rss.xml',                      desc:'Inspiration design et motion' },
+    { id:'culture', name:'Culture', tileGrad:'linear-gradient(145deg,#6c0070 0%,#e91e8c 100%)', icon:'🎬',
+      desc:'Cinéma, séries, musique, littérature et art',
+      subcats:[
+        { id:'cinema', name:'Cinéma & Séries', feeds:[
+          { name:'Variety',           domain:'variety.com',           color:'#7d0000', url:'https://variety.com/feed/',                          desc:'Industrie du divertissement' },
+          { name:'Première',          domain:'premiere.fr',           color:'#1a3a6e', url:'https://www.premiere.fr/rss/actu-cinema',            desc:'Le magazine du cinéma français' },
+          { name:'NYT Movies', domain:'nytimes.com', color:'#1a1a2e', url:'https://rss.nytimes.com/services/xml/rss/nyt/Movies.xml', desc:'Cinéma et critiques NYT' },
+          { name:'WaPo Arts', domain:'washingtonpost.com', color:'#1a1a2e', url:'https://feeds.washingtonpost.com/rss/entertainment', desc:'Arts et divertissement WaPo' },
+          { name:'HuffPost Culture', domain:'huffingtonpost.fr', color:'#d20000', url:'https://www.huffingtonpost.fr/culture/rss_headline.xml', desc:'Actualite culturelle' },
+          { name:'Nouvel Obs Culture', domain:'nouvelobs.com', color:'#003f8e', url:'https://www.nouvelobs.com/culture/rss.xml', desc:'Cinema, musique et livres' },
+          { name:'FilmsActu', domain:'jeuxactu.com', color:'#c8000a', url:'https://cinema.jeuxactu.com/rss.htm', desc:'Actu cinéma et bandes-annonces' },
+          { name:'20 Minutes Séries', domain:'20minutes.fr', color:'#e8000d', url:'https://www.20minutes.fr/feeds/rss-serie.xml', desc:'Actu séries TV' },
+          { name:'Cinéfil', domain:'cinefil.com', color:'#1a1a1a', url:'https://cinefil.com/rss', desc:'Critiques et sorties cinéma' },
+          { name:'Movie in the Air', domain:'movieintheair.com', color:'#5a2a8a', url:'https://movieintheair.com/en/feed', desc:'Cinéma et séries, regard francophone' },
+          { name:'AlloCiné', domain:'allocine.fr', color:'#ffe000', url:'https://www.allocine.fr/service/rss/', desc:'Cinéma, séries et box-office' },
+        ]},
+        { id:'musique', name:'Musique', feeds:[
+          { name:'Pitchfork',         domain:'pitchfork.com',         color:'#1a1a1a', url:'https://pitchfork.com/rss/news/',                    desc:'Critique musicale de référence' },
+          { name:'NYT Arts & Music', domain:'nytimes.com', color:'#1a1a2e', url:'https://www.nytimes.com/svc/collections/v1/publish/https://www.nytimes.com/section/arts/music/rss.xml', desc:'Musique NYT' },
+          { name:'Billboard', domain:'billboard.com', color:'#e2001a', url:'https://www.billboard.com/feed/', desc:'Charts et actu musicale' },
+          { name:'NME', domain:'nme.com', color:'#1a1a1a', url:'https://www.nme.com/feed', desc:'Musique et culture pop britannique' },
+          { name:'Alternative Press', domain:'altpress.com', color:'#c8000a', url:'https://www.altpress.com/feed', desc:'Rock et scène alternative' },
+          { name:'Diffuser', domain:'diffuser.fm', color:'#2a5a8a', url:'https://diffuser.fm/feed', desc:'Musique et culture rock' },
+          { name:'Sputnikmusic', domain:'sputnikmusic.com', color:'#3a3a3a', url:'https://www.sputnikmusic.com/blog/feed', desc:'Critiques d\'albums' },
+        ]},
+        { id:'litterature', name:'Littérature & Art', feeds:[
+          { name:'Les Inrocks',       domain:'lesinrocks.com',        color:'#d4001a', url:'https://www.lesinrocks.com/feed/',                   desc:'Musique, cinéma et culture pop' },
+          { name:'Brain Pickings',    domain:'themarginalian.org',    color:'#3a3a8c', url:'https://www.themarginalian.org/feed/',               desc:"Essais sur l'art et la vie" },
+          { name:'Kottke',            domain:'kottke.org',            color:'#4a4a4a', url:'https://feeds.kottke.org/main',                      desc:'Curiosités culturelles du web' },
+          { name:'Telerama Arts', domain:'telerama.fr', color:'#1a6a28', url:'https://www.telerama.fr/rss/arts-expositions.xml', desc:'Expos, theatre et arts vivants' },
+          { name:'L\'Express Culture', domain:'lexpress.fr', color:'#1a1a2e', url:'https://www.lexpress.fr/arc/outboundfeeds/rss/culture.xml', desc:'Critiques et sorties culturelles' },
+          { name:'ActuaLitté', domain:'actualitte.com', color:'#c8000a', url:'https://www.actualitte.com/rss', desc:'Actu du livre et de l\'édition' },
+          { name:'Fabula', domain:'fabula.org', color:'#1a3a6e', url:'https://www.fabula.org/rss/actualites.rss', desc:'Recherche en littérature' },
+          { name:'OpenEdition', domain:'openedition.org', color:'#2a6a4a', url:'https://www.openedition.org/backend', desc:'Sciences humaines et publications' },
+        ]},
       ]},
     { id:'gastro', name:'Gastronomie', illus:'gastronomie', tileGrad:'linear-gradient(145deg,#7b241c 0%,#e74c3c 100%)', icon:'🍽️',
       desc:'Cuisine, recettes et culture culinaire',
@@ -8195,9 +8595,14 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
       ]},
   ];
 
+  // Un thème est soit à plat (feeds directs), soit fusionné (subcats → feeds)
+  function dcThemeAllFeeds(theme){
+    return theme.subcats ? theme.subcats.flatMap(s => s.feeds || []) : (theme.feeds || []);
+  }
+
   // Dictionnaire rapide URL→{name,desc,domain} pour openFeedPage
   const _FEED_DB = {};
-  DC_THEMES.forEach(t => (t.feeds||[]).forEach(f => {
+  DC_THEMES.forEach(t => dcThemeAllFeeds(t).forEach(f => {
     _FEED_DB[f.url] = { name:f.name, desc:f.desc||'', domain:f.domain||'', color:f.color||'' };
   }));
 
@@ -8211,7 +8616,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     return `<div class="dc-theme-tile" data-desc="${escapeHtml(theme.desc||'')}" onclick="dcOpenTheme('${theme.id}')">
       <div class="dc-theme-tile-img" style="background:${grad}">
         <div class="dc-theme-tile-icon">${icon}</div>
-        <div class="dc-theme-tile-badge">${theme.feeds.length} flux</div>
+        <div class="dc-theme-tile-badge">${dcThemeAllFeeds(theme).length} flux</div>
         <div class="dc-theme-tile-name">${escapeHtml(theme.name)}</div>
       </div>
     </div>`;
@@ -8282,8 +8687,8 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     cont.innerHTML = `<div class="dc-arts-carousel">${cards}</div>`;
   }
 
-  async function _dcLoadThemeArts(theme, token){
-    const feeds = theme.feeds.slice();
+  async function _dcLoadThemeArts(feedsIn, token){
+    const feeds = feedsIn.slice();
     let idx = 0;
     const next = async()=>{
       while(idx < feeds.length){
@@ -8305,15 +8710,43 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     await Promise.all([next(), next(), next()]);   // 3 chargements parallèles max
   }
 
+  function dcRenderSubchips(theme, activeId){
+    const host = document.getElementById('dcSubchips');
+    host.hidden = false;
+    host.innerHTML = theme.subcats.map(s =>
+      `<button type="button" class="dc-subchip${s.id===activeId?' active':''}" onclick="dcSelectSub('${theme.id}','${s.id}')">${escapeHtml(s.name)}</button>`
+    ).join('');
+  }
+
+  function dcShowSubFeeds(sub){
+    const token = ++_dcThemeToken;
+    document.getElementById('dcFeedList').innerHTML = sub.feeds.map((f,i)=>dcRenderFeedRow(f,sub.name,i)).join('');
+    _dcLoadThemeArts(sub.feeds, token);
+  }
+
+  window.dcSelectSub = function(themeId, subId){
+    const theme = DC_THEMES.find(t=>t.id===themeId);
+    const sub = theme && theme.subcats && theme.subcats.find(s=>s.id===subId);
+    if(!sub) return;
+    dcRenderSubchips(theme, subId);
+    dcShowSubFeeds(sub);
+  };
+
   window.dcOpenTheme = function(id){
     const theme = DC_THEMES.find(t=>t.id===id);
     if(!theme) return;
-    const token = ++_dcThemeToken;
     document.getElementById('dcDetailTitle').textContent = theme.name;
-    document.getElementById('dcFeedList').innerHTML = theme.feeds.map((f,i)=>dcRenderFeedRow(f,theme.name,i)).join('');
     document.getElementById('dcCatalogPanel').classList.add('pushed');
     document.getElementById('dcDetailPanel').classList.add('visible');
-    _dcLoadThemeArts(theme, token);
+    if(theme.subcats){
+      dcRenderSubchips(theme, theme.subcats[0].id);
+      dcShowSubFeeds(theme.subcats[0]);
+    } else {
+      document.getElementById('dcSubchips').hidden = true;
+      const token = ++_dcThemeToken;
+      document.getElementById('dcFeedList').innerHTML = theme.feeds.map((f,i)=>dcRenderFeedRow(f,theme.name,i)).join('');
+      _dcLoadThemeArts(theme.feeds, token);
+    }
   };
 
   function dcCloseTheme(){
@@ -11552,87 +11985,33 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   };
 
 
-  // ── VUE MOSAÏQUE ──────────────────────────────────────────────
-  // Rythme éditorial répété inspiré de « Mosaic 4 » : une bande de 2 cartes
-  // égales, une carte vedette pleine largeur (image + titre superposés), puis
-  // une bande large+étroit. On réutilise le modèle d'article/ouverture existant.
-  let _mosArts = [];
-  function _mosCardHtml(a, idx, variant, opener){
-    const op   = opener || '_openMosaicArt';
-    const fav  = (typeof getFavicon==='function') ? getFavicon(a.feedUrl||a.link||'') : '';
-    const isRead = window._RS && _RS.has(a.link);
-    const time = relTime(a.pubDate);
-    if(variant==='feature'){
-      const bg = a.imageUrl
-        ? "background-image:url('"+String(a.imageUrl).replace(/'/g,"\\'")+"')"
-        : 'background:linear-gradient(135deg,rgba(10,132,255,.28),#0a0a0a)';
-      return '<article class="mos-card mos-feature'+(isRead?' is-read':'')+'" onclick="'+op+'('+idx+')">'
-        + '<div class="mos-feature-media" style="'+bg+'"><div class="mos-feature-scrim"></div>'
-        + '<div class="mos-feature-body">'
-        + '<div class="mos-src-row"><span class="mos-src-dot"><img src="'+escAttr(fav)+'" alt="" onerror="this.style.opacity=.3"></span><span class="mos-src-name">'+escHtml(a.source||'')+'</span><span class="mos-time">'+time+'</span></div>'
-        + '<h3 class="mos-feature-title">'+escHtml(a.title||'')+'</h3>'
-        + '</div></div></article>';
-    }
-    const fig = a.imageUrl
-      ? '<div class="mos-fig"><img src="'+escAttr(a.imageUrl)+'" alt="" decoding="async" loading="lazy" onerror="this.parentNode.style.visibility=\'hidden\'"></div>'
-      : '<div class="mos-fig"></div>';
-    const src = a.source
-      ? '<div class="mos-src-row"><span class="mos-src-dot"><img src="'+escAttr(fav)+'" alt="" onerror="this.style.opacity=.3"></span><span class="mos-src-name">'+escHtml(a.source)+'</span><span class="mos-time">'+time+'</span></div>'
-      : '';
-    return '<article class="mos-card mos-'+variant+(isRead?' is-read':'')+'" onclick="'+op+'('+idx+')">'
-      + fig + src + '<h3 class="mos-title">'+escHtml(a.title||'')+'</h3></article>';
-  }
-  function _mosBandsHtml(A, opener){
-    let h='', i=0; const n=A.length;
-    while(i<n){
-      // Bande 1 : 2 cartes égales
-      if(i<n){ h+='<div class="mos-band two">'+_mosCardHtml(A[i],i,'eq',opener)+(A[i+1]?_mosCardHtml(A[i+1],i+1,'eq',opener):'')+'</div>'; i+=2; }
-      // Bande 2 : carte vedette pleine largeur
-      if(i<n){ h+='<div class="mos-band full">'+_mosCardHtml(A[i],i,'feature',opener)+'</div>'; i+=1; }
-      // Bande 3 : large + étroit
-      if(i<n){ h+='<div class="mos-band wide">'+_mosCardHtml(A[i],i,'wide',opener)+(A[i+1]?_mosCardHtml(A[i+1],i+1,'narrow',opener):'')+'</div>'; i+=2; }
-    }
-    return '<div class="mos">'+h+'</div>';
-  }
-  function _renderMosaic(){
-    const wrap = document.getElementById('mosaicGrid'); if(!wrap) return;
-    if(!_allArticles.length){ wrap.innerHTML=''; wrap.dataset.key=''; return; }
-    const pool    = _railApplyFilter(_allArticles);
-    const deduped = _dedupCtx(_smartDateSort([...pool]));
-    _mosArts = deduped.slice(0, 60);
-    const key = _mosArts.slice(0,6).map(a=>a.link).join('|')+'#'+(_railFilterUrl||'')+'#'+(_smartCat||'')+'#'+_smartMode+'#'+_mosArts.length;
-    if(wrap.dataset.key === key) return;
-    wrap.innerHTML = _mosBandsHtml(_mosArts, '_openMosaicArt');
-    wrap.dataset.key = key;
-    if(typeof window._obsImage === 'function') setTimeout(window._obsImage, 50);
-  }
-  window._openMosaicArt = function(idx){
-    const a = _mosArts[idx]; if(!a) return;
-    if(window._RS) _RS.mark(a.link);
-    _showArtModal(a);
-  };
 
   // ── 14. loadAllFeeds — moteur principal ──────────────────────
   // ── Rendu de la vue courante (point unique) ───────────────
   function _renderCurrentView(){
     // Fallback si une vue supprimée était en localStorage
     if(!order.includes(_currentView)){ _currentView='editions'; try{localStorage.setItem('bf_view','editions');}catch(e){} }
-    // Mode Tendances : toujours la vue séquentielle (corps + numérotation) ; ranking conservé
-    const effView = (_smartMode === 'trending') ? 'sequential' : _currentView;
+    // Mode Tendances : conserve la vue active (ranking géré par _smartDateSort)
+    const effView = _currentView;
+    const _feedViews = ['editions','grille','liste'];
+    // Navigation catégorie-first : sur les vues de flux, sélectionner le 1er dossier par défaut
+    // (cohérence entre le header de catégorie et le flux filtré en dessous)
+    if(_feedViews.indexOf(effView)>=0 && !_smartCat){
+      const _cf = folders.filter(f => (f.name||'').toLowerCase() !== 'podcasts');
+      if(_cf.length){ _smartCat = _cf[0].name; try{ localStorage.setItem('bf_smart_cat', _smartCat); }catch(e){} }
+    }
     try { document.body.dataset.view = effView; } catch(e) {}  // CSS responsive : reflète la vue réellement affichée
     views.forEach(v => { v.hidden = v.dataset.view !== effView; });
     _renderSrcRail();   // rail partagé visible sur toutes les vues
     if(effView === 'editions')    _renderEditions();
     else if(effView === 'grille') _renderGrille();
-    else if(effView === 'mosaic') _renderMosaic();
-    else if(effView === 'sequential') _renderSequential();
     else if(effView === 'liste')  _renderListe();
-    // Salutation du jour au-dessus des vues du flux
-    const _greetHost = document.getElementById('bfGreetHost');
-    if(_greetHost){
-      const _feedViews = ['editions','grille','mosaic','sequential','liste'];
-      if(_feedViews.indexOf(effView)>=0){ _greetHost.hidden=false; _renderGreet(); }
-      else { _greetHost.hidden=true; }
+    // Header de catégories au-dessus des vues du flux (le bloc titre a été retiré)
+    const _catHead = document.getElementById('catBrandHeader');
+    const _catSub  = document.getElementById('catSubnav');
+    if(_catHead){
+      if(_feedViews.indexOf(effView)>=0){ _renderCatHeader(); }
+      else { _catHead.hidden=true; if(_catSub) _catSub.hidden=true; }
     }
     if(window.BF_SMART && BF_SMART.renderSidebar){ try{ BF_SMART.renderSidebar(); }catch(e){} }
   }
@@ -12280,8 +12659,6 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
       if(_artAbort){ try{_artAbort.abort();}catch(e){} _artAbort=null; }
       const fv = document.querySelector('.view[data-view="favoris"]');
       if(fv && !fv.hidden) _renderFavoris();
-      const sq = document.querySelector('.view[data-view="sequential"]');
-      if(sq && !sq.hidden) _seqRefreshReadStates();
     }
   };
   window.artModalOpenExternal = function(){
@@ -12533,8 +12910,11 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
       const imgH = a.imageUrl
         ? `<div class="grid2-img"><img src="${escAttr(a.imageUrl)}" alt="" decoding="async" loading="lazy" onerror="this.parentNode.style.background='#1a1a1a'"></div>`
         : `<div class="grid2-img" style="background:linear-gradient(135deg,rgba(10,132,255,.15),#0a0a0a)"></div>`;
+      const kw = _extractKeywords(a, 1);
+      const tagH = kw.length ? `<div class="grid2-tags"><span class="edl-tag">${escHtml(kw[0])}</span></div>` : '';
       return `<div class="grid2-card reveal" onclick="_grilleOpen(${i})" style="position:relative">
         ${imgH}
+        ${tagH}
         ${_titleWithShare(escHtml(a.title), a.link, a.title, 'grid2-title')}
         <div class="grid2-meta">
           <div class="grid2-fav"><img src="${escAttr(fav)}" onerror="this.style.opacity='.3'"></div>
@@ -12547,13 +12927,8 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   }
   window._grilleOpen = function(i){ const a=_grilleArts[i]; if(a) _showArtModal(a); };
 
-  // ── VUE SÉQUENTIELLE ─────────────────────────────────────────
-  let _seqArts = [];
-
   // ════════════════════════════════════════════════════════════════
   //  Mémoire de lecture — articles déjà ouverts (persistant)
-  //  Socle de la vue Séquentielle : transforme la liste en un fil
-  //  avec une position mémorisée d'une session à l'autre.
   // ════════════════════════════════════════════════════════════════
   const _RS = (function(){
     const KEY = 'bf_read_v1';
@@ -12593,7 +12968,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     return t ? t.split(/\s+/).length : 0;
   }
 
-  // ── Vues Édition / Séquentiel — helpers partagés ──
+  // ── Vue Édition — helpers partagés ──
 
   // Apparition au défilement — observer générique (toutes les vues)
   let _revealIO = null;
@@ -12820,66 +13195,6 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   }
   window._edlCardHtml = _edlCardHtml;
 
-  // Vue séquentielle — liste numérotée éditoriale
-  function _seqRenderProgress(){ /* no-op */ }
-
-  function _seqRefreshReadStates(){
-    const list = document.getElementById('seqList');
-    if(!list || !_seqArts || !_seqArts.length) return;
-    list.querySelectorAll('.seq-item').forEach(el => {
-      const i = +el.getAttribute('data-seq-idx');
-      const a = _seqArts[i];
-      if(a) el.classList.toggle('is-read', _RS.has(a.link));
-    });
-  }
-
-  window._seqResume = function(){};
-  window._seqMarkAllRead = function(){
-    if(!_seqArts || !_seqArts.length) return;
-    _RS.markMany(_seqArts.map(a => a.link));
-    _seqRefreshReadStates();
-  };
-
-  function _seqItemHtml(a, i){
-    const isRead = _RS.has(a.link);
-    const fav = getFavicon(a.feedUrl||a.link||'');
-    const thumb = a.imageUrl
-      ? `<div class="seq-thumb"><img src="${escAttr(a.imageUrl)}" alt="" decoding="async" loading="lazy" onerror="this.parentNode.style.display='none'"></div>`
-      : '';
-    return `<div class="seq-item reveal${isRead?' is-read':''}" data-seq-idx="${i}" onclick="_seqOpen(${i})">
-      <span class="seq-num">${String(i+1).padStart(2,'0')}</span>
-      <div class="seq-body">
-        <div class="seq-source"><span class="seq-fav"><img src="${escAttr(fav)}" onerror="this.style.opacity='.3'"></span>${escHtml(a.source||'')} · ${relTime(a.pubDate)}${_groupMeta(a)}</div>
-        <div class="seq-title">${escHtml(a.title||'')}</div>
-      </div>
-      ${thumb}
-    </div>`;
-  }
-
-  function _renderSequential(){
-    const list = document.getElementById('seqList');
-    if(!list) return;
-    const arts = typeof _allArticles !== 'undefined'
-      ? _dedupCtx(_smartDateSort(_railApplyFilter([..._allArticles])))
-      : [];
-    _seqArts = arts.slice(0, 100);
-    if(!_seqArts.length){
-      list.innerHTML = '<div style="padding:80px 0;text-align:center;color:var(--text-muted);font-size:14px;font-family:var(--font-inter)">Aucun article disponible.<br>Ajoutez des sources pour commencer.</div>';
-      return;
-    }
-    list.innerHTML = _seqArts.map((a,i)=>_seqItemHtml(a,i)).join('');
-    _revealObserve(list);
-  }
-
-  window._seqOpen = function(i){
-    const a = _seqArts[i];
-    if(!a) return;
-    _RS.mark(a.link);
-    _showArtModal(a);
-    const el = document.querySelector('.seq-item[data-seq-idx="' + i + '"]');
-    if(el) el.classList.add('is-read');
-  };
-
   // ── VUE LISTE ─────────────────────────────────────────────────
   let _listeArts = [];
   function _renderListe(){
@@ -13062,12 +13377,11 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     }
   }
 
-  // ── Rafraîchir grille/séquentiel/liste après loadAllFeeds
+  // ── Rafraîchir grille/liste après loadAllFeeds
   const _origRenderEditions = _renderEditions;
   _renderEditions = function(){
     _origRenderEditions();
     if(_currentView==='grille') _renderGrille();
-    if(_currentView==='sequential') _renderSequential();
     if(_currentView==='liste') _renderListe();
     if(_currentView==='essentiel') _renderEssentiel();
     // Pré-chargement hors-ligne en arrière-plan (fire & forget)
@@ -13113,16 +13427,6 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
         var fav = getFavicon(a.feedUrl||a.link||'');
         var imgStyle = a.imageUrl ? "background:url('" + a.imageUrl.replace(/'/g,"\\'") + "') center/cover no-repeat" : 'background:linear-gradient(135deg,rgba(10,132,255,.15),#0a0a0a)';
         return '<div class="grid2-card" onclick="' + arrName + 'Open(' + i + ')"><div class="grid2-img" style="' + imgStyle + '"></div><div class="grid2-title">' + escapeHtml(a.title) + '</div><div class="grid2-meta"><div class="grid2-fav"><img src="' + escAttr(fav) + '"></div><span>' + escapeHtml(a.source) + '</span><span style="margin-left:auto">' + relTime(a.pubDate) + '</span></div></div>';
-      }).join('') + '</div>';
-
-    } else if(view === 'mosaic'){
-      container.innerHTML = _mosBandsHtml(arts, arrName + 'Open');
-
-    } else if(view === 'sequential'){
-      container.innerHTML = '<div class="seq-list">' + arts.map(function(a,i){
-        var fav = getFavicon(a.feedUrl||a.link||'');
-        var thumb = a.imageUrl ? '<div class="seq-thumb"><img src="' + escAttr(a.imageUrl) + '" decoding="async"></div>' : '';
-        return '<div class="seq-item" onclick="' + arrName + 'Open(' + i + ')" style="position:relative"><span class="seq-num">' + String(i+1).padStart(2,'0') + '</span><div class="seq-body"><div class="seq-source"><div class="seq-fav"><img src="' + escAttr(fav) + '"></div>' + escapeHtml(a.source) + ' · ' + relTime(a.pubDate) + '</div>' + _titleWithShare(escapeHtml(a.title), a.link, a.title, 'seq-title') + '</div>' + thumb + '</div>';
       }).join('') + '</div>';
 
     } else {
@@ -13375,23 +13679,6 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     return _FOLDER_WELCOME[key] || _FOLDER_WELCOME['default'];
   }
 
-  // Palette de gradients héro indexée sur le hash du nom du dossier
-  const _FOLDER_GRADS = [
-    ['#0d47a1','#42a5f5'], // bleu
-    ['#4a0080','#a044ff'], // violet
-    ['#0b5345','#1abc9c'], // vert teal
-    ['#7b241c','#e74c3c'], // rouge
-    ['#7e4a00','#f39c12'], // orange
-    ['#6c0070','#e91e8c'], // rose
-    ['#0e4d6e','#00b4d8'], // cyan
-    ['#5a3e00','#f7931a'], // ambre
-    ['#0b5345','#27ae60'], // vert
-    ['#512e5f','#9b59b6'], // aubergine
-  ];
-  function _folderGrad(name){
-    let h = 0; for(let i=0;i<(name||'').length;i++) h = (h*31+name.charCodeAt(i))&0xffff;
-    return _FOLDER_GRADS[h % _FOLDER_GRADS.length];
-  }
 
   function openFolderPage(folderIdx){
     const folder = folders[folderIdx];
@@ -13403,12 +13690,18 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     const welcomeEl = document.getElementById('folderPageWelcome');
     if(welcomeEl) welcomeEl.textContent = _getFolderWelcome(folder.name);
 
-    // ── Héro décoratif (gradient + orbe lumineux) ───────────────────
+    // ── Articles du dossier ─────────────────────────────────────────
+    const feedUrls = new Set(folder.feeds||[]);
+    _folderPageArts = typeof _allArticles !== 'undefined'
+      ? (_dedupFolders ? _dedup : _uniqByLink)([..._allArticles].filter(a=>feedUrls.has(a.feedUrl||'')).sort((a,b)=>b.pubDate-a.pubDate))
+      : [];
+
+    // ── Héro décoratif (gradient léger — pas d'image lourde : évite le crash mémoire iOS) ──
     const [c1, c2] = _folderGrad(folder.name);
     const heroBg = document.getElementById('folderHeroBg');
     if(heroBg) heroBg.style.background = `linear-gradient(145deg,${c1} 0%,${c2} 100%)`;
     const heroOrb = document.getElementById('folderHeroOrb');
-    if(heroOrb){ heroOrb.style.background = c2; }
+    if(heroOrb){ heroOrb.style.background = c2; heroOrb.style.display = ''; }
     const badgeEl = document.getElementById('folderHeroBadge');
     if(badgeEl){ const n = (folder.feeds||[]).length; badgeEl.textContent = n + ' source' + (n!==1?'s':''); }
 
@@ -13433,12 +13726,6 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
         + (feeds.length ? `<span class="folder-logo-row-count">${feeds.length} source${feeds.length!==1?'s':''}</span>` : '');
     }
 
-    // ── Articles ────────────────────────────────────────────────────
-    const feedUrls = new Set(folder.feeds||[]);
-    const arts = typeof _allArticles !== 'undefined'
-      ? (_dedupFolders ? _dedup : _uniqByLink)([..._allArticles].filter(a=>feedUrls.has(a.feedUrl||'')).sort((a,b)=>b.pubDate-a.pubDate))
-      : [];
-    _folderPageArts = arts;
     const content = document.getElementById('folderPageContent');
     _renderSubpageArts(_folderPageArts, _currentView, content, '_folderArt');
     _stFold(true);
@@ -13750,7 +14037,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
         {icon:'←', text:'Glissez depuis le bord gauche pour revenir en arrière sur n’importe quelle page ou modal.'},
         {icon:'↕', text:'Glissez vers le bas pour fermer un article. Glissez latéralement pour naviguer entre articles.'},
         {icon:'☰', text:'Glissez depuis le bord gauche de l’écran pour ouvrir la sidebar. Tapez un dossier pour voir ses articles.'},
-        {icon:'👁', text:'La pill ••• en haut à droite : tapez l’œil pour changer la vue (Éditions, Liste, Grille, Séquentiel, Parcourir).'},
+        {icon:'👁', text:'La pill ••• en haut à droite : tapez l’œil pour changer la vue (Éditions, Liste, Grille, Parcourir).'},
         {icon:'↓', text:'Tirez vers le bas depuis le haut de l’accueil pour actualiser tous vos flux.'},
       ];
       let cur=0;
@@ -13912,7 +14199,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
       entries.forEach(entry=>{
         if(!entry.isIntersecting) return;
         const el = entry.target;
-        // Images dans art-img-wrap, grid2-img, seq-thumb, list-thumb
+        // Images dans art-img-wrap, grid2-img, list-thumb
         const imgs = el.querySelectorAll('img[data-src]');
         imgs.forEach(img=>{
           img.src = img.dataset.src;
@@ -13929,7 +14216,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     // Observer tous les conteneurs d'images
     window._obsImage = function(container){
       container = container || document;
-      container.querySelectorAll('.art-img-wrap, .grid2-img, .seq-thumb, .list-thumb, .essentiel-thumb')
+      container.querySelectorAll('.art-img-wrap, .grid2-img, .list-thumb, .essentiel-thumb')
         .forEach(el=>obs.observe(el));
     };
     // Lancer sur le contenu actuel puis après chaque render
@@ -13938,7 +14225,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
 
   // ── EFFET DE DÉFILEMENT — révélation progressive des cartes au scroll ───
   (function _initScrollReveal(){
-    const SEL = '.art-card, .grid2-card, .seq-item, .list-item, .browse-folder-item, .bp-row';
+    const SEL = '.art-card, .grid2-card, .list-item, .browse-folder-item, .bp-row';
     const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if(!('IntersectionObserver' in window) || reduce){
       window._obsReveal = function(){}; // pas d'animation : contenu visible par défaut
@@ -13961,6 +14248,25 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     };
     if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ()=>window._obsReveal());
     else window._obsReveal();
+  })();
+
+  // ── Bouton « remonter en haut » : visible après un scroll, scroll fluide interne ──
+  (function _bfToTopInit(){
+    const btn = document.getElementById('bfToTop');
+    const scroller = document.getElementById('bfRow');
+    if(!btn || !scroller) return;
+    window._bfScrollTop = function(){
+      scroller.scrollTo({ top:0, behavior:'smooth' });
+    };
+    let ticking = false;
+    scroller.addEventListener('scroll', () => {
+      if(ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        btn.classList.toggle('show', scroller.scrollTop > 420);
+        ticking = false;
+      });
+    }, { passive:true });
   })();
 
   // ── Service Worker ────────────────────────────────────────────
@@ -14315,7 +14621,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   <div id="refreshBadge"></div>
 
   <!-- ═══════════════ MODAL ARTICLE ═══════════════ -->
-  <div id="artModal" style="display:none;position:fixed;inset:0;z-index:7000;align-items:center;justify-content:center;padding:22px">
+  <div id="artModal" style="display:none;position:fixed;inset:0;z-index:7000;align-items:stretch;justify-content:stretch;padding:0">
     <div class="art-scrim" onclick="closeArtModal()"></div>
 
     <!-- Chevrons navigation article ← → -->
@@ -14446,7 +14752,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
         <div class="folder-hero-content">
           <div class="folder-hero-badge" id="folderHeroBadge">Dossier</div>
           <div class="folder-hero-title" id="folderPageTitle"></div>
-          <div class="folder-hero-divider"></div>
+          <div class="folder-hero-sub" id="folderPageWelcome"></div>
         </div>
       </div>
       <!-- Logos flottants des sources -->
@@ -14481,7 +14787,6 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
         <div class="menu3-chips" id="menu3ViewChips">
           <div class="menu3-chip active" data-view="editions" onclick="menu3SetView('editions')">Magazine</div>
           <div class="menu3-chip" data-view="grille" onclick="menu3SetView('grille')">Grille</div>
-          <div class="menu3-chip" data-view="sequential" onclick="menu3SetView('sequential')">Séquentiel</div>
           <div class="menu3-chip" data-view="browse" onclick="menu3SetView('browse')">Parcourir</div>
         </div>
       </div>
