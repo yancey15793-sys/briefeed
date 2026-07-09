@@ -1216,6 +1216,42 @@ body.bf-heavy-open .sbar-podcast{
   box-shadow:0 4px 12px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.05);
 }
 
+/* Modal thématique (contexte d'une source) — verre, liens rapides, vedette, pagination */
+.cat-modal-overlay{ position:fixed; inset:0; z-index:500; display:flex; align-items:center; justify-content:center; padding:20px; pointer-events:none; }
+.cat-modal-backdrop{ position:absolute; inset:0; background:rgba(0,0,0,.45); opacity:0; transition:opacity .35s ease; }
+body.cat-modal-open .cat-modal-overlay{ pointer-events:auto; }
+body.cat-modal-open .cat-modal-backdrop{ opacity:1; }
+.cat-modal-card{
+  position:relative; width:100%; max-width:380px;
+  background:rgba(25,25,25,.85); -webkit-backdrop-filter:blur(25px); backdrop-filter:blur(25px);
+  border:1px solid rgba(255,255,255,.1); border-radius:20px; padding:22px; box-shadow:0 24px 48px rgba(0,0,0,.5);
+  opacity:0; transform:translateY(30px) scale(.95); user-select:none; -webkit-user-select:none;
+  transition:opacity .4s ease, transform .4s cubic-bezier(.32,.72,0,1);
+}
+[data-theme="light"] .cat-modal-card{ background:rgba(252,251,250,.92); border-color:rgba(0,0,0,.08); }
+body.cat-modal-open .cat-modal-card{ opacity:1; transform:translateY(0) scale(1); }
+.cat-modal-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:22px; }
+.cat-modal-title{ display:flex; align-items:center; gap:8px; font-family:var(--font-inter); font-weight:900; font-size:13px; letter-spacing:.09em; text-transform:uppercase; color:var(--text-muted); }
+.cat-modal-dot{ width:9px; height:9px; border-radius:50%; background:#FF5E00; flex:none; }
+.cat-modal-x{ background:none; border:none; color:var(--text); cursor:pointer; padding:4px; -webkit-tap-highlight-color:transparent; }
+.cat-modal-x svg{ width:22px; height:22px; }
+.cat-modal-links{ display:flex; flex-direction:column; gap:14px; margin-bottom:22px; }
+.cat-modal-link{ text-decoration:none; color:var(--text); font-family:var(--font-inter); font-size:21px; font-weight:500; letter-spacing:-.02em; cursor:pointer;
+  opacity:0; transform:translateX(-15px); }
+body.cat-modal-open .cat-modal-link{ opacity:1; transform:translateX(0); transition:opacity .5s ease, transform .5s cubic-bezier(.32,.72,0,1); }
+body.cat-modal-open .cat-modal-link:nth-child(1){ transition-delay:.06s; }
+body.cat-modal-open .cat-modal-link:nth-child(2){ transition-delay:.12s; }
+body.cat-modal-open .cat-modal-link:nth-child(3){ transition-delay:.18s; }
+body.cat-modal-open .cat-modal-link:nth-child(4){ transition-delay:.24s; }
+.cat-modal-link.primary{ font-weight:700; display:flex; align-items:center; gap:10px; }
+.cat-modal-link.primary::after{ content:'→'; font-size:18px; }
+.cat-modal-featured{ position:relative; width:100%; height:150px; border-radius:12px; overflow:hidden; margin-bottom:18px; background:#1a1a1a center/cover no-repeat; }
+.cat-modal-featured::after{ content:''; position:absolute; inset:0; background:rgba(0,0,0,.3); }
+.cat-modal-pag{ display:flex; justify-content:center; }
+.cat-modal-dots{ display:flex; align-items:center; gap:8px; }
+.cat-dot{ width:6px; height:6px; border-radius:50%; background:rgba(127,127,127,.35); cursor:pointer; transition:all .3s cubic-bezier(.25,.8,.25,1); -webkit-tap-highlight-color:transparent; }
+.cat-dot.active{ width:24px; border-radius:4px; background:#FF5E00; }
+
 .view{
   align-self:stretch;
   display:flex; flex-direction:column; gap:9.5px;
@@ -5825,6 +5861,27 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
       <div class="cat-brand-header" id="catBrandHeader" hidden></div>
       <div class="cat-subnav" id="catSubnav" hidden></div>
 
+      <!-- Modal thématique (contexte d'une source) : liens rapides + vedette + pagination + swipe -->
+      <div class="cat-modal-overlay" id="catModalOverlay">
+        <div class="cat-modal-backdrop" onclick="_catModalClose()"></div>
+        <div class="cat-modal-card" id="catModalCard">
+          <div class="cat-modal-head">
+            <div class="cat-modal-title" id="catModalTitle"><span class="cat-modal-dot"></span>Source</div>
+            <button type="button" class="cat-modal-x" onclick="_catModalClose()" aria-label="Fermer">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          <div class="cat-modal-links">
+            <a class="cat-modal-link primary" onclick="_catModalPrimary()">Lire le flux</a>
+            <a class="cat-modal-link" onclick="_catModalOpenSource()">Ouvrir la source</a>
+            <a class="cat-modal-link" onclick="_catModalOpenFolder()">Voir le dossier</a>
+            <a class="cat-modal-link" onclick="_catModalFav()">Mes favoris</a>
+          </div>
+          <div class="cat-modal-featured" id="catModalFeatured"></div>
+          <div class="cat-modal-pag"><div class="cat-modal-dots" id="catModalDots"></div></div>
+        </div>
+      </div>
+
       <!-- Smart Bar — segment intelligent + catégories (tiret animé) + sources (accordéon) -->
       <!-- #smartBar conservé (référencé par le JS) ; le rail vit désormais dans la topnav -->
       <div id="smartBar" class="sbar" hidden></div>
@@ -6786,7 +6843,13 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
       `<button type="button" class="cat-bh-tab${o.f.name===smartCat?' active':''}" onclick="_catHeaderTab(${o.i})">${escapeHtml(o.f.name)}</button>`
     ).join('');
     host.innerHTML =
-      `<div class="cat-bh-inner">
+      `<div class="cat-bh-top">
+        <button type="button" class="cat-bh-pill back" aria-label="Menu" onclick="var b=document.getElementById('menuBtn'); b&&b.click()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+        </button>
+        <button type="button" class="cat-bh-pill follow" onclick="_catHeaderSearch()"><span>Recherche</span></button>
+      </div>
+      <div class="cat-bh-inner">
         <div class="cat-bh-wordmark" onclick="_catHeaderOpen()">${escapeHtml(folder.name)}</div>
         <div class="cat-bh-tabs">${tabs}</div>
       </div>`;
@@ -6807,9 +6870,90 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     const c = _catFolders().find(o => o.f.name === _smartCat) || _catFolders()[0];
     if(c) openFolderPage(c.i);
   };
+  window._catHeaderSearch = function(){
+    if(typeof openNavSearch === 'function'){ openNavSearch(); return; }
+    const b = document.getElementById('navLayerSearchIcon');
+    if(b) b.click();
+  };
+  // Tap sur une source : filtre le flux (existant) + ouvre le modal thématique de contexte
   window._catSub = function(url){
     if(typeof _smartPickSource === 'function') _smartPickSource(url); // → maj _railFilterUrl + re-rendu
+    _catOpenModal(url);
   };
+
+  // ── Modal thématique (source) : liens rapides + vedette + pagination + swipe ──
+  const _catModal = {
+    subs: [],     // [{url, name}] : « À la une » + sources du dossier actif
+    idx: 0,
+    timer: null,
+    pending: null,
+  };
+  function _catModalSubs(){
+    const c = _catFolders().find(o => o.f.name === _smartCat) || _catFolders()[0];
+    if(!c) return [];
+    const feeds = c.f.feeds || [];
+    return [{ url:'', name:'À la une' }].concat(feeds.map(u => ({ url:u, name:_catSourceName(u) })));
+  }
+  function _catOpenModal(url){
+    const subs = _catModalSubs();
+    const idx = Math.max(0, subs.findIndex(s => s.url === (url||'')));
+    _catModal.subs = subs; _catModal.idx = idx;
+    // Délai d'intention : re-tap rapide si déjà ouvert (50 ms), sinon 250 ms (anti-spam)
+    clearTimeout(_catModal.timer);
+    _catModal.pending = url||'';
+    const isOpen = document.body.classList.contains('cat-modal-open');
+    _catModal.timer = setTimeout(() => {
+      if(_catModal.pending !== (url||'')) return;
+      _catRenderModal();
+      document.body.classList.add('cat-modal-open');
+    }, isOpen ? 50 : 250);
+  }
+  function _catRenderModal(){
+    const subs = _catModal.subs, i = _catModal.idx;
+    const cur = subs[i]; if(!cur) return;
+    const titleEl = document.getElementById('catModalTitle');
+    const imgEl   = document.getElementById('catModalFeatured');
+    const dotsEl  = document.getElementById('catModalDots');
+    if(titleEl) titleEl.innerHTML = `<span class="cat-modal-dot"></span>${escapeHtml(cur.name)}`;
+    if(imgEl){
+      let bg = '';
+      if(cur.url){ const im = _folderHeroImg({feeds:[cur.url]}); if(im) bg = `url('${im.replace(/'/g,"\\'")}')`; }
+      else { const c = _catFolders().find(o=>o.f.name===_smartCat); if(c){ const im=_folderHeroImg(c.f); if(im) bg=`url('${im.replace(/'/g,"\\'")}')`; } }
+      imgEl.style.backgroundImage = bg;
+    }
+    if(dotsEl){
+      dotsEl.innerHTML = subs.map((s,k)=>`<span class="cat-dot${k===i?' active':''}" onclick="_catModalGo(${k})"></span>`).join('');
+    }
+  }
+  window._catModalGo = function(k){
+    if(k<0 || k>=_catModal.subs.length) return;
+    _catModal.idx = k;
+    const s = _catModal.subs[k];
+    if(typeof _smartPickSource === 'function') _smartPickSource(s.url); // filtre en direct
+    _catRenderModal();
+  };
+  window._catModalClose = function(){ clearTimeout(_catModal.timer); _catModal.pending=null; document.body.classList.remove('cat-modal-open'); };
+  window._catModalPrimary = function(){ _catModalClose(); };  // « Lire le flux » = fermer (déjà filtré)
+  window._catModalOpenFolder = function(){ _catModalClose(); _catHeaderOpen(); };
+  window._catModalOpenSource = function(){
+    const s = _catModal.subs[_catModal.idx];
+    _catModalClose();
+    if(s && s.url && typeof openFeedPage==='function') openFeedPage(s.url, s.name);
+    else _catHeaderOpen();
+  };
+  window._catModalFav = function(){ _catModalClose(); if(typeof _switchView==='function'){ try{ _switchView('favoris'); }catch(e){} } };
+  // Swipe horizontal sur la carte → source précédente / suivante
+  (function _catModalSwipe(){
+    const card = document.getElementById('catModalCard');
+    if(!card) return;
+    let x0 = 0;
+    card.addEventListener('touchstart', e => { x0 = e.changedTouches[0].screenX; }, {passive:true});
+    card.addEventListener('touchend', e => {
+      const dx = e.changedTouches[0].screenX - x0;
+      if(Math.abs(dx) < 50) return;
+      _catModalGo(dx < 0 ? Math.min(_catModal.idx+1, _catModal.subs.length-1) : Math.max(_catModal.idx-1, 0));
+    }, {passive:true});
+  })();
 
   const ICON_CHEV = '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>';
   const ICON_EDIT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
