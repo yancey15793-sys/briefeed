@@ -7003,6 +7003,14 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
         `<button type="button" class="cat-sub${railUrl===u?' active':''}" onclick="_catSub('${escapeHtml(u).replace(/'/g,"\\'")}')">${escapeHtml(_catSourceName(u))}</button>`
       ));
     subEl.innerHTML = `<div class="cat-subnav-row">${subs.join('')}</div>`;
+    // Conserve la position du rail sur l'onglet actif au lieu de revenir au premier
+    // (le rail entier est reconstruit à chaque rendu → le scroll natif serait sinon perdu).
+    const railEl = host.querySelector('.cat-bh-tabs');
+    const activeTab = host.querySelector('.cat-bh-tab.active');
+    if(railEl && activeTab){
+      const target = activeTab.offsetLeft - (railEl.clientWidth/2 - activeTab.clientWidth/2);
+      railEl.scrollLeft = Math.max(0, target);
+    }
   }
   let _catBhLocCache = null;
   function _catBhStatusTick(){
