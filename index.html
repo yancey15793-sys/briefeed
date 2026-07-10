@@ -1185,20 +1185,17 @@ body.bf-heavy-open .sbar-podcast{
 }
 .cat-fixed-title.show{ clip-path:inset(0 0 0 0); }
 .cat-bh-status{
-  position:absolute; z-index:3; top:calc(env(safe-area-inset-top,0px) + 12px); left:50%; transform:translateX(-50%);
-  height:26px; width:auto; max-width:calc(100% - 32px);
-  display:flex; align-items:center; justify-content:center; gap:7px;
-  background:rgba(0,0,0,.38); color:#fff;
-  -webkit-backdrop-filter:blur(14px) saturate(1.6); backdrop-filter:blur(14px) saturate(1.6);
-  border:1px solid rgba(255,255,255,.14);
-  border-radius:999px; padding:0 14px;
-  font-family:var(--font-inter); font-size:10.5px; font-weight:600;
-  letter-spacing:.04em; text-transform:uppercase;
+  position:relative; z-index:3; height:34px; flex:none; width:100%;
+  display:flex; align-items:center; justify-content:center; gap:9px;
+  background:#fff; color:#000;
+  padding:0 16px; box-sizing:border-box;
+  font-family:var(--font-inter); font-size:12px; font-weight:700;
+  letter-spacing:.06em; text-transform:uppercase;
   font-variant-numeric:tabular-nums;
-  white-space:nowrap; overflow:hidden;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
 }
-[data-theme="light"] .cat-bh-status{ background:rgba(0,0,0,.38); color:#fff; border-color:rgba(255,255,255,.14); }
-.cat-bh-status .cat-bh-dot{ opacity:.5; font-weight:400; }
+[data-theme="light"] .cat-bh-status{ background:#111; color:#fff; }
+.cat-bh-status .cat-bh-dot{ opacity:.45; font-weight:400; }
 .cat-brand-header[hidden]{ display:none; }
 .cat-brand-header::before{  /* photo — désaturée en niveaux de gris, façon éditorial noir sur blanc */
   content:''; position:absolute; inset:0; z-index:0;
@@ -1233,7 +1230,18 @@ body.bf-heavy-open .sbar-podcast{
   letter-spacing:.2em; text-transform:uppercase; color:#fff;
   text-align:center; line-height:1; margin-bottom:18px; padding:0 20px;
   text-shadow:0 2px 12px rgba(0,0,0,.5); cursor:pointer;
-  display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; max-width:100%;
+  display:flex; align-items:center; justify-content:center; gap:16px;
+  max-width:100%; overflow:hidden;
+}
+.cat-bh-wordmark::before,
+.cat-bh-wordmark::after{
+  content:''; flex:1 1 auto; min-width:20px; max-width:64px; height:2px;
+  background:rgba(255,255,255,.55);
+  box-shadow:0 1px 4px rgba(0,0,0,.4);
+}
+.cat-bh-wordmark > span{
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  flex:0 1 auto; min-width:0;
 }
 .cat-bh-tabs{
   display:flex; flex-direction:row; align-items:flex-start;
@@ -1309,16 +1317,36 @@ body.cat-modal-open .cat-modal-card{ opacity:1; transform:translateY(0) scale(1)
 .cat-modal-dot{ width:9px; height:9px; border-radius:50%; background:#FF5E00; flex:none; }
 .cat-modal-x{ background:none; border:none; color:var(--text); cursor:pointer; padding:4px; -webkit-tap-highlight-color:transparent; }
 .cat-modal-x svg{ width:22px; height:22px; }
-.cat-modal-links{ display:flex; flex-direction:column; gap:14px; margin-bottom:22px; }
-.cat-modal-link{ text-decoration:none; color:var(--text); font-family:var(--font-inter); font-size:21px; font-weight:500; letter-spacing:-.02em; cursor:pointer;
-  opacity:0; transform:translateX(-15px); }
-body.cat-modal-open .cat-modal-link{ opacity:1; transform:translateX(0); transition:opacity .5s ease, transform .5s cubic-bezier(.32,.72,0,1); }
-body.cat-modal-open .cat-modal-link:nth-child(1){ transition-delay:.06s; }
-body.cat-modal-open .cat-modal-link:nth-child(2){ transition-delay:.12s; }
-body.cat-modal-open .cat-modal-link:nth-child(3){ transition-delay:.18s; }
-body.cat-modal-open .cat-modal-link:nth-child(4){ transition-delay:.24s; }
-.cat-modal-link.primary{ font-weight:700; display:flex; align-items:center; gap:10px; }
-.cat-modal-link.primary::after{ content:'→'; font-size:18px; }
+/* Triage éditorial : l'éditeur silencieux propose des angles d'entrée dans le dossier.
+   Pastille eyebrow + libellé DM Serif + murmure muet. Pas de compteurs — pas de dette. */
+.cat-triage{ display:flex; flex-direction:column; gap:0; margin-bottom:20px; }
+.cat-triage-row{
+  display:flex; align-items:flex-start; gap:13px; width:100%;
+  background:none; border:none; padding:12px 0; margin:0; text-align:left;
+  cursor:pointer; -webkit-tap-highlight-color:transparent;
+  opacity:0; transform:translateX(-15px);
+  transition:opacity .5s ease, transform .5s cubic-bezier(.32,.72,0,1);
+}
+.cat-triage-row + .cat-triage-row{ border-top:1px solid color-mix(in srgb, var(--border) 60%, transparent); }
+body.cat-modal-open .cat-triage-row{ opacity:1; transform:translateX(0); }
+body.cat-modal-open .cat-triage-row:nth-child(1){ transition-delay:.06s; }
+body.cat-modal-open .cat-triage-row:nth-child(2){ transition-delay:.12s; }
+body.cat-modal-open .cat-triage-row:nth-child(3){ transition-delay:.18s; }
+body.cat-modal-open .cat-triage-row:nth-child(4){ transition-delay:.24s; }
+.cat-triage-row:active{ opacity:.55; }
+.cat-triage-dot{
+  width:7px; height:7px; border-radius:50%; flex:none; margin-top:9px;
+  background:var(--eyebrow-dot); box-shadow:0 0 10px var(--eyebrow-dot);
+}
+.cat-triage-txt{ display:flex; flex-direction:column; gap:1px; min-width:0; }
+.cat-triage-label{
+  font-family:var(--font-inter); font-weight:500;
+  font-size:21px; letter-spacing:-.02em; line-height:1.14; color:var(--text);
+}
+.cat-triage-note{
+  font-family:var(--font-inter); font-size:12px; font-weight:500;
+  letter-spacing:.005em; color:var(--text-muted);
+}
 .cat-modal-featured{ position:relative; width:100%; height:150px; border-radius:12px; overflow:hidden; margin-bottom:18px; background:#1a1a1a center/cover no-repeat; }
 .cat-modal-featured::after{ content:''; position:absolute; inset:0; background:rgba(0,0,0,.3); }
 .cat-modal-pag{ display:flex; justify-content:center; }
@@ -5976,11 +6004,23 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
           </div>
-          <div class="cat-modal-links">
-            <a class="cat-modal-link primary" onclick="_catModalPrimary()">Lire le flux</a>
-            <a class="cat-modal-link" onclick="_catModalOpenSource()">Ouvrir la source</a>
-            <a class="cat-modal-link" onclick="_catModalOpenFolder()">Voir le dossier</a>
-            <a class="cat-modal-link" onclick="_catModalFav()">Mes favoris</a>
+          <div class="cat-triage" id="catTriage">
+            <button class="cat-triage-row" type="button" onclick="_catTriagePick('trending')">
+              <span class="cat-triage-dot"></span>
+              <span class="cat-triage-txt"><span class="cat-triage-label">Tendances</span><span class="cat-triage-note">Ce qui monte, recoupé</span></span>
+            </button>
+            <button class="cat-triage-row" type="button" onclick="_catTriagePick('breaking')">
+              <span class="cat-triage-dot"></span>
+              <span class="cat-triage-txt"><span class="cat-triage-label">Dernière heure</span><span class="cat-triage-note">Frais à l’instant</span></span>
+            </button>
+            <button class="cat-triage-row" type="button" onclick="_catTriagePick('hidden_gems')">
+              <span class="cat-triage-dot"></span>
+              <span class="cat-triage-txt"><span class="cat-triage-label">Pépites oubliées</span><span class="cat-triage-note">Bon, passé sous silence</span></span>
+            </button>
+            <button class="cat-triage-row" type="button" onclick="_catTriagePick('recommended')">
+              <span class="cat-triage-dot"></span>
+              <span class="cat-triage-txt"><span class="cat-triage-label">Pour vous</span><span class="cat-triage-note">Selon vos lectures</span></span>
+            </button>
           </div>
           <div class="cat-modal-featured" id="catModalFeatured"></div>
           <div class="cat-modal-pag"><div class="cat-modal-dots" id="catModalDots"></div></div>
@@ -6955,7 +6995,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
         <span id="catBhDate"></span><span class="cat-bh-dot">·</span><span id="catBhTime"></span><span class="cat-bh-dot">·</span><span id="catBhLoc">…</span>
       </div>
       <div class="cat-bh-inner">
-        <div class="cat-bh-wordmark" data-rail="${escapeHtml(railUrl||'')}" onclick="_catHeaderOpen()" onpointerdown="_catBhPressStart(this)" onpointerup="_catBhPressEnd()" onpointerleave="_catBhPressEnd()" onpointercancel="_catBhPressEnd()">${escapeHtml(folder.name)}</div>
+        <div class="cat-bh-wordmark" data-rail="${escapeHtml(railUrl||'')}" onclick="_catHeaderOpen()" onpointerdown="_catBhPressStart(this)" onpointerup="_catBhPressEnd()" onpointerleave="_catBhPressEnd()" onpointercancel="_catBhPressEnd()"><span>${escapeHtml(folder.name)}</span></div>
         <div class="cat-bh-tabs">${tabs}</div>
       </div>`;
     _catBhStatusTick();
@@ -7056,7 +7096,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   function _catOpenModalForFolder(folder){
     const feeds = folder.feeds || [];
     const subs = [{ url:'', name:'À la une' }].concat(feeds.map(u => ({ url:u, name:_catSourceName(u) })));
-    _catModal.subs = subs; _catModal.idx = 0;
+    _catModal.subs = subs; _catModal.idx = 0; _catModal.folder = folder.name;
     _catRenderModal();
     document.body.classList.add('cat-modal-open');
   }
@@ -7089,7 +7129,8 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   function _catOpenModalNow(url){
     const subs = _catModalSubs();
     const idx = Math.max(0, subs.findIndex(s => s.url === (url||'')));
-    _catModal.subs = subs; _catModal.idx = idx;
+    const c = _catFolders().find(o => o.f.name === _smartCat) || _catFolders()[0];
+    _catModal.subs = subs; _catModal.idx = idx; _catModal.folder = c ? c.f.name : (_smartCat||'');
     _catRenderModal();
     document.body.classList.add('cat-modal-open');
   }
@@ -7098,6 +7139,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   const _catModal = {
     subs: [],     // [{url, name}] : « À la une » + sources du dossier actif
     idx: 0,
+    folder: null, // dossier pour lequel le modal est ouvert (= chip tiré)
     timer: null,
     pending: null,
   };
@@ -7110,7 +7152,8 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   function _catOpenModal(url){
     const subs = _catModalSubs();
     const idx = Math.max(0, subs.findIndex(s => s.url === (url||'')));
-    _catModal.subs = subs; _catModal.idx = idx;
+    const c = _catFolders().find(o => o.f.name === _smartCat) || _catFolders()[0];
+    _catModal.subs = subs; _catModal.idx = idx; _catModal.folder = c ? c.f.name : (_smartCat||'');
     // Délai d'intention : re-tap rapide si déjà ouvert (50 ms), sinon 250 ms (anti-spam)
     clearTimeout(_catModal.timer);
     _catModal.pending = url||'';
@@ -7155,6 +7198,15 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     else _catHeaderOpen();
   };
   window._catModalFav = function(){ _catModalClose(); if(typeof _switchView==='function'){ try{ _switchView('favoris'); }catch(e){} } };
+  // Triage éditorial : entrer dans le dossier par un angle (collection intelligente).
+  // Portée = source sélectionnée dans le carrousel si présente, sinon dossier entier.
+  window._catTriagePick = function(mode){
+    const cur = _catModal.subs[_catModal.idx] || { url:'' };
+    const folder = _catModal.folder || _smartCat || '';
+    if(navigator.vibrate) try{ navigator.vibrate(6); }catch(e){}
+    _catModalClose();
+    if(typeof _applyFolderFilter === 'function') _applyFolderFilter(folder, mode, cur.url || '');
+  };
   // Swipe horizontal sur la carte → source précédente / suivante
   (function _catModalSwipe(){
     const card = document.getElementById('catModalCard');
@@ -14126,65 +14178,9 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     },{passive:true});
   })();
 
-  // ── Pull-to-refresh — ciblé sur le conteneur .row (anti-faux-refresh) ──
-  (function initPullRefresh(){
-    const H=56, THRESHOLD=90;
-    let startY=0, pulling=false, armed=false;
-
-    const ind=document.createElement('div');
-    ind.id='ptrIndicator';
-    ind.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%) translateY(-'+H+'px);z-index:600;height:'+H+'px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:10px;pointer-events:none;transition:transform .28s cubic-bezier(.34,1.56,.64,1)';
-    ind.innerHTML='<div class="ptr-pill"><svg class="ptr-arrow" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg><span class="ptr-txt">Tirez pour actualiser</span></div>';
-    document.body.appendChild(ind);
-    const txt=()=>ind.querySelector('.ptr-txt');
-    const reset=()=>{ ind.style.transition='transform .28s cubic-bezier(.34,1.56,.64,1)'; ind.style.transform='translateX(-50%) translateY(-'+H+'px)'; ind.classList.remove('ptr-armed'); };
-
-    // Le pull n'est valide qu'en haut de l'accueil, aucune surface par-dessus
-    function eligible(){
-      const r=document.querySelector('.row');
-      if(!r || r.scrollTop>2) return false;
-      const sb=document.getElementById('sidebar');
-      if(sb&&sb.classList.contains('open')) return false;
-      const modal=document.getElementById('artModal');
-      if(modal&&modal.style.display==='flex') return false;
-      // Pages plein écran ouvertes ?
-      for(const id of ['folderPage','feedPage','discoverPage','podcastPage','podListenPage','prefsPage','bfListPage']){
-        const el=document.getElementById(id);
-        if(el && el.classList.contains('open')) return false;
-      }
-      return true;
-    }
-
-    document.addEventListener('touchstart', e=>{
-      if(e.touches.length!==1 || !eligible()){ startY=0; pulling=false; return; }
-      startY=e.touches[0].clientY; pulling=true; armed=false;
-    },{passive:true});
-
-    document.addEventListener('touchmove', e=>{
-      if(!pulling || !startY) return;
-      const r=document.querySelector('.row');
-      if(r && r.scrollTop>2){ startY=0; pulling=false; reset(); return; }
-      const dy=e.touches[0].clientY-startY;
-      if(dy<=0){ ind.style.transition='none'; ind.style.transform='translateX(-50%) translateY(-'+H+'px)'; armed=false; ind.classList.remove('ptr-armed'); return; }
-      const dist=Math.min(dy*0.55, H+14);   // résistance élastique
-      ind.style.transition='none';
-      ind.style.transform='translateX(-50%) translateY('+(-H+dist)+'px)';
-      const nowArmed=dy>THRESHOLD;
-      if(nowArmed!==armed){
-        armed=nowArmed;
-        ind.classList.toggle('ptr-armed',armed);
-        const t=txt(); if(t) t.textContent=armed?'Relâchez pour actualiser':'Tirez pour actualiser';
-      }
-    },{passive:true});
-
-    document.addEventListener('touchend', e=>{
-      if(!pulling || !startY){ startY=0; pulling=false; return; }
-      const dy=e.changedTouches[0].clientY-startY;
-      pulling=false; startY=0;
-      reset();
-      if(dy>THRESHOLD && eligible()) loadAllFeeds(true);   // la pastille de synchro prend le relais
-    },{passive:true});
-  })();
+  // ── Pull-to-refresh manuel désactivé : les flux se réactualisent automatiquement.
+  // Le tirage vers le bas reste actif uniquement sur les chips de dossiers (rail
+  // du hero, cf. _catTabPull plus haut) pour ouvrir leur modal thématique.
 
   // ── Swipe-open sidebar (bord gauche → glisser vers droite) ────
   (function initSidebarSwipe(){
@@ -14220,7 +14216,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
         {icon:'↕', text:'Glissez vers le bas pour fermer un article. Glissez latéralement pour naviguer entre articles.'},
         {icon:'☰', text:'Glissez depuis le bord gauche de l’écran pour ouvrir la sidebar. Tapez un dossier pour voir ses articles.'},
         {icon:'👁', text:'La pill ••• en haut à droite : tapez l’œil pour changer la vue (Éditions, Liste, Grille, Parcourir).'},
-        {icon:'↓', text:'Tirez vers le bas depuis le haut de l’accueil pour actualiser tous vos flux.'},
+        {icon:'↓', text:'Tirez vers le bas sur un onglet de dossier pour ouvrir directement son thème.'},
       ];
       let cur=0;
       const ov=document.createElement('div');
