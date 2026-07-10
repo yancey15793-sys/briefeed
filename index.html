@@ -15,7 +15,7 @@
 <!-- Polices critiques (rendu immédiat) : Inter (défaut) + DM Serif Display + Oswald -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;590;700;800&family=DM+Serif+Display&family=Oswald:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;590;700;800&family=DM+Serif+Display&family=Oswald:wght@300;400;500;600;700&family=Abril+Fatface&family=PT+Serif:ital,wght@0,400;0,700;1,400&family=Anton&display=swap" rel="stylesheet">
 
 <!-- Polices alternatives (sélectionnables) : chargement non bloquant pour accélérer le 1er rendu mobile -->
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
@@ -165,6 +165,8 @@ button, [onclick], .art-card, .feed-item,
 .row, .feed-page-scroll, .folder-page-scroll,
 .sb-scroll, .dc-catalog-panel, .dc-detail-panel,
 .artModalBody, .ob-wrap { touch-action: pan-y; }
+#artModalBody, #artPageCtx{ overflow-anchor:none; }
+#artModal .art-cover-spread{ overflow-anchor:none; }
 
 /* 4. Éliminer le délai 300ms (Apple HIG) */
 button, a, [onclick] { touch-action: manipulation; }
@@ -550,6 +552,16 @@ button, .ob-btn, .ob-btn-ghost,
 .sb-item .sb-count{ font-size:11px; font-weight:600; color:var(--text-muted); opacity:.7; font-variant-numeric:tabular-nums; }
 
 /* En-tête de section */
+.sb-cat-status{
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  height:32px; margin:16px 4px 0; border-radius:8px;
+  background:#fff; color:#000;
+  font-family:var(--font-inter); font-size:11px; font-weight:700;
+  letter-spacing:.06em; text-transform:uppercase;
+  font-variant-numeric:tabular-nums;
+}
+[data-theme="light"] .sb-cat-status{ background:#111; color:#fff; }
+.sb-cat-status-dot{ opacity:.45; font-weight:400; }
 .sb-section{
   display:flex; align-items:center; justify-content:space-between;
   padding:22px 12px 8px;
@@ -661,7 +673,6 @@ button, .ob-btn, .ob-btn-ghost,
 }
 .folder-head .chev-btn svg{ width:14px; height:14px; transition:transform .2s cubic-bezier(.2,.85,.25,1); }
 .folder.open .folder-head .chev-btn svg{ transform:rotate(90deg); }
-.folder-swatch{ width:26px; height:26px; border-radius:8px; flex:none; box-shadow:0 2px 8px rgba(0,0,0,.28); }
 .folder-head .f-name{
   flex:1; font-size:17px; font-weight:700; letter-spacing:-0.02em;
   cursor:pointer; -webkit-tap-highlight-color:transparent;
@@ -688,7 +699,6 @@ button, .ob-btn, .ob-btn-ghost,
   border-radius:8px;
 }
 .feed-item:hover{ background:#141414; color:var(--text); }
-.feed-item .dot{ width:6px; height:6px; border-radius:50%; background:#444; flex:none; }
 .feed-add{
   display:flex; align-items:center; gap:8px;
   padding:8px 12px 8px 36px; font-size:12.5px; color:#666; cursor:pointer;
@@ -812,13 +822,10 @@ button, .ob-btn, .ob-btn-ghost,
 }
 
 /* feed-items dans les dossiers — décalage horizontal doux au hover */
-.feed-item .dot{
-  transition: transform .22s cubic-bezier(.34,1.56,.64,1), background .18s ease;
+.feed-item-name{
+  transition: transform .22s cubic-bezier(.34,1.56,.64,1);
 }
-.feed-item:hover .dot{
-  transform: scale(1.5);
-  background: var(--accent);
-}
+.feed-item:hover .feed-item-name{ transform:translateX(3px); }
 
 /* Boutons footer — même ressort que sub-link du morph menu */
 .sb-foot-btn{
@@ -1161,11 +1168,27 @@ body.bf-heavy-open .sbar-podcast{
 .column:has(> #catBrandHeader:not([hidden])){
   padding-top:calc(env(safe-area-inset-top,0px) + 8px);
 }
+/* ── Titre replié fixe : révélé (clip-path) quand le hero de catégorie défile hors champ ── */
+.cat-fixed-title{
+  position:fixed; top:0; left:0; right:0; z-index:61;
+  height:calc(env(safe-area-inset-top,0px) + 46px);
+  padding-top:env(safe-area-inset-top,0px);
+  display:flex; align-items:center; justify-content:center;
+  font-family:'DM Serif Display', var(--font-inter); font-weight:700;
+  font-size:16px; letter-spacing:-.02em; color:var(--text);
+  background:color-mix(in srgb, var(--bg) 84%, transparent);
+  -webkit-backdrop-filter:blur(18px) saturate(1.6); backdrop-filter:blur(18px) saturate(1.6);
+  border-bottom:1px solid rgba(127,127,127,.14);
+  clip-path:inset(0 0 100% 0);
+  transition:clip-path .46s cubic-bezier(.16,1,.3,1);
+  pointer-events:none;
+}
+.cat-fixed-title.show{ clip-path:inset(0 0 0 0); }
 .cat-bh-status{
-  position:relative; z-index:3; height:34px; flex:none;
-  display:flex; align-items:center; justify-content:center; gap:9px;
+  position:relative; z-index:3; height:44px; flex:none;
+  display:flex; align-items:center; justify-content:center; gap:11px;
   background:#fff; color:#000;
-  font-family:var(--font-inter); font-size:12px; font-weight:700;
+  font-family:var(--font-inter); font-size:15px; font-weight:700;
   letter-spacing:.06em; text-transform:uppercase;
   font-variant-numeric:tabular-nums;
 }
@@ -1233,6 +1256,7 @@ body.bf-heavy-open .sbar-podcast{
 /* Sous-nav = sous-dossiers, pastilles glass, collante en haut du flux */
 .cat-subnav{
   position:sticky; top:0; z-index:10; margin:0 0 4px;
+  transition:top .3s cubic-bezier(.16,1,.3,1);
   margin-left:calc(50% - 50vw); margin-right:calc(50% - 50vw);
   width:100vw; max-width:100vw;
   padding:14px 0;
@@ -2179,6 +2203,14 @@ body.cat-modal-open .cat-modal-link:nth-child(4){ transition-delay:.24s; }
   .reveal{ opacity:1 !important; transform:none !important; transition:none; }
 }
 
+/* Déploiement du texte d'article — même utilitaire .reveal, décliné plus doux
+   (fondu + léger glissement) : à l'ouverture ET au défilement de la lecture */
+.art-reader-text.reveal-root .reveal{
+  opacity:0; transform:translateY(16px);
+  transition:opacity .74s cubic-bezier(.16,1,.3,1), transform .74s cubic-bezier(.16,1,.3,1);
+}
+.art-reader-text.reveal-root .reveal.in{ opacity:1; transform:none; }
+
 /* ══════════════════════════════════════════════════════════════════
    VUE ÉDITION — Liste éditoriale (style « Ordered List »)
    image · titre · sous-titre · date · mots-clés
@@ -2305,75 +2337,40 @@ body.cat-modal-open .cat-modal-link:nth-child(4){ transition-delay:.24s; }
 /* ── FOLDER PAGE — héro décoratif + logos flottants ─────────────────────── */
 .folder-hero{
   width:100%; position:relative; overflow:hidden; flex-shrink:0;
-  min-height:180px; display:flex; align-items:flex-end;
-  background:linear-gradient(145deg,#1a1a2e 0%,#16213e 100%);
+  min-height:230px; display:flex; flex-direction:column; justify-content:space-between;
+  background:#000; isolation:isolate;
 }
 .folder-hero-bg{
-  position:absolute; inset:0;
+  position:absolute; inset:0; z-index:0;
   background-size:cover; background-position:center;
-  opacity:.9;
+  filter:grayscale(1) contrast(1.06);
 }
-/* Noise texture overlay */
-.folder-hero-noise{
-  position:absolute; inset:0; opacity:.04;
-  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
-  background-size:200px 200px;
+.folder-hero::after{  /* dégradé bas → fond app, comme le masthead d'accueil */
+  content:''; position:absolute; inset:0; z-index:1; pointer-events:none;
+  background:linear-gradient(180deg, rgba(0,0,0,.2) 0%, rgba(0,0,0,.72) 78%, var(--bg) 100%);
 }
+.folder-hero-status{
+  position:relative; z-index:3; height:34px; flex:none;
+  display:flex; align-items:center; justify-content:center; gap:9px;
+  background:#fff; color:#000;
+  font-family:var(--font-inter); font-size:12px; font-weight:700;
+  letter-spacing:.06em; text-transform:uppercase;
+  font-variant-numeric:tabular-nums;
+}
+[data-theme="light"] .folder-hero-status{ background:#111; color:#fff; }
+.folder-hero-status-dot{ opacity:.45; font-weight:400; }
 .folder-hero-content{
-  position:relative; z-index:2; padding:28px 24px 24px;
-  width:100%;
+  position:relative; z-index:2; padding:10px 20px 22px;
+  width:100%; display:flex; flex-direction:column; align-items:center; text-align:center;
 }
-.folder-hero-badge{
-  display:inline-flex; align-items:center; gap:6px;
-  background:rgba(255,255,255,.12); border-radius:999px;
-  padding:4px 12px; margin-bottom:12px;
-  font-family:var(--font-inter); font-size:10.5px; font-weight:700;
-  color:rgba(255,255,255,.8); letter-spacing:.06em; text-transform:uppercase;
-  backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
-}
-[data-theme="light"] .folder-hero-badge{ background:rgba(0,0,0,.12); color:rgba(0,0,0,.6); }
 .folder-hero-title{
-  font-family:var(--font-inter); font-size:34px; font-weight:900;
-  letter-spacing:-.035em; color:#fff; line-height:1.1; margin-bottom:6px;
-  text-shadow:0 2px 12px rgba(0,0,0,.4);
+  font-family:var(--font-inter); font-weight:900; font-size:clamp(24px,7vw,34px);
+  letter-spacing:.2em; text-transform:uppercase; color:#fff; line-height:1;
+  margin-bottom:10px; text-shadow:0 2px 12px rgba(0,0,0,.5);
 }
 .folder-hero-sub{
   font-family:var(--font-inter); font-size:13.5px; font-weight:500;
-  color:rgba(255,255,255,.68); line-height:1.4; max-width:260px;
-}
-/* Orb décoratif — lumière douce en fond */
-.folder-hero-orb{
-  position:absolute; right:-30px; top:-30px; width:220px; height:220px;
-  border-radius:50%; opacity:.35; pointer-events:none; z-index:1;
-  filter:blur(40px);
-}
-/* Logos flottants (stacked circles) */
-.folder-logo-row{
-  display:flex; align-items:center; padding:20px 24px 4px;
-  gap:0; flex-shrink:0;
-}
-.folder-logo-bubble{
-  width:38px; height:38px; border-radius:50%; overflow:hidden; flex-shrink:0;
-  border:2.5px solid var(--bg); background:#333;
-  margin-left:-10px; position:relative;
-  display:flex; align-items:center; justify-content:center;
-  font-family:var(--font-inter); font-size:14px; font-weight:800; color:#fff;
-  box-shadow:0 2px 8px rgba(0,0,0,.28);
-  transition:transform .2s cubic-bezier(.34,1.56,.64,1);
-}
-.folder-logo-bubble:first-child{ margin-left:0; }
-.folder-logo-bubble:hover{ transform:translateY(-3px) scale(1.08); z-index:2; }
-.folder-logo-bubble img{
-  position:absolute; inset:0; width:100%; height:100%;
-  object-fit:cover; display:block; border-radius:50%;
-}
-.folder-logo-bubble-more{
-  background:rgba(127,127,127,.18);
-  font-size:10px; font-weight:700; color:var(--text-muted); letter-spacing:-.01em;
-}
-.folder-logo-row-count{
-  margin-left:12px; font-family:var(--font-inter); font-size:12px;
-  font-weight:600; color:var(--text-muted); letter-spacing:-.01em;
+  color:rgba(255,255,255,.68); line-height:1.4; max-width:320px;
 }
 
 
@@ -3731,7 +3728,7 @@ body.cat-modal-open .cat-modal-link:nth-child(4){ transition-delay:.24s; }
   display:inline-flex; align-items:center; gap:8px;
   font-family:var(--font-inter); font-size:11px; font-weight:700;
   color:var(--text-muted); letter-spacing:.11em; text-transform:uppercase;
-  margin-bottom:14px;
+  margin-top:10px;
 }
 .art-modal-date::before{
   content:""; width:6px; height:6px; border-radius:50%; flex:none;
@@ -3743,22 +3740,19 @@ body.cat-modal-open .cat-modal-link:nth-child(4){ transition-delay:.24s; }
   line-height:1.16; letter-spacing:-.01em; color:var(--text);
   margin-bottom:20px; text-wrap:pretty;
 }
-.art-modal-source-row{
+.art-modal-date-share-row{
   position:relative; z-index:1;
   display:flex; align-items:center; justify-content:space-between; gap:12px;
-  padding-bottom:18px; margin-bottom:22px;
-  border-bottom:1px solid var(--border);
 }
-[data-theme="light"] .art-modal-source-row{ border-color:rgba(0,0,0,.08); }
 .art-modal-source-pill{
-  display:flex; align-items:center; gap:11px;
+  display:flex; align-items:center; gap:8px;
   background:none; border:none; box-shadow:none; padding:0;
   -webkit-backdrop-filter:none; backdrop-filter:none; min-width:0;
 }
-.art-modal-source-fav{ width:38px; height:38px; border-radius:50%; overflow:hidden; background:#fff; flex-shrink:0; box-shadow:0 0 0 1.5px var(--border); display:flex; align-items:center; justify-content:center; }
+.art-modal-source-fav{ width:28px; height:28px; border-radius:50%; overflow:hidden; background:#fff; flex-shrink:0; box-shadow:0 0 0 1.5px var(--border); display:flex; align-items:center; justify-content:center; }
 .art-modal-source-fav img{ width:82%; height:82%; object-fit:contain; border-radius:12%; display:block; }
 [data-theme="light"] .art-modal-source-fav{ box-shadow:0 0 0 1.5px rgba(0,0,0,0.1); }
-.art-modal-source-name{ font-family:var(--font-inter); font-size:14px; font-weight:600; color:var(--text); letter-spacing:-.01em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.art-modal-source-name{ font-family:var(--font-inter); font-size:12px; font-weight:600; color:var(--text); letter-spacing:-.01em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 /* Reader content */
 .art-reader-section{ position:relative; z-index:1; padding:4px 0 20px; }
 /* Niveau 3 — Contexte (déroulant opt-in, ouverture spring bezier) */
@@ -3798,8 +3792,8 @@ body.cat-modal-open .cat-modal-link:nth-child(4){ transition-delay:.24s; }
 }
 [data-theme="light"] .art-reader-text{ color:#1a1a1a; }
 .art-reader-text p{ margin-bottom:20px; }
-.art-reader-text h2{ font-size:21px; font-weight:700; color:var(--text); margin:28px 0 12px; }
-.art-reader-text h3{ font-size:18px; font-weight:600; color:var(--text); margin:22px 0 10px; }
+.art-reader-text h2{ font-family:'Anton',var(--font-title),Georgia,serif; font-size:22px; font-weight:400; text-transform:uppercase; letter-spacing:.01em; color:var(--text); margin:30px 0 12px; }
+.art-reader-text h3{ font-family:'Anton',var(--font-title),Georgia,serif; font-size:19px; font-weight:400; text-transform:uppercase; letter-spacing:.01em; color:var(--text); margin:24px 0 10px; }
 .art-reader-text a{ color:#0a84ff; text-decoration:none; border-bottom:1px solid rgba(10,132,255,.3); }
 .art-reader-text ul,.art-reader-text ol{ margin:0 0 20px 20px; }
 .art-reader-text li{ margin-bottom:8px; }
@@ -3824,10 +3818,19 @@ body.cat-modal-open .cat-modal-link:nth-child(4){ transition-delay:.24s; }
 
 .art-shell{ position:relative; z-index:1; display:flex; flex-direction:column;
   width:100vw; max-width:100vw; height:100vh; max-height:100vh;
-  background:var(--surface-card,#1C1A18); border:none;
-  border-radius:0; overflow:hidden; box-shadow:0 -8px 40px rgba(0,0,0,.4);
+  background:
+    radial-gradient(circle, rgba(255,255,255,.045) 1px, transparent 1.3px) 0 0/6px 6px,
+    var(--surface-card,#1C1A18);
+  border:none;
+  border-radius:0; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch;
+  box-shadow:0 -8px 40px rgba(0,0,0,.4);
   transform:translateY(100%); opacity:1;
   transition:transform .48s cubic-bezier(.16,1,.3,1); }
+[data-theme="light"] .art-shell{
+  background:
+    radial-gradient(circle, rgba(0,0,0,.035) 1px, transparent 1.3px) 0 0/6px 6px,
+    var(--surface-card,#FCFBFA);
+}
 #artModal.art-open .art-shell{ transform:translateY(0); opacity:1; }
 #artModal.art-closing .art-shell{ transform:translateY(100%); opacity:1;
   transition:transform .32s cubic-bezier(.4,0,1,1); }
@@ -3841,7 +3844,7 @@ body.cat-modal-open .cat-modal-link:nth-child(4){ transition-delay:.24s; }
   color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer;
   box-shadow:0 4px 14px rgba(0,0,0,.35); transition:transform .16s ease, background .2s ease; -webkit-tap-highlight-color:transparent; }
 .art-float-btn:active{ transform:scale(.86); }
-.art-float-close{ left:13px; }
+.art-float-close{ left:13px; width:30px; height:30px; }
 .art-float-save{ right:13px; }
 [data-theme="light"] .art-float-btn{ background:rgba(252,251,250,.72); border-color:rgba(0,0,0,.08); color:#141413; }
 
@@ -3849,15 +3852,60 @@ body.cat-modal-open .cat-modal-link:nth-child(4){ transition-delay:.24s; }
 .art-shell-hero::after{ content:""; position:absolute; inset:auto 0 0 0; height:64px; pointer-events:none;
   background:linear-gradient(to bottom, rgba(28,26,24,0), var(--surface-card,#1C1A18)); }
 [data-theme="light"] .art-shell-hero::after{ background:linear-gradient(to bottom, rgba(252,251,250,0), var(--surface-card,#FCFBFA)); }
-.art-shell.is-expanded .art-shell-hero{ max-height:38vh; transition:max-height .5s cubic-bezier(.34,1.56,.64,1); }
+.art-shell.is-expanded .art-shell-hero{ max-height:min(38vh,220px); }
 .art-shell-hero img{ width:100%; height:100%; object-fit:cover; display:block; }
 
 .art-shell-head{ flex:none; position:relative; padding:22px 26px 4px; }
 /* Sans image hero : dégage l'en-tête sous les boutons flottants (fermer / enregistrer) */
 .art-shell.no-hero .art-shell-head{ padding-top:62px; }
 
+/* ═══════════ Cover éditorial (façon double-page de magazine) ═══════════
+   Bandeau-titre sombre et texturé (grain fin), signature en tête, titre
+   massif en capitales condensées, puis photo plein cadre — dans l'esprit
+   d'une ouverture de reportage imprimé. Portée strictement au lecteur
+   d'article (#artModal) ; le corps de lecture qui suit n'est pas touché. */
+#artModal .art-shell-head{
+  background:
+    radial-gradient(circle, rgba(255,255,255,.05) 1px, transparent 1.3px) 0 0/6px 6px,
+    #17150f;
+  color:#F1ECE1;
+  padding:58px 20px 26px;
+  flex:1 1 50%; min-width:0;
+  display:flex; flex-direction:column; justify-content:flex-start;
+}
+#artModal .art-cover-spread{ display:flex; align-items:stretch; overflow:hidden; transform-origin:top center; }
+/* Masthead qui cède la place au texte : hauteur/opacité/échelle pilotées en JS
+   sur le scroll de lecture (voir _artBindCoverCollapse) — la piste de texte,
+   en flex:1, récupère automatiquement l'espace libéré. */
+#artModal .art-shell.no-hero .art-shell-head{ padding-top:58px; flex:1 1 100%; }
+#artModal .art-modal-byline{
+  font-family:var(--font-inter); font-size:11px; font-weight:700;
+  letter-spacing:.09em; text-transform:uppercase; color:rgba(241,236,225,.6);
+  margin-bottom:16px;
+}
+#artModal .art-modal-title{
+  font-family:'Anton',var(--font-inter),sans-serif;
+  font-weight:400; text-transform:uppercase;
+  font-size:clamp(20px,7.4vw,32px); line-height:1.04; letter-spacing:.005em;
+  color:#F1ECE1; margin:6px 0 4px; text-wrap:pretty;
+}
+#artModal .art-modal-date{ padding:0; margin-top:0; }
+
+/* Légende photo, coin haut-droit — écho du folio de magazine, données réelles uniquement */
+#artModal .art-shell-hero{
+  position:relative; flex:1 1 50%; min-width:0;
+  width:auto; aspect-ratio:auto; max-height:none; height:auto;
+}
+#artModal .art-shell-hero::after{ display:none; }
+#artModal .art-shell-hero-cap{
+  position:absolute; top:12px; right:12px; z-index:5; max-width:62%;
+  font-family:var(--font-inter); font-size:10px; font-weight:600; text-align:right;
+  letter-spacing:.02em; line-height:1.35; color:rgba(255,255,255,.85);
+  text-shadow:0 1px 3px rgba(0,0,0,.65);
+}
+
 /* Pager à puces (swipe interne façon Mastercard) — piste translatée */
-.art-pager-wrap{ position:relative; flex:1; min-height:0; display:flex; overflow:hidden; }
+.art-pager-wrap{ position:relative; flex:1 1 auto; min-height:160px; display:flex; overflow:hidden; }
 .art-pager{ flex:1; min-width:0; overflow:hidden; }
 .art-pager-track{ display:flex; height:100%; will-change:transform;
   transition:transform .52s cubic-bezier(.22,1,.36,1); }
@@ -3867,18 +3915,24 @@ body.cat-modal-open .cat-modal-link:nth-child(4){ transition-delay:.24s; }
 .art-shell.is-expanded .art-page{ overflow-y:auto; -webkit-overflow-scrolling:touch; }
 /* En compact : seule la 1re page, tronquée, avec fondu + amorce */
 .art-shell:not(.is-expanded) .art-page ~ .art-page{ display:none !important; }
-.art-page-eyebrow{ display:inline-flex; align-items:center; gap:7px; font-family:var(--font-inter); font-size:11px;
-  font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--text-muted); margin:2px 0 12px; }
+.art-page-eyebrow{ display:inline-flex; align-items:center; gap:7px; font-family:'Anton',var(--font-inter),sans-serif; font-size:13px;
+  font-weight:400; letter-spacing:.03em; text-transform:uppercase; color:var(--text-muted); margin:2px 0 12px; }
 .art-page-eyebrow::before{ content:""; width:6px; height:6px; border-radius:50%; background:var(--eyebrow-dot); box-shadow:0 0 10px var(--eyebrow-dot); }
 
 /* Amorce compacte : fondu de lecture au-dessus du pied (résiduel, invisible en mode étendu permanent) */
 .art-teaser-fade{ display:none; }
 
 /* Pied : puces de pages (au-dessus) + barre d'outils centrée — coque toujours déployée */
-.art-shell-foot{ flex:none; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px;
+.art-shell-foot{ flex:none; position:sticky; bottom:0; z-index:5; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px;
   padding:12px 16px calc(16px + env(safe-area-inset-bottom,0px)); border-top:1px solid var(--border);
-  background:var(--surface-card,#1C1A18); }
-[data-theme="light"] .art-shell-foot{ border-color:rgba(0,0,0,.07); }
+  background:
+    radial-gradient(circle, rgba(255,255,255,.045) 1px, transparent 1.3px) 0 0/6px 6px,
+    var(--surface-card,#1C1A18); }
+[data-theme="light"] .art-shell-foot{ border-color:rgba(0,0,0,.07);
+  background:
+    radial-gradient(circle, rgba(0,0,0,.035) 1px, transparent 1.3px) 0 0/6px 6px,
+    var(--surface-card,#FCFBFA);
+}
 
 /* Puces (façon Mastercard) + barre d'outils — toujours visibles, coque toujours étendue */
 .art-dots{ display:none; align-items:center; justify-content:center; gap:8px; }
@@ -3898,8 +3952,19 @@ body.cat-modal-open .cat-modal-link:nth-child(4){ transition-delay:.24s; }
   .art-shell.is-expanded{ max-width:100vw; width:100vw; max-height:100vh; height:100vh; border-radius:0; }
   .art-shell-hero{ max-height:220px; }
   .art-shell:not(.is-expanded) .art-shell-hero{ max-height:190px; }
-  .art-shell.is-expanded .art-shell-hero{ max-height:34vh; }
+  .art-shell.is-expanded .art-shell-hero{ max-height:min(34vh,190px); }
   .art-shell-head{ padding:18px 22px 2px; }
+  /* Double-page façon The Athletic : titre et photo se font toujours face à
+     face sur mobile, mais en colonnes asymétriques (58/42) — le titre garde
+     de l'air, la photo garde un cadrage portrait net, plutôt qu'un 50/50
+     serré qui écrasait les deux. */
+  #artModal .art-cover-spread{ flex-direction:row; align-items:stretch; }
+  #artModal .art-shell-head{ flex:1 1 56%; min-width:0; padding:64px 14px 18px 18px; }
+  #artModal .art-modal-byline{ margin-bottom:9px; -webkit-line-clamp:1; display:-webkit-box; -webkit-box-orient:vertical; overflow:hidden; }
+  #artModal .art-modal-title{ font-size:clamp(19px,6.4vw,27px); line-height:1.08; margin:5px 0 4px; }
+  #artModal .art-modal-date{ padding:0; }
+  #artModal .art-shell-hero{ flex:1 1 44%; min-width:0; width:auto; aspect-ratio:auto; height:auto; max-height:none; }
+  #artModal .art-shell-hero-cap{ top:10px; right:10px; max-width:82%; font-size:9px; }
   .art-pager-wrap{ min-height:118px; flex:1; }
   .art-float-close, .art-float-save{ top:12px; }
   /* Carrousel article → article : puces indicatives remplaçant les flèches */
@@ -4947,6 +5012,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   .art-toolbar-btn{ min-width:44px; min-height:44px; }
   /* Boutons flottants (fermer / enregistrer) */
   .art-float-btn{ width:44px; height:44px; }
+  .art-float-close{ width:34px; height:34px; }
   /* Micro de recherche */
   .nav-search-mic{ width:44px; height:44px; }
   /* Chips de vue / catégories du menu */
@@ -5225,6 +5291,9 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
       </div>
 
       <!-- Dossiers (vides : l'utilisateur les crée) -->
+      <div class="sb-cat-status" id="sbCatStatus">
+        <span id="sbCatDate"></span><span class="sb-cat-status-dot">·</span><span id="sbCatTime"></span><span class="sb-cat-status-dot">·</span><span id="sbCatLoc">…</span>
+      </div>
       <div class="sb-section">
         <span>Dossiers</span>
         <div class="sb-section-actions">
@@ -5888,6 +5957,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
       <div id="bfGreetHost" hidden></div>
 
       <!-- Header de catégorie : hero + wordmark + onglets dossiers ; sous-nav = sous-dossiers -->
+      <div class="cat-fixed-title" id="catFixedTitle"></div>
       <div class="cat-brand-header" id="catBrandHeader" hidden></div>
       <div class="cat-subnav" id="catSubnav" hidden></div>
 
@@ -6898,11 +6968,18 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     const dEl = document.getElementById('catBhDate');
     const tEl = document.getElementById('catBhTime');
     const lEl = document.getElementById('catBhLoc');
-    if(!dEl || !tEl) return;
+    const sdEl = document.getElementById('sbCatDate');
+    const stEl = document.getElementById('sbCatTime');
+    const slEl = document.getElementById('sbCatLoc');
     const now = new Date();
-    dEl.textContent = now.toLocaleDateString('fr-FR', { weekday:'short', day:'numeric', month:'short' });
-    tEl.textContent = now.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+    const dateStr = now.toLocaleDateString('fr-FR', { weekday:'short', day:'numeric', month:'short' });
+    const timeStr = now.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+    if(dEl) dEl.textContent = dateStr;
+    if(tEl) tEl.textContent = timeStr;
     if(lEl && _catBhLocCache) lEl.textContent = _catBhLocCache;
+    if(sdEl) sdEl.textContent = dateStr;
+    if(stEl) stEl.textContent = timeStr;
+    if(slEl && _catBhLocCache) slEl.textContent = _catBhLocCache;
   }
   let _catBhTickTimer = null;
   function _catBhStartTicker(){
@@ -6911,7 +6988,9 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   }
   function _catBhLocate(){
     const lEl = document.getElementById('catBhLoc');
-    if(_catBhLocCache){ if(lEl) lEl.textContent = _catBhLocCache; _catBhStartTicker(); return; }
+    const slEl = document.getElementById('sbCatLoc');
+    const applyLoc = (txt) => { if(lEl) lEl.textContent = txt; if(slEl) slEl.textContent = txt; };
+    if(_catBhLocCache){ applyLoc(_catBhLocCache); _catBhStartTicker(); return; }
     _catBhStartTicker();
     const fallback = () => {
       try{
@@ -6919,8 +6998,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
         const city = tz.split('/').pop().replace(/_/g,' ');
         _catBhLocCache = city || 'Localisation indisponible';
       } catch(e){ _catBhLocCache = 'Localisation indisponible'; }
-      const el = document.getElementById('catBhLoc');
-      if(el) el.textContent = _catBhLocCache;
+      applyLoc(_catBhLocCache);
     };
     if(!navigator.geolocation){ fallback(); return; }
     navigator.geolocation.getCurrentPosition(
@@ -6934,8 +7012,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
             }
             const country = d.countryName || '';
             _catBhLocCache = [city, country].filter(Boolean).join(', ') || 'Position détectée';
-            const el = document.getElementById('catBhLoc');
-            if(el) el.textContent = _catBhLocCache;
+            applyLoc(_catBhLocCache);
           })
           .catch(fallback);
       },
@@ -7095,6 +7172,8 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   function render(){
     list.innerHTML = '';
     _renderCatHeader();
+    _catBhStatusTick();
+    _catBhLocate();
     if (!folders.length){
       list.innerHTML = '<div class="sb-empty">Aucun dossier pour l\'instant. Créez-en un pour organiser vos flux.</div>';
       return;
@@ -7115,15 +7194,13 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
           displayName = meta[fd]?.name || new URL(fd).hostname.replace(/^www\./, '');
           ftype = meta[fd]?.type || 'rss';
         } catch(e) {}
-        const badge = (window.BF_SOURCES && ftype && ftype!=='rss' && ftype!=='site')
-          ? `<span class="feed-type-pill" title="${escapeHtml(ftype)}">${window.BF_SOURCES.typeIcon(ftype)}</span>` : '';
-        return `<div class="feed-item" data-url="${escapeHtml(fd)}" data-name="${escapeHtml(displayName)}"><span class="dot"></span><span class="feed-item-name">${escapeHtml(displayName)}</span>${badge}</div>`;
+        const badge = '';
+        return `<div class="feed-item" data-url="${escapeHtml(fd)}" data-name="${escapeHtml(displayName)}"><span class="feed-item-name">${escapeHtml(displayName)}</span>${badge}</div>`;
       }).join('');
       el.innerHTML = `
         <div class="folder-head" data-i="${i}">
           <button class="f-drag" aria-label="Glisser pour réorganiser">${ICON_DRAG}</button>
           <button class="chev-btn" data-toggle="${i}" aria-label="Ouvrir dossier">${ICON_CHEV}</button>
-          <span class="folder-swatch" style="background:linear-gradient(145deg,${_folderGrad(f.name)[0]} 0%,${_folderGrad(f.name)[1]} 100%)"></span>
           <span class="f-name" data-open="${i}">${escapeHtml(f.name)}</span>
           <span class="f-count">${(f.feeds||[]).length}</span>
           <button class="f-edit" data-edit="${i}" aria-label="Renommer">${ICON_EDIT}</button>
@@ -12361,6 +12438,17 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     });
     div.querySelectorAll('a').forEach(a=>{ a.setAttribute('target','_blank'); a.setAttribute('rel','noopener noreferrer'); });
     container.innerHTML='<div class="art-reader-text">'+div.innerHTML+'</div>';
+    _revealArticleText(container);
+  }
+
+  // Déploiement smooth du texte d'article — à l'ouverture (blocs déjà visibles)
+  // et au défilement (blocs suivants), via l'utilitaire .reveal existant
+  function _revealArticleText(container){
+    const root = container.querySelector('.art-reader-text');
+    if(!root) return;
+    root.classList.add('reveal-root');
+    root.querySelectorAll('p,h2,h3,h4,blockquote,ul,ol,img').forEach(el=>el.classList.add('reveal'));
+    if(typeof window._revealObserve === 'function') window._revealObserve(root);
   }
 
   // Fetch article complet via proxies
@@ -12431,6 +12519,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     const rssContent = a.contentEncoded && a.contentEncoded.length>200 ? _cleanRssContent(a.contentEncoded) : null;
     if(rssContent && rssContent.length>100){
       container.innerHTML = '<div class="art-reader-partial"><div class="art-reader-partial-spin"></div>Enrichissement en cours…</div><div class="art-reader-text" id="_rssBase">'+rssContent+'</div>';
+      _revealArticleText(container);
       // Enrichir en arrière-plan
       _artFetchViaProxies(a.link, signal).then(full=>{
         if(signal.aborted||!full)return;
@@ -12455,6 +12544,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
       const desc = a.description||a.contentEncoded||'';
       if(desc.length>80){
         container.innerHTML='<div class="art-reader-text"><p>'+escHtml(desc)+'</p></div>';
+        _revealArticleText(container);
       } else {
         container.innerHTML='<div style="padding:32px 0;text-align:center;color:var(--text-muted);font-family:var(--font-inter);font-size:14px">Contenu non disponible hors ligne.<br><button onclick="artModalOpenExternal()" style="margin-top:14px;padding:9px 20px;border:none;border-radius:999px;background:#0a84ff;color:#fff;font-family:var(--font-inter);font-size:13px;font-weight:700;cursor:pointer">Ouvrir dans le navigateur</button></div>';
       }
@@ -12484,6 +12574,8 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
       if(a.imageUrl){ heroWrap.style.display='block'; heroImg.src=a.imageUrl; if(_shellEl) _shellEl.classList.remove('no-hero'); }
       else { heroWrap.style.display='none'; heroImg.removeAttribute('src'); if(_shellEl) _shellEl.classList.add('no-hero'); }
     }
+    const heroCapEl = document.getElementById('artModalHeroCap');
+    if(heroCapEl) heroCapEl.textContent = a.source || '';
 
     // Watermark date
     const pd = a.pubDate instanceof Date ? a.pubDate : new Date(a.pubDate||0);
@@ -12507,6 +12599,13 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     const favEl  = document.getElementById('artModalFav');
     if(srcEl) srcEl.textContent = a.source||'';
     if(favEl){ try{ favEl.src='https://www.google.com/s2/favicons?domain='+new URL(a.link).hostname+'&sz=32'; }catch(e){} }
+
+    // Signature — n'apparaît que si l'article porte réellement un auteur (jamais inventée)
+    const bylineEl = document.getElementById('artModalByline');
+    if(bylineEl){
+      if(a.author){ bylineEl.textContent = 'Par ' + a.author; bylineEl.style.display = ''; }
+      else { bylineEl.textContent = ''; bylineEl.style.display = 'none'; }
+    }
 
     // Bouton save
     const saveBtn = document.getElementById('artModalSaveBtn');
@@ -12547,6 +12646,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     // Coque : ouverture directement en mode étendu (déploiement automatique) + synchronise les puces du pager
     if(typeof _artShellReset==='function') _artShellReset();
     if(typeof _artExpand==='function') setTimeout(_artExpand, 0);
+    if(typeof _artBindCoverCollapse==='function') setTimeout(_artBindCoverCollapse, 60);
 
     // Contexte de navigation (swipe / chevrons article → article)
     try{ _artSwipeCtx = _artResolveCtx(a); }catch(e){ _artSwipeCtx = {list:[a], idx:0}; }
@@ -12566,6 +12666,50 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   }
 
   window.openArtModal = _showArtModal;
+
+  // ── Masthead qui cède la place au texte : au scroll de lecture, le bloc
+  // titre/photo se réduit en douceur (hauteur + fondu + échelle, lissés par
+  // interpolation image par image) — le pager (flex:1) absorbe l'espace
+  // libéré, si bien que le texte "prend la place" du titre et de la photo. ──
+  (function(){
+    let naturalH = 0, target = 0, current = 0, raf = null, cover = null;
+    function applyProgress(p){
+      if(!cover || !naturalH) return;
+      const ease = p*p*(3-2*p);
+      cover.style.height = Math.max(0, naturalH*(1-ease)) + 'px';
+      cover.style.opacity = String(1-ease);
+      cover.style.transform = 'scale(' + (1-ease*0.08) + ') translateY(' + (-ease*14) + 'px)';
+      cover.style.pointerEvents = ease > 0.6 ? 'none' : '';
+    }
+    function loop(){
+      current += (target-current) * 0.11;
+      if(Math.abs(target-current) < 0.002) current = target;
+      applyProgress(current);
+      raf = (current !== target) ? requestAnimationFrame(loop) : null;
+    }
+    function onScroll(e){
+      const dist = 340;
+      target = Math.max(0, Math.min(1, e.currentTarget.scrollTop / dist));
+      if(!raf) raf = requestAnimationFrame(loop);
+    }
+    window._artBindCoverCollapse = function(){
+      const shell = document.getElementById('artShell');
+      cover = shell ? shell.querySelector('.art-cover-spread') : null;
+      if(!cover) return;
+      target = 0; current = 0;
+      cover.style.height = ''; cover.style.opacity=''; cover.style.transform=''; cover.style.pointerEvents='';
+      requestAnimationFrame(()=> requestAnimationFrame(()=>{ naturalH = cover.scrollHeight; }));
+      ['artModalBody','artPageCtx'].forEach(id=>{
+        const el = document.getElementById(id);
+        if(el && !el._coverScrollBound){ el.addEventListener('scroll', onScroll, {passive:true}); el._coverScrollBound = true; }
+      });
+    };
+    window._artResetCoverCollapse = function(){
+      target = 0; current = 0;
+      if(raf){ cancelAnimationFrame(raf); raf = null; }
+      if(cover){ cover.style.height=''; cover.style.opacity=''; cover.style.transform=''; cover.style.pointerEvents=''; }
+    };
+  })();
 
   // ── Coque contenue : expansion élastique + pager à puces (façon Mastercard) ──
   let _artPage = 0;
@@ -12629,6 +12773,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   window._artShellReset = function(){
     const shell = document.getElementById('artShell');
     if(shell) shell.classList.remove('is-expanded');
+    if(typeof _artResetCoverCollapse==='function') _artResetCoverCollapse();
     _artPage = 0;
     const body = document.getElementById('artModalBody');
     if(body) body.scrollTop = 0;
@@ -13396,47 +13541,47 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
       return;
     }
 
+    // ── Mêmes gabarits de carte que la page d'accueil (_edlCardHtml /
+    // grid2-card / list-item), pour que les sous-pages (dossier, flux)
+    // rendent à l'identique en Magazine / Liste / Grille ──
     if(view === 'editions'){
-      const hero = arts.find(a=>a.imageUrl) || arts[0];
-      const heroIdx = arts.indexOf(hero);
-      const rest = arts.filter(a=>a!==hero); // tous les articles
-      const heroFav = getFavicon(hero.feedUrl||hero.link||'');
-      const heroImg = hero.imageUrl ? "background:url('" + hero.imageUrl.replace(/'/g,"\\'") + "') center/cover no-repeat" : 'background:linear-gradient(135deg,rgba(10,132,255,.18),#0a0a0a)';
-      let html = '<div style="margin-bottom:20px">';
-      html += '<div class="art-card" onclick="' + arrName + 'Open(' + heroIdx + ')" style="cursor:pointer;position:relative">';
-      html += '<div style="border-radius:18px;overflow:hidden;aspect-ratio:16/9;background:#111;margin-bottom:14px">';
-      html += hero.imageUrl ? '<img src="' + escAttr(hero.imageUrl) + '" style="width:100%;height:100%;object-fit:cover" decoding="async">' : '<div style="' + heroImg + ';width:100%;height:100%"></div>';
-      html += '</div>';
-      html += '<div class="art-source-row"><div class="art-fav"><img src="' + escAttr(heroFav) + '" onerror="this.style.opacity=.3"></div><span class="art-source-name">' + escapeHtml(hero.source) + '</span><span class="art-time" style="margin-left:auto">' + relTime(hero.pubDate) + '</span></div>';
-      html += _titleWithShare('<span style="font-family:var(--font-title);font-size:22px;font-weight:700;line-height:1.2;letter-spacing:-.015em;color:var(--text)">' + escapeHtml(hero.title) + '</span>', hero.link, hero.title, 'art-title');
-      html += '</div></div>';
-      html += '<div class="hello-grid">' + rest.map(function(a){
-        var realIdx = arts.indexOf(a);
-        var fav = getFavicon(a.feedUrl||a.link||'');
-        var imgH = a.imageUrl ? '<img src="' + escAttr(a.imageUrl) + '" style="width:100%;height:100%;object-fit:cover" decoding="async">' : '<div style="background:linear-gradient(135deg,rgba(10,132,255,.12),#0a0a0a);width:100%;height:100%"></div>';
-        return '<div class="art-card" onclick="' + arrName + 'Open(' + realIdx + ')" style="cursor:pointer;position:relative">' +
-          '<div style="border-radius:14px;overflow:hidden;aspect-ratio:16/9;background:#111;margin-bottom:10px">' + imgH + '</div>' +
-          '<div class="art-source-row"><div class="art-fav"><img src="' + escAttr(fav) + '" onerror="this.style.opacity=.3"></div><span class="art-source-name">' + escapeHtml(a.source) + '</span><span class="art-time" style="margin-left:auto">' + relTime(a.pubDate) + '</span></div>' +
-          _titleWithShare(escapeHtml(a.title), a.link, a.title) +
-          '</div>';
-      }).join('') + '</div>';
-      container.innerHTML = html;
+      container.classList.add('edl');
+      container.innerHTML = arts.map(function(a,i){
+        var html = _edlCardHtml(a, i);
+        return html.replace('onclick="_openEditionArt(' + i + ')"', 'onclick="' + arrName + 'Open(' + i + ')"');
+      }).join('');
 
     } else if(view === 'grille'){
+      container.classList.remove('edl');
       container.innerHTML = '<div class="grid2-wrap">' + arts.map(function(a,i){
         var fav = getFavicon(a.feedUrl||a.link||'');
-        var imgStyle = a.imageUrl ? "background:url('" + a.imageUrl.replace(/'/g,"\\'") + "') center/cover no-repeat" : 'background:linear-gradient(135deg,rgba(10,132,255,.15),#0a0a0a)';
-        return '<div class="grid2-card" onclick="' + arrName + 'Open(' + i + ')"><div class="grid2-img" style="' + imgStyle + '"></div><div class="grid2-title">' + escapeHtml(a.title) + '</div><div class="grid2-meta"><div class="grid2-fav"><img src="' + escAttr(fav) + '"></div><span>' + escapeHtml(a.source) + '</span><span style="margin-left:auto">' + relTime(a.pubDate) + '</span></div></div>';
+        var imgH = a.imageUrl
+          ? '<div class="grid2-img"><img src="' + escAttr(a.imageUrl) + '" alt="" decoding="async" loading="lazy" onerror="this.parentNode.style.background=\'#1a1a1a\'"></div>'
+          : '<div class="grid2-img" style="background:linear-gradient(135deg,rgba(10,132,255,.15),#0a0a0a)"></div>';
+        var kw = _extractKeywords(a, 1);
+        var tagH = kw.length ? '<div class="grid2-tags"><span class="edl-tag">' + escHtml(kw[0]) + '</span></div>' : '';
+        return '<div class="grid2-card reveal" onclick="' + arrName + 'Open(' + i + ')" style="position:relative">' +
+          imgH + tagH +
+          _titleWithShare(escHtml(a.title), a.link, a.title, 'grid2-title') +
+          '<div class="grid2-meta"><div class="grid2-fav"><img src="' + escAttr(fav) + '" onerror="this.style.opacity=\'.3\'"></div><span>' + escHtml(a.source) + '</span><span style="margin-left:auto">' + relTime(a.pubDate) + '</span></div>' +
+          '</div>';
       }).join('') + '</div>';
 
     } else {
       // liste (vue par défaut)
+      container.classList.remove('edl');
       container.innerHTML = '<div class="list-view">' + arts.map(function(a,i){
         var fav = getFavicon(a.feedUrl||a.link||'');
-        var thumb = a.imageUrl ? '<div class="list-thumb"><img src="' + escAttr(a.imageUrl) + '" decoding="async"></div>' : '<div class="list-thumb-empty"></div>';
-        return '<div class="list-item" onclick="' + arrName + 'Open(' + i + ')" style="position:relative">' + thumb + '<div class="list-body"><div class="list-source"><div class="list-fav"><img src="' + escAttr(fav) + '"></div>' + escapeHtml(a.source) + ' · ' + relTime(a.pubDate) + '</div>' + _titleWithShare(escapeHtml(a.title), a.link, a.title, 'list-title') + '</div></div>';
+        var thumb = a.imageUrl
+          ? '<div class="list-thumb"><img src="' + escAttr(a.imageUrl) + '" alt="" decoding="async" loading="lazy" onerror="this.parentNode.className=\'list-thumb-empty\'"></div>'
+          : '<div class="list-thumb-empty"></div>';
+        return '<div class="list-item reveal" onclick="' + arrName + 'Open(' + i + ')" style="position:relative">' + thumb +
+          '<div class="list-body"><div class="list-source"><div class="list-fav"><img src="' + escAttr(fav) + '" onerror="this.style.opacity=\'.3\'"></div>' + escHtml(a.source) + ' · ' + relTime(a.pubDate) + (typeof _groupMeta==='function'?_groupMeta(a):'') + '</div>' +
+          _titleWithShare(escHtml(a.title), a.link, a.title, 'list-title') +
+          '</div></div>';
       }).join('') + '</div>';
     }
+    if(typeof window._revealObserve === 'function') _revealObserve(container);
   }
 
 
@@ -13679,6 +13824,57 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     return _FOLDER_WELCOME[key] || _FOLDER_WELCOME['default'];
   }
 
+  // ── Barre statut du héro dossier (date · heure · localisation) — même
+  // logique que le masthead d'accueil (_catBhStatusTick/_catBhLocate),
+  // déclinée sur ses propres ids ──
+  let _folderHeroLocCache = null;
+  function _folderHeroStatusTick(){
+    const dEl = document.getElementById('folderHeroDate');
+    const tEl = document.getElementById('folderHeroTime');
+    const lEl = document.getElementById('folderHeroLoc');
+    const now = new Date();
+    if(dEl) dEl.textContent = now.toLocaleDateString('fr-FR', { weekday:'short', day:'numeric', month:'short' });
+    if(tEl) tEl.textContent = now.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+    if(lEl && _folderHeroLocCache) lEl.textContent = _folderHeroLocCache;
+  }
+  let _folderHeroTickTimer = null;
+  function _folderHeroLocate(){
+    const lEl = document.getElementById('folderHeroLoc');
+    if(_folderHeroLocCache){ if(lEl) lEl.textContent = _folderHeroLocCache; }
+    else if(_catBhLocCacheReady()){ _folderHeroLocCache = _catBhLocCacheReady(); if(lEl) lEl.textContent = _folderHeroLocCache; }
+    if(!_folderHeroTickTimer){ _folderHeroTickTimer = setInterval(_folderHeroStatusTick, 15000); }
+    if(_folderHeroLocCache) return;
+    const fallback = () => {
+      try{
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+        const city = tz.split('/').pop().replace(/_/g,' ');
+        _folderHeroLocCache = city || 'Localisation indisponible';
+      } catch(e){ _folderHeroLocCache = 'Localisation indisponible'; }
+      const el = document.getElementById('folderHeroLoc');
+      if(el) el.textContent = _folderHeroLocCache;
+    };
+    if(!navigator.geolocation){ fallback(); return; }
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&localityLanguage=fr`)
+          .then(r => r.json())
+          .then(d => {
+            let city = d.city || d.locality || (d.localityInfo && d.localityInfo.administrative && d.localityInfo.administrative.length ? d.localityInfo.administrative[d.localityInfo.administrative.length-1].name : '') || '';
+            if(!city){ try{ city = (Intl.DateTimeFormat().resolvedOptions().timeZone||'').split('/').pop().replace(/_/g,' '); } catch(e){} }
+            const country = d.countryName || '';
+            _folderHeroLocCache = [city, country].filter(Boolean).join(', ') || 'Position détectée';
+            const el = document.getElementById('folderHeroLoc');
+            if(el) el.textContent = _folderHeroLocCache;
+          })
+          .catch(fallback);
+      },
+      fallback,
+      { timeout:4000 }
+    );
+  }
+  // Réutilise le cache de localisation du masthead d'accueil s'il est déjà résolu (évite un 2e prompt géoloc)
+  function _catBhLocCacheReady(){ try{ return (typeof _catBhLocCache!=='undefined') ? _catBhLocCache : null; } catch(e){ return null; } }
+
 
   function openFolderPage(folderIdx){
     const folder = folders[folderIdx];
@@ -13696,35 +13892,16 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
       ? (_dedupFolders ? _dedup : _uniqByLink)([..._allArticles].filter(a=>feedUrls.has(a.feedUrl||'')).sort((a,b)=>b.pubDate-a.pubDate))
       : [];
 
-    // ── Héro décoratif (gradient léger — pas d'image lourde : évite le crash mémoire iOS) ──
-    const [c1, c2] = _folderGrad(folder.name);
+    // ── Héro décoratif : photo réelle si dispo (grayscale, comme le masthead
+    // d'accueil), sinon dégradé du dossier en repli ──
     const heroBg = document.getElementById('folderHeroBg');
-    if(heroBg) heroBg.style.background = `linear-gradient(145deg,${c1} 0%,${c2} 100%)`;
-    const heroOrb = document.getElementById('folderHeroOrb');
-    if(heroOrb){ heroOrb.style.background = c2; heroOrb.style.display = ''; }
-    const badgeEl = document.getElementById('folderHeroBadge');
-    if(badgeEl){ const n = (folder.feeds||[]).length; badgeEl.textContent = n + ' source' + (n!==1?'s':''); }
-
-    // ── Logos flottants des sources ─────────────────────────────────
-    const logoRow = document.getElementById('folderLogoRow');
-    if(logoRow){
-      const feeds = folder.feeds || [];
-      const MAX = 7;
-      const shown = feeds.slice(0, MAX);
-      const rest  = feeds.length - shown.length;
-      logoRow.innerHTML = shown.map(url=>{
-        const db   = (typeof _FEED_DB!=='undefined' && _FEED_DB[url]) || {};
-        const domain = db.domain || (()=>{ try{ return new URL(url).hostname.replace(/^www\./,''); }catch(e){ return ''; } })();
-        const bg   = db.color || '#333';
-        const init = (db.name||domain||'?')[0].toUpperCase();
-        const fav  = domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=64` : '';
-        return `<div class="folder-logo-bubble" style="background:${bg}" title="${escHtml(db.name||domain)}">`
-          + (fav ? `<img src="${escAttr(fav)}" alt="" onerror="this.remove()">` : '')
-          + init + `</div>`;
-      }).join('')
-        + (rest>0 ? `<div class="folder-logo-bubble folder-logo-bubble-more">+${rest}</div>` : '')
-        + (feeds.length ? `<span class="folder-logo-row-count">${feeds.length} source${feeds.length!==1?'s':''}</span>` : '');
+    if(heroBg){
+      const img = _folderHeroImg(folder);
+      if(img){ heroBg.style.background = `url('${img.replace(/'/g,"\\'")}') center/cover`; }
+      else { const [c1,c2] = _folderGrad(folder.name); heroBg.style.background = `linear-gradient(145deg,${c1} 0%,${c2} 100%)`; }
     }
+    _folderHeroStatusTick();
+    _folderHeroLocate();
 
     const content = document.getElementById('folderPageContent');
     _renderSubpageArts(_folderPageArts, _currentView, content, '_folderArt');
@@ -14250,6 +14427,37 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     else window._obsReveal();
   })();
 
+  // ── Titre replié fixe : révélé (clip-path) quand le hero de catégorie défile hors champ ──
+  (function _bfFixedTitleInit(){
+    const scroller = document.getElementById('bfRow');
+    const titleEl = document.getElementById('catFixedTitle');
+    if(!scroller || !titleEl) return;
+    let ticking = false;
+    function sync(){
+      ticking = false;
+      const hero = document.getElementById('catBrandHeader');
+      if(!hero || hero.hidden){ titleEl.classList.remove('show'); return; }
+      const heroBottom = hero.getBoundingClientRect().bottom;
+      const revealed = heroBottom <= 46;
+      titleEl.classList.toggle('show', revealed);
+      if(revealed){
+        const name = (hero.querySelector('.cat-bh-wordmark')||{}).textContent || '';
+        if(titleEl.textContent !== name) titleEl.textContent = name;
+      }
+    }
+    scroller.addEventListener('scroll', () => {
+      if(ticking) return;
+      ticking = true;
+      requestAnimationFrame(sync);
+    }, { passive:true });
+    // re-évalue après changement de dossier / rendu du header
+    const mo = new MutationObserver(() => requestAnimationFrame(sync));
+    mo.observe(scroller, { childList:true, subtree:true });
+    sync();
+  })();
+
+
+
   // ── Bouton « remonter en haut » : visible après un scroll, scroll fluide interne ──
   (function _bfToTopInit(){
     const btn = document.getElementById('bfToTop');
@@ -14635,33 +14843,34 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     <!-- Coque contenue -->
     <div class="art-shell" id="artShell">
 
-      <!-- Image hero -->
-      <div id="artModalHeroWrap" class="art-shell-hero" style="display:none">
-        <img id="artModalHeroImg" alt="" decoding="async" onerror="document.getElementById('artModalHeroWrap').style.display='none'">
-      </div>
-
       <!-- Contrôles flottants -->
       <button class="art-float-btn art-float-close" onclick="closeArtModal()" aria-label="Fermer">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
       <button id="artModalSaveBtn" class="art-float-btn art-float-save" onclick="artModalToggleSave()" aria-label="Enregistrer">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
       </button>
 
-      <!-- Tête : date, titre, source -->
-      <div class="art-shell-head" id="artModalContent">
-        <div class="art-folder-dots" id="artFolderDots"></div>
-        <div class="art-modal-date-watermark" id="artModalDateWM"></div>
-        <div class="art-modal-date" id="artModalDate"></div>
-        <h2 class="art-modal-title" id="artModalTitle"></h2>
-        <div class="art-modal-source-row">
-          <div class="art-modal-source-pill">
-            <div class="art-modal-source-fav"><img id="artModalFav" alt="" onerror="this.style.opacity='.3'"></div>
-            <span class="art-modal-source-name" id="artModalSourceName"></span>
+      <!-- Double-page façon magazine : titre et photo se font face -->
+      <div class="art-cover-spread">
+        <!-- Tête : signature, date, titre, source -->
+        <div class="art-shell-head" id="artModalContent">
+          <div class="art-folder-dots" id="artFolderDots"></div>
+          <div class="art-modal-date-watermark" id="artModalDateWM"></div>
+          <div class="art-modal-byline" id="artModalByline" style="display:none"></div>
+          <h2 class="art-modal-title" id="artModalTitle"></h2>
+          <div class="art-modal-date-share-row">
+            <div class="art-modal-date" id="artModalDate"></div>
+            <button class="art-modal-share-btn" id="artModalShareBtn" aria-label="Partager" title="Partager">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            </button>
           </div>
-          <button class="art-modal-share-btn" id="artModalShareBtn" aria-label="Partager" title="Partager">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-          </button>
+        </div>
+
+        <!-- Image hero -->
+        <div id="artModalHeroWrap" class="art-shell-hero" style="display:none">
+          <img id="artModalHeroImg" alt="" decoding="async" onerror="document.getElementById('artModalHeroWrap').style.display='none'">
+          <div class="art-shell-hero-cap" id="artModalHeroCap"></div>
         </div>
       </div>
 
@@ -14746,17 +14955,15 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     <div class="folder-page-scroll">
       <!-- Héro décoratif -->
       <div class="folder-hero" id="folderHero">
+        <div class="folder-hero-status" id="folderHeroStatus">
+          <span id="folderHeroDate"></span><span class="folder-hero-status-dot">·</span><span id="folderHeroTime"></span><span class="folder-hero-status-dot">·</span><span id="folderHeroLoc">…</span>
+        </div>
         <div class="folder-hero-bg" id="folderHeroBg"></div>
-        <div class="folder-hero-noise"></div>
-        <div class="folder-hero-orb" id="folderHeroOrb"></div>
         <div class="folder-hero-content">
-          <div class="folder-hero-badge" id="folderHeroBadge">Dossier</div>
           <div class="folder-hero-title" id="folderPageTitle"></div>
           <div class="folder-hero-sub" id="folderPageWelcome"></div>
         </div>
       </div>
-      <!-- Logos flottants des sources -->
-      <div class="folder-logo-row" id="folderLogoRow"></div>
       <div class="folder-page-inner" id="folderPageContent"></div>
     </div>
   </div>
