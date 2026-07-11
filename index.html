@@ -73,6 +73,7 @@ if(!AbortSignal.timeout){
   --font-manrope:     'Manrope',      -apple-system, system-ui, sans-serif;
   --font-helvetica:   'Helvetica Neue', Helvetica, Arial, sans-serif;
   --font-spacegrotesk:'Space Grotesk',-apple-system, system-ui, sans-serif;
+  --font-anton:       'Anton',        -apple-system, system-ui, sans-serif;
   --font-dm:          'DM Serif Display', Georgia, 'Times New Roman', serif;
   --font-ui:    var(--font-inter);
   --font-title: var(--font-ui);
@@ -87,6 +88,8 @@ html[data-font="helvetica"]    { --font-ui:var(--font-helvetica); }
 html[data-font="spacegrotesk"] { --font-ui:var(--font-spacegrotesk); }
 /* Éditorial : interface en Inter, titres en serif DM */
 html[data-font="serif"]        { --font-ui:var(--font-inter); --font-title:var(--font-dm); }
+/* Anton : réservé aux titres (condensé, capitales) — le corps de texte reste en Inter */
+html[data-font="anton"]        { --font-ui:var(--font-inter); --font-title:var(--font-anton); }
 
 /* Mode clair — variables inversées */
 [data-theme="light"]{
@@ -894,26 +897,29 @@ button, .ob-btn, .ob-btn-ghost,
   z-index:500;
 }
 
-/* Bouton « remonter en haut » — apparaît au scroll, glass, au-dessus de la nav */
+/* Bouton « remonter en haut » — discret, centré au-dessus de la nav, quasi transparent */
 .bf-totop{
-  position:fixed; right:16px; bottom:96px; z-index:490;
-  width:44px; height:44px; border-radius:50%;
+  position:fixed; left:50%; bottom:84px; z-index:490;
+  width:34px; height:34px; border-radius:50%;
+  transform:translateX(-50%) translateY(6px) scale(.92);
   display:flex; align-items:center; justify-content:center;
-  background:rgba(28,26,24,.82);
-  -webkit-backdrop-filter:blur(20px) saturate(1.8); backdrop-filter:blur(20px) saturate(1.8);
-  border:.5px solid rgba(255,255,255,.18);
-  box-shadow:0 6px 20px rgba(0,0,0,.5), 0 2px 6px rgba(0,0,0,.35), inset 0 1px .5px rgba(255,255,255,.50);
-  color:#F3F0EE; cursor:pointer; -webkit-tap-highlight-color:transparent;
-  opacity:0; pointer-events:none; transform:translateY(10px) scale(.9);
-  transition:opacity .3s ease, transform .3s cubic-bezier(.34,1.56,.64,1);
+  background:rgba(28,26,24,.38);
+  -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px);
+  border:.5px solid rgba(255,255,255,.10);
+  box-shadow:none;
+  color:rgba(243,240,238,.55); cursor:pointer; -webkit-tap-highlight-color:transparent;
+  opacity:0; pointer-events:none;
+  transition:opacity .3s ease, transform .3s cubic-bezier(.34,1.56,.64,1), background .2s ease, color .2s ease;
 }
-.bf-totop.show{ opacity:1; pointer-events:auto; transform:translateY(0) scale(1); }
-.bf-totop:active{ transform:scale(.84); transition:transform .07s ease-in; }
-.bf-totop svg{ width:20px; height:20px; }
+.bf-totop.show{ opacity:1; pointer-events:auto; transform:translateX(-50%) translateY(0) scale(1); }
+.bf-totop:active{ transform:translateX(-50%) scale(.84); transition:transform .07s ease-in; }
+.bf-totop:hover{ background:rgba(28,26,24,.6); color:rgba(243,240,238,.9); }
+.bf-totop svg{ width:14px; height:14px; }
 [data-theme="light"] .bf-totop{
-  background:rgba(252,251,250,.9); border-color:rgba(0,0,0,.08); color:#141413;
-  box-shadow:0 4px 16px rgba(0,0,0,.13), 0 1px 4px rgba(0,0,0,.08);
+  background:rgba(252,251,250,.4); border-color:rgba(0,0,0,.06); color:rgba(20,20,19,.5);
+  box-shadow:none;
 }
+[data-theme="light"] .bf-totop:hover{ background:rgba(252,251,250,.75); color:rgba(20,20,19,.85); }
 body.bf-heavy-open .bf-totop{ display:none; }
 
 /* Capsules */
@@ -1306,53 +1312,60 @@ body.cat-modal-open .cat-modal-backdrop{ opacity:1; }
 .cat-modal-card{
   position:relative; width:100%; max-width:380px;
   background:rgba(25,25,25,.85); -webkit-backdrop-filter:blur(25px); backdrop-filter:blur(25px);
-  border:1px solid rgba(255,255,255,.1); border-radius:20px; padding:22px; box-shadow:0 24px 48px rgba(0,0,0,.5);
+  border:1px solid rgba(255,255,255,.1); border-radius:20px; padding:14px; box-shadow:0 24px 48px rgba(0,0,0,.5);
   opacity:0; transform:translateY(30px) scale(.95); user-select:none; -webkit-user-select:none;
   transition:opacity .4s ease, transform .4s cubic-bezier(.32,.72,0,1);
+  max-height:calc(100vh - 40px); overflow-y:auto;
 }
 [data-theme="light"] .cat-modal-card{ background:rgba(252,251,250,.92); border-color:rgba(0,0,0,.08); }
 body.cat-modal-open .cat-modal-card{ opacity:1; transform:translateY(0) scale(1); }
-.cat-modal-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:22px; }
+.cat-modal-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
 .cat-modal-title{ display:flex; align-items:center; gap:8px; font-family:var(--font-inter); font-weight:900; font-size:13px; letter-spacing:.09em; text-transform:uppercase; color:var(--text-muted); }
-.cat-modal-dot{ width:9px; height:9px; border-radius:50%; background:#FF5E00; flex:none; }
+.cat-modal-dot{ width:9px; height:9px; border-radius:50%; background:var(--eyebrow-dot); flex:none; box-shadow:0 0 10px var(--eyebrow-dot); }
 .cat-modal-x{ background:none; border:none; color:var(--text); cursor:pointer; padding:4px; -webkit-tap-highlight-color:transparent; }
 .cat-modal-x svg{ width:22px; height:22px; }
 /* Triage éditorial : l'éditeur silencieux propose des angles d'entrée dans le dossier.
-   Pastille eyebrow + libellé DM Serif + murmure muet. Pas de compteurs — pas de dette. */
-.cat-triage{ display:flex; flex-direction:column; gap:0; margin-bottom:20px; }
+   Pastille eyebrow + libellé Inter + murmure muet. Pas de compteurs — pas de dette. */
+.cat-triage{ display:flex; flex-direction:column; gap:0; margin-bottom:8px; }
 .cat-triage-row{
-  display:flex; align-items:flex-start; gap:13px; width:100%;
-  background:none; border:none; padding:12px 0; margin:0; text-align:left;
+  display:flex; align-items:flex-start; gap:9px; width:100%;
+  background:none; border:none; padding:5px 0; margin:0; text-align:left;
   cursor:pointer; -webkit-tap-highlight-color:transparent;
   opacity:0; transform:translateX(-15px);
   transition:opacity .5s ease, transform .5s cubic-bezier(.32,.72,0,1);
 }
 .cat-triage-row + .cat-triage-row{ border-top:1px solid color-mix(in srgb, var(--border) 60%, transparent); }
 body.cat-modal-open .cat-triage-row{ opacity:1; transform:translateX(0); }
-body.cat-modal-open .cat-triage-row:nth-child(1){ transition-delay:.06s; }
-body.cat-modal-open .cat-triage-row:nth-child(2){ transition-delay:.12s; }
-body.cat-modal-open .cat-triage-row:nth-child(3){ transition-delay:.18s; }
-body.cat-modal-open .cat-triage-row:nth-child(4){ transition-delay:.24s; }
+body.cat-modal-open .cat-triage-row:nth-child(1){ transition-delay:.05s; }
+body.cat-modal-open .cat-triage-row:nth-child(2){ transition-delay:.09s; }
+body.cat-modal-open .cat-triage-row:nth-child(3){ transition-delay:.13s; }
+body.cat-modal-open .cat-triage-row:nth-child(4){ transition-delay:.17s; }
+body.cat-modal-open .cat-triage-row:nth-child(5){ transition-delay:.21s; }
+body.cat-modal-open .cat-triage-row:nth-child(6){ transition-delay:.25s; }
 .cat-triage-row:active{ opacity:.55; }
 .cat-triage-dot{
-  width:7px; height:7px; border-radius:50%; flex:none; margin-top:9px;
-  background:var(--eyebrow-dot); box-shadow:0 0 10px var(--eyebrow-dot);
+  width:6px; height:6px; border-radius:50%; flex:none; margin-top:6px;
+  background:var(--eyebrow-dot); box-shadow:0 0 8px var(--eyebrow-dot);
 }
-.cat-triage-txt{ display:flex; flex-direction:column; gap:1px; min-width:0; }
+.cat-triage-txt{ display:flex; flex-direction:column; gap:0; min-width:0; }
 .cat-triage-label{
   font-family:var(--font-inter); font-weight:500;
-  font-size:21px; letter-spacing:-.02em; line-height:1.14; color:var(--text);
+  font-size:14.5px; letter-spacing:-.01em; line-height:1.2; color:var(--text);
+}
+.art-continues{
+  font-family:var(--font-inter); font-size:10.5px; font-weight:600;
+  color:var(--text-muted); margin:0 0 3px;
 }
 .cat-triage-note{
-  font-family:var(--font-inter); font-size:12px; font-weight:500;
+  font-family:var(--font-inter); font-size:10.5px; font-weight:500;
   letter-spacing:.005em; color:var(--text-muted);
 }
 .cat-modal-featured{ position:relative; width:100%; height:150px; border-radius:12px; overflow:hidden; margin-bottom:18px; background:#1a1a1a center/cover no-repeat; }
 .cat-modal-featured::after{ content:''; position:absolute; inset:0; background:rgba(0,0,0,.3); }
-.cat-modal-pag{ display:flex; justify-content:center; }
+.cat-modal-pag{ display:flex; justify-content:center; margin-top:10px; }
 .cat-modal-dots{ display:flex; align-items:center; gap:8px; }
 .cat-dot{ width:6px; height:6px; border-radius:50%; background:rgba(127,127,127,.35); cursor:pointer; transition:all .3s cubic-bezier(.25,.8,.25,1); -webkit-tap-highlight-color:transparent; }
-.cat-dot.active{ width:24px; border-radius:4px; background:#FF5E00; }
+.cat-dot.active{ width:24px; border-radius:4px; background:var(--eyebrow-dot); }
 
 .view{
   align-self:stretch;
@@ -3825,8 +3838,8 @@ body.cat-modal-open .cat-triage-row:nth-child(4){ transition-delay:.24s; }
 }
 [data-theme="light"] .art-reader-text{ color:#1a1a1a; }
 .art-reader-text p{ margin-bottom:20px; }
-.art-reader-text h2{ font-family:'Anton',var(--font-title),Georgia,serif; font-size:22px; font-weight:400; text-transform:uppercase; letter-spacing:.01em; color:var(--text); margin:30px 0 12px; }
-.art-reader-text h3{ font-family:'Anton',var(--font-title),Georgia,serif; font-size:19px; font-weight:400; text-transform:uppercase; letter-spacing:.01em; color:var(--text); margin:24px 0 10px; }
+.art-reader-text h2{ font-family:var(--font-title),Georgia,serif; font-size:22px; font-weight:700; letter-spacing:-.01em; color:var(--text); margin:30px 0 12px; }
+.art-reader-text h3{ font-family:var(--font-title),Georgia,serif; font-size:19px; font-weight:700; letter-spacing:-.01em; color:var(--text); margin:24px 0 10px; }
 .art-reader-text a{ color:#0a84ff; text-decoration:none; border-bottom:1px solid rgba(10,132,255,.3); }
 .art-reader-text ul,.art-reader-text ol{ margin:0 0 20px 20px; }
 .art-reader-text li{ margin-bottom:8px; }
@@ -3895,40 +3908,50 @@ body.cat-modal-open .cat-triage-row:nth-child(4){ transition-delay:.24s; }
    d'article (#artModal) ; le corps de lecture qui suit n'est pas touché. */
 #artModal .art-shell-head{
   background:
-    radial-gradient(circle, rgba(255,255,255,.05) 1px, transparent 1.3px) 0 0/6px 6px,
-    #17150f;
-  color:#F1ECE1;
-  padding:58px 20px 26px;
-  flex:1 1 50%; min-width:0;
+    radial-gradient(circle, rgba(255,255,255,.045) 1px, transparent 1.3px) 0 0/6px 6px,
+    var(--surface-card,#1C1A18);
+  color:var(--text);
+  padding:22px 26px 6px;
+  flex:none; min-width:0;
   display:flex; flex-direction:column; justify-content:flex-start;
 }
-#artModal .art-cover-spread{ display:flex; align-items:stretch; overflow:hidden; transform-origin:top center; }
+[data-theme="light"] #artModal .art-shell-head{
+  background:
+    radial-gradient(circle, rgba(0,0,0,.035) 1px, transparent 1.3px) 0 0/6px 6px,
+    var(--surface-card,#FCFBFA);
+}
+#artModal .art-cover-spread{ display:flex; flex-direction:column; align-items:stretch; overflow:hidden; transform-origin:top center; }
 /* Masthead qui cède la place au texte : hauteur/opacité/échelle pilotées en JS
    sur le scroll de lecture (voir _artBindCoverCollapse) — la piste de texte,
    en flex:1, récupère automatiquement l'espace libéré. */
-#artModal .art-shell.no-hero .art-shell-head{ padding-top:58px; flex:1 1 100%; }
+#artModal .art-shell.no-hero .art-shell-head{ padding-top:58px; }
 #artModal .art-modal-byline{
   font-family:var(--font-inter); font-size:11px; font-weight:700;
-  letter-spacing:.09em; text-transform:uppercase; color:rgba(241,236,225,.6);
-  margin-bottom:16px;
+  letter-spacing:.09em; text-transform:uppercase; color:var(--text-muted);
+  margin-bottom:14px; display:inline-flex; align-items:center; gap:8px;
+}
+#artModal .art-modal-byline::before{
+  content:""; width:6px; height:6px; border-radius:50%; flex:none;
+  background:var(--eyebrow-dot); box-shadow:0 0 10px var(--eyebrow-dot);
 }
 #artModal .art-modal-title{
   font-family:'Anton',var(--font-inter),sans-serif;
   font-weight:400; text-transform:uppercase;
-  font-size:clamp(20px,7.4vw,32px); line-height:1.04; letter-spacing:.005em;
-  color:#F1ECE1; margin:6px 0 4px; text-wrap:pretty;
+  font-size:clamp(21px,6.4vw,32px); line-height:1.06; letter-spacing:.005em;
+  color:var(--text); margin:2px 0 4px; text-wrap:pretty;
 }
-#artModal .art-modal-date{ padding:0; margin-top:0; }
+#artModal .art-modal-date{ padding:0; margin-top:10px; }
 
-/* Légende photo, coin haut-droit — écho du folio de magazine, données réelles uniquement */
+/* Photo en tête de page, pleine largeur — le titre suit en dessous, jamais côte à côte */
 #artModal .art-shell-hero{
-  position:relative; flex:1 1 50%; min-width:0;
-  width:auto; aspect-ratio:auto; max-height:none; height:auto;
+  position:relative; order:-1; flex:none; width:100%;
+  aspect-ratio:16/9; max-height:260px; min-width:0;
+  height:auto;
 }
 #artModal .art-shell-hero::after{ display:none; }
 #artModal .art-shell-hero-cap{
-  position:absolute; top:12px; right:12px; z-index:5; max-width:62%;
-  font-family:var(--font-inter); font-size:10px; font-weight:600; text-align:right;
+  position:absolute; left:12px; right:12px; bottom:12px; z-index:5; max-width:none;
+  font-family:var(--font-inter); font-size:10px; font-weight:600; text-align:left;
   letter-spacing:.02em; line-height:1.35; color:rgba(255,255,255,.85);
   text-shadow:0 1px 3px rgba(0,0,0,.65);
 }
@@ -3944,8 +3967,8 @@ body.cat-modal-open .cat-triage-row:nth-child(4){ transition-delay:.24s; }
 .art-shell.is-expanded .art-page{ overflow-y:auto; -webkit-overflow-scrolling:touch; }
 /* En compact : seule la 1re page, tronquée, avec fondu + amorce */
 .art-shell:not(.is-expanded) .art-page ~ .art-page{ display:none !important; }
-.art-page-eyebrow{ display:inline-flex; align-items:center; gap:7px; font-family:'Anton',var(--font-inter),sans-serif; font-size:13px;
-  font-weight:400; letter-spacing:.03em; text-transform:uppercase; color:var(--text-muted); margin:2px 0 12px; }
+.art-page-eyebrow{ display:inline-flex; align-items:center; gap:7px; font-family:var(--font-inter); font-size:11px;
+  font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--text-muted); margin:2px 0 12px; }
 .art-page-eyebrow::before{ content:""; width:6px; height:6px; border-radius:50%; background:var(--eyebrow-dot); box-shadow:0 0 10px var(--eyebrow-dot); }
 
 /* Amorce compacte : fondu de lecture au-dessus du pied (résiduel, invisible en mode étendu permanent) */
@@ -3983,17 +4006,15 @@ body.cat-modal-open .cat-triage-row:nth-child(4){ transition-delay:.24s; }
   .art-shell:not(.is-expanded) .art-shell-hero{ max-height:190px; }
   .art-shell.is-expanded .art-shell-hero{ max-height:min(34vh,190px); }
   .art-shell-head{ padding:18px 22px 2px; }
-  /* Double-page façon The Athletic : titre et photo se font toujours face à
-     face sur mobile, mais en colonnes asymétriques (58/42) — le titre garde
-     de l'air, la photo garde un cadrage portrait net, plutôt qu'un 50/50
-     serré qui écrasait les deux. */
-  #artModal .art-cover-spread{ flex-direction:row; align-items:stretch; }
-  #artModal .art-shell-head{ flex:1 1 56%; min-width:0; padding:64px 14px 18px 18px; }
-  #artModal .art-modal-byline{ margin-bottom:9px; -webkit-line-clamp:1; display:-webkit-box; -webkit-box-orient:vertical; overflow:hidden; }
-  #artModal .art-modal-title{ font-size:clamp(19px,6.4vw,27px); line-height:1.08; margin:5px 0 4px; }
+  /* Titre en dessous de la photo, colonne unique — même traitement qu'en desktop,
+     juste des marges resserrées pour l'écran étroit. */
+  #artModal .art-cover-spread{ flex-direction:column; align-items:stretch; }
+  #artModal .art-shell-head{ flex:none; min-width:0; padding:18px 20px 4px; }
+  #artModal .art-modal-byline{ margin-bottom:10px; -webkit-line-clamp:1; display:-webkit-box; -webkit-box-orient:vertical; overflow:hidden; }
+  #artModal .art-modal-title{ font-size:clamp(21px,6.4vw,28px); line-height:1.1; margin:2px 0 4px; }
   #artModal .art-modal-date{ padding:0; }
-  #artModal .art-shell-hero{ flex:1 1 44%; min-width:0; width:auto; aspect-ratio:auto; height:auto; max-height:none; }
-  #artModal .art-shell-hero-cap{ top:10px; right:10px; max-width:82%; font-size:9px; }
+  #artModal .art-shell-hero{ flex:none; width:100%; min-width:0; aspect-ratio:16/9; height:auto; max-height:220px; }
+  #artModal .art-shell-hero-cap{ left:10px; right:10px; bottom:10px; max-width:none; font-size:9px; }
   .art-pager-wrap{ min-height:118px; flex:1; }
   .art-float-close, .art-float-save{ top:12px; }
   /* Carrousel article → article : puces indicatives remplaçant les flèches */
@@ -5194,6 +5215,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
               <a class="sub-link sub-link-sm" data-qfont="helvetica"    onclick="qmenuSetFont('helvetica')"    style="font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">Helvetica</a>
               <a class="sub-link sub-link-sm" data-qfont="spacegrotesk" onclick="qmenuSetFont('spacegrotesk')" style="font-family:'Space Grotesk',-apple-system,sans-serif">Space Grotesk</a>
               <a class="sub-link sub-link-sm" data-qfont="serif"        onclick="qmenuSetFont('serif')"        style="font-family:'DM Serif Display',Georgia,serif">Éditorial</a>
+              <a class="sub-link sub-link-sm" data-qfont="anton"        onclick="qmenuSetFont('anton')"        style="font-family:'Anton',-apple-system,sans-serif;text-transform:uppercase">Anton</a>
             </div>
           </div>
 
@@ -6001,21 +6023,21 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
             </button>
           </div>
           <div class="cat-triage" id="catTriage">
-            <button class="cat-triage-row" type="button" onclick="_catTriagePick('trending')">
+            <button class="cat-triage-row" type="button" id="catRowConfirmed" onclick="_catTriagePick('trending')">
               <span class="cat-triage-dot"></span>
-              <span class="cat-triage-txt"><span class="cat-triage-label">Tendances</span><span class="cat-triage-note">Ce qui monte, recoupé</span></span>
+              <span class="cat-triage-txt"><span class="cat-triage-label">Confirmé ailleurs</span><span class="cat-triage-note">Recoupé par plusieurs sources</span></span>
             </button>
-            <button class="cat-triage-row" type="button" onclick="_catTriagePick('breaking')">
+            <button class="cat-triage-row" type="button" id="catRowEmerging" onclick="_catTriagePick('growing')">
               <span class="cat-triage-dot"></span>
-              <span class="cat-triage-txt"><span class="cat-triage-label">Dernière heure</span><span class="cat-triage-note">Frais à l’instant</span></span>
+              <span class="cat-triage-txt"><span class="cat-triage-label">Émergent</span><span class="cat-triage-note">Ça commence à circuler</span></span>
             </button>
-            <button class="cat-triage-row" type="button" onclick="_catTriagePick('hidden_gems')">
+            <button class="cat-triage-row" type="button" id="catRowContinuation" onclick="_catTriagePick('continuation')">
               <span class="cat-triage-dot"></span>
-              <span class="cat-triage-txt"><span class="cat-triage-label">Pépites oubliées</span><span class="cat-triage-note">Bon, passé sous silence</span></span>
+              <span class="cat-triage-txt"><span class="cat-triage-label">La suite de l’histoire</span><span class="cat-triage-note">Depuis ce que vous avez lu</span></span>
             </button>
-            <button class="cat-triage-row" type="button" onclick="_catTriagePick('recommended')">
+            <button class="cat-triage-row" type="button" id="catRowHidden" onclick="_catTriagePick('hidden_gems')">
               <span class="cat-triage-dot"></span>
-              <span class="cat-triage-txt"><span class="cat-triage-label">Pour vous</span><span class="cat-triage-note">Selon vos lectures</span></span>
+              <span class="cat-triage-txt"><span class="cat-triage-label">Vu nulle part ailleurs</span><span class="cat-triage-note">Une source, en profondeur</span></span>
             </button>
           </div>
           <div class="cat-modal-featured" id="catModalFeatured"></div>
@@ -7184,6 +7206,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     if(dotsEl){
       dotsEl.innerHTML = subs.map((s,k)=>`<span class="cat-dot${k===i?' active':''}" onclick="_catModalGo(${k})"></span>`).join('');
     }
+    _catUpdateTriageVisibility();
   }
   window._catModalGo = function(k){
     if(k<0 || k>=_catModal.subs.length) return;
@@ -7202,6 +7225,26 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     else _catHeaderOpen();
   };
   window._catModalFav = function(){ _catModalClose(); if(typeof _switchView==='function'){ try{ _switchView('favoris'); }catch(e){} } };
+  // Candidats réels d'un angle éditorial, scopés à un dossier — réutilise les mêmes
+  // prédicats que le filtrage réel (aucune logique dupliquée, aucun risque de dérive).
+  function _catAngleCandidates(folderName, mode){
+    const urls = _smartCatUrls(folderName);
+    const pool = (_allArticles||[]).filter(a => urls.has(a.feedUrl||''));
+    const ctx = Object.assign({}, _fltContext(), { scopedArts: pool });
+    const pred = _fltPredicate(mode, ctx);
+    return pool.filter(pred);
+  }
+  window._catAngleCandidates = _catAngleCandidates;
+  // Masque les lignes sans correspondance pour le dossier actif — jamais d'état vide.
+  function _catUpdateTriageVisibility(){
+    const folder = _catModal.folder || _smartCat || '';
+    const has = m => _catAngleCandidates(folder, m).length > 0;
+    const setRow = (id, ok) => { const el = document.getElementById(id); if(el) el.hidden = !ok; };
+    setRow('catRowConfirmed', has('trending'));
+    setRow('catRowEmerging', has('growing'));
+    setRow('catRowContinuation', has('continuation'));
+    setRow('catRowHidden', has('hidden_gems'));
+  }
   // Triage éditorial : entrer dans le dossier par un angle (collection intelligente).
   // Portée = source sélectionnée dans le carrousel si présente, sinon dossier entier.
   window._catTriagePick = function(mode){
@@ -7901,7 +7944,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
 
   // ── Police — cycle complet sur le qpill ──
   window.qpillToggleFont = function(){
-    const order = ['inter','geist','aeonik','satoshi','calsans','manrope','helvetica','spacegrotesk','serif'];
+    const order = ['inter','geist','aeonik','satoshi','calsans','manrope','helvetica','spacegrotesk','serif','anton'];
     const cur = document.documentElement.dataset.font || 'inter';
     const next = order[(order.indexOf(cur) + 1) % order.length];
     document.documentElement.dataset.font = next;
@@ -10257,6 +10300,22 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
         return true;
       };
       case 'quick5':     return a => _readMins(a) <= 5;
+      case 'longread':   return a => _readMins(a) >= 15;
+      case 'continuation': {
+        const scoped = ctx.scopedArts || [];
+        const readArts = scoped.filter(x => RS && RS.has(x.link));
+        return a => {
+          if(RS && RS.has(a.link)) return false;
+          let best = null, bestSim = 0;
+          for(const r of readArts){
+            if((r.pubDate||0) >= (a.pubDate||0)) continue; // le candidat doit être postérieur à l'article lu
+            const s = _sim(a, r);
+            if(s > bestSim){ bestSim = s; best = r; }
+          }
+          if(best && bestSim >= 0.28){ a._continuationOf = best.title; return true; }
+          return false;
+        };
+      }
       case 'hasSummary': return a => !!a.summary && String(a.summary).replace(/<[^>]+>/g, '').trim().length > 40;
       case 'withImage':  return a => !!a.imageUrl;
       case 'recommended':return a => (window._SE && _SE.isActive && _SE.isActive()) ? _SE.score(a) >= 0.6 : true;
@@ -10264,7 +10323,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     }
   }
   // Collections triées par score décroissant (les meilleures en tête)
-  const _SMART_RANKED = new Set(['trending','breaking','hidden_gems','growing','recommended','exclusive','signalStrong','multiSource']);
+  const _SMART_RANKED = new Set(['trending','breaking','hidden_gems','growing','recommended','exclusive','signalStrong','multiSource','continuation']);
   // Score d'un article pour un mode donné (plus haut = plus pertinent)
   function _modeScore(a, mode, ctx){
     const { now, ts } = ctx;
@@ -10291,12 +10350,14 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
       // Signal fort / sources multiples : couverture d'abord
       case 'signalStrong':
       case 'multiSource': return cov * 80 + fresh * 30;
+      // La suite de l'histoire : les candidats les plus frais d'abord
+      case 'continuation': return fresh * 100;
       default:            return pub / 1e10;
     }
   }
   function _smartApplyMode(arts, mode){
     if(!mode || mode === 'all') return arts;
-    const ctx = _fltContext();
+    const ctx = Object.assign({}, _fltContext(), { scopedArts: arts });
     const pred = _fltPredicate(mode, ctx);
     const out = arts.filter(pred);
     if(_SMART_RANKED.has(mode)){
@@ -12074,6 +12135,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
         <span class="art-source-name">${escHtml(a.source)}</span>
         <span class="art-time" style="margin-left:auto">${time}</span>
       </div>
+      ${(_smartMode==='continuation' && a._continuationOf) ? `<div class="art-continues">La suite de\u00a0: ${escHtml(a._continuationOf)}</div>` : ''}
       ${_titleWithShare(escHtml(a.title), a.link, a.title)}
     </div>`;
   }
@@ -13390,9 +13452,12 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
       <span class="edl-src-dot"><img src="${escAttr(fav)}"${_coAttr(fav)} alt="" onload="_applyDominant(this)" onerror="this.style.opacity='.3'"></span>
       <span class="edl-src-name">${escHtml(a.source)}</span>
     </div>` : '';
+    const cont = (_smartMode==='continuation' && a._continuationOf)
+      ? `<div class="art-continues">La suite de\u00a0: ${escHtml(a._continuationOf)}</div>` : '';
     return `<div class="edl-item reveal${isRead?' is-read':''}" data-edl-idx="${i}" onclick="_openEditionArt(${i})">
       ${fig}
       ${srcRow}
+      ${cont}
       <div class="edl-title">${escHtml(a.title||'')}</div>
       ${sub ? `<div class="edl-sub">${escHtml(sub.slice(0,150))}</div>` : ''}
       <div class="edl-date">${escHtml(_seqDateStr(a.pubDate))}${_groupMeta(a)}</div>
@@ -14463,7 +14528,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
 
 
 
-  // ── Bouton « remonter en haut » : visible après un scroll, scroll fluide interne ──
+  // ── Bouton « remonter en haut » : visible après un scroll, ou brièvement au toucher ──
   (function _bfToTopInit(){
     const btn = document.getElementById('bfToTop');
     const scroller = document.getElementById('bfRow');
@@ -14471,15 +14536,23 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     window._bfScrollTop = function(){
       scroller.scrollTo({ top:0, behavior:'smooth' });
     };
+    let hideTimer = null;
+    function reveal(){
+      btn.classList.add('show');
+      clearTimeout(hideTimer);
+      hideTimer = setTimeout(() => btn.classList.remove('show'), 1400);
+    }
     let ticking = false;
     scroller.addEventListener('scroll', () => {
       if(ticking) return;
       ticking = true;
       requestAnimationFrame(() => {
-        btn.classList.toggle('show', scroller.scrollTop > 420);
+        if(scroller.scrollTop > 420) reveal();
         ticking = false;
       });
     }, { passive:true });
+    document.addEventListener('touchstart', reveal, { passive:true });
+    document.addEventListener('pointerdown', (e) => { if(e.pointerType !== 'touch') reveal(); }, { passive:true });
   })();
 
   // ── Service Worker ────────────────────────────────────────────
@@ -14856,7 +14929,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
       </button>
 
-      <!-- Double-page façon magazine : titre et photo se font face -->
+      <!-- Bloc de couverture : photo pleine largeur en tête, titre en dessous -->
       <div class="art-cover-spread">
         <!-- Tête : signature, date, titre, source -->
         <div class="art-shell-head" id="artModalContent">
