@@ -1360,8 +1360,11 @@ body.cat-modal-open .cat-triage-row:nth-child(6){ transition-delay:.25s; }
   font-family:var(--font-inter); font-size:10.5px; font-weight:500;
   letter-spacing:.005em; color:var(--text-muted);
 }
-.cat-modal-featured{ position:relative; width:100%; height:150px; border-radius:12px; overflow:hidden; margin-bottom:18px; background:#1a1a1a center/cover no-repeat; }
-.cat-modal-featured::after{ content:''; position:absolute; inset:0; background:rgba(0,0,0,.3); }
+.cat-modal-featured{ position:relative; width:100%; height:150px; border-radius:12px; overflow:hidden; margin-bottom:18px; background:#1a1a1a center/cover no-repeat; display:flex; align-items:flex-end; }
+.cat-modal-featured::after{ content:''; position:absolute; inset:0; background:linear-gradient(180deg, rgba(0,0,0,0) 45%, rgba(0,0,0,.55) 100%); }
+.cat-modal-cover-meta{ position:relative; z-index:2; display:flex; flex-direction:column; gap:4px; padding:10px 12px; width:100%; }
+.cmc-item{ display:inline-flex; align-items:center; gap:6px; font-family:var(--font-inter); font-weight:600; font-size:11.5px; letter-spacing:.01em; color:rgba(255,255,255,.92); text-shadow:0 1px 3px rgba(0,0,0,.5); }
+.cmc-dot{ width:5px; height:5px; border-radius:50%; flex:none; background:var(--eyebrow-dot); box-shadow:0 0 6px var(--eyebrow-dot); }
 .cat-modal-pag{ display:flex; justify-content:center; margin-top:10px; }
 .cat-modal-dots{ display:flex; align-items:center; gap:8px; }
 .cat-dot{ width:6px; height:6px; border-radius:50%; background:rgba(127,127,127,.35); cursor:pointer; transition:all .3s cubic-bezier(.25,.8,.25,1); -webkit-tap-highlight-color:transparent; }
@@ -6025,22 +6028,24 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
           <div class="cat-triage" id="catTriage">
             <button class="cat-triage-row" type="button" id="catRowConfirmed" onclick="_catTriagePick('trending')">
               <span class="cat-triage-dot"></span>
-              <span class="cat-triage-txt"><span class="cat-triage-label">Confirmé ailleurs</span><span class="cat-triage-note">Recoupé par plusieurs sources</span></span>
+              <span class="cat-triage-txt"><span class="cat-triage-label">Consensus fort</span><span class="cat-triage-note">Les faits sont largement confirmés</span></span>
             </button>
             <button class="cat-triage-row" type="button" id="catRowEmerging" onclick="_catTriagePick('growing')">
               <span class="cat-triage-dot"></span>
-              <span class="cat-triage-txt"><span class="cat-triage-label">Émergent</span><span class="cat-triage-note">Ça commence à circuler</span></span>
+              <span class="cat-triage-txt"><span class="cat-triage-label">Accélération</span><span class="cat-triage-note">La couverture augmente rapidement</span></span>
             </button>
             <button class="cat-triage-row" type="button" id="catRowContinuation" onclick="_catTriagePick('continuation')">
               <span class="cat-triage-dot"></span>
-              <span class="cat-triage-txt"><span class="cat-triage-label">La suite de l’histoire</span><span class="cat-triage-note">Depuis ce que vous avez lu</span></span>
+              <span class="cat-triage-txt"><span class="cat-triage-label">Nouveau contexte</span><span class="cat-triage-note">Cet article fait avancer une histoire</span></span>
             </button>
             <button class="cat-triage-row" type="button" id="catRowHidden" onclick="_catTriagePick('hidden_gems')">
               <span class="cat-triage-dot"></span>
-              <span class="cat-triage-txt"><span class="cat-triage-label">Vu nulle part ailleurs</span><span class="cat-triage-note">Une source, en profondeur</span></span>
+              <span class="cat-triage-txt"><span class="cat-triage-label">Angle inédit</span><span class="cat-triage-note">Une information absente ailleurs</span></span>
             </button>
           </div>
-          <div class="cat-modal-featured" id="catModalFeatured"></div>
+          <div class="cat-modal-featured" id="catModalFeatured">
+            <div class="cat-modal-cover-meta" id="catModalCoverMeta"></div>
+          </div>
           <div class="cat-modal-pag"><div class="cat-modal-dots" id="catModalDots"></div></div>
         </div>
       </div>
@@ -7203,6 +7208,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
       else { const c = _catFolders().find(o=>o.f.name===_smartCat); if(c){ const im=_folderHeroImg(c.f); if(im) bg=`url('${im.replace(/'/g,"\\'")}')`; } }
       imgEl.style.backgroundImage = bg;
     }
+    _catRenderCoverMeta(cur.url || '');
     if(dotsEl){
       dotsEl.innerHTML = subs.map((s,k)=>`<span class="cat-dot${k===i?' active':''}" onclick="_catModalGo(${k})"></span>`).join('');
     }
@@ -7235,6 +7241,41 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     return pool.filter(pred);
   }
   window._catAngleCandidates = _catAngleCandidates;
+  // Bloc vedette : consensus qualitatif + heure de départ réels de l'histoire dominante —
+  // jamais un chiffre brut (nombre de sources), juste ce que ça veut dire pour le lecteur.
+  function _catRenderCoverMeta(url){
+    const el = document.getElementById('catModalCoverMeta');
+    if(!el) return;
+    const folder = _catModal.folder || _smartCat || '';
+    let pool = _catAngleCandidates(folder, 'trending');
+    if(url) pool = pool.filter(a => (a.feedUrl||'') === url);
+    if(!pool.length){ el.innerHTML=''; return; }
+    const groups = new Map();
+    pool.forEach(a => {
+      _tokens(a.title).forEach(t => {
+        let s = groups.get(t); if(!s){ s = []; groups.set(t, s); }
+        s.push(a);
+      });
+    });
+    let best = pool;
+    // meilleure histoire = le plus grand groupe de sources distinctes sur un même token
+    let bestCov = 0;
+    groups.forEach(arr => {
+      const distinct = new Set(arr.map(a=>a.feedUrl)).size;
+      if(distinct > bestCov){ bestCov = distinct; best = arr; }
+    });
+    const cov = new Set(best.map(a=>a.feedUrl)).size || new Set(pool.map(a=>a.feedUrl)).size;
+    const consensusLabel = cov >= 4 ? 'Consensus fort' : cov >= 2 ? 'Consensus' : '';
+    const earliest = best.reduce((min,a) => (a.pubDate && (!min || a.pubDate < min)) ? a.pubDate : min, null) ||
+      pool.reduce((min,a) => (a.pubDate && (!min || a.pubDate < min)) ? a.pubDate : min, null);
+    let timeLabel = '';
+    if(earliest){
+      const d = new Date(earliest);
+      if(!isNaN(d)) timeLabel = 'Depuis ' + d.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+    }
+    const items = [consensusLabel, timeLabel].filter(Boolean);
+    el.innerHTML = items.map(t => `<span class="cmc-item"><span class="cmc-dot"></span>${escapeHtml(t)}</span>`).join('');
+  }
   // Masque les lignes sans correspondance pour le dossier actif — jamais d'état vide.
   function _catUpdateTriageVisibility(){
     const folder = _catModal.folder || _smartCat || '';
