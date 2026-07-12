@@ -1459,89 +1459,111 @@ body.cat-modal-open .cat-triage-row:nth-child(6){ transition-delay:.25s; }
 .cat-dot.active{ width:24px; border-radius:4px; background:var(--eyebrow-dot); }
 
 /* ═══════════════════════════════════════════════════════════════
-   INTELLIGENCE CENTER — comprendre une actu en < 10 s (données réelles)
-   Signature : le Pulse vivant. Chronologie, couverture, veille.
+   INTELLIGENCE CENTER — « Éditorial calme » : lire une actu en < 10 s.
+   Quasi monochrome, orange (Signal) en touches rares. Pulse redessiné.
    ═══════════════════════════════════════════════════════════════ */
-.ic{ display:flex; flex-direction:column; gap:20px; margin-bottom:20px; }
+.ic{ display:flex; flex-direction:column; margin-bottom:0; }
 .ic-empty{ font-family:var(--font-inter); font-size:13px; color:var(--text-muted); padding:24px 0; text-align:center; }
-@keyframes icIn{ from{ opacity:0; transform:translateY(12px); } to{ opacity:1; transform:none; } }
+@keyframes icIn{ from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:none; } }
+@keyframes icBreathe{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.05); } }
+@keyframes icBlink{ 0%,100%{ opacity:1; } 50%{ opacity:.28; } }
+@keyframes icSpin{ to{ transform:rotate(360deg); } }
 .ic > *{ animation:icIn .55s cubic-bezier(.32,.72,0,1) both; }
+.ic > * + *{ border-top:1px solid color-mix(in srgb,var(--text) 9%, transparent); padding-top:15px; margin-top:15px; }
 .ic > *:nth-child(2){ animation-delay:.05s; }
 .ic > *:nth-child(3){ animation-delay:.10s; }
 .ic > *:nth-child(4){ animation-delay:.15s; }
 .ic > *:nth-child(5){ animation-delay:.20s; }
 
-/* section eyebrow */
-.ic-eyebrow{ display:flex; align-items:center; gap:7px; font-family:var(--font-inter); font-weight:700; font-size:10px; letter-spacing:.13em; text-transform:uppercase; color:var(--text-muted); margin-bottom:10px; }
-.ic-eyebrow::before{ content:''; width:5px; height:5px; border-radius:50%; flex:none; background:var(--eyebrow-dot); box-shadow:0 0 6px var(--eyebrow-dot); }
+/* section eyebrow — point muet (pas d'orange) */
+.ic-eyebrow{ display:flex; align-items:center; gap:7px; font-family:var(--font-inter); font-weight:700; font-size:10px; letter-spacing:.13em; text-transform:uppercase; color:var(--text-muted); }
+.ic-eyebrow::before{ content:''; width:4px; height:4px; border-radius:50%; flex:none; background:var(--text-muted); }
 
-/* ── Pulse (signature vivante) ── */
+/* ── Pulse (signature redessinée : anneau neutre + arc orange lent) ── */
 .ic-hero{ display:flex; align-items:center; gap:18px; }
-.ic-pulse{ position:relative; width:88px; height:88px; flex:none; }
-.ic-pulse-ring{ position:absolute; inset:0; border-radius:50%; border:1.5px solid var(--eyebrow-dot); opacity:0; }
-@keyframes icWave{ 0%{ transform:scale(.5); opacity:.5; } 70%{ opacity:0; } 100%{ transform:scale(1.18); opacity:0; } }
-.ic-pulse.live .ic-pulse-ring:nth-child(1){ animation:icWave 3.4s ease-out infinite; }
-.ic-pulse.live .ic-pulse-ring:nth-child(2){ animation:icWave 3.4s ease-out infinite 1.13s; }
-.ic-pulse.live .ic-pulse-ring:nth-child(3){ animation:icWave 3.4s ease-out infinite 2.26s; }
-.ic-pulse-core{ position:absolute; inset:14px; border-radius:50%;
-  background:radial-gradient(circle at 50% 38%, color-mix(in srgb,var(--eyebrow-dot) 26%, transparent), color-mix(in srgb,var(--eyebrow-dot) 6%, transparent) 72%);
-  border:1px solid color-mix(in srgb,var(--eyebrow-dot) 30%, transparent);
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
-  animation:icBreathe 3.4s ease-in-out infinite; }
-@keyframes icBreathe{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.055); } }
-.ic-pulse-num{ font-family:var(--font-geist); font-weight:700; font-size:27px; line-height:1; color:var(--text); letter-spacing:-.02em; }
-.ic-pulse-unit{ font-family:var(--font-inter); font-size:8px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--text-muted); margin-top:3px; }
-.ic-pulse-meta{ display:flex; flex-direction:column; gap:9px; min-width:0; }
-.ic-live{ display:inline-flex; align-items:center; gap:6px; font-family:var(--font-inter); font-size:10px; font-weight:700; letter-spacing:.11em; text-transform:uppercase; color:var(--eyebrow-dot); }
-.ic-live-dot{ width:7px; height:7px; border-radius:50%; flex:none; background:var(--eyebrow-dot); box-shadow:0 0 8px var(--eyebrow-dot); animation:icBlink 1.6s ease-in-out infinite; }
-@keyframes icBlink{ 0%,100%{ opacity:1; } 50%{ opacity:.28; } }
-.ic-pulse-stats{ display:flex; gap:16px; }
-.ic-stat{ display:flex; flex-direction:column; gap:2px; }
-.ic-stat-n{ font-family:var(--font-geist); font-weight:600; font-size:15px; color:var(--text); letter-spacing:-.01em; }
-.ic-stat-l{ font-family:var(--font-inter); font-size:9.5px; font-weight:500; color:var(--text-muted); }
+.ic-pulse{ position:relative; width:78px; height:78px; flex:none; }
+.ic-pulse svg{ display:block; width:100%; height:100%; }
+.ic-pulse-track{ stroke:color-mix(in srgb,var(--text) 12%, transparent); }
+.ic-pulse-arc{ stroke:var(--eyebrow-dot); transform-origin:39px 39px; animation:icSpin 9s linear infinite; }
+.ic-pulse-num{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.ic-pulse-num b{ font-family:var(--font-geist); font-weight:600; font-size:24px; line-height:1; letter-spacing:-.02em; color:var(--text); animation:icBreathe 3.6s ease-in-out infinite; }
+.ic-pulse-num span{ font-family:var(--font-inter); font-size:8px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--text-muted); margin-top:3px; }
+.ic-live{ display:inline-flex; align-items:center; gap:6px; font-family:var(--font-inter); font-size:10px; font-weight:700; letter-spacing:.11em; text-transform:uppercase; color:var(--text-muted); margin-bottom:9px; }
+.ic-live i{ width:6px; height:6px; border-radius:50%; flex:none; background:var(--eyebrow-dot); box-shadow:0 0 7px var(--eyebrow-dot); animation:icBlink 1.6s ease-in-out infinite; }
+.ic-live.off i{ animation:none; opacity:.4; background:var(--text-muted); box-shadow:none; }
+.ic-stat{ font-family:var(--font-geist); font-size:14px; color:var(--text); }
+.ic-stat b{ font-weight:600; }
+.ic-stat .m{ color:var(--text-muted); }
+.ic-stat .sep{ color:var(--text-muted); margin:0 7px; }
 
-/* ── Ce qui se passe ── */
+/* ── Ce qui se passe — le titre domine (Geist) ── */
 .ic-now{ display:block; width:100%; text-align:left; background:none; border:none; padding:0; cursor:pointer; -webkit-tap-highlight-color:transparent; }
-.ic-now-title{ font-family:var(--font-geist); font-weight:600; font-size:18.5px; line-height:1.26; letter-spacing:-.016em; color:var(--text); text-wrap:pretty; }
+.ic-now-title{ display:block; font-family:var(--font-geist); font-weight:600; font-size:21px; line-height:1.24; letter-spacing:-.018em; color:var(--text); margin-top:10px; text-wrap:pretty; }
 .ic-now:active .ic-now-title{ opacity:.55; }
+.ic-now-list{ display:flex; flex-direction:column; }
+.ic-now + .ic-now{ margin-top:11px; padding-top:11px; border-top:1px solid color-mix(in srgb,var(--text) 8%, transparent); }
+.ic-now.sub .ic-now-title{ font-size:15px; font-weight:600; margin-top:0; line-height:1.3; }
 
-/* ── La chronologie (timeline vivante) ── */
-.ic-tl{ position:relative; }
-.ic-tl-line{ position:absolute; top:5px; left:7%; right:7%; height:2px; border-radius:2px;
-  background:linear-gradient(90deg, color-mix(in srgb,var(--eyebrow-dot) 18%, transparent), var(--eyebrow-dot));
-  transform-origin:left; animation:icDraw 1s cubic-bezier(.32,.72,0,1) both; }
-@keyframes icDraw{ from{ transform:scaleX(0); } to{ transform:scaleX(1); } }
+/* ── La chronologie (hairline + ticks neutres, fin orange) ── */
+.ic-tl{ position:relative; margin-top:14px; }
+.ic-tl-line{ position:absolute; top:4px; left:6%; right:6%; height:1px; background:color-mix(in srgb,var(--text) 12%, transparent); }
+.ic-tl-line::after{ content:''; position:absolute; right:0; top:-2px; width:5px; height:5px; border-radius:50%; background:var(--eyebrow-dot); box-shadow:0 0 7px var(--eyebrow-dot); }
 .ic-tl-track{ position:relative; display:flex; }
-.ic-tl-node{ flex:1; display:flex; flex-direction:column; align-items:center; gap:7px; min-width:0; }
-.ic-tl-dot{ width:11px; height:11px; border-radius:50%; background:var(--bg); border:2px solid var(--eyebrow-dot); }
-.ic-tl-node:last-child .ic-tl-dot{ background:var(--eyebrow-dot); animation:icNode 2s ease-out infinite; }
-@keyframes icNode{ 0%{ box-shadow:0 0 0 0 color-mix(in srgb,var(--eyebrow-dot) 55%, transparent); } 100%{ box-shadow:0 0 0 7px transparent; } }
-.ic-tl-time{ font-family:var(--font-inter); font-size:9.5px; font-weight:600; color:var(--text); }
-.ic-tl-fav{ width:14px; height:14px; border-radius:50%; object-fit:cover; background:#fff; }
+.ic-tl-node{ flex:1; display:flex; flex-direction:column; align-items:center; gap:8px; min-width:0; }
+.ic-tl-dot{ width:9px; height:9px; border-radius:50%; background:var(--bg); border:1.5px solid var(--text-muted); }
+.ic-tl-node:last-child .ic-tl-dot{ border-color:var(--eyebrow-dot); }
+.ic-tl-time{ font-family:var(--font-inter); font-size:9.5px; font-weight:600; color:var(--text-muted); font-variant-numeric:tabular-nums; }
 
-/* ── Cartes intelligentes ── */
-.ic-card{ background:color-mix(in srgb,var(--text) 4%, transparent); border:1px solid color-mix(in srgb,var(--border) 65%, transparent); border-radius:16px; padding:15px; }
-.ic-bubbles{ display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
-.ic-bubble{ border-radius:50%; overflow:hidden; background:#fff; flex:none; display:flex; align-items:center; justify-content:center;
-  box-shadow:0 2px 8px rgba(0,0,0,.25),0 0 0 .5px rgba(0,0,0,.06); animation:icBob 4s ease-in-out infinite; }
-@keyframes icBob{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-3px); } }
-.ic-bubble img{ width:100%; height:100%; object-fit:cover; }
-.ic-conf{ font-family:var(--font-inter); font-size:12px; font-weight:600; color:var(--text); letter-spacing:-.005em; }
-.ic-watch{ display:flex; flex-direction:column; gap:8px; width:100%; text-align:left; background:none; border:none; padding:0; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+/* ── Qui en parle — favicons chevauchés + phrase claire ── */
+.ic-covrow{ display:flex; align-items:center; margin:12px 0 10px; }
+.ic-fav{ width:26px; height:26px; border-radius:50%; background:#fff; margin-left:-6px; border:2px solid var(--bg); overflow:hidden; flex:none; }
+.ic-fav:first-child{ margin-left:0; }
+.ic-fav img{ width:100%; height:100%; object-fit:cover; }
+.ic-cap{ font-family:var(--font-inter); font-size:12px; font-weight:600; color:var(--text); letter-spacing:-.005em; }
+.ic-cap .m{ color:var(--text-muted); font-weight:500; }
+
+/* ── À surveiller ── */
+.ic-watch{ display:block; width:100%; text-align:left; background:none; border:none; padding:0; margin-top:12px; cursor:pointer; -webkit-tap-highlight-color:transparent; }
 .ic-watch:active{ opacity:.55; }
-.ic-watch-title{ font-family:var(--font-geist); font-weight:600; font-size:14.5px; line-height:1.32; letter-spacing:-.01em; color:var(--text); text-wrap:pretty; }
-.ic-watch-src{ display:inline-flex; align-items:center; gap:6px; font-family:var(--font-inter); font-size:10.5px; font-weight:600; color:var(--text-muted); }
+.ic-watch-list{ display:flex; flex-direction:column; }
+.ic-watch + .ic-watch{ margin-top:11px; padding-top:11px; border-top:1px solid color-mix(in srgb,var(--text) 8%, transparent); }
+.ic-watch-title{ display:block; font-family:var(--font-geist); font-weight:600; font-size:14.5px; line-height:1.32; letter-spacing:-.01em; color:var(--text); text-wrap:pretty; }
+.ic-watch-src{ display:flex; align-items:center; gap:6px; margin-top:7px; font-family:var(--font-inter); font-size:10.5px; font-weight:600; color:var(--text-muted); }
 .ic-watch-src img{ width:14px; height:14px; border-radius:50%; object-fit:cover; background:#fff; flex:none; }
 
-/* ── Action primaire ── */
+/* ── Action primaire (contour sobre) ── */
 .ic-open{ display:flex; align-items:center; justify-content:center; gap:6px; width:100%;
-  background:color-mix(in srgb,var(--text) 8%, transparent); border:1px solid color-mix(in srgb,var(--border) 70%, transparent);
-  border-radius:13px; padding:13px; margin-bottom:14px; cursor:pointer; -webkit-tap-highlight-color:transparent;
+  background:none; border:1px solid var(--border);
+  border-radius:20px; padding:13px; margin-top:22px; margin-bottom:14px; cursor:pointer; -webkit-tap-highlight-color:transparent;
   font-family:var(--font-inter); font-weight:700; font-size:13px; letter-spacing:.01em; color:var(--text);
-  transition:background .25s ease, transform .18s cubic-bezier(.34,1.56,.64,1); }
-.ic-open:hover{ background:color-mix(in srgb,var(--text) 13%, transparent); }
+  transition:border-color .25s ease, transform .18s cubic-bezier(.34,1.56,.64,1); }
+.ic-open:hover{ border-color:var(--text-muted); }
 .ic-open:active{ transform:scale(.97); }
-.ic-open svg{ width:15px; height:15px; opacity:.6; }
+.ic-open svg{ width:14px; height:14px; opacity:.55; }
+
+/* Tablette + mobile : fiche plus large, moins haute — dégagée de la navbar */
+@media (max-width:820px){
+  /* décale le centrage vers le haut : la barre de nav du bas ne recouvre plus la fiche */
+  .cat-modal-overlay{ padding:16px 16px calc(env(safe-area-inset-bottom,0px) + 128px); }
+  .cat-modal-card{ max-width:600px; padding:20px 22px; border-radius:22px; max-height:calc(100vh - env(safe-area-inset-bottom,0px) - 150px); }
+  .ic > * + *{ padding-top:14px; margin-top:14px; }
+  .ic-hero{ gap:15px; }
+  .ic-pulse{ width:62px; height:62px; }
+  .ic-pulse-num b{ font-size:20px; }
+  .ic-pulse-num span{ font-size:7.5px; }
+  .ic-stat{ font-size:13px; }
+  .ic-now-title{ font-size:17px; margin-top:8px; }
+  .ic-watch-title{ font-size:13.5px; }
+  .ic-open{ margin-top:18px; padding:12px; }
+}
+@media (max-width:430px){
+  .cat-modal-overlay{ padding:14px 14px calc(env(safe-area-inset-bottom,0px) + 118px); }
+  .cat-modal-card{ max-width:none; width:calc(100vw - 28px); padding:17px 18px; }
+  .ic-pulse{ width:56px; height:56px; }
+  .ic-pulse-num b{ font-size:18px; }
+  .ic-now-title{ font-size:16px; }
+  .ic-tl-time{ font-size:9px; }
+}
 
 .view{
   align-self:stretch;
@@ -6212,7 +6234,6 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
             <span>Ouvrir ce flux</span>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
           </button>
-          <div class="cat-modal-pag"><div class="cat-modal-dots" id="catModalDots"></div></div>
         </div>
       </div>
 
@@ -7377,15 +7398,11 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     const cur = subs[i]; if(!cur) return;
     const titleEl = document.getElementById('catModalTitle');
     const icEl    = document.getElementById('catIntel');
-    const dotsEl  = document.getElementById('catModalDots');
     if(titleEl) titleEl.innerHTML = `<span class="cat-modal-dot"></span>${escapeHtml(cur.name)}`;
     const folder = _catModal.folder || _smartCat || '';
     const intel = _catIntel(folder, cur.url || '');
     if(icEl) icEl.innerHTML = intel ? _catIntelHTML(intel)
       : `<div class="ic-empty">Rien à signaler pour l’instant.</div>`;
-    if(dotsEl){
-      dotsEl.innerHTML = subs.map((s,k)=>`<span class="cat-dot${k===i?' active':''}" onclick="_catModalGo(${k})"></span>`).join('');
-    }
   }
   // ── Intelligence Center : lire une actu en < 10 s — 100 % données réelles ──
   function _catIntel(folder, url){
@@ -7410,6 +7427,42 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     groups.forEach(arr => { const d=new Set(arr.map(a=>a.feedUrl)).size; if(d>bestCov && arr.length>1){ bestCov=d; cluster=arr; } });
     const headline = [...cluster].sort((a,b)=>new Date(b.pubDate)-new Date(a.pubDate))[0];
     const cov = new Set(cluster.map(a=>a.feedUrl)).size;
+    // ── Ce qui se passe : tri intelligent, pas seulement la fraîcheur ──
+    // On regroupe les articles en « histoires » (mots-clés partagés), puis on classe chaque
+    // histoire par : recoupement multi-sources (signal d'importance #1) · volume · vélocité
+    // (activité récente) · fraîcheur. L'éditeur silencieux remonte ce qui compte vraiment.
+    const norm = s => (s||'').toLowerCase().replace(/[^a-z0-9à-ÿ]+/g,' ').trim().slice(0,60);
+    const byDate = [...pool].sort((a,b)=>new Date(b.pubDate)-new Date(a.pubDate));
+    const hoursAgo = a => { const t=new Date(a.pubDate).getTime(); return isNaN(t)?9999:Math.max(0,(now-t)/3.6e6); };
+    // Construire les histoires : chaque token significatif regroupe des articles ;
+    // on fusionne par titre représentatif (le plus récent) pour éviter les doublons.
+    const stories = new Map(); // clé = titre normalisé du représentant
+    const consider = arr => {
+      if(!arr || arr.length < 2) return;
+      const rep = [...arr].sort((a,b)=>new Date(b.pubDate)-new Date(a.pubDate))[0];
+      if(!rep) return;
+      const key = norm(rep.title); if(!key) return;
+      let s = stories.get(key);
+      if(!s){ s = { rep, links:new Set(), srcs:new Set() }; stories.set(key, s); }
+      arr.forEach(a => { s.links.add(a.link); if(a.feedUrl) s.srcs.add(a.feedUrl); });
+      if(new Date(rep.pubDate) > new Date(s.rep.pubDate)) s.rep = rep;
+    };
+    groups.forEach(consider);
+    const scored = [...stories.values()].map(s => {
+      const srcCount = s.srcs.size;                         // recoupement multi-sources
+      const vol = s.links.size;                             // volume d'articles
+      const ageH = hoursAgo(s.rep);
+      const recency = Math.exp(-ageH / 24);                 // 0..1, demi-vie ≈ 1 jour
+      const velocity = [...s.links].length && ageH < 12 ? 1 : 0; // sujet chaud (< 12 h)
+      const score = srcCount * 2.4 + vol * 0.7 + recency * 3 + velocity * 1.2;
+      return { a: s.rep, score };
+    }).sort((a,b) => b.score - a.score);
+    // 3 histoires distinctes, classées par importance ; complète par fraîcheur si besoin
+    const headlines = []; const hseen = new Set();
+    for(const st of scored){ if(headlines.length>=3) break; const k=norm(st.a.title); if(!k||hseen.has(k)) continue; hseen.add(k); headlines.push(st.a); }
+    if(headlines.length<3){
+      for(const a of byDate){ if(headlines.length>=3) break; const k=norm(a.title); if(!k||hseen.has(k)) continue; hseen.add(k); headlines.push(a); }
+    }
     // Médias qui couvrent l'histoire, pondérés par nombre d'articles
     const perSrc = new Map();
     cluster.forEach(a => { const u=a.feedUrl||''; perSrc.set(u,(perSrc.get(u)||0)+1); });
@@ -7419,15 +7472,16 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
       .sort((a,b)=>new Date(a.pubDate)-new Date(b.pubDate));
     const earliest = tl.length ? new Date(tl[0].pubDate).getTime() : 0;
     if(tl.length>6){ const step=(tl.length-1)/5; tl = [0,1,2,3,4,5].map(k=>tl[Math.round(k*step)]); }
-    // À surveiller : angle inédit (source unique), sinon accélération — jamais l'histoire principale
-    const notMain = a => !headline || a.link !== headline.link;
-    let watch = null;
+    // À surveiller : jusqu'à 3 angles inédits / en progression / suites — jamais les histoires principales
+    const headLinks = new Set(headlines.map(a=>a.link));
+    let watchPool = [];
     if(typeof _catAngleCandidates==='function'){
-      let wp = _catAngleCandidates(folder,'hidden_gems'); if(url) wp=wp.filter(a=>(a.feedUrl||'')===url);
-      watch = wp.find(notMain);
-      if(!watch){ let gp=_catAngleCandidates(folder,'growing'); if(url) gp=gp.filter(a=>(a.feedUrl||'')===url); watch=gp.find(notMain); }
+      ['hidden_gems','growing','continuation'].forEach(m=>{ let wp=_catAngleCandidates(folder,m); if(url) wp=wp.filter(a=>(a.feedUrl||'')===url); watchPool=watchPool.concat(wp); });
     }
-    return { count24, count6, sources, newest, headline, cov, bubbles, tl, earliest, watch };
+    if(!watchPool.length) watchPool = byDate;
+    const watch = []; const wseen = new Set();
+    for(const a of watchPool){ if(watch.length>=3) break; if(headLinks.has(a.link)) continue; const k=norm(a.title); if(!k||wseen.has(k)) continue; wseen.add(k); watch.push(a); }
+    return { count24, count6, sources, newest, headlines, cov, bubbles, tl, earliest, watch };
   }
   function _catConf(cov){
     if(cov>=5) return 'Largement recoupé';
@@ -7440,50 +7494,47 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     const hm = t => { const d=new Date(t); return isNaN(d)?'':d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}); };
     const live = x.count6 > 0;
     let h = '';
-    // Hero — Pulse (signature vivante)
+    // Hero — Pulse redessiné : anneau neutre + arc orange lent, chiffre Geist qui respire
+    const circ = 2 * Math.PI * 34;                 // ≈ 213.6
+    const dash = Math.max(28, Math.round(circ*0.27));
     h += `<div class="ic-hero">
-      <div class="ic-pulse${live?' live':''}">
-        <span class="ic-pulse-ring"></span><span class="ic-pulse-ring"></span><span class="ic-pulse-ring"></span>
-        <span class="ic-pulse-core"><span class="ic-pulse-num">${x.count24}</span><span class="ic-pulse-unit">sur 24 h</span></span>
+      <div class="ic-pulse">
+        <svg width="78" height="78" viewBox="0 0 78 78">
+          <circle class="ic-pulse-track" cx="39" cy="39" r="34" fill="none" stroke-width="2"></circle>
+          <circle class="ic-pulse-arc" cx="39" cy="39" r="34" fill="none" stroke-width="2" stroke-linecap="round" stroke-dasharray="${dash} ${Math.round(circ-dash)}" transform="rotate(-90 39 39)"></circle>
+        </svg>
+        <div class="ic-pulse-num"><b>${x.count24}</b><span>sur 24 h</span></div>
       </div>
-      <div class="ic-pulse-meta">
-        <span class="ic-live">${live?'<span class="ic-live-dot"></span>En direct':'<span class="ic-live-dot" style="animation:none;opacity:.4"></span>Veille active'}</span>
-        <div class="ic-pulse-stats">
-          <span class="ic-stat"><span class="ic-stat-n">${x.sources}</span><span class="ic-stat-l">source${x.sources>1?'s':''}</span></span>
-          ${x.newest?`<span class="ic-stat"><span class="ic-stat-n">${rt(x.newest)}</span><span class="ic-stat-l">dernier signal</span></span>`:''}
-        </div>
+      <div>
+        <div class="ic-live${live?'':' off'}"><i></i>${live?'En direct':'Veille active'}</div>
+        <div class="ic-stat"><b>${x.sources}</b> source${x.sources>1?'s':''}${x.newest?`<span class="sep">·</span><b>${rt(x.newest)}</b><span class="m"> dernier signal</span>`:''}</div>
       </div>
     </div>`;
-    // Ce qui se passe
-    if(x.headline){
-      h += `<div><div class="ic-eyebrow">Ce qui se passe</div>
-        <button type="button" class="ic-now" data-link="${escAttr(x.headline.link||'')}" onclick="_catIntelOpen(this)">
-          <span class="ic-now-title">${escapeHtml(x.headline.title||'')}</span>
-        </button></div>`;
+    // Ce qui se passe — titre dominant en Geist + 2 autres options
+    if(x.headlines && x.headlines.length){
+      h += `<div><div class="ic-eyebrow">Ce qui se passe</div><div class="ic-now-list">` +
+        x.headlines.map((a,k)=>`<button type="button" class="ic-now${k?' sub':''}" data-link="${escAttr(a.link||'')}" onclick="_catIntelOpen(this)"><span class="ic-now-title">${escapeHtml(a.title||'')}</span></button>`).join('') +
+        `</div></div>`;
     }
     // La chronologie
     if(x.tl && x.tl.length>=2){
       h += `<div><div class="ic-eyebrow">La chronologie</div>
-        <div class="ic-tl"><span class="ic-tl-line"></span><div class="ic-tl-track">` +
-        x.tl.map(a=>`<div class="ic-tl-node"><span class="ic-tl-dot"></span><span class="ic-tl-time">${hm(a.pubDate)}</span><img class="ic-tl-fav" src="${escAttr(getFavicon(a.feedUrl||''))}" alt="" loading="lazy" onerror="this.style.visibility='hidden'"></div>`).join('') +
+        <div class="ic-tl"><div class="ic-tl-line"></div><div class="ic-tl-track">` +
+        x.tl.map(a=>`<div class="ic-tl-node"><span class="ic-tl-dot"></span><span class="ic-tl-time">${hm(a.pubDate)}</span></div>`).join('') +
         `</div></div></div>`;
     }
-    // Qui en parle
+    // Qui en parle — favicons chevauchés + phrase claire
     if(x.bubbles && x.bubbles.length){
-      const max = x.bubbles[0][1] || 1;
-      const bub = x.bubbles.map(([u,c],k)=>{ const sz=Math.round(28+(c/max)*18); return `<span class="ic-bubble" style="width:${sz}px;height:${sz}px;animation-delay:${(k*0.18).toFixed(2)}s" title="${escAttr(_catSourceName(u))}"><img src="${escAttr(getFavicon(u))}" alt="" loading="lazy" onerror="this.parentNode.style.opacity=.25"></span>`; }).join('');
-      h += `<div class="ic-card"><div class="ic-eyebrow">Qui en parle</div>
-        <div class="ic-bubbles">${bub}</div>
-        <div class="ic-conf">${_catConf(x.cov)}${x.earliest?` · depuis ${hm(x.earliest)}`:''}</div></div>`;
+      const favs = x.bubbles.map(b=>`<span class="ic-fav"><img src="${escAttr(getFavicon(b[0]))}" alt="" loading="lazy" onerror="this.parentNode.style.opacity=.25"></span>`).join('');
+      h += `<div><div class="ic-eyebrow">Qui en parle</div>
+        <div class="ic-covrow">${favs}</div>
+        <div class="ic-cap">${_catConf(x.cov)}${x.earliest?`<span class="m"> · depuis ${hm(x.earliest)}</span>`:''}</div></div>`;
     }
-    // À surveiller
-    if(x.watch){
-      const src = _catSourceName(x.watch.feedUrl||'') || x.watch.source || '';
-      h += `<div class="ic-card"><div class="ic-eyebrow">À surveiller</div>
-        <button type="button" class="ic-watch" data-link="${escAttr(x.watch.link||'')}" onclick="_catIntelOpen(this)">
-          <span class="ic-watch-title">${escapeHtml(x.watch.title||'')}</span>
-          <span class="ic-watch-src"><img src="${escAttr(getFavicon(x.watch.feedUrl||''))}" alt="" onerror="this.style.display='none'">${escapeHtml(src)}${x.watch.pubDate?' · '+rt(new Date(x.watch.pubDate).getTime()):''}</span>
-        </button></div>`;
+    // À surveiller — jusqu'à 3 angles
+    if(x.watch && x.watch.length){
+      h += `<div><div class="ic-eyebrow">À surveiller</div><div class="ic-watch-list">` +
+        x.watch.map(a=>{ const src=_catSourceName(a.feedUrl||'')||a.source||''; return `<button type="button" class="ic-watch" data-link="${escAttr(a.link||'')}" onclick="_catIntelOpen(this)"><span class="ic-watch-title">${escapeHtml(a.title||'')}</span><span class="ic-watch-src"><img src="${escAttr(getFavicon(a.feedUrl||''))}" alt="" onerror="this.style.display='none'">${escapeHtml(src)}${a.pubDate?' · '+rt(new Date(a.pubDate).getTime()):''}</span></button>`; }).join('') +
+        `</div></div>`;
     }
     return h;
   }
@@ -7573,18 +7624,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     _catModalClose();
     if(typeof _applyFolderFilter === 'function') _applyFolderFilter(folder, mode, cur.url || '');
   };
-  // Swipe horizontal sur la carte → source précédente / suivante
-  (function _catModalSwipe(){
-    const card = document.getElementById('catModalCard');
-    if(!card) return;
-    let x0 = 0;
-    card.addEventListener('touchstart', e => { x0 = e.changedTouches[0].screenX; }, {passive:true});
-    card.addEventListener('touchend', e => {
-      const dx = e.changedTouches[0].screenX - x0;
-      if(Math.abs(dx) < 50) return;
-      _catModalGo(dx < 0 ? Math.min(_catModal.idx+1, _catModal.subs.length-1) : Math.max(_catModal.idx-1, 0));
-    }, {passive:true});
-  })();
+  // Navigation flux-à-flux retirée (plus de carrousel / swipe) — le modal montre le flux courant.
 
   const ICON_CHEV = '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>';
   const ICON_EDIT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
