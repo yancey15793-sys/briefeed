@@ -506,6 +506,85 @@ button, .ob-btn, .ob-btn-ghost,
 .sidebar.open .sb-footer        { animation-delay:.42s; }
 @keyframes sbReveal{ to{ opacity:1; transform:translateX(0); } }
 
+/* ===========================================================
+   SIDEBAR EN FEUILLE (bottom-sheet) SUR MOBILE — pattern The Athletic
+   La même sidebar (contenu + JS inchangés) glisse depuis le bas,
+   coins hauts arrondis, poignée de préhension, glisser-pour-fermer.
+   =========================================================== */
+@media (max-width:720px){
+  .sidebar{
+    top:auto; left:0; right:0; bottom:0;
+    width:100%; max-width:100%;
+    height:min(88vh, 900px);
+    border-radius:22px 22px 0 0;
+    box-shadow:0 -18px 60px -12px rgba(0,0,0,.75);
+    transform:translateY(100%);
+    transition:transform .5s cubic-bezier(.32,0,.67,0);
+    will-change:transform;
+  }
+  .sidebar.open{
+    transform:translateY(0);
+    transition:transform .56s cubic-bezier(.16,1,.3,1);
+  }
+  /* Poignée de préhension centrée en haut */
+  .sidebar::before{
+    content:''; flex:none;
+    width:38px; height:5px; border-radius:3px;
+    background:rgba(255,255,255,.24);
+    margin:9px auto 0;
+  }
+  [data-theme="light"] .sidebar::before{ background:rgba(0,0,0,.18); }
+  .sb-header{ padding:6px 8px 10px; }
+  /* Athletic : Modifier (accent) · titre centré · + (rond plein) — remplace logo/close */
+  .sb-logo, .sb-close{ display:none; }
+  .sb-sheet-head{
+    display:flex; align-items:center; justify-content:space-between;
+    width:100%; padding:4px 8px 2px; gap:10px;
+  }
+  .sb-sheet-edit{
+    border:0; background:transparent; cursor:pointer; padding:6px 6px;
+    font-family:var(--font-inter); font-size:17px; font-weight:600;
+    letter-spacing:-.01em; color:#e0483d;
+  }
+  .sb-sheet-edit:active{ opacity:.55; }
+  .sb-sheet-title{
+    font-family:'DM Serif Display', var(--font-inter); font-weight:700;
+    font-size:20px; letter-spacing:-.01em; color:var(--text);
+    position:absolute; left:50%; transform:translateX(-50%); pointer-events:none;
+  }
+  .sb-sheet-add{
+    width:38px; height:38px; border-radius:50%; border:0; cursor:pointer;
+    display:inline-flex; align-items:center; justify-content:center;
+    background:var(--text); color:var(--bg); flex:none;
+    box-shadow:0 4px 14px rgba(0,0,0,.35);
+    transition:transform .18s cubic-bezier(.34,1.56,.64,1);
+  }
+  .sb-sheet-add:active{ transform:scale(.86); }
+  .sb-sheet-add svg{ width:20px; height:20px; }
+  .sb-header{ position:relative; }
+
+  /* Lignes plus aérées, gros libellés — lisibilité type Athletic */
+  .sb-scroll{ padding:6px 6px 24px; }
+  .sidebar .feed-item, .sidebar .sb-item{ padding:13px 14px; }
+  .sidebar .feed-item .feed-item-name, .sidebar .sb-item .sb-label{
+    font-size:16.5px; font-weight:700; letter-spacing:-.01em;
+  }
+
+  /* Révélation en cascade : les blocs montent (translateY) au lieu de glisser latéralement */
+  .sidebar .sb-header,
+  .sidebar .sb-search,
+  .sidebar .sb-scroll > *,
+  .sidebar .sb-footer{ transform:translateY(16px); }
+  .sidebar.open .sb-header,
+  .sidebar.open .sb-search,
+  .sidebar.open .sb-scroll > *,
+  .sidebar.open .sb-footer{ animation-name:sbRevealUp; }
+}
+@keyframes sbRevealUp{ to{ opacity:1; transform:translateY(0); } }
+
+/* En-tête « feuille » : masqué hors mobile */
+.sb-sheet-head{ display:none; }
+
 .sb-header{
   display:flex; align-items:center; justify-content:space-between;
   padding:20px 18px 14px;
@@ -1174,22 +1253,7 @@ body.bf-heavy-open .sbar-podcast{
 .column:has(> #catBrandHeader:not([hidden])){
   padding-top:calc(env(safe-area-inset-top,0px) + 8px);
 }
-/* ── Titre replié fixe : révélé (clip-path) quand le hero de catégorie défile hors champ ── */
-.cat-fixed-title{
-  position:fixed; top:0; left:0; right:0; z-index:61;
-  height:calc(env(safe-area-inset-top,0px) + 46px);
-  padding-top:env(safe-area-inset-top,0px);
-  display:flex; align-items:center; justify-content:center;
-  font-family:'DM Serif Display', var(--font-inter); font-weight:700;
-  font-size:16px; letter-spacing:-.02em; color:var(--text);
-  background:color-mix(in srgb, var(--bg) 84%, transparent);
-  -webkit-backdrop-filter:blur(18px) saturate(1.6); backdrop-filter:blur(18px) saturate(1.6);
-  border-bottom:1px solid rgba(127,127,127,.14);
-  clip-path:inset(0 0 100% 0);
-  transition:clip-path .46s cubic-bezier(.16,1,.3,1);
-  pointer-events:none;
-}
-.cat-fixed-title.show{ clip-path:inset(0 0 0 0); }
+/* ── Wordmark de catégorie : colle en haut au scroll ── */
 .cat-bh-status{
   position:relative; z-index:3; height:34px; flex:none; width:100%;
   display:flex; align-items:center; justify-content:center; gap:9px;
@@ -1232,22 +1296,42 @@ body.bf-heavy-open .sbar-podcast{
   display:flex; flex-direction:column; align-items:center; padding:10px 0 20px;
 }
 .cat-bh-wordmark{
+  position:sticky; top:0; z-index:15;
   font-family:var(--font-inter); font-weight:900; font-size:clamp(24px,7vw,34px);
   letter-spacing:.2em; text-transform:uppercase; color:#fff;
   text-align:center; line-height:1; margin-bottom:18px; padding:0 20px;
   text-shadow:0 2px 12px rgba(0,0,0,.5); cursor:pointer;
   display:flex; align-items:center; justify-content:center; gap:16px;
   max-width:100%; overflow:hidden;
+  transition:font-size .3s cubic-bezier(.16,1,.3,1), padding .3s cubic-bezier(.16,1,.3,1), gap .3s cubic-bezier(.16,1,.3,1), color .3s ease, text-shadow .3s ease;
 }
 .cat-bh-wordmark::before,
 .cat-bh-wordmark::after{
   content:''; flex:1 1 auto; min-width:28px; max-width:80px; height:4px;
   background:rgba(255,255,255,.92);
   box-shadow:0 1px 5px rgba(0,0,0,.5);
+  transition:background .3s ease, box-shadow .3s ease, height .3s ease, min-width .3s ease, max-width .3s ease, opacity .3s ease;
 }
 .cat-bh-wordmark > span{
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
   flex:0 1 auto; min-width:0;
+}
+/* Épinglé : le hero (photo) a défilé sous lui — bascule vers un habillage verre lisible sur
+   le fond app, sans dupliquer le composant ni changer sa structure. */
+.cat-bh-wordmark.stuck{
+  width:100vw; max-width:100vw; box-sizing:border-box;
+  margin-left:calc(50% - 50vw); margin-right:calc(50% - 50vw); margin-bottom:0;
+  padding:calc(env(safe-area-inset-top,0px) + 10px) 20px 10px;
+  font-size:15px; letter-spacing:.14em; gap:8px;
+  color:var(--text); text-shadow:none; cursor:default;
+  background:color-mix(in srgb, var(--bg) 84%, transparent);
+  -webkit-backdrop-filter:blur(18px) saturate(1.6); backdrop-filter:blur(18px) saturate(1.6);
+  border-bottom:1px solid rgba(127,127,127,.14);
+}
+.cat-bh-wordmark.stuck::before,
+.cat-bh-wordmark.stuck::after{
+  height:2px; min-width:14px; max-width:28px;
+  background:var(--text); box-shadow:none; opacity:.55;
 }
 .cat-bh-tabs{
   display:flex; flex-direction:row; align-items:flex-start;
@@ -1288,20 +1372,24 @@ body.bf-heavy-open .sbar-podcast{
 }
 .cat-subnav[hidden]{ display:none; }
 .cat-subnav::-webkit-scrollbar{ display:none; }
-.cat-subnav-row{ display:inline-flex; gap:6px; padding:0 calc(50vw - 50% + 16px); }
+.cat-subnav-row{ display:inline-flex; gap:14px; padding:0 calc(50vw - 50% + 16px); }
 .cat-sub{
   flex:none; background:transparent; color:var(--text-muted);
-  border:1px solid rgba(127,127,127,.22); border-radius:999px; padding:4px 9px;
+  border:none; border-radius:999px; padding:4px 2px;
+  display:inline-flex; align-items:center; gap:5px;
   font-family:var(--font-inter); font-size:8.5px; font-weight:600;
   text-transform:uppercase; letter-spacing:.04em; white-space:nowrap;
   cursor:pointer; -webkit-tap-highlight-color:transparent;
-  transition:color .25s ease, background .25s ease, border-color .25s ease, transform .18s cubic-bezier(.34,1.56,.64,1);
+  transition:color .25s ease, transform .18s cubic-bezier(.34,1.56,.64,1);
 }
-.cat-sub:hover{ color:var(--text); border-color:rgba(127,127,127,.4); }
+.cat-sub-ic{
+  width:14px; height:14px; border-radius:50%; flex:none;
+  object-fit:cover; background:rgba(127,127,127,.15);
+}
+.cat-sub:hover{ color:var(--text); }
 .cat-sub:active{ transform:scale(.94); }
 .cat-sub.active{
-  color:var(--bg); background:var(--text);
-  border-color:var(--text); font-weight:700;
+  color:var(--text); font-weight:700;
 }
 
 /* Modal thématique (contexte d'une source) — verre, liens rapides, vedette, pagination */
@@ -1310,26 +1398,26 @@ body.bf-heavy-open .sbar-podcast{
 body.cat-modal-open .cat-modal-overlay{ pointer-events:auto; }
 body.cat-modal-open .cat-modal-backdrop{ opacity:1; }
 .cat-modal-card{
-  position:relative; width:100%; max-width:380px;
+  position:relative; width:100%; max-width:400px;
   background:rgba(25,25,25,.85); -webkit-backdrop-filter:blur(25px); backdrop-filter:blur(25px);
-  border:1px solid rgba(255,255,255,.1); border-radius:20px; padding:14px; box-shadow:0 24px 48px rgba(0,0,0,.5);
+  border:1px solid rgba(255,255,255,.1); border-radius:24px; padding:24px; box-shadow:0 24px 48px rgba(0,0,0,.5);
   opacity:0; transform:translateY(30px) scale(.95); user-select:none; -webkit-user-select:none;
   transition:opacity .4s ease, transform .4s cubic-bezier(.32,.72,0,1);
   max-height:calc(100vh - 40px); overflow-y:auto;
 }
 [data-theme="light"] .cat-modal-card{ background:rgba(252,251,250,.92); border-color:rgba(0,0,0,.08); }
 body.cat-modal-open .cat-modal-card{ opacity:1; transform:translateY(0) scale(1); }
-.cat-modal-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+.cat-modal-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; }
 .cat-modal-title{ display:flex; align-items:center; gap:8px; font-family:var(--font-inter); font-weight:900; font-size:13px; letter-spacing:.09em; text-transform:uppercase; color:var(--text-muted); }
 .cat-modal-dot{ width:9px; height:9px; border-radius:50%; background:var(--eyebrow-dot); flex:none; box-shadow:0 0 10px var(--eyebrow-dot); }
 .cat-modal-x{ background:none; border:none; color:var(--text); cursor:pointer; padding:4px; -webkit-tap-highlight-color:transparent; }
 .cat-modal-x svg{ width:22px; height:22px; }
 /* Triage éditorial : l'éditeur silencieux propose des angles d'entrée dans le dossier.
    Pastille eyebrow + libellé Inter + murmure muet. Pas de compteurs — pas de dette. */
-.cat-triage{ display:flex; flex-direction:column; gap:0; margin-bottom:8px; }
+.cat-triage{ display:flex; flex-direction:column; gap:0; margin-bottom:16px; }
 .cat-triage-row{
-  display:flex; align-items:flex-start; gap:9px; width:100%;
-  background:none; border:none; padding:5px 0; margin:0; text-align:left;
+  display:flex; align-items:flex-start; gap:12px; width:100%;
+  background:none; border:none; padding:11px 0; margin:0; text-align:left;
   cursor:pointer; -webkit-tap-highlight-color:transparent;
   opacity:0; transform:translateX(-15px);
   transition:opacity .5s ease, transform .5s cubic-bezier(.32,.72,0,1);
@@ -1347,9 +1435,9 @@ body.cat-modal-open .cat-triage-row:nth-child(6){ transition-delay:.25s; }
   width:6px; height:6px; border-radius:50%; flex:none; margin-top:6px;
   background:var(--eyebrow-dot); box-shadow:0 0 8px var(--eyebrow-dot);
 }
-.cat-triage-txt{ display:flex; flex-direction:column; gap:0; min-width:0; }
+.cat-triage-txt{ display:flex; flex-direction:column; gap:4px; min-width:0; }
 .cat-triage-label{
-  font-family:var(--font-inter); font-weight:500;
+  font-family:var(--font-geist); font-weight:500;
   font-size:14.5px; letter-spacing:-.01em; line-height:1.2; color:var(--text);
 }
 .art-continues{
@@ -1360,12 +1448,12 @@ body.cat-modal-open .cat-triage-row:nth-child(6){ transition-delay:.25s; }
   font-family:var(--font-inter); font-size:10.5px; font-weight:500;
   letter-spacing:.005em; color:var(--text-muted);
 }
-.cat-modal-featured{ position:relative; width:100%; height:150px; border-radius:12px; overflow:hidden; margin-bottom:18px; background:#1a1a1a center/cover no-repeat; display:flex; align-items:flex-end; }
+.cat-modal-featured{ position:relative; width:100%; height:170px; border-radius:12px; overflow:hidden; margin-bottom:22px; background:#1a1a1a center/cover no-repeat; display:flex; align-items:flex-end; }
 .cat-modal-featured::after{ content:''; position:absolute; inset:0; background:linear-gradient(180deg, rgba(0,0,0,0) 45%, rgba(0,0,0,.55) 100%); }
 .cat-modal-cover-meta{ position:relative; z-index:2; display:flex; flex-direction:column; gap:4px; padding:10px 12px; width:100%; }
 .cmc-item{ display:inline-flex; align-items:center; gap:6px; font-family:var(--font-inter); font-weight:600; font-size:11.5px; letter-spacing:.01em; color:rgba(255,255,255,.92); text-shadow:0 1px 3px rgba(0,0,0,.5); }
 .cmc-dot{ width:5px; height:5px; border-radius:50%; flex:none; background:var(--eyebrow-dot); box-shadow:0 0 6px var(--eyebrow-dot); }
-.cat-modal-pag{ display:flex; justify-content:center; margin-top:10px; }
+.cat-modal-pag{ display:flex; justify-content:center; margin-top:6px; }
 .cat-modal-dots{ display:flex; align-items:center; gap:8px; }
 .cat-dot{ width:6px; height:6px; border-radius:50%; background:rgba(127,127,127,.35); cursor:pointer; transition:all .3s cubic-bezier(.25,.8,.25,1); -webkit-tap-highlight-color:transparent; }
 .cat-dot.active{ width:24px; border-radius:4px; background:var(--eyebrow-dot); }
@@ -1955,8 +2043,8 @@ body.cat-modal-open .cat-triage-row:nth-child(6){ transition-delay:.25s; }
 .dc-art:active .dc-art-img img{ transform:scale(1.04); }
 /* Cartes légèrement réduites sur smartphone (iPhone) — desktop/tablette inchangés */
 @media (max-width:430px){
-  .dc-art{ width:232px; }
-  .dc-art-img{ width:232px; height:161px; }
+  .dc-art{ width:196px; }
+  .dc-art-img{ width:196px; height:136px; }
 }
 .dc-art-no-img{ width:258px; height:179px; border-radius:14px; background:rgba(127,127,127,.1); display:flex; align-items:center; justify-content:center; margin-bottom:9px; }
 .dc-art-no-img-dot{ width:24px; height:24px; border-radius:50%; background:var(--accent); opacity:.25; }
@@ -2348,7 +2436,7 @@ body.cat-modal-open .cat-triage-row:nth-child(6){ transition-delay:.25s; }
 .edl-tags{ display:flex; flex-wrap:wrap; gap:4px; margin-top:8px; }
 .edl-tag{
   display:inline-flex; align-items:center;
-  background:#fff;            /* sombre : étiquette blanche, texte noir */
+  background:#F8EDD9;         /* sombre : étiquette crème, texte noir */
   border:1px solid transparent;
   color:#000;
   border-radius:90px; padding:3px 9px;
@@ -3721,7 +3809,7 @@ body.cat-modal-open .cat-triage-row:nth-child(6){ transition-delay:.25s; }
 .list-source{ font-family:var(--font-inter); font-size:10.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.04em; margin-bottom:4px; display:flex; align-items:center; gap:4px; }
 .list-fav{ width:16px; height:16px; border-radius:22%; overflow:hidden; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.18),0 0 0 .5px rgba(0,0,0,.06); display:flex; align-items:center; justify-content:center; }
 .list-fav img{ width:80%; height:80%; object-fit:contain; border-radius:0; display:block; }
-.list-title{ font-family:var(--font-inter); font-size:15px; font-weight:700; line-height:1.3; color:var(--text); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.list-title{ font-family:var(--font-inter); font-size:13.5px; font-weight:700; line-height:1.3; color:var(--text); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
 
 /* ── PAGE FLUX INDIVIDUEL ─────────────────────────── */
 .feed-page{
@@ -4110,7 +4198,8 @@ body.focus-mode .focus-exit{ display:flex; }
 .art-title-row .grid2-title,
 .art-title-row .seq-title,
 .art-title-row .list-title,
-.art-title-row .essentiel-title{
+.art-title-row .essentiel-title,
+.art-title-row .edl-title{
   flex:1; min-width:0;
 }
 /* Le bouton : icône plate, sans fond, sans cercle */
@@ -4131,11 +4220,12 @@ body.focus-mode .focus-exit{ display:flex; }
 .art-card:hover .art-share-btn,
 .grid2-card:hover .art-share-btn,
 .essentiel-card:hover .art-share-btn,
-.list-item:hover .art-share-btn{
+.list-item:hover .art-share-btn,
+.edl-item:hover .art-share-btn{
   opacity:1;
 }
 @media (hover:none){
-  .art-share-btn{ opacity:.45; }
+  .art-share-btn{ opacity:1; }
   .art-share-btn:active{ opacity:1 !important; color:var(--text) !important; }
 }
 .art-share-btn:hover{ color:var(--text); }
@@ -5323,6 +5413,14 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   <aside class="sidebar" id="sidebar">
     <div class="sb-header">
       <span class="sb-logo">BRIEFEED</span>
+      <!-- En-tête façon feuille (mobile only) : Modifier · titre · + -->
+      <div class="sb-sheet-head">
+        <button type="button" class="sb-sheet-edit" id="sbSheetEdit">Modifier</button>
+        <span class="sb-sheet-title">Mes flux</span>
+        <button type="button" class="sb-sheet-add" id="sbSheetAdd" aria-label="Ajouter un flux">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+      </div>
       <button class="sb-close" id="sbClose" aria-label="Fermer">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
@@ -6011,7 +6109,6 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
       <div id="bfGreetHost" hidden></div>
 
       <!-- Header de catégorie : hero + wordmark + onglets dossiers ; sous-nav = sous-dossiers -->
-      <div class="cat-fixed-title" id="catFixedTitle"></div>
       <div class="cat-brand-header" id="catBrandHeader" hidden></div>
       <div class="cat-subnav" id="catSubnav" hidden></div>
 
@@ -6918,6 +7015,39 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   })();
   document.getElementById('sbClose').addEventListener('click', closeSB);
   overlay.addEventListener('click', closeSB);
+
+  // ── Glisser-pour-fermer la feuille (mobile) : poignée + en-tête ──────────
+  (function _sbSheetDrag(){
+    const header = sidebar.querySelector('.sb-header');
+    if(!header) return;
+    let dragging = false, y0 = 0, dy = 0;
+    const isSheet = () => window.matchMedia('(max-width:720px)').matches;
+    function down(e){
+      if(!isSheet() || !sidebar.classList.contains('open')) return;
+      // ne pas capter le bouton de fermeture
+      if(e.target.closest('.sb-close')) return;
+      dragging = true; y0 = e.clientY; dy = 0;
+      sidebar.style.transition = 'none';
+      header.setPointerCapture && header.setPointerCapture(e.pointerId);
+    }
+    function move(e){
+      if(!dragging) return;
+      dy = Math.max(0, e.clientY - y0);
+      sidebar.style.transform = `translateY(${dy}px)`;
+    }
+    function up(){
+      if(!dragging) return;
+      dragging = false;
+      sidebar.style.transition = '';
+      sidebar.style.transform = '';
+      // seuil : > 110px de glissé vers le bas → fermeture
+      if(dy > 110){ closeSB(); }
+    }
+    header.addEventListener('pointerdown', down);
+    header.addEventListener('pointermove', move);
+    header.addEventListener('pointerup', up);
+    header.addEventListener('pointercancel', up);
+  })();
   // (Escape géré centralement par closeTopLayer/goBack)
 
   // Vues : Tout voir / Non lus / Aujourd'hui
@@ -7011,7 +7141,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     if(img){ host.style.setProperty('--hero-bg', `url('${img.replace(/'/g,"\\'")}')`); }
     else { const [c1,c2] = _folderGrad(folder.name); host.style.setProperty('--hero-bg', `linear-gradient(145deg,${c1} 0%,${c2} 100%)`); }
     const tabs = cats.map(o =>
-      `<button type="button" class="cat-bh-tab${o.f.name===smartCat?' active':''}" data-idx="${o.i}" onclick="_catHeaderTab(${o.i})" onpointerdown="_catTabPullStart(event,this,${o.i})" onpointermove="_catTabPullMove(event)" onpointerup="_catTabPullEnd(event)" onpointercancel="_catTabPullEnd(event)">${escapeHtml(o.f.name)}</button>`
+      `<button type="button" class="cat-bh-tab${o.f.name===smartCat?' active':''}" data-idx="${o.i}" onclick="_catHeaderTab(${o.i})">${escapeHtml(o.f.name)}</button>`
     ).join('');
     host.innerHTML =
       `<div class="cat-bh-status" id="catBhStatus">
@@ -7027,7 +7157,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     const feeds = folder.feeds || [];
     const subs = [`<button type="button" class="cat-sub${!railUrl?' active':''}" onclick="_catSub('')">Tout</button>`]
       .concat(feeds.map(u =>
-        `<button type="button" class="cat-sub${railUrl===u?' active':''}" onclick="_catSub('${escapeHtml(u).replace(/'/g,"\\'")}')">${escapeHtml(_catSourceName(u))}</button>`
+        `<button type="button" class="cat-sub${railUrl===u?' active':''}" onclick="_catSub('${escapeHtml(u).replace(/'/g,"\\'")}')"><img class="cat-sub-ic" src="${escapeHtml(getFavicon(u))}" alt="" loading="lazy" onerror="this.style.display='none'">${escapeHtml(_catSourceName(u))}</button>`
       ));
     subEl.innerHTML = `<div class="cat-subnav-row">${subs.join('')}</div>`;
     // Conserve la position du rail sur l'onglet actif au lieu de revenir au premier
@@ -7098,31 +7228,9 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   }
   window._renderCatHeader = _renderCatHeader;
   window._catHeaderTab = function(idx){
-    if(_catTabPullFired){ _catTabPullFired = false; return; } // le tirage a déjà ouvert le modal : ignorer le tap qui suit
     const f = folders[idx]; if(!f) return;
+    if(f.name === _smartCat){ _catOpenModalForFolder(f); return; } // déjà actif : un second clic ouvre le modal thématique
     if(typeof _smartPickCat === 'function') _smartPickCat(f.name); // → maj _smartCat + re-rendu (dont ce header)
-  };
-  // Tirage vers le bas sur un onglet de dossier (rail du hero) → ouvre le modal thématique de ce dossier
-  let _catTabPull = { active:false, y0:0, idx:-1, el:null };
-  let _catTabPullFired = false;
-  window._catTabPullStart = function(e, el, idx){
-    _catTabPull.active = true; _catTabPull.y0 = e.clientY; _catTabPull.idx = idx; _catTabPull.el = el;
-    _catTabPullFired = false;
-  };
-  window._catTabPullMove = function(e){
-    if(!_catTabPull.active) return;
-    const dy = e.clientY - _catTabPull.y0;
-    if(_catTabPull.el) _catTabPull.el.style.transform = dy > 0 ? `translateY(${Math.min(dy*.35,16)}px)` : '';
-    if(dy > 34 && !_catTabPullFired){
-      _catTabPullFired = true;
-      if(navigator.vibrate) try{ navigator.vibrate(8); }catch(e){}
-      const f = folders[_catTabPull.idx];
-      if(f) _catOpenModalForFolder(f);
-    }
-  };
-  window._catTabPullEnd = function(){
-    if(_catTabPull.el){ _catTabPull.el.style.transform = ''; }
-    _catTabPull.active = false; _catTabPull.el = null;
   };
   function _catOpenModalForFolder(folder){
     const feeds = folder.feeds || [];
@@ -7455,6 +7563,21 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   });
   document.getElementById('sortManual').addEventListener('click', () => { closeSortPop(); enterReorder(); });
   document.getElementById('reorderDone').addEventListener('click', exitReorder);
+
+  // ── En-tête feuille (mobile) : Modifier bascule le réordonnancement, + ajoute un flux ──
+  (function _sbSheetHead(){
+    const editBtn = document.getElementById('sbSheetEdit');
+    const addBtn  = document.getElementById('sbSheetAdd');
+    if(editBtn){
+      editBtn.addEventListener('click', () => {
+        if(sidebar.classList.contains('reorder')){ exitReorder(); editBtn.textContent = 'Modifier'; }
+        else { enterReorder(); editBtn.textContent = 'Terminé'; }
+      });
+    }
+    if(addBtn) addBtn.addEventListener('click', () => afOpen());
+    // remettre le libellé à l'état neutre à chaque ouverture
+    document.getElementById('menuBtn').addEventListener('click', () => { if(editBtn) editBtn.textContent = 'Modifier'; });
+  })();
 
   function enterReorder(){
     folders.forEach(f => f.open = false); persist(); render();   // liste compacte, dossiers fermés
@@ -13499,7 +13622,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
       ${fig}
       ${srcRow}
       ${cont}
-      <div class="edl-title">${escHtml(a.title||'')}</div>
+      ${_titleWithShare(escHtml(a.title||''), a.link, a.title, 'edl-title')}
       ${sub ? `<div class="edl-sub">${escHtml(sub.slice(0,150))}</div>` : ''}
       <div class="edl-date">${escHtml(_seqDateStr(a.pubDate))}${_groupMeta(a)}</div>
       ${tags}
@@ -14289,8 +14412,8 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   })();
 
   // ── Pull-to-refresh manuel désactivé : les flux se réactualisent automatiquement.
-  // Le tirage vers le bas reste actif uniquement sur les chips de dossiers (rail
-  // du hero, cf. _catTabPull plus haut) pour ouvrir leur modal thématique.
+  // Sur les chips de dossiers (rail du hero), un second clic sur l'onglet déjà actif
+  // ouvre son modal thématique (cf. _catHeaderTab plus haut).
 
   // ── Swipe-open sidebar (bord gauche → glisser vers droite) ────
   (function initSidebarSwipe(){
@@ -14538,30 +14661,26 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     else window._obsReveal();
   })();
 
-  // ── Titre replié fixe : révélé (clip-path) quand le hero de catégorie défile hors champ ──
-  (function _bfFixedTitleInit(){
+  // ── Wordmark de catégorie : colle en haut au scroll (position:sticky réel, pas de doublon) ──
+  // Le vrai composant .cat-bh-wordmark reste épinglé tant qu'il est dans les bornes de son
+  // conteneur (le hero) ; une classe .stuck bascule juste son habillage (fond verre) une fois
+  // qu'il n'a plus la photo derrière lui lisible sans lui — le texte et les traits ne bougent pas.
+  (function _bfWordmarkStickyInit(){
     const scroller = document.getElementById('bfRow');
-    const titleEl = document.getElementById('catFixedTitle');
-    if(!scroller || !titleEl) return;
+    if(!scroller) return;
     let ticking = false;
     function sync(){
       ticking = false;
-      const hero = document.getElementById('catBrandHeader');
-      if(!hero || hero.hidden){ titleEl.classList.remove('show'); return; }
-      const heroBottom = hero.getBoundingClientRect().bottom;
-      const revealed = heroBottom <= 46;
-      titleEl.classList.toggle('show', revealed);
-      if(revealed){
-        const name = (hero.querySelector('.cat-bh-wordmark')||{}).textContent || '';
-        if(titleEl.textContent !== name) titleEl.textContent = name;
-      }
+      const wm = document.querySelector('#catBrandHeader .cat-bh-wordmark');
+      if(!wm) return;
+      const stuck = wm.getBoundingClientRect().top <= 1;
+      wm.classList.toggle('stuck', stuck);
     }
     scroller.addEventListener('scroll', () => {
       if(ticking) return;
       ticking = true;
       requestAnimationFrame(sync);
     }, { passive:true });
-    // re-évalue après changement de dossier / rendu du header
     const mo = new MutationObserver(() => requestAnimationFrame(sync));
     mo.observe(scroller, { childList:true, subtree:true });
     sync();
