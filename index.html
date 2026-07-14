@@ -2100,8 +2100,8 @@ body.cat-modal-open .cat-triage-row:nth-child(6){ transition-delay:.25s; }
   background-size:cover; background-position:center; margin-top:8px; }
 .dc-detail-hero-text{ display:flex; flex-direction:column; align-items:center; gap:16px;
   width:100%; max-width:420px; margin-top:-18px; position:relative; z-index:1; }
-.dc-detail-hero-title{ margin:0; color:#F5F5F7; font-family:var(--font-inter); font-weight:800;
-  font-size:34px; line-height:1.1; letter-spacing:-.01em; text-align:center; width:100%; }
+.dc-detail-hero-title{ margin:0; color:#F5F5F7; font-family:var(--font-anton); font-weight:700;
+  font-size:34px; line-height:1.1; letter-spacing:.012em; text-align:center; width:100%; }
 .dc-detail-hero-desc{ margin:0; color:#86868B; font-family:var(--font-inter); font-weight:590;
   font-size:15.5px; line-height:1.45; letter-spacing:.005em; text-align:center; }
 .dc-detail-back{ width:36px; height:36px; flex:none; border:0; cursor:pointer; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; background:rgba(255,255,255,.07); color:var(--text); transition:background .2s; }
@@ -2242,8 +2242,12 @@ body.cat-modal-open .cat-triage-row:nth-child(6){ transition-delay:.25s; }
 .dc-sec-label .t{ font-family:var(--font-inter); font-size:11px; font-weight:800;
   letter-spacing:.22em; text-transform:uppercase; color:var(--text); white-space:nowrap; }
 .dc-sec-label .r{ flex:1; height:1px; background:var(--border); }
-.dc-sec-label .n{ font-family:var(--font-inter); font-size:10px; font-weight:700;
-  letter-spacing:.14em; text-transform:uppercase; color:var(--text-muted); white-space:nowrap; }
+.dc-sec-label .n{ font-family:var(--font-inter); font-size:10px; font-weight:800;
+  letter-spacing:.14em; text-transform:uppercase; color:#3A2E00; white-space:nowrap;
+  padding:5px 12px; border-radius:999px;
+  background:rgba(251,205,68,.55); backdrop-filter:blur(14px) saturate(1.8); -webkit-backdrop-filter:blur(14px) saturate(1.8);
+  box-shadow:inset 0 1px .5px rgba(255,255,255,.6), inset 0 -1.5px 1px rgba(0,0,0,.12), 0 2px 8px rgba(0,0,0,.18);
+  border:1px solid rgba(255,255,255,.35); }
 
 /* Grille des univers — carte scindée texte / image, fidèle au code fourni (split-card) */
 /* Cartes de catégorie — carrousel horizontal, carte centrée mise en avant au glissement */
@@ -2253,14 +2257,20 @@ body.cat-modal-open .cat-triage-row:nth-child(6){ transition-delay:.25s; }
 #dcThemeGrid::-webkit-scrollbar{ display:none; }
 #dcThemeGrid::before, #dcThemeGrid::after{ content:''; flex:none; width:calc(50% - 150px); }
 #dcThemeGrid .dc-theme-tile{ display:flex; align-items:flex-end; justify-content:center; width:188px; height:254px;
-  flex:none; border-radius:12px; overflow:hidden; cursor:pointer; position:relative; isolation:isolate;
+  flex:none; cursor:pointer; position:relative; isolation:isolate;
   scroll-snap-align:center; background:#002C66;
   transform:scale(.88); opacity:.62;
   transition:transform .3s cubic-bezier(.32,.72,0,1), opacity .3s cubic-bezier(.32,.72,0,1); }
 #dcThemeGrid .dc-theme-tile.dc-tile-focused{ transform:scale(1); opacity:1; }
 #dcThemeGrid .dc-theme-tile:active{ transform:scale(.96); }
+/* Halo immersif très léger, en arrière-plan, qui affleure le bord de la carte */
+#dcThemeGrid .dc-theme-tile::before{
+  content:''; position:absolute; inset:-16px; z-index:-1; border-radius:20px;
+  background:radial-gradient(circle at 50% 45%, var(--tc,#666) 0%, transparent 70%);
+  filter:blur(20px); opacity:.2; pointer-events:none;
+}
 
-.dc-tile-media{ position:absolute; inset:0; z-index:0; background-size:cover; background-position:center; }
+.dc-tile-media{ position:absolute; inset:0; z-index:0; border-radius:12px; overflow:hidden; background-size:cover; background-position:center; }
 .dc-tile-media::after{ content:''; position:absolute; inset:0;
   background:linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(0,0,0,.7) 100%),
              linear-gradient(180deg, rgba(0,0,0,.4) 0%, rgba(0,0,0,0) 78.74%); }
@@ -2270,9 +2280,12 @@ body.cat-modal-open .cat-triage-row:nth-child(6){ transition-delay:.25s; }
   text-shadow:0 0 5px rgba(0,0,0,.6); margin:0; padding:0 20px; }
 .dc-tile-desc{ display:none; }
 .dc-tile-link{ position:relative; z-index:1; display:inline-flex; align-items:center; justify-content:center;
-  min-width:45px; height:24px; padding:4px 11px; margin:8px auto 15px; background:#F5F5F7; color:#000000;
-  font-family:var(--font-inter); font-size:12px; font-weight:400; line-height:16px; letter-spacing:-.12px;
-  border-radius:999px; text-decoration:none; }
+  min-width:45px; height:24px; padding:4px 11px; margin:8px auto 15px; color:#3A2E00;
+  font-family:var(--font-inter); font-size:12px; font-weight:600; line-height:16px; letter-spacing:-.12px;
+  border-radius:999px; text-decoration:none;
+  background:rgba(251,205,68,.6); backdrop-filter:blur(16px) saturate(1.8); -webkit-backdrop-filter:blur(16px) saturate(1.8);
+  box-shadow:inset 0 1px .5px rgba(255,255,255,.65), inset 0 -1.5px 1px rgba(0,0,0,.15), 0 3px 10px rgba(0,0,0,.25);
+  border:1px solid rgba(255,255,255,.4); }
 .dc-tile-foot{ position:relative; z-index:1; display:flex; flex-direction:column; align-items:center;
   width:100%; padding-bottom:15px; }
 
@@ -4207,7 +4220,7 @@ body.cat-modal-open .cat-triage-row:nth-child(6){ transition-delay:.25s; }
    compacte centrée) : elle glisse depuis le bas et recouvre tout l'écran,
    comme un rideau qu'on tire. Lecture au scroll interne, partage et
    navigation interne en swipe à puces (façon Mastercard) inchangés. */
-#artModal{ align-items:stretch; justify-content:stretch; padding:0; }
+#artModal{ align-items:center; justify-content:center; padding:24px 16px; }
 .art-scrim{ position:absolute; inset:0; z-index:0; background:rgba(0,0,0,.4);
   opacity:0; transition:opacity .3s ease; }
 #artModal.art-open .art-scrim{ opacity:1; }
@@ -4215,38 +4228,42 @@ body.cat-modal-open .cat-triage-row:nth-child(6){ transition-delay:.25s; }
 [data-theme="light"] .art-scrim{ background:rgba(30,28,26,.28); }
 
 .art-shell{ position:relative; z-index:1; display:flex; flex-direction:column;
-  width:100vw; max-width:100vw; height:100vh; max-height:100vh;
+  width:min(640px,92vw); max-width:640px; height:auto; max-height:86vh;
   background:var(--surface-card,#1C1A18);
   border:none;
-  border-radius:0; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch;
-  box-shadow:0 -8px 40px rgba(0,0,0,.4);
-  transform:translateY(100%); opacity:1;
-  transition:transform .48s cubic-bezier(.16,1,.3,1); }
+  border-radius:var(--r-container,40px); overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,.5);
+  transform:scale(.88) translateY(22px); opacity:0;
+  transition:transform .32s ease, opacity .32s ease; }
 [data-theme="light"] .art-shell{
   background:var(--surface-card,#FCFBFA);
 }
-#artModal.art-open .art-shell{ transform:translateY(0); opacity:1; }
-#artModal.art-closing .art-shell{ transform:translateY(100%); opacity:1;
-  transition:transform .32s cubic-bezier(.4,0,1,1); }
-.art-shell.is-expanded{ max-width:100vw; width:100vw; max-height:100vh; height:100vh; border-radius:0; }
-#artModal:has(.art-shell.is-expanded){ padding:0; }
-#artModal:has(.art-shell.is-expanded) .art-scrim{ display:none; }
+#artModal.art-open .art-shell{ transform:scale(1) translateY(0); opacity:1;
+  transition:transform .58s cubic-bezier(.34,1.56,.64,1), opacity .34s ease; }
+#artModal.art-closing .art-shell{ transform:scale(.96) translateY(10px); opacity:0;
+  transition:transform .26s cubic-bezier(.4,0,1,1), opacity .22s ease; }
 
 /* Boutons flottants (fermer / enregistrer) — glass, superposés au hero, cibles tactiles élargies */
 .art-float-btn{ position:absolute; top:13px; z-index:6; width:38px; height:38px; border:.5px solid rgba(255,255,255,.2);
   border-radius:50%; background:rgba(20,20,19,.5); -webkit-backdrop-filter:blur(16px) saturate(1.6); backdrop-filter:blur(16px) saturate(1.6);
   color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer;
-  box-shadow:0 4px 14px rgba(0,0,0,.35); transition:transform .16s ease, background .2s ease; -webkit-tap-highlight-color:transparent; }
+  box-shadow:0 4px 14px rgba(0,0,0,.35); -webkit-tap-highlight-color:transparent;
+  opacity:0; pointer-events:none;
+  transition:transform .16s ease, background .2s ease, opacity .3s ease; }
 .art-float-btn:active{ transform:scale(.86); }
-.art-float-close{ left:13px; width:30px; height:30px; }
-.art-float-save{ right:13px; }
+#artModal.art-open .art-float-btn{ opacity:1; pointer-events:auto; transition:transform .16s ease, background .2s ease, opacity .34s ease .1s; }
+.art-float-close{ right:13px; width:30px; height:30px; }
+.art-float-save{ left:13px; }
+.art-shell.flip-noslide{ transform:scale(.97); opacity:0; transition:opacity .3s ease, transform .5s cubic-bezier(.34,1.56,.64,1); }
+#artModal.art-open .art-shell.flip-noslide{ opacity:1; transform:scale(1); }
+.art-flip-ghost{ position:fixed; z-index:7010; object-fit:cover; pointer-events:none; will-change:top,left,width,height,border-radius; box-shadow:0 20px 48px rgba(0,0,0,.35); }
 [data-theme="light"] .art-float-btn{ background:rgba(252,251,250,.72); border-color:rgba(0,0,0,.08); color:#141413; }
 
 .art-shell-hero{ flex:none; width:100%; aspect-ratio:16/9; max-height:240px; background:#1a1815; overflow:hidden; position:relative; }
 .art-shell-hero::after{ content:""; position:absolute; inset:auto 0 0 0; height:64px; pointer-events:none;
   background:linear-gradient(to bottom, rgba(28,26,24,0), var(--surface-card,#1C1A18)); }
 [data-theme="light"] .art-shell-hero::after{ background:linear-gradient(to bottom, rgba(252,251,250,0), var(--surface-card,#FCFBFA)); }
-.art-shell.is-expanded .art-shell-hero{ max-height:min(38vh,220px); }
+.art-shell.is-expanded .art-shell-hero{ max-height:min(52vh,420px); }
 .art-shell-hero img{ width:100%; height:100%; object-fit:cover; display:block; }
 
 .art-shell-head{ flex:none; position:relative; padding:22px 26px 4px; }
@@ -4289,15 +4306,16 @@ body.cat-modal-open .cat-triage-row:nth-child(6){ transition-delay:.25s; }
 #artModal .art-modal-title{
   font-family:'Anton',var(--font-inter),sans-serif;
   font-weight:400; text-transform:uppercase;
-  font-size:clamp(21px,6.4vw,32px); line-height:1.06; letter-spacing:.005em;
-  color:var(--text); margin:2px 0 4px; text-wrap:pretty;
+  font-size:clamp(21px,6.4vw,32px); line-height:1.14; letter-spacing:.005em;
+  color:var(--text); margin:2px 0 4px; padding-bottom:.12em; text-wrap:pretty;
+  overflow:visible;
 }
 #artModal .art-modal-date{ padding:0; margin-top:10px; }
 
 /* Photo en tête de page, pleine largeur — le titre suit en dessous, jamais côte à côte */
 #artModal .art-shell-hero{
   position:relative; order:-1; flex:none; width:100%;
-  aspect-ratio:16/9; max-height:260px; min-width:0;
+  aspect-ratio:4/3; max-height:min(52vh,420px); min-width:0;
   height:auto;
 }
 #artModal .art-shell-hero::after{ display:none; }
@@ -4309,22 +4327,27 @@ body.cat-modal-open .cat-triage-row:nth-child(6){ transition-delay:.25s; }
 }
 
 /* Pager à puces (swipe interne façon Mastercard) — piste translatée */
-.art-pager-wrap{ position:relative; flex:1 1 auto; min-height:160px; display:flex; overflow:hidden; }
-.art-pager{ flex:1; min-width:0; overflow:hidden; }
+.art-pager-wrap{ position:relative; flex:1 1 auto; min-height:0; display:flex; overflow:hidden; }
+.art-pager{ flex:1; min-width:0; min-height:0; overflow:hidden; }
 .art-pager-track{ display:flex; height:100%; will-change:transform;
   transition:transform .52s cubic-bezier(.22,1,.36,1); }
-.art-page{ flex:0 0 100%; width:100%; overflow-y:hidden; overflow-x:hidden;
-  scrollbar-width:none; padding:8px 26px 26px; }
-.art-page::-webkit-scrollbar{ display:none; }
-.art-shell.is-expanded .art-page{ overflow-y:auto; -webkit-overflow-scrolling:touch; }
-/* En compact : seule la 1re page, tronquée, avec fondu + amorce */
-.art-shell:not(.is-expanded) .art-page ~ .art-page{ display:none !important; }
+.art-page{ flex:0 0 100%; width:100%; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch;
+  scrollbar-width:thin; scrollbar-color:rgba(255,255,255,.18) transparent; padding:8px 26px 26px; }
+.art-page::-webkit-scrollbar{ width:6px; display:block; }
+.art-page::-webkit-scrollbar-thumb{ background:rgba(255,255,255,.18); border-radius:999px; }
+.art-page::-webkit-scrollbar-track{ background:transparent; }
+[data-theme="light"] .art-page{ scrollbar-color:rgba(0,0,0,.16) transparent; }
+[data-theme="light"] .art-page::-webkit-scrollbar-thumb{ background:rgba(0,0,0,.16); }
 .art-page-eyebrow{ display:inline-flex; align-items:center; gap:7px; font-family:var(--font-inter); font-size:11px;
   font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--text-muted); margin:2px 0 12px; }
 .art-page-eyebrow::before{ content:""; width:6px; height:6px; border-radius:50%; background:var(--eyebrow-dot); box-shadow:0 0 10px var(--eyebrow-dot); }
 
 /* Amorce compacte : fondu de lecture au-dessus du pied (résiduel, invisible en mode étendu permanent) */
 .art-teaser-fade{ display:none; }
+
+/* Contexte replié dans le fil de lecture (plus de 2e page horizontale) */
+.art-inline-context:not(:empty){ margin-top:30px; padding-top:24px; border-top:1px solid var(--border); }
+[data-theme="light"] .art-inline-context:not(:empty){ border-color:rgba(0,0,0,.08); }
 
 /* Pied : puces de pages (au-dessus) + barre d'outils centrée — coque toujours déployée */
 .art-shell-foot{ flex:none; position:sticky; bottom:0; z-index:5; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px;
@@ -4347,25 +4370,21 @@ body.cat-modal-open .cat-triage-row:nth-child(6){ transition-delay:.25s; }
 /* ── Mobile : coque plein-cadre, chevrons masqués (ils chevauchaient le titre),
       amorce garantie sous le titre, « Lire la suite » toujours visible en pied ── */
 @media(max-width:767px){
-  #artModal{ padding:0; align-items:stretch; }
+  #artModal{ padding:14px; align-items:center; }
   .art-nav-chevron{ display:none !important; }
-  .art-shell{ max-width:100vw; width:100vw; max-height:100vh; height:100vh; border-radius:0;
-    transform:translateY(100%); }
-  #artModal.art-open .art-shell{ transform:translateY(0); }
-  #artModal.art-closing .art-shell{ transform:translateY(100%); }
-  .art-shell.is-expanded{ max-width:100vw; width:100vw; max-height:100vh; height:100vh; border-radius:0; }
-  .art-shell-hero{ max-height:220px; }
-  .art-shell:not(.is-expanded) .art-shell-hero{ max-height:190px; }
-  .art-shell.is-expanded .art-shell-hero{ max-height:min(34vh,190px); }
+  .art-shell{ max-width:86vw; width:86vw; max-height:90vh; height:auto; border-radius:28px; }
+  .art-shell-hero{ max-height:min(44vh,320px); }
+  .art-shell:not(.is-expanded) .art-shell-hero{ max-height:min(40vh,300px); }
+  .art-shell.is-expanded .art-shell-hero{ max-height:min(44vh,320px); }
   .art-shell-head{ padding:18px 22px 2px; }
   /* Titre en dessous de la photo, colonne unique — même traitement qu'en desktop,
      juste des marges resserrées pour l'écran étroit. */
   #artModal .art-cover-spread{ flex-direction:column; align-items:stretch; }
   #artModal .art-shell-head{ flex:none; min-width:0; padding:18px 20px 4px; }
   #artModal .art-modal-byline{ margin-bottom:10px; -webkit-line-clamp:1; display:-webkit-box; -webkit-box-orient:vertical; overflow:hidden; }
-  #artModal .art-modal-title{ font-size:clamp(21px,6.4vw,28px); line-height:1.1; margin:2px 0 4px; }
+  #artModal .art-modal-title{ font-size:clamp(21px,6.4vw,28px); line-height:1.18; margin:2px 0 4px; padding-bottom:.12em; }
   #artModal .art-modal-date{ padding:0; }
-  #artModal .art-shell-hero{ flex:none; width:100%; min-width:0; aspect-ratio:16/9; height:auto; max-height:220px; }
+  #artModal .art-shell-hero{ flex:none; width:100%; min-width:0; aspect-ratio:4/3; height:auto; max-height:min(44vh,320px); }
   #artModal .art-shell-hero-cap{ left:10px; right:10px; bottom:10px; max-width:none; font-size:9px; }
   .art-pager-wrap{ min-height:118px; flex:1; }
   .art-float-close, .art-float-save{ top:12px; }
@@ -12961,7 +12980,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
           ? `<div class="art-img-wrap" style="border-radius:${r};overflow:hidden;aspect-ratio:16/9;background:#111;margin-bottom:${mb}px"><img src="${escAttr(a.imageUrl)}" alt="" decoding="async" onerror="this.parentNode.style.display='none'" style="width:100%;height:100%;object-fit:cover"></div>`
           : `<div class="art-img-wrap" style="border-radius:${r};aspect-ratio:16/9;background:linear-gradient(135deg,rgba(10,132,255,.12),rgba(0,0,0,.4));margin-bottom:${mb}px"></div>`)
       : '';
-    return `<div class="art-card art-tier-${t}" onclick="_openEditionArt(${idx})" style="margin-bottom:${(isHero||t==='hero')?'48':'0'}px;position:relative">
+    return `<div class="art-card art-tier-${t}" onclick="_openEditionArt(${idx}, this)" style="margin-bottom:${(isHero||t==='hero')?'48':'0'}px;position:relative">
       ${sc!=null?`<span class="art-score-badge">${sc}</span>`:''}
       ${imgH}
       <div class="art-source-row">
@@ -13009,11 +13028,11 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   }
   window._updateReaderShareBtn = _updateReaderShareBtn;
 
-  window._openEditionArt = function(idx){
+  window._openEditionArt = function(idx, cardEl){
     const a = _editionArts[idx];
     if(!a) return;
     if(window._RS) _RS.mark(a.link);
-    _showArtModal(a);
+    _showArtModal(a, cardEl);
     const el = document.querySelector('.edl-item[data-edl-idx="' + idx + '"]');
     if(el) el.classList.add('is-read');
   };
@@ -13512,7 +13531,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   // ── _showArtModal complet ─────────────────────────────────────
   let _artCurrent = null;
 
-  function _showArtModal(a){
+  function _showArtModal(a, originEl){
     if(!a||!a.link) return;
     _artCurrent = a;
     const modal = document.getElementById('artModal');
@@ -13528,6 +13547,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     const heroWrap = document.getElementById('artModalHeroWrap');
     const heroImg  = document.getElementById('artModalHeroImg');
     const _shellEl = document.getElementById('artShell');
+    if(_shellEl) _shellEl.classList.add('is-expanded');
     if(heroWrap && heroImg){
       if(a.imageUrl){ heroWrap.style.display='block'; heroImg.src=a.imageUrl; if(_shellEl) _shellEl.classList.remove('no-hero'); }
       else { heroWrap.style.display='none'; heroImg.removeAttribute('src'); if(_shellEl) _shellEl.classList.add('no-hero'); }
@@ -13586,20 +13606,22 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
       } else { audioEl.style.display = 'none'; audioEl.innerHTML = ''; }
     }
 
-    // Étiquettes (tags)
-    if(window.BF_TAGS) window.BF_TAGS.renderBar(a);
+    // Étiquettes (tags) — bouton retiré du lecteur
 
     // Charger le reader
     const readerSection = document.getElementById('artReaderSection');
     if(readerSection) _loadArtReader(a, readerSection);
 
-    // Niveau 3 — Contexte (autres sources du sujet), opt-in, replié par défaut
-    const ctxEl = document.getElementById('artModalContext');
+    // Niveau 3 — Contexte (autres sources du sujet), désormais dans le fil de lecture
+    const ctxEl = document.getElementById('artInlineContext');
     if(ctxEl){
       const ext = (typeof _groupExtendHtml==='function') ? _groupExtendHtml(a) : '';   // Niveau 1
       const ctx = (typeof _groupContextHtml==='function') ? _groupContextHtml(a) : '';  // Niveau 3
-      ctxEl.innerHTML = ext + ctx;
+      const inner = ext + ctx;
+      ctxEl.innerHTML = inner.trim() ? '<div class="art-page-eyebrow">Le sujet · autres sources</div>' + inner : '';
     }
+    const ctxLegacy = document.getElementById('artModalContext');
+    if(ctxLegacy) ctxLegacy.innerHTML = '';
 
     // Coque : ouverture directement en mode étendu (déploiement automatique) + synchronise les puces du pager
     if(typeof _artShellReset==='function') _artShellReset();
@@ -13618,12 +13640,59 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     _artClosing = false;
     modal.style.transition=''; modal.style.transform=''; modal.style.opacity='';
     modal.style.display = 'flex';
-    requestAnimationFrame(()=> requestAnimationFrame(()=> modal.classList.add('art-open')));
+
+    // FLIP : la photo de la carte cliquée grandit jusqu'au cadre plein écran
+    let _flipImg = null;
+    if(!_artHeld && originEl && a.imageUrl){
+      _flipImg = originEl.querySelector('.edl-fig img, .art-img-wrap img, .hello-img-wrapper img, .grid2-img img, .list-thumb img');
+    }
+    const _flipHeadEl = document.getElementById('artModalContent');
+    if(_flipImg && _shellEl){
+      _shellEl.classList.add('flip-noslide');
+      if(heroWrap) heroWrap.style.visibility = 'hidden';
+      if(_flipHeadEl){ _flipHeadEl.style.transition='none'; _flipHeadEl.style.opacity='0'; }
+    }
+
+    requestAnimationFrame(()=> requestAnimationFrame(()=>{
+      modal.classList.add('art-open');
+      if(_flipImg) _artFlipOpen(_flipImg, heroWrap, _shellEl, _flipHeadEl);
+    }));
     if(!_artHeld) lockScroll();
     navArm();
   }
 
   window.openArtModal = _showArtModal;
+
+  // ── FLIP : transition « carte → plein écran », l'image grandit en place ──
+  function _artFlipOpen(originImg, heroWrap, shellEl, headEl){
+    const cleanup = ()=>{
+      if(heroWrap) heroWrap.style.visibility = '';
+      if(headEl){ headEl.style.transition = 'opacity .32s ease'; headEl.style.opacity = '1'; }
+      if(shellEl) shellEl.classList.remove('flip-noslide');
+    };
+    const startRect = originImg.getBoundingClientRect();
+    if(!startRect.width || !startRect.height || !heroWrap){ cleanup(); return; }
+    const wrapEl = originImg.closest('.edl-fig, .art-img-wrap, .hello-img-wrapper, .grid2-img, .list-thumb') || originImg;
+    const startRadius = getComputedStyle(wrapEl).borderRadius || '12px';
+    const ghost = document.createElement('img');
+    ghost.src = originImg.currentSrc || originImg.src;
+    ghost.className = 'art-flip-ghost';
+    ghost.style.top = startRect.top+'px'; ghost.style.left = startRect.left+'px';
+    ghost.style.width = startRect.width+'px'; ghost.style.height = startRect.height+'px';
+    ghost.style.borderRadius = startRadius;
+    document.body.appendChild(ghost);
+    const endRect = heroWrap.getBoundingClientRect();
+    requestAnimationFrame(()=>{
+      ghost.style.transition = 'top .5s cubic-bezier(.3,1.4,.5,1), left .5s cubic-bezier(.3,1.4,.5,1), width .5s cubic-bezier(.3,1.4,.5,1), height .5s cubic-bezier(.3,1.4,.5,1), border-radius .5s cubic-bezier(.3,1.4,.5,1)';
+      ghost.style.top = endRect.top+'px'; ghost.style.left = endRect.left+'px';
+      ghost.style.width = endRect.width+'px'; ghost.style.height = endRect.height+'px';
+      ghost.style.borderRadius = '0px';
+    });
+    let done = false;
+    const finish = ()=>{ if(done) return; done = true; ghost.removeEventListener('transitionend', finish); ghost.remove(); cleanup(); };
+    ghost.addEventListener('transitionend', finish);
+    setTimeout(finish, 600);
+  }
 
   // ── Masthead qui cède la place au texte : au scroll de lecture, le bloc
   // titre/photo se réduit en douceur (hauteur + fondu + échelle, lissés par
@@ -14015,7 +14084,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
         : `<div class="grid2-img" style="background:linear-gradient(135deg,rgba(10,132,255,.15),#0a0a0a)"></div>`;
       const kw = _extractKeywords(a, 1);
       const tagH = kw.length ? `<div class="grid2-tags"><span class="edl-tag">${escHtml(kw[0])}</span></div>` : '';
-      return `<div class="grid2-card reveal" onclick="_grilleOpen(${i})" style="position:relative">
+      return `<div class="grid2-card reveal" onclick="_grilleOpen(${i}, this)" style="position:relative">
         ${imgH}
         ${tagH}
         ${_titleWithShare(escHtml(a.title), a.link, a.title, 'grid2-title')}
@@ -14028,7 +14097,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     }).join('');
     if(typeof window._revealObserve === 'function') _revealObserve(wrap);
   }
-  window._grilleOpen = function(i){ const a=_grilleArts[i]; if(a) _showArtModal(a); };
+  window._grilleOpen = function(i, el){ const a=_grilleArts[i]; if(a) _showArtModal(a, el); };
 
   // ════════════════════════════════════════════════════════════════
   //  Mémoire de lecture — articles déjà ouverts (persistant)
@@ -14290,7 +14359,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     </div>` : '';
     const cont = (_smartMode==='continuation' && a._continuationOf)
       ? `<div class="art-continues">La suite de\u00a0: ${escHtml(a._continuationOf)}</div>` : '';
-    return `<div class="edl-item reveal${isRead?' is-read':''}" data-edl-idx="${i}" onclick="_openEditionArt(${i})">
+    return `<div class="edl-item reveal${isRead?' is-read':''}" data-edl-idx="${i}" onclick="_openEditionArt(${i}, this)">
       ${fig}
       ${srcRow}
       ${cont}
@@ -14318,7 +14387,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
       const thumb = a.imageUrl
         ? `<div class="list-thumb"><img src="${escAttr(a.imageUrl)}" alt="" decoding="async" loading="lazy" onerror="this.parentNode.className='list-thumb-empty'"></div>`
         : `<div class="list-thumb-empty"></div>`;
-      return `<div class="list-item reveal" onclick="_listeOpen(${i})" style="position:relative">
+      return `<div class="list-item reveal" onclick="_listeOpen(${i}, this)" style="position:relative">
         ${thumb}
         <div class="list-body">
           <div class="list-source"><div class="list-fav"><img src="${escAttr(fav)}" onerror="this.style.opacity='.3'"></div>${escHtml(a.source)} · ${relTime(a.pubDate)}${_groupMeta(a)}</div>
@@ -14328,7 +14397,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     }).join('');
     if(typeof window._revealObserve === 'function') _revealObserve(wrap);
   }
-  window._listeOpen = function(i){ const a=_listeArts[i]; if(a) _showArtModal(a); };
+  window._listeOpen = function(i, el){ const a=_listeArts[i]; if(a) _showArtModal(a, el); };
 
   // ════════════════════════════════════════════════════════════════
   //  1. VUE ESSENTIEL — top 5 articles du jour par score
@@ -15045,6 +15114,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
     }
   }
   window._artUpdateNav=_artUpdateNav;
+
   // Navigation animée article → article (dir: -1 précédent, +1 suivant)
   function _artNav(dir){
     const c=_artSwipeCtx;
@@ -15740,7 +15810,7 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
   <div id="refreshBadge"></div>
 
   <!-- ═══════════════ MODAL ARTICLE ═══════════════ -->
-  <div id="artModal" style="display:none;position:fixed;inset:0;z-index:7000;align-items:stretch;justify-content:stretch;padding:0">
+  <div id="artModal" style="display:none;position:fixed;inset:0;z-index:7000;align-items:center;justify-content:center;padding:24px 16px">
     <div class="art-scrim" onclick="closeArtModal()"></div>
 
     <!-- Chevrons navigation article ← → -->
@@ -15791,8 +15861,8 @@ html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
           <div class="art-pager-track" id="artPagerTrack">
             <section class="art-page" id="artModalBody">
               <div id="artModalAudio" class="art-modal-audio" style="display:none"></div>
-              <div id="artModalTags" class="art-modal-tags"></div>
               <div class="art-reader-section" id="artReaderSection"></div>
+              <div class="art-inline-context" id="artInlineContext"></div>
             </section>
             <section class="art-page" id="artPageCtx">
               <div class="art-page-eyebrow">Le sujet · autres sources</div>
